@@ -121,7 +121,7 @@ o@(u F.:>>= q) =$=! p@(v F.:>>= r) = case (U.decomp u, U.decomp v) of
 	Eff.E (P ': es) i o (Eff.E (P ': es) i x r, Eff.E (P ': es) x o r')
 o =$=!! p@(F.Pure _) = F.Pure (o, p)
 o@(F.Pure _) =$=!! p@(v F.:>>= r) = case U.decomp v of
-	Left v' -> U.weaken (Fn.mapT (o =$=!!) ((o ,) . F.Pure) v') F.:>>=
+	Left v' -> U.weaken (Fn.mapT (o =$=!) ((o ,) . F.Pure) v') F.:>>=
 		Q.singleton \case
 			(o', F.Pure y) -> o' =$=!! (r F.$ y)
 			(o'@(F.Pure _), p') -> F.Pure (o', (r F.$) =<< p')
@@ -133,7 +133,7 @@ o@(F.Pure _) =$=!! p@(v F.:>>= r) = case U.decomp v of
 	Right (Yield ot) ->
 		U.injh (Yield @_ @i ot) F.:>>= Q.singleton ((o =$=!!) F.. r)
 o@(u F.:>>= q) =$=!! p@(v F.:>>= r) = case (U.decomp u, U.decomp v) of
-	(_, Left v') -> U.weaken (Fn.mapT (o =$=!!) ((o ,) . F.Pure) v') F.:>>=
+	(_, Left v') -> U.weaken (Fn.mapT (o =$=!) ((o ,) . F.Pure) v') F.:>>=
 		Q.singleton \case
 			(o', F.Pure y) -> o' =$=!! (r F.$ y)
 			(o'@(F.Pure _), p') -> F.Pure (o', (r F.$) =<< p')
