@@ -34,6 +34,8 @@ import Data.ByteString.ToolsYj qualified as BS
 import System.IO
 import System.Environment
 
+import Control.Monad.Yaftee.Pipe.Deflate.Decompress qualified as Deflate
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs
@@ -43,8 +45,9 @@ main = do
 		. Crc.runCrc32 @"foobar"
 		. OnDemand.run_ @"foobar"
 		. OnDemand.run_ @"barbaz"
-		. OnDemand.run_ @"hogepiyo"
+--		. OnDemand.run_ @"hogepiyo"
 		. (`State.run` Chunk "IHDR")
+		. Deflate.run_ @"hogepiyo"
 		. Except.run @String
 		. Fail.runExc id
 		. Pipe.run
@@ -75,9 +78,16 @@ main = do
 					IO.print @Word8 $ h2 `shiftR` 6
 					IO.print @Word8 $ (h2 `shiftR` 5) .&. 1
 					IO.print @Word16 $ ((fromIntegral h1 `shiftL` 8) .|. fromIntegral h2) `mod` 31
+					Deflate.decompress "hogepiyo" `Except.catch` IO.print @String
+					State.putN "hogepiyo" $ OnDemand.RequestBytes 4
+					IO.print =<< Pipe.await
+					IO.print =<< Pipe.await
 
+				IO.print =<< State.get @Chunk
 				forever $ Pipe.yield =<< Pipe.await
+				IO.print =<< State.get @Chunk
 
+				
 			Pipe.=$= PipeIO.print
 
 data Header = Header {
