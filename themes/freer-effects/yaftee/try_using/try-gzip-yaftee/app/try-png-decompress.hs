@@ -79,8 +79,8 @@ main = do
 					IO.print @Word8 $ h2 `shiftR` 6
 					IO.print @Word8 $ (h2 `shiftR` 5) .&. 1
 					IO.print @Word32 $ ((fromIntegral h1 `shiftL` 8) .|. fromIntegral h2) `mod` 31
---					(Deflate.decompress "hogepiyo" `Except.catch` IO.print @String) Pipe.=$= adler32
-					Deflate.decompress "hogepiyo" Pipe.=$= adler32'
+					(Deflate.decompress "hogepiyo" `Except.catch` IO.print @String) Pipe.=$= adler32'
+--					Deflate.decompress "hogepiyo" Pipe.=$= adler32'
 					State.putN "hogepiyo" $ OnDemand.RequestBytes 4
 					IO.print =<< Pipe.await
 					IO.print =<< Pipe.await
