@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-02-19
+resolver: nightly-2025-05-21
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -48,11 +48,11 @@ extra-deps:
 #- git: https://github.com/YoshikuniJujo/cairo-image.git
 #  commit: 47bd8e4661df4f379d6a2900fc4bc33818021c8d
 #- union-color-0.1.2.0
-- JuicyCairo-0.1.0.0
-- git: https://github.com/YoshikuniJujo/dhall-haskell
-  commit: e9b4715fad553fcfa0f31d63d8149757abbf1087
-  subdirs:
-    - dhall
+- JuicyCairo-0.1.0.1
+# - git: https://github.com/YoshikuniJujo/dhall-haskell
+#  commit: e9b4715fad553fcfa0f31d63d8149757abbf1087
+#  subdirs:
+#    - dhall
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
 
