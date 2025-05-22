@@ -326,6 +326,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-cairo
+  tryPutPixel:
+    main:                tryPutPixel.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-cairo
 
 tests:
   try-cairo-test:
