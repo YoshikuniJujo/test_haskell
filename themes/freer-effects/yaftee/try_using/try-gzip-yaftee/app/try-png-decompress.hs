@@ -32,10 +32,14 @@ import Data.Bits.ToolsYj
 import Data.Word
 import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
+import Data.ByteString.BitArray qualified as BitArray
 import System.IO
 import System.Environment
 
 import Control.Monad.Yaftee.Pipe.Deflate.Decompress qualified as Deflate
+
+import Pipe.Huffman qualified as Huffman
+import Pipe.Runlength qualified as Runlength
 
 main :: IO ()
 main = do
@@ -82,6 +86,32 @@ main = do
 				IO.print @Chunk =<< State.get
 
 				OnDemand.onDemandWithInitial "hogepiyo" bs Pipe.=$= do
+					zlib
+
+				IO.print =<< State.get @Chunk
+				IO.print . uncurry (.|.) . second (`shiftL` 16) =<< State.get @(Word32, Word32)
+				forever $ Pipe.yield =<< Pipe.await
+				IO.print =<< State.get @Chunk
+				
+			Pipe.=$= do
+				PipeIO.print'
+				IO.print @(Word32, Word32) =<< State.get
+
+zlib :: (
+	U.Member Pipe.P es,
+	Deflate.Members "hogepiyo" es,
+	U.Member (State.Named "hogepiyo" PipeBS.Length) es,
+	U.Member (State.Named "hogepiyo" Crc.Crc32) es,
+	OnDemand.Members "hogepiyo" es,
+	Runlength.Members "hogepiyo" es,
+	U.Member (State.Named "hogepiyo" Huffman.ExtraBits) es,
+	U.Member (State.Named "hogepiyo" (Huffman.BinTreePair Int)) es,
+	U.Member (State.S (Word32, Word32)) es,
+	U.Member (Except.E String) es,
+	U.Member Fail.F es,
+	U.Base IO.I es ) =>
+	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
+zlib = do
 					State.putN "hogepiyo" $ OnDemand.RequestBytes 1
 					h1 <- BS.toBits <$> (Except.getRight @String "not Right" =<< Pipe.await)
 					IO.print @Word8 $ h1 `shiftR` 4
@@ -93,21 +123,7 @@ main = do
 					(Deflate.decompress "hogepiyo" 65 `Except.catch` IO.print @String) Pipe.=$= adler32'
 --					Deflate.decompress "hogepiyo" Pipe.=$= adler32'
 					State.putN "hogepiyo" $ OnDemand.RequestBytes 4
-					{-
-					IO.print =<< Pipe.await
-					IO.print =<< Pipe.isMore
-					IO.print @Word32 . BS.toBitsBE =<< Except.getRight @String "not Right" =<< Pipe.await
-					-}
 					IO.print @Word32 . BS.toBitsBE =<< skipLeft1
-
-				IO.print =<< State.get @Chunk
-				IO.print . uncurry (.|.) . second (`shiftL` 16) =<< State.get @(Word32, Word32)
-				forever $ Pipe.yield =<< Pipe.await
-				IO.print =<< State.get @Chunk
-				
-			Pipe.=$= do
-				PipeIO.print'
-				IO.print @(Word32, Word32) =<< State.get
 
 skipLeft1 :: (
 	Show a,
