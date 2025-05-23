@@ -75,7 +75,13 @@ main = do
 
 				IO.print @Chunk =<< State.get
 
-				OnDemand.onDemand "hogepiyo" Pipe.=$= do
+--				bs <- Pipe.await
+				bs <- untilIdat
+				IO.print =<< Pipe.isMore
+
+				IO.print @Chunk =<< State.get
+
+				OnDemand.onDemandWithInitial "hogepiyo" bs Pipe.=$= do
 					State.putN "hogepiyo" $ OnDemand.RequestBytes 1
 					h1 <- BS.toBits <$> (Except.getRight @String "not Right" =<< Pipe.await)
 					IO.print @Word8 $ h1 `shiftR` 4
@@ -94,11 +100,27 @@ main = do
 				IO.print . uncurry (.|.) . second (`shiftL` 16) =<< State.get @(Word32, Word32)
 				forever $ Pipe.yield =<< Pipe.await
 				IO.print =<< State.get @Chunk
-
 				
 			Pipe.=$= do
 				PipeIO.print'
 				IO.print @(Word32, Word32) =<< State.get
+
+untilIdat :: (
+	U.Member Pipe.P es,
+	U.Member (State.S Chunk) es,
+	U.Base IO.I es
+	) =>
+	Eff.E es BS.ByteString o BS.ByteString
+untilIdat = do
+	IO.print =<< Pipe.isMore
+	bs <- Pipe.await
+	State.get >>= \case
+		Chunk "IDAT" -> do
+			IO.print "BEGIN IDAT"
+			pure bs
+		c -> do	IO.print c
+			IO.print bs
+			untilIdat
 
 data Header = Header {
 	headerWidth :: Word32,
@@ -196,6 +218,7 @@ chunkToByteString = do
 			pure ()
 		_ -> do	State.put $ Chunk c
 			getUntilChunkEnd
+			chunkToByteString
 
 getUntilChunkEnd :: (
 	U.Member Pipe.P es,

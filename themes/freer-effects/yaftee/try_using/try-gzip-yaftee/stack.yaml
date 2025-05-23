@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-05-16
+snapshot: nightly-2025-05-23
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -44,7 +44,7 @@ extra-deps:
   - tools-yj-0.1.0.27
   - typelevel-tools-yj-0.1.0.9
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: b313f50a9c4dc58a71ecd83455539f080cde6b43
+    commit: f36e57c13262b4bc74b015acb654234c6481d92a
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee
       - themes/freer-effects/yaftee/try-yaftee-conduit
