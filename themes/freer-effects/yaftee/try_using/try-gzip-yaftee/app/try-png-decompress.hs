@@ -9,9 +9,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
-import Control.Arrow
 import Control.Monad
 import Control.Monad.ToolsYj
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -32,14 +31,12 @@ import Data.Bits.ToolsYj
 import Data.Word
 import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
-import Data.ByteString.BitArray qualified as BitArray
 import System.IO
 import System.Environment
 
 import Control.Monad.Yaftee.Pipe.Deflate.Decompress qualified as Deflate
 
-import Pipe.Huffman qualified as Huffman
-import Pipe.Runlength qualified as Runlength
+import Control.Monad.Yaftee.Pipe.Zlib.Decompress qualified as Zlib
 
 main :: IO ()
 main = do
@@ -50,7 +47,6 @@ main = do
 		. Crc.runCrc32 @"foobar"
 		. OnDemand.run_ @"foobar"
 		. OnDemand.run_ @"barbaz"
---		. OnDemand.run_ @"hogepiyo"
 		. (`State.run` Chunk "IHDR")
 		. (`State.run` (1 :: Word32, 0 :: Word32))
 		. Deflate.run_ @"hogepiyo"
@@ -65,10 +61,8 @@ main = do
 				doWhile_ $ chunk1 "foobar" 10
 			Pipe.=$= do
 				Left (ChunkBegin "IHDR") <- Pipe.await
-				PipeT.checkRight Pipe.=$= OnDemand.onDemand "barbaz" Pipe.=$= (readHeader "barbaz" processHeader `Except.catch` IO.print @String)
+				_ <- PipeT.checkRight Pipe.=$= OnDemand.onDemand "barbaz" Pipe.=$= (readHeader "barbaz" processHeader `Except.catch` IO.print @String)
 				Left (ChunkEnd "IHDR") <- Pipe.await
-
-				IO.print "IHDR end"
 
 				chunkToByteString
 
@@ -85,61 +79,16 @@ main = do
 
 				IO.print @Chunk =<< State.get
 
-				OnDemand.onDemandWithInitial "hogepiyo" bs Pipe.=$= do
-					zlib
+				_ <- OnDemand.onDemandWithInitial "hogepiyo" bs Pipe.=$= do
+					Zlib.decompress "hogepiyo"
 
 				IO.print =<< State.get @Chunk
-				IO.print . uncurry (.|.) . second (`shiftL` 16) =<< State.get @(Word32, Word32)
-				forever $ Pipe.yield =<< Pipe.await
+				_ <- forever $ Pipe.yield =<< Pipe.await
 				IO.print =<< State.get @Chunk
 				
 			Pipe.=$= do
 				PipeIO.print'
 				IO.print @(Word32, Word32) =<< State.get
-
-zlib :: (
-	U.Member Pipe.P es,
-	Deflate.Members "hogepiyo" es,
-	U.Member (State.Named "hogepiyo" PipeBS.Length) es,
-	U.Member (State.Named "hogepiyo" Crc.Crc32) es,
-	OnDemand.Members "hogepiyo" es,
-	Runlength.Members "hogepiyo" es,
-	U.Member (State.Named "hogepiyo" Huffman.ExtraBits) es,
-	U.Member (State.Named "hogepiyo" (Huffman.BinTreePair Int)) es,
-	U.Member (State.S (Word32, Word32)) es,
-	U.Member (Except.E String) es,
-	U.Member Fail.F es,
-	U.Base IO.I es ) =>
-	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
-zlib = do
-					State.putN "hogepiyo" $ OnDemand.RequestBytes 1
-					h1 <- BS.toBits <$> (Except.getRight @String "not Right" =<< Pipe.await)
-					IO.print @Word8 $ h1 `shiftR` 4
-					IO.print @Word8 $ h1 .&. 0xf
-					h2 <- BS.toBits <$> (Except.getRight @String "not Right" =<< Pipe.await)
-					IO.print @Word8 $ h2 `shiftR` 6
-					IO.print @Word8 $ (h2 `shiftR` 5) .&. 1
-					IO.print @Word32 $ ((fromIntegral h1 `shiftL` 8) .|. fromIntegral h2) `mod` 31
-					(Deflate.decompress "hogepiyo" 65 `Except.catch` IO.print @String) Pipe.=$= adler32'
---					Deflate.decompress "hogepiyo" Pipe.=$= adler32'
-					State.putN "hogepiyo" $ OnDemand.RequestBytes 4
-					IO.print @Word32 . BS.toBitsBE =<< skipLeft1
-
-skipLeft1 :: (
-	Show a,
-	U.Member Pipe.P es,
-	U.Base IO.I es
-	) =>
-	Eff.E es (Either a b) o b
-skipLeft1 = Pipe.await >>= \case
-	Left a -> do
-		IO.print a
-		Pipe.await >>= \case
-			Left b -> do
-				IO.print b
-				error "bad"
-			Right c -> pure c
-	Right b -> pure b
 
 untilIdat :: (
 	U.Member Pipe.P es,
@@ -152,7 +101,6 @@ untilIdat = do
 	bs <- Pipe.await
 	State.get >>= \case
 		Chunk "IDAT" -> do
-			IO.print "BEGIN IDAT"
 			pure bs
 		c -> do	IO.print c
 			IO.print bs
@@ -212,25 +160,23 @@ instance Show InterlaceMethod where
 readHeader :: forall nm -> (
 	U.Member Pipe.P es,
 	OnDemand.Members nm es,
-	U.Member (Except.E String) es,
-	U.Member Fail.F es
-	) =>
+	U.Member (Except.E String) es ) =>
 	(Header -> Eff.E es (Either x BS.ByteString) o ()) ->
 		Eff.E es (Either x BS.ByteString) o ()
 readHeader nm proc = do
 	State.putN nm $ OnDemand.RequestBytes 4
-	w <- BS.toBitsBE <$> (Except.getRight "not right" =<< Pipe.await)
-	h <- BS.toBitsBE <$> (Except.getRight "not right" =<< Pipe.await)
+	w <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
+	h <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
 	State.putN nm $ OnDemand.RequestBytes 1
-	bd <- BS.toBitsBE <$> (Except.getRight "not right" =<< Pipe.await)
+	bd <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
 	State.putN nm $ OnDemand.RequestBytes 1
-	ct <- BS.toBitsBE <$> (Except.getRight "not right" =<< Pipe.await)
+	ct <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
 	State.putN nm $ OnDemand.RequestBytes 1
-	cm <- BS.toBitsBE <$> (Except.getRight "not right" =<< Pipe.await)
+	cm <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
 	State.putN nm $ OnDemand.RequestBytes 1
-	fm <- BS.toBitsBE <$> (Except.getRight "not right" =<< Pipe.await)
+	fm <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
 	State.putN nm $ OnDemand.RequestBytes 1
-	im <- BS.toBitsBE <$> (Except.getRight "not right" =<< Pipe.await)
+	im <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
 	proc Header {
 		headerWidth = w, headerHeight = h,
 		headerBitDepth = bd,
@@ -238,6 +184,9 @@ readHeader nm proc = do
 		headerCompressionMethod = cm,
 		headerFilterMethod = fm,
 		headerInterlaceMethod = im }
+
+msgNotRight :: String
+msgNotRight = "not right"
 
 chunkToByteString :: (
 	U.Member Pipe.P es,
@@ -258,13 +207,15 @@ chunkToByteString = do
 
 getUntilChunkEnd :: (
 	U.Member Pipe.P es,
+	U.Member (State.S Chunk) es,
 	U.Member (Except.E String) es
 	) =>
 	Eff.E es (Either ChunkTag o) o ()
 getUntilChunkEnd = Pipe.await >>= \case
 	Left (ChunkEnd c) -> do
-		-- check chunk name
-		pure ()
+		Chunk c0 <- State.get
+		when (c /= c0) $ Except.throw @String
+			"ChunkBegin and ChunkEnd must be pair"
 	Right bs -> Pipe.yield bs >> getUntilChunkEnd
 	_ -> Except.throw @String "bad"
 
@@ -294,7 +245,7 @@ chunk1 nm m = do
 	State.putN nm $ OnDemand.RequestBytes 4
 	crc0 <- Crc.byteStringToCrc32BE <$> Pipe.await
 
-	when (Just crc1 /= crc0) $ Except.throw "chunk1: CRC32 error"
+	when (Just crc1 /= crc0) $ Except.throw @String "chunk1: CRC32 error"
 
 	Pipe.yield . Left $ ChunkEnd cn
 
@@ -307,31 +258,7 @@ be :: Bits n => BS.ByteString -> n
 be = BS.foldl (\s b -> s `shiftL` 8 .|. bitsToBits 8 b) zeroBits
 
 split :: Int -> Int -> [Int]
-split n 0 = []
+split _ 0 = []
 split n m
 	| n < m = n : split n (m - n)
 	| otherwise = [m]
-
-adler32Step :: (Word32, Word32) -> BS.ByteString -> (Word32, Word32)
-adler32Step = BS.foldl \(a, b) w ->
-	((a + fromIntegral w) `mod` 65521, (b + a + fromIntegral w) `mod` 65521)
-
-adler32 :: (
-	U.Member Pipe.P es,
-	U.Member (State.S (Word32, Word32)) es ) =>
-	Eff.E es BS.ByteString BS.ByteString r
-adler32 = forever do
-	bs <- Pipe.await
-	State.modify (`adler32Step` bs)
-	Pipe.yield bs
-
-adler32' :: (
-	U.Member Pipe.P es,
-	U.Member (State.S (Word32, Word32)) es ) =>
-	Eff.E es BS.ByteString BS.ByteString ()
-adler32' = Pipe.awaitMaybe >>= \case
-	Nothing -> pure ()
-	Just bs -> do
-		State.modify (`adler32Step` bs)
-		Pipe.yield bs
-		adler32'
