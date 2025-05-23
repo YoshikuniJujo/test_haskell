@@ -4,6 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -26,10 +27,14 @@ import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.TypeLevel.List
+import Data.HigherFunctor qualified as HFunctor
 import Data.Foldable
 import Data.Word
 import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
+import Data.ByteString.BitArray qualified as BitArray
+import Data.Png.Header
 import System.IO
 import System.Environment
 
@@ -43,52 +48,75 @@ main = do
 	let	processHeader = IO.print
 	h <- openFile fp ReadMode
 	void . Eff.runM
-		. Crc.runCrc32 @"foobar"
-		. OnDemand.run_ @"foobar"
-		. OnDemand.run_ @"barbaz"
+		. chunkRun @"chunk"
+		. OnDemand.run_ @"header"
 		. (`State.run` Chunk "IHDR")
 		. (`State.run` (1 :: Word32, 0 :: Word32))
-		. Deflate.run_ @"hogepiyo"
+		. Deflate.run_ @"deflate"
 		. Except.run @String
 		. Fail.runExc id
 		. Pipe.run
 		$ PipeBS.hGet 64 h Pipe.=$=
+			png "chunk" processHeader Pipe.=$= do
+			PipeIO.print'
+			IO.print @(Word32, Word32) =<< State.get
 
-			OnDemand.onDemand "foobar" Pipe.=$=
-			PipeT.checkRight Pipe.=$= Crc.crc32 "foobar" Pipe.=$= do
-				State.putN "foobar" $ OnDemand.RequestBytes 8
-				IO.print =<< Pipe.await
-				doWhile_ $ chunk1 "foobar" 10
-			Pipe.=$= do
-				Left (ChunkBegin "IHDR") <- Pipe.await
-				_ <- PipeT.checkRight Pipe.=$= OnDemand.onDemand "barbaz" Pipe.=$= (Header.read "barbaz" processHeader `Except.catch` IO.print @String)
-				Left (ChunkEnd "IHDR") <- Pipe.await
+chunkRun :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (OnDemand.States nm `Append` (State.Named nm Crc.Crc32 ': es)) i o r ->
+	Eff.E es i o ((), Crc.Crc32)
+chunkRun = Crc.runCrc32 . OnDemand.run_
 
-				chunkToByteString
+png :: forall nmcnk -> (
+	U.Member Pipe.P es,
+
+	OnDemand.Members nmcnk es,
+	U.Member (State.Named nmcnk Crc.Crc32) es,
+	U.Member (State.S Chunk) es,
+
+	OnDemand.Members "header" es,
+	Deflate.Members "deflate" es,
+	U.Member (State.S (Word32, Word32)) es,
+
+	U.Member (Except.E String) es,
+	U.Member Fail.F es,
+	U.Base IO.I es
+	) =>
+	(Header -> Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()) ->
+	Eff.E es BS.ByteString BS.ByteString ()
+png nmcnk processHeader =
+	void $ OnDemand.onDemand nmcnk Pipe.=$=
+	PipeT.checkRight Pipe.=$= Crc.crc32 nmcnk Pipe.=$= do
+		State.putN nmcnk $ OnDemand.RequestBytes 8
+		IO.print =<< Pipe.await
+		doWhile_ $ chunk1 nmcnk 10
+	Pipe.=$= do
+		Left (ChunkBegin "IHDR") <- Pipe.await
+		_ <- PipeT.checkRight Pipe.=$=
+			OnDemand.onDemand "header" Pipe.=$=
+			(Header.read "header" processHeader `Except.catch` IO.print @String)
+		Left (ChunkEnd "IHDR") <- Pipe.await
+
+		chunkToByteString
 
 --				forever $ Pipe.yield =<< Pipe.await
-			Pipe.=$= do
+	Pipe.=$= do
 
-				IO.print =<< Pipe.isMore
+		IO.print =<< Pipe.isMore
 
-				IO.print @Chunk =<< State.get
+		IO.print @Chunk =<< State.get
 
 --				bs <- Pipe.await
-				bs <- untilIdat
-				IO.print =<< Pipe.isMore
+		bs <- untilIdat
+		IO.print =<< Pipe.isMore
 
-				IO.print @Chunk =<< State.get
+		IO.print @Chunk =<< State.get
 
-				_ <- OnDemand.onDemandWithInitial "hogepiyo" bs Pipe.=$= do
-					Zlib.decompress "hogepiyo"
+		_ <- OnDemand.onDemandWithInitial "deflate" bs Pipe.=$= do
+			Zlib.decompress "deflate"
 
-				IO.print =<< State.get @Chunk
-				_ <- forever $ Pipe.yield =<< Pipe.await
-				IO.print =<< State.get @Chunk
-				
-			Pipe.=$= do
-				PipeIO.print'
-				IO.print @(Word32, Word32) =<< State.get
+		IO.print =<< State.get @Chunk
+		_ <- forever $ Pipe.yield =<< Pipe.await
+		IO.print =<< State.get @Chunk
 
 chunk1 :: forall nm -> (
 	U.Member Pipe.P es,
