@@ -48,7 +48,7 @@ main = do
 	h <- openFile fp ReadMode
 	void . Eff.runM
 		. chunkRun @"chunk"
-		. OnDemand.run_ @"header"
+		. OnDemand.run_ @"deflate"
 --		. (`State.run` (1 :: Word32, 0 :: Word32))
 		. (`State.run` Zlib.Adler32 1 0)
 		. Deflate.run_ @"deflate"
@@ -56,7 +56,7 @@ main = do
 		. Fail.runExc id
 		. Pipe.run
 		$ PipeBS.hGet 64 h Pipe.=$=
-			png "chunk" "header" processHeader Pipe.=$= do
+			png "chunk" "deflate" processHeader Pipe.=$= do
 			PipeIO.print'
 			IO.print @Zlib.Adler32 =<< State.get
 
