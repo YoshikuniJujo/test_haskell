@@ -29,6 +29,7 @@ main = do
 	img <- newImageMut @Argb32Mut 16 16
 
 	putMultiPixels img positions $ PixelArgb32Straight 255 255 255 0
+	putMultiPixels img positions2 $ PixelArgb32Straight 255 0 0 0
 	
 	putStrLn "Slozsoft"
 	join $ Gtk.init <$> getProgName <*> getArgs
@@ -54,6 +55,8 @@ drawFunction (CairoImageMutArgb32 -> img) _ cr Null = do
 	pure False
 
 positions = [ (x, y) | x <- [3 .. 10], y <- [3 .. 10] ]
+
+positions2 = [ (x, y) | x <- [2 .. 11], y <- [2 .. 11], x == 2 || x == 11 || y == 2 || y == 11 ]
 
 putMultiPixels _ [] _ = pure ()
 putMultiPixels img ((x, y) : xys) c = putPixel img x y c >> putMultiPixels img xys c
