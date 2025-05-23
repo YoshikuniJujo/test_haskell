@@ -30,7 +30,6 @@ import Control.HigherOpenUnion qualified as U
 import Data.TypeLevel.List
 import Data.HigherFunctor qualified as HFunctor
 import Data.Foldable
-import Data.Word
 import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
 import Data.ByteString.BitArray qualified as BitArray
@@ -50,7 +49,8 @@ main = do
 	void . Eff.runM
 		. chunkRun @"chunk"
 		. OnDemand.run_ @"header"
-		. (`State.run` (1 :: Word32, 0 :: Word32))
+--		. (`State.run` (1 :: Word32, 0 :: Word32))
+		. (`State.run` Zlib.Adler32 1 0)
 		. Deflate.run_ @"deflate"
 		. Except.run @String
 		. Fail.runExc id
@@ -58,7 +58,7 @@ main = do
 		$ PipeBS.hGet 64 h Pipe.=$=
 			png "chunk" "header" processHeader Pipe.=$= do
 			PipeIO.print'
-			IO.print @(Word32, Word32) =<< State.get
+			IO.print @Zlib.Adler32 =<< State.get
 
 chunkRun :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (ChunkStates nm `Append` es) i o r ->
@@ -80,7 +80,7 @@ png :: forall nmcnk nmhdr -> (
 	OnDemand.Members nmhdr es,
 
 	Deflate.Members "deflate" es,
-	U.Member (State.S (Word32, Word32)) es,
+	U.Member (State.S Zlib.Adler32) es,
 
 	U.Member (Except.E String) es,
 	U.Member Fail.F es,

@@ -5,9 +5,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Zlib.Decompress (decompress) where
+module Control.Monad.Yaftee.Pipe.Zlib.Decompress (decompress, Adler32(..)) where
 
-import Control.Arrow
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -26,7 +25,7 @@ import Data.ByteString.BitArray qualified as BitArray
 decompress :: forall nm -> (
 	U.Member Pipe.P es,
 	Deflate.Members nm es,
-	U.Member (State.S (Word32, Word32)) es,
+	U.Member (State.S Adler32) es,
 	U.Member (Except.E String) es,
 	U.Member Fail.F es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
@@ -47,7 +46,7 @@ decompress nm = do
 	_ <- Deflate.decompress nm 65 Pipe.=$= adler32'
 	State.putN nm $ OnDemand.RequestBytes 4
 	cs0 <- BS.toBitsBE @Word32 <$> skipLeft1
-	cs1 <- uncurry (.|.) . second (`shiftL` 16) <$> State.get @(Word32, Word32)
+	cs1 <- uncurryAdler32 (.|.) . secondAdler32 (`shiftL` 16) <$> State.get @Adler32
 	when (cs0 /= cs1) $ Except.throw @String "zlib: Alder-32 checksum error"
 
 skipLeft1 :: U.Member Pipe.P es => Eff.E es (Either a b) o b
@@ -57,13 +56,13 @@ skipLeft1 = Pipe.await >>=
 msgNotRight :: String
 msgNotRight = "not right"
 
-adler32Step :: (Word32, Word32) -> BS.ByteString -> (Word32, Word32)
-adler32Step = BS.foldl \(a, b) w ->
-	((a + fromIntegral w) `mod` 65521, (b + a + fromIntegral w) `mod` 65521)
+adler32Step :: Adler32 -> BS.ByteString -> Adler32
+adler32Step = BS.foldl \(Adler32 a b) w ->
+	Adler32 ((a + fromIntegral w) `mod` 65521) ((b + a + fromIntegral w) `mod` 65521)
 
 _adler32 :: (
 	U.Member Pipe.P es,
-	U.Member (State.S (Word32, Word32)) es ) =>
+	U.Member (State.S Adler32) es ) =>
 	Eff.E es BS.ByteString BS.ByteString r
 _adler32 = forever do
 	bs <- Pipe.await
@@ -72,7 +71,7 @@ _adler32 = forever do
 
 adler32' :: (
 	U.Member Pipe.P es,
-	U.Member (State.S (Word32, Word32)) es ) =>
+	U.Member (State.S Adler32) es ) =>
 	Eff.E es BS.ByteString BS.ByteString ()
 adler32' = Pipe.awaitMaybe >>= \case
 	Nothing -> pure ()
@@ -80,3 +79,10 @@ adler32' = Pipe.awaitMaybe >>= \case
 		State.modify (`adler32Step` bs)
 		Pipe.yield bs
 		adler32'
+
+data Adler32 = Adler32 Word32 Word32 deriving Show
+
+secondAdler32 f (Adler32 a b) = Adler32 a (f b)
+
+uncurryAdler32 :: (Word32 -> Word32 -> a) -> Adler32 -> a
+uncurryAdler32 f (Adler32 a b) = f a b
