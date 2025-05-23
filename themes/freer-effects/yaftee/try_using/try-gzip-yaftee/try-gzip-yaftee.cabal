@@ -28,6 +28,7 @@ library
       Control.Monad.Yaftee.Pipe.Deflate.Decompress
       Control.Monad.Yaftee.Pipe.Gzip.Compress
       Control.Monad.Yaftee.Pipe.Gzip.Decompress
+      Control.Monad.Yaftee.Pipe.Png.Decode.Header
       Control.Monad.Yaftee.Pipe.Zlib.Decompress
       Data.Gzip
       Data.Gzip.Block
@@ -35,6 +36,7 @@ library
       Data.Gzip.GzipHeader
       Data.Huffman
       Data.PackageMerge
+      Data.Png.Header
       Pipe.Huffman
       Pipe.Runlength
       Pipe.RunLength.Compress

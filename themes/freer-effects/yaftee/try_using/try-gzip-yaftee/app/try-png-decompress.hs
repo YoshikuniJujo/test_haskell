@@ -12,6 +12,7 @@
 module Main (main) where
 
 import Control.Monad
+import Control.Monad.Fix
 import Control.Monad.ToolsYj
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -26,16 +27,14 @@ import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Foldable
-import Data.Bits
-import Data.Bits.ToolsYj
 import Data.Word
 import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
 import System.IO
 import System.Environment
 
+import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
 import Control.Monad.Yaftee.Pipe.Deflate.Decompress qualified as Deflate
-
 import Control.Monad.Yaftee.Pipe.Zlib.Decompress qualified as Zlib
 
 main :: IO ()
@@ -54,6 +53,7 @@ main = do
 		. Fail.runExc id
 		. Pipe.run
 		$ PipeBS.hGet 64 h Pipe.=$=
+
 			OnDemand.onDemand "foobar" Pipe.=$=
 			PipeT.checkRight Pipe.=$= Crc.crc32 "foobar" Pipe.=$= do
 				State.putN "foobar" $ OnDemand.RequestBytes 8
@@ -61,7 +61,7 @@ main = do
 				doWhile_ $ chunk1 "foobar" 10
 			Pipe.=$= do
 				Left (ChunkBegin "IHDR") <- Pipe.await
-				_ <- PipeT.checkRight Pipe.=$= OnDemand.onDemand "barbaz" Pipe.=$= (readHeader "barbaz" processHeader `Except.catch` IO.print @String)
+				_ <- PipeT.checkRight Pipe.=$= OnDemand.onDemand "barbaz" Pipe.=$= (Header.read "barbaz" processHeader `Except.catch` IO.print @String)
 				Left (ChunkEnd "IHDR") <- Pipe.await
 
 				chunkToByteString
@@ -90,135 +90,6 @@ main = do
 				PipeIO.print'
 				IO.print @(Word32, Word32) =<< State.get
 
-untilIdat :: (
-	U.Member Pipe.P es,
-	U.Member (State.S Chunk) es,
-	U.Base IO.I es
-	) =>
-	Eff.E es BS.ByteString o BS.ByteString
-untilIdat = do
-	IO.print =<< Pipe.isMore
-	bs <- Pipe.await
-	State.get >>= \case
-		Chunk "IDAT" -> do
-			pure bs
-		c -> do	IO.print c
-			IO.print bs
-			untilIdat
-
-data Header = Header {
-	headerWidth :: Word32,
-	headerHeight :: Word32,
-	headerBitDepth :: Word8,
-	headerColorType :: ColorType,
-	headerCompressionMethod :: CompressionMethod,
-	headerFilterMethod :: FilterMethod,
-	headerInterlaceMethod :: InterlaceMethod }
-	deriving Show
-
-newtype ColorType = ColorType Word8 deriving (Eq, Bits)
-
-pattern ColorTypePalletUsed, ColorTypeColorUsed :: ColorType
-pattern ColorTypePalletUsed = ColorType 1
-pattern ColorTypeColorUsed = ColorType 2
-pattern ColorTypeAlphaChannelUsed = ColorType 4
-
-instance Show ColorType where
-	show ColorTypePalletUsed  = "ColorTypePaletteUsed"
-	show ColorTypeColorUsed = "ColorTypeColorUsed"
-	show ColorTypeAlphaChannelUsed = "ColorTypeAlphaChannelUsed"
-	show (ColorType n) = "(ColorType " ++ show n ++ ")"
-
-newtype CompressionMethod = CompressionMethod Word8 deriving (Eq, Bits)
-
-pattern CompressionMethodDeflate = CompressionMethod 0
-
-instance Show CompressionMethod where
-	show CompressionMethodDeflate = "CompressionMethodDeflate"
-	show (CompressionMethod n) = "(CompressionMethod " ++ show n ++ ")"
-
-newtype FilterMethod = FilterMethod Word8 deriving (Eq, Bits)
-
-pattern FilterMethodDefaultFilter :: FilterMethod
-pattern FilterMethodDefaultFilter = FilterMethod 0
-
-instance Show FilterMethod where
-	show FilterMethodDefaultFilter = "FilterMethodDefaultFilter"
-	show (FilterMethod n) = "(FilterMethod " ++ show n ++ ")"
-
-newtype InterlaceMethod = InterlaceMethod Word8 deriving (Eq, Bits)
-
-pattern InterlaceMethodNon, InterlaceMethodAdam7 :: InterlaceMethod
-pattern InterlaceMethodNon = InterlaceMethod 0
-pattern InterlaceMethodAdam7 = InterlaceMethod 1
-
-instance Show InterlaceMethod where
-	show InterlaceMethodNon = "InterlaceMethodNon"
-	show InterlaceMethodAdam7 = "InterlaceMethodAdam7"
-	show (InterlaceMethod n) = "(InterlaceMethod " ++ show n ++ ")"
-
-readHeader :: forall nm -> (
-	U.Member Pipe.P es,
-	OnDemand.Members nm es,
-	U.Member (Except.E String) es ) =>
-	(Header -> Eff.E es (Either x BS.ByteString) o ()) ->
-		Eff.E es (Either x BS.ByteString) o ()
-readHeader nm proc = do
-	State.putN nm $ OnDemand.RequestBytes 4
-	w <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
-	h <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
-	State.putN nm $ OnDemand.RequestBytes 1
-	bd <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
-	State.putN nm $ OnDemand.RequestBytes 1
-	ct <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
-	State.putN nm $ OnDemand.RequestBytes 1
-	cm <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
-	State.putN nm $ OnDemand.RequestBytes 1
-	fm <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
-	State.putN nm $ OnDemand.RequestBytes 1
-	im <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
-	proc Header {
-		headerWidth = w, headerHeight = h,
-		headerBitDepth = bd,
-		headerColorType = ct,
-		headerCompressionMethod = cm,
-		headerFilterMethod = fm,
-		headerInterlaceMethod = im }
-
-msgNotRight :: String
-msgNotRight = "not right"
-
-chunkToByteString :: (
-	U.Member Pipe.P es,
-	U.Member (State.S Chunk) es,
-	U.Member (Except.E String) es,
-	U.Member Fail.F es
-	) =>
-	Eff.E es (Either ChunkTag o) o ()
-chunkToByteString = do
-	Left (ChunkBegin c) <- Pipe.await
-	case c of
-		"IEND" -> do
-			Left (ChunkEnd "IEND") <- Pipe.await
-			pure ()
-		_ -> do	State.put $ Chunk c
-			getUntilChunkEnd
-			chunkToByteString
-
-getUntilChunkEnd :: (
-	U.Member Pipe.P es,
-	U.Member (State.S Chunk) es,
-	U.Member (Except.E String) es
-	) =>
-	Eff.E es (Either ChunkTag o) o ()
-getUntilChunkEnd = Pipe.await >>= \case
-	Left (ChunkEnd c) -> do
-		Chunk c0 <- State.get
-		when (c /= c0) $ Except.throw @String
-			"ChunkBegin and ChunkEnd must be pair"
-	Right bs -> Pipe.yield bs >> getUntilChunkEnd
-	_ -> Except.throw @String "bad"
-
 chunk1 :: forall nm -> (
 	U.Member Pipe.P es,
 	OnDemand.Members nm es,
@@ -227,7 +98,7 @@ chunk1 :: forall nm -> (
 	Int -> Eff.E es BS.ByteString (Either ChunkTag BS.ByteString) Bool
 chunk1 nm m = do
 	State.putN nm $ OnDemand.RequestBytes 4
-	n <- be <$> Pipe.await
+	n <- BS.toBitsBE <$> Pipe.await
 
 	Crc.resetCrc32 nm
 	State.putN nm (OnDemand.RequestBytes 4)
@@ -250,15 +121,59 @@ chunk1 nm m = do
 	Pipe.yield . Left $ ChunkEnd cn
 
 	pure $ cn /= "IEND"
+	where
+	split n = fix \go -> \case
+		0 -> []
+		m'	| n < m' -> n : go (m' - n)
+			| otherwise -> [m']
 
-newtype Chunk = Chunk BS.ByteString deriving Show
 data ChunkTag = ChunkBegin BS.ByteString | ChunkEnd BS.ByteString deriving Show
 
-be :: Bits n => BS.ByteString -> n
-be = BS.foldl (\s b -> s `shiftL` 8 .|. bitsToBits 8 b) zeroBits
+chunkToByteString :: (
+	U.Member Pipe.P es,
+	U.Member (State.S Chunk) es,
+	U.Member (Except.E String) es,
+	U.Member Fail.F es
+	) =>
+	Eff.E es (Either ChunkTag o) o ()
+chunkToByteString = do
+	Left (ChunkBegin c) <- Pipe.await
+	case c of
+		"IEND" -> do
+			Left (ChunkEnd "IEND") <- Pipe.await
+			pure ()
+		_ -> do	State.put $ Chunk c
+			getUntilChunkEnd
+			chunkToByteString
 
-split :: Int -> Int -> [Int]
-split _ 0 = []
-split n m
-	| n < m = n : split n (m - n)
-	| otherwise = [m]
+newtype Chunk = Chunk BS.ByteString deriving Show
+
+getUntilChunkEnd :: (
+	U.Member Pipe.P es,
+	U.Member (State.S Chunk) es,
+	U.Member (Except.E String) es
+	) =>
+	Eff.E es (Either ChunkTag o) o ()
+getUntilChunkEnd = Pipe.await >>= \case
+	Left (ChunkEnd c) -> do
+		Chunk c0 <- State.get
+		when (c /= c0) $ Except.throw @String
+			"ChunkBegin and ChunkEnd must be pair"
+	Right bs -> Pipe.yield bs >> getUntilChunkEnd
+	_ -> Except.throw @String "bad"
+
+untilIdat :: (
+	U.Member Pipe.P es,
+	U.Member (State.S Chunk) es,
+	U.Base IO.I es
+	) =>
+	Eff.E es BS.ByteString o BS.ByteString
+untilIdat = do
+	IO.print =<< Pipe.isMore
+	bs <- Pipe.await
+	State.get >>= \case
+		Chunk "IDAT" -> do
+			pure bs
+		c -> do	IO.print c
+			IO.print bs
+			untilIdat
