@@ -16,7 +16,7 @@ module Control.Monad.Yaftee.Pipe.ByteString.OnDemand (
 
 	-- * ON DEMAND
 
-	onDemand, Members, Request(..), BitArray
+	onDemand, onDemandWithInitial, Members, Request(..), BitArray
 
 	) where
 
@@ -59,6 +59,15 @@ onDemand nm = fix \go -> State.getN nm >>= \case
 	where
 	errne :: String
 	errne = "Not enough ByteString"
+
+onDemandWithInitial :: forall es r . forall nm -> (
+	Union.Member Pipe.P es,
+	Members nm es, Union.Member (Except.E String) es ) =>
+	BS.ByteString ->
+	Eff.E es BS.ByteString (Either BitArray.B BS.ByteString) r
+onDemandWithInitial nm ib = do
+	State.putN nm . BitArray $ BitArray.fromByteString ib
+	onDemand nm
 
 type Members nm es = (
 	Union.Member (State.Named nm Request) es,
