@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RequiredTypeArguments #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
@@ -50,30 +50,35 @@ main = do
 	void . Eff.runM
 		. chunkRun @"chunk"
 		. OnDemand.run_ @"header"
-		. (`State.run` Chunk "IHDR")
 		. (`State.run` (1 :: Word32, 0 :: Word32))
 		. Deflate.run_ @"deflate"
 		. Except.run @String
 		. Fail.runExc id
 		. Pipe.run
 		$ PipeBS.hGet 64 h Pipe.=$=
-			png "chunk" processHeader Pipe.=$= do
+			png "chunk" "header" processHeader Pipe.=$= do
 			PipeIO.print'
 			IO.print @(Word32, Word32) =<< State.get
 
 chunkRun :: forall nm es i o r . HFunctor.Loose (U.U es) =>
-	Eff.E (OnDemand.States nm `Append` (State.Named nm Crc.Crc32 ': es)) i o r ->
-	Eff.E es i o ((), Crc.Crc32)
-chunkRun = Crc.runCrc32 . OnDemand.run_
+	Eff.E (ChunkStates nm `Append` es) i o r ->
+	Eff.E es i o (((), Chunk), Crc.Crc32)
+chunkRun = Crc.runCrc32 . (`State.runN` Chunk "IHDR") . OnDemand.run_
 
-png :: forall nmcnk -> (
+type ChunkStates nm = OnDemand.States nm `Append` '[
+	State.Named nm Chunk, State.Named nm Crc.Crc32 ]
+
+type ChunkMembers nm es = (
+	OnDemand.Members nm es,
+	U.Member (State.Named nm Crc.Crc32) es,
+	U.Member (State.Named nm Chunk) es )
+
+png :: forall nmcnk nmhdr -> (
 	U.Member Pipe.P es,
 
-	OnDemand.Members nmcnk es,
-	U.Member (State.Named nmcnk Crc.Crc32) es,
-	U.Member (State.S Chunk) es,
+	ChunkMembers nmcnk es,
+	OnDemand.Members nmhdr es,
 
-	OnDemand.Members "header" es,
 	Deflate.Members "deflate" es,
 	U.Member (State.S (Word32, Word32)) es,
 
@@ -83,7 +88,7 @@ png :: forall nmcnk -> (
 	) =>
 	(Header -> Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()) ->
 	Eff.E es BS.ByteString BS.ByteString ()
-png nmcnk processHeader =
+png nmcnk nmhdr processHeader =
 	void $ OnDemand.onDemand nmcnk Pipe.=$=
 	PipeT.checkRight Pipe.=$= Crc.crc32 nmcnk Pipe.=$= do
 		State.putN nmcnk $ OnDemand.RequestBytes 8
@@ -92,31 +97,31 @@ png nmcnk processHeader =
 	Pipe.=$= do
 		Left (ChunkBegin "IHDR") <- Pipe.await
 		_ <- PipeT.checkRight Pipe.=$=
-			OnDemand.onDemand "header" Pipe.=$=
-			(Header.read "header" processHeader `Except.catch` IO.print @String)
+			OnDemand.onDemand nmhdr Pipe.=$=
+			(Header.read nmhdr processHeader `Except.catch` IO.print @String)
 		Left (ChunkEnd "IHDR") <- Pipe.await
 
-		chunkToByteString
+		chunkToByteString nmcnk
 
 --				forever $ Pipe.yield =<< Pipe.await
 	Pipe.=$= do
 
 		IO.print =<< Pipe.isMore
 
-		IO.print @Chunk =<< State.get
+		IO.print @Chunk =<< State.getN nmcnk
 
 --				bs <- Pipe.await
-		bs <- untilIdat
+		bs <- untilIdat nmcnk
 		IO.print =<< Pipe.isMore
 
-		IO.print @Chunk =<< State.get
+		IO.print @Chunk =<< State.getN nmcnk
 
 		_ <- OnDemand.onDemandWithInitial "deflate" bs Pipe.=$= do
 			Zlib.decompress "deflate"
 
-		IO.print =<< State.get @Chunk
+		IO.print =<< State.getN @Chunk nmcnk
 		_ <- forever $ Pipe.yield =<< Pipe.await
-		IO.print =<< State.get @Chunk
+		IO.print =<< State.getN @Chunk nmcnk
 
 chunk1 :: forall nm -> (
 	U.Member Pipe.P es,
@@ -157,51 +162,51 @@ chunk1 nm m = do
 
 data ChunkTag = ChunkBegin BS.ByteString | ChunkEnd BS.ByteString deriving Show
 
-chunkToByteString :: (
+chunkToByteString :: forall nm -> (
 	U.Member Pipe.P es,
-	U.Member (State.S Chunk) es,
+	U.Member (State.Named nm Chunk) es,
 	U.Member (Except.E String) es,
 	U.Member Fail.F es
 	) =>
 	Eff.E es (Either ChunkTag o) o ()
-chunkToByteString = do
+chunkToByteString nm = do
 	Left (ChunkBegin c) <- Pipe.await
 	case c of
 		"IEND" -> do
 			Left (ChunkEnd "IEND") <- Pipe.await
 			pure ()
-		_ -> do	State.put $ Chunk c
-			getUntilChunkEnd
-			chunkToByteString
+		_ -> do	State.putN nm $ Chunk c
+			getUntilChunkEnd nm
+			chunkToByteString nm
 
 newtype Chunk = Chunk BS.ByteString deriving Show
 
-getUntilChunkEnd :: (
+getUntilChunkEnd :: forall nm -> (
 	U.Member Pipe.P es,
-	U.Member (State.S Chunk) es,
+	U.Member (State.Named nm Chunk) es,
 	U.Member (Except.E String) es
 	) =>
 	Eff.E es (Either ChunkTag o) o ()
-getUntilChunkEnd = Pipe.await >>= \case
+getUntilChunkEnd nm = Pipe.await >>= \case
 	Left (ChunkEnd c) -> do
-		Chunk c0 <- State.get
+		Chunk c0 <- State.getN nm
 		when (c /= c0) $ Except.throw @String
 			"ChunkBegin and ChunkEnd must be pair"
-	Right bs -> Pipe.yield bs >> getUntilChunkEnd
+	Right bs -> Pipe.yield bs >> getUntilChunkEnd nm
 	_ -> Except.throw @String "bad"
 
-untilIdat :: (
+untilIdat :: forall nm -> (
 	U.Member Pipe.P es,
-	U.Member (State.S Chunk) es,
+	U.Member (State.Named nm Chunk) es,
 	U.Base IO.I es
 	) =>
 	Eff.E es BS.ByteString o BS.ByteString
-untilIdat = do
+untilIdat nm = do
 	IO.print =<< Pipe.isMore
 	bs <- Pipe.await
-	State.get >>= \case
+	State.getN nm >>= \case
 		Chunk "IDAT" -> do
 			pure bs
 		c -> do	IO.print c
 			IO.print bs
-			untilIdat
+			untilIdat nm
