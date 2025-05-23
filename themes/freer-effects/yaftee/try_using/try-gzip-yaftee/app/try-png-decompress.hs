@@ -64,12 +64,16 @@ main = do
 				PipeT.checkRight Pipe.=$= OnDemand.onDemand "barbaz" Pipe.=$= (readHeader "barbaz" processHeader `Except.catch` IO.print @String)
 				Left (ChunkEnd "IHDR") <- Pipe.await
 
+				IO.print "IHDR end"
+
 				chunkToByteString
 
 --				forever $ Pipe.yield =<< Pipe.await
 			Pipe.=$= do
 
 				IO.print =<< Pipe.isMore
+
+				IO.print @Chunk =<< State.get
 
 				OnDemand.onDemand "hogepiyo" Pipe.=$= do
 					State.putN "hogepiyo" $ OnDemand.RequestBytes 1
