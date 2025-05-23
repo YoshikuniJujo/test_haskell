@@ -93,8 +93,12 @@ main = do
 					(Deflate.decompress "hogepiyo" 65 `Except.catch` IO.print @String) Pipe.=$= adler32'
 --					Deflate.decompress "hogepiyo" Pipe.=$= adler32'
 					State.putN "hogepiyo" $ OnDemand.RequestBytes 4
+					{-
 					IO.print =<< Pipe.await
+					IO.print =<< Pipe.isMore
 					IO.print @Word32 . BS.toBitsBE =<< Except.getRight @String "not Right" =<< Pipe.await
+					-}
+					IO.print @Word32 . BS.toBitsBE =<< skipLeft1
 
 				IO.print =<< State.get @Chunk
 				IO.print . uncurry (.|.) . second (`shiftL` 16) =<< State.get @(Word32, Word32)
@@ -104,6 +108,22 @@ main = do
 			Pipe.=$= do
 				PipeIO.print'
 				IO.print @(Word32, Word32) =<< State.get
+
+skipLeft1 :: (
+	Show a,
+	U.Member Pipe.P es,
+	U.Base IO.I es
+	) =>
+	Eff.E es (Either a b) o b
+skipLeft1 = Pipe.await >>= \case
+	Left a -> do
+		IO.print a
+		Pipe.await >>= \case
+			Left b -> do
+				IO.print b
+				error "bad"
+			Right c -> pure c
+	Right b -> pure b
 
 untilIdat :: (
 	U.Member Pipe.P es,
