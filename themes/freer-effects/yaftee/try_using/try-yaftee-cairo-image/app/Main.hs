@@ -8,6 +8,7 @@
 
 module Main (main) where
 
+import Control.Monad
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 
 import Data.ByteString qualified as BS
@@ -19,6 +20,6 @@ import Graphics.Pipe.Write
 main :: IO ()
 main = do
 	img <- newImageMut @Argb32Mut 16 16
-	writeDrawPipe "try-yaftee-cairo-image-exe.png" img
+	writeDrawPipe [] "try-yaftee-cairo-image-exe.png" img (void . id)
 		$ Pipe.yield (BS.concat (replicate 195 "\0\0\0\255")) Pipe.=$=
 			drawCairoImageRgba32 IO img 16 16

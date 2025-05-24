@@ -44,7 +44,9 @@ library
     , simple-cairo
     , try-higher-order-open-union
     , try-yaftee
+    , try-yaftee-basic-monads
     , try-yaftee-conduit
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 executable try-yaftee-cairo-image-exe
@@ -66,8 +68,10 @@ executable try-yaftee-cairo-image-exe
     , simple-cairo
     , try-higher-order-open-union
     , try-yaftee
+    , try-yaftee-basic-monads
     , try-yaftee-cairo-image
     , try-yaftee-conduit
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 test-suite try-yaftee-cairo-image-test
@@ -90,6 +94,8 @@ test-suite try-yaftee-cairo-image-test
     , simple-cairo
     , try-higher-order-open-union
     , try-yaftee
+    , try-yaftee-basic-monads
     , try-yaftee-cairo-image
     , try-yaftee-conduit
+    , typelevel-tools-yj
   default-language: Haskell2010

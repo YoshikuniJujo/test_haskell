@@ -28,8 +28,10 @@ dependencies:
 - cairo-image
 - JuicyCairo
 - try-yaftee
+- try-yaftee-basic-monads
 - try-yaftee-conduit
 - try-higher-order-open-union
+- typelevel-tools-yj
 
 ghc-options:
 - -Wall

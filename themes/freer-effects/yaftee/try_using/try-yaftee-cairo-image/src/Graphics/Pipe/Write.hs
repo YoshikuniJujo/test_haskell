@@ -1,6 +1,10 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pipe.Write (writeDrawPipe) where
@@ -8,6 +12,7 @@ module Graphics.Pipe.Write (writeDrawPipe) where
 import Control.Monad.ST
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
+import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.CairoImage.Internal
 import Data.JuicyCairo
@@ -16,12 +21,19 @@ import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.CairoPatternT
 import Graphics.Cairo.Surfaces.ImageSurfaces
 
-writeDrawPipe :: FilePath ->
-	Argb32Mut RealWorld -> Eff.E '[Pipe.P, U.FromFirst IO] i o a -> IO ()
-writeDrawPipe fp img pp = do
+import Data.TypeLevel.List
+import Data.HigherFunctor qualified as HFunctor
+
+writeDrawPipe :: forall sts ->
+	HFunctor.Tight (U.U (Append sts '[IO.I])) =>
+	FilePath -> Argb32Mut RealWorld ->
+	(forall r' . Eff.E (sts `Append` '[IO.I]) i o r' -> Eff.E '[IO.I] i o r'') ->
+	Eff.E (Pipe.P ': (sts `Append` '[U.FromFirst IO])) i o r -> IO ()
+--	Eff.E '[Pipe.P, U.FromFirst IO] i o r -> IO ()
+writeDrawPipe sts fp img rn pp = do
 	let	img' = CairoImageMutArgb32 img
 
-	_ <- Eff.runM . Pipe.run $ pp
+	_ <- Eff.runM . rn . Pipe.run $ pp
 
 	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 16 16
 	cr <- cairoCreate sfc0
