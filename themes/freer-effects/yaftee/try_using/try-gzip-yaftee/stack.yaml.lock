@@ -5,20 +5,6 @@
 
 packages:
 - completed:
-    hackage: tools-yj-0.1.0.27@sha256:5561682d44273ec79c9b9a8afafb12b16c8d5fe168cbebf32cbb3aa822060fae,2308
-    pantry-tree:
-      sha256: 27106b57aabb66674b851184e0bb01b1666e1f72ac95d5f6af20b14802bc19f5
-      size: 1302
-  original:
-    hackage: tools-yj-0.1.0.27
-- completed:
-    hackage: typelevel-tools-yj-0.1.0.9@sha256:4579961d93b3b97b677b69bcc0316689fae6e064dced12799a0ee99478170596,2205
-    pantry-tree:
-      sha256: d4bd50ed81f7ba12a43169ef946f463cad0a0f29ddd5a3ebeecc5ee3aa11f132
-      size: 1395
-  original:
-    hackage: typelevel-tools-yj-0.1.0.9
-- completed:
     commit: df3fa995aba524b7e6f4de07066a5f61fb75eb16
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee
@@ -137,7 +123,7 @@ packages:
     subdir: themes/freer-effects/common/try-freer-base-classes
 snapshots:
 - completed:
-    sha256: 7530ee0d844920c7721c146b6ff50adcae732735a711e27b4b747649684ed00c
+    sha256: 458d8bcc3436f368bcbafe7dc239b54576fdad0501a118f3930b131e1506d5c4
     size: 712235
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/5/23.yaml
-  original: nightly-2025-05-23
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/5/24.yaml
+  original: nightly-2025-05-24

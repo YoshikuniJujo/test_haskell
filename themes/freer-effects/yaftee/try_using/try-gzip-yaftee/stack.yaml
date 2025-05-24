@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-05-23
+snapshot: nightly-2025-05-24
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,8 +41,6 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
-  - tools-yj-0.1.0.27
-  - typelevel-tools-yj-0.1.0.9
   - git: https://github.com/YoshikuniJujo/test_haskell
     commit: df3fa995aba524b7e6f4de07066a5f61fb75eb16
     subdirs:
