@@ -76,6 +76,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gzip-yaftee
+  try-png-decompress-leak:
+    main:                try-png-decompress-leak.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gzip-yaftee
   for-debug:
     main:                for-debug.hs
     other-modules:       []
