@@ -2,10 +2,17 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Zlib.Decompress (decompress) where
+module Control.Monad.Yaftee.Pipe.Zlib.Decompress (
+
+	run_, States,
+	decompress, Members
+
+	) where
 
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -23,12 +30,20 @@ import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
 import Data.ByteString.BitArray qualified as BitArray
 
+import Data.TypeLevel.List
+import Data.HigherFunctor qualified as HFunctor
+
+run_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()
+run_ = Adler32.run_ . Deflate.run_
+
+type States nm = Deflate.States nm `Append` '[
+	State.Named nm Adler32.A
+	]
+
 decompress :: forall nm -> (
-	U.Member Pipe.P es,
-	Deflate.Members nm es,
-	U.Member (State.Named nm Adler32.A) es,
-	U.Member (Except.E String) es,
-	U.Member Fail.F es ) =>
+	U.Member Pipe.P es, Members nm es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
 decompress nm = do
 	State.putN nm $ OnDemand.RequestBytes 1
@@ -49,6 +64,10 @@ decompress nm = do
 	cs0 <- BS.toBitsBE @Word32 <$> skipLeft1
 	cs1 <- Adler32.toWord32 <$> State.getN @Adler32.A nm
 	when (cs0 /= cs1) $ Except.throw @String ("zlib: Alder-32 checksum error: " ++ show cs0 ++ " " ++ show cs1)
+
+type Members nm es = (
+	Deflate.Members nm es,
+	U.Member (State.Named nm Adler32.A) es )
 
 skipLeft1 :: U.Member Pipe.P es => Eff.E es (Either a b) o b
 skipLeft1 = Pipe.await >>=
