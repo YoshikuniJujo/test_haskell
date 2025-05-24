@@ -5,12 +5,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Zlib.Decompress (decompress, Adler32(..)) where
+module Control.Monad.Yaftee.Pipe.Zlib.Decompress (decompress) where
 
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.ByteString.OnDemand qualified as OnDemand
+import Control.Monad.Yaftee.Pipe.ByteString.Adler32 qualified as Adler32
 import Control.Monad.Yaftee.Pipe.Deflate.Decompress qualified as Deflate
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
@@ -25,7 +26,7 @@ import Data.ByteString.BitArray qualified as BitArray
 decompress :: forall nm -> (
 	U.Member Pipe.P es,
 	Deflate.Members nm es,
-	U.Member (State.S Adler32) es,
+	U.Member (State.Named nm Adler32.A) es,
 	U.Member (Except.E String) es,
 	U.Member Fail.F es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
@@ -42,12 +43,12 @@ decompress nm = do
 		chk = (fromIntegral h1 `shiftL` 8) .|. fromIntegral h2
 	when (fdict /= 0) $ Except.throw "Preset dictionary must not be used"
 	when ((chk :: Word16) `mod` 31 /= 0) $ Except.throw "zlib header check bits error"
---	(Deflate.decompress nm 65 `Except.catch` IO.print @String) Pipe.=$= adler32'
-	_ <- Deflate.decompress nm 65 Pipe.=$= adler32'
+--	(Deflate.decompress nm 65 `Except.catch` IO.print @String) Pipe.=$= Adler32.adler32'
+	_ <- Deflate.decompress nm 65 Pipe.=$= Adler32.adler32' nm
 	State.putN nm $ OnDemand.RequestBytes 4
 	cs0 <- BS.toBitsBE @Word32 <$> skipLeft1
-	cs1 <- uncurryAdler32 (.|.) . secondAdler32 (`shiftL` 16) <$> State.get @Adler32
-	when (cs0 /= cs1) $ Except.throw @String "zlib: Alder-32 checksum error"
+	cs1 <- Adler32.toWord32 <$> State.getN @Adler32.A nm
+	when (cs0 /= cs1) $ Except.throw @String ("zlib: Alder-32 checksum error: " ++ show cs0 ++ " " ++ show cs1)
 
 skipLeft1 :: U.Member Pipe.P es => Eff.E es (Either a b) o b
 skipLeft1 = Pipe.await >>=
@@ -55,34 +56,3 @@ skipLeft1 = Pipe.await >>=
 
 msgNotRight :: String
 msgNotRight = "not right"
-
-adler32Step :: Adler32 -> BS.ByteString -> Adler32
-adler32Step = BS.foldl \(Adler32 a b) w ->
-	Adler32 ((a + fromIntegral w) `mod` 65521) ((b + a + fromIntegral w) `mod` 65521)
-
-_adler32 :: (
-	U.Member Pipe.P es,
-	U.Member (State.S Adler32) es ) =>
-	Eff.E es BS.ByteString BS.ByteString r
-_adler32 = forever do
-	bs <- Pipe.await
-	State.modify (`adler32Step` bs)
-	Pipe.yield bs
-
-adler32' :: (
-	U.Member Pipe.P es,
-	U.Member (State.S Adler32) es ) =>
-	Eff.E es BS.ByteString BS.ByteString ()
-adler32' = Pipe.awaitMaybe >>= \case
-	Nothing -> pure ()
-	Just bs -> do
-		State.modify (`adler32Step` bs)
-		Pipe.yield bs
-		adler32'
-
-data Adler32 = Adler32 Word32 Word32 deriving Show
-
-secondAdler32 f (Adler32 a b) = Adler32 a (f b)
-
-uncurryAdler32 :: (Word32 -> Word32 -> a) -> Adler32 -> a
-uncurryAdler32 f (Adler32 a b) = f a b

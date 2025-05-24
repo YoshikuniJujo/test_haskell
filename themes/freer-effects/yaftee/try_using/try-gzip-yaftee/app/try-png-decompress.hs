@@ -22,6 +22,7 @@ import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as Crc
+import Control.Monad.Yaftee.Pipe.ByteString.Adler32 qualified as Adler32
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
@@ -50,15 +51,14 @@ main = do
 		. chunkRun @"chunk"
 		. OnDemand.run_ @"deflate"
 --		. (`State.run` (1 :: Word32, 0 :: Word32))
-		. (`State.run` Zlib.Adler32 1 0)
+		. Adler32.run_ @"deflate"
 		. Deflate.run_ @"deflate"
 		. Except.run @String
 		. Fail.runExc id
 		. Pipe.run
 		$ PipeBS.hGet 64 h Pipe.=$=
-			png "chunk" "deflate" processHeader Pipe.=$= do
+			(void (png "chunk" "deflate" processHeader) `Except.catch` IO.print @String) Pipe.=$= do
 			PipeIO.print'
-			IO.print @Zlib.Adler32 =<< State.get
 
 chunkRun :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (ChunkStates nm `Append` es) i o r ->
@@ -80,7 +80,7 @@ png :: forall nmcnk nmhdr -> (
 	OnDemand.Members nmhdr es,
 
 	Deflate.Members "deflate" es,
-	U.Member (State.S Zlib.Adler32) es,
+	U.Member (State.Named "deflate" Adler32.A) es,
 
 	U.Member (Except.E String) es,
 	U.Member Fail.F es,
