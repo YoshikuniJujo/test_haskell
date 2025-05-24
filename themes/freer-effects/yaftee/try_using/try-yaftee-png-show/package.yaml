@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - bytestring
 - try-gzip-yaftee
+- try-yaftee
 - try-yaftee-cairo-image
 - try-yaftee-basic-monads
 - try-yaftee-conduit
