@@ -34,7 +34,8 @@ run_ = void . (`State.runN` A 1 0)
 adler32Step :: (Int, A) -> BS.ByteString -> (Int, A)
 adler32Step = BS.foldl \(n, A a b) w -> case n of
 	0 -> (5551, A ((a + fromIntegral w) `mod` 65521) ((b + a + fromIntegral w) `mod` 65521))
-	_ -> (n - 1, A (a + fromIntegral w) (b + a + fromIntegral w))
+--	_ -> (n - 1, A (a + fromIntegral w) (b + a + fromIntegral w))
+	_ -> (n - 1, A ((a + fromIntegral w) `mod` 65521) ((b + a + fromIntegral w) `mod` 65521))
 
 adler32 :: forall nm -> (
 	U.Member Pipe.P es,
