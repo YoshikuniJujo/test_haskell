@@ -34,8 +34,7 @@ run_ = void . (`State.runN` A 1 0)
 adler32Step :: (Int, A) -> BS.ByteString -> (Int, A)
 adler32Step = BS.foldl \(n, A a b) w -> case n of
 	0 -> (5551, A ((a + fromIntegral w) `mod` 65521) ((b + a + fromIntegral w) `mod` 65521))
---	_ -> (n - 1, A (a + fromIntegral w) (b + a + fromIntegral w))
-	_ -> (n - 1, A ((a + fromIntegral w) `mod` 65521) ((b + a + fromIntegral w) `mod` 65521))
+	_ -> (n - 1, A (a + fromIntegral w) (b + a + fromIntegral w))
 
 adler32 :: forall nm -> (
 	U.Member Pipe.P es,
@@ -48,13 +47,6 @@ adler32 nm = ($ 5551) $ fix \go n -> do
 	State.putN nm a'
 	Pipe.yield bs
 	go n'
-
-{-
-forever do
-	bs <- Pipe.await
-	State.modifyN nm (`adler32Step` bs)
-	Pipe.yield bs
-	-}
 
 adler32' :: forall nm -> (
 	U.Member Pipe.P es,
@@ -69,19 +61,13 @@ adler32' nm = ($ 5551) $ fix \go n -> Pipe.awaitMaybe >>= \case
 		Pipe.yield bs
 		go n'
 
-{-
-Pipe.awaitMaybe >>= \case
-	Nothing -> pure ()
-	Just bs -> do
-		State.modifyN nm (`adler32Step` bs)
-		Pipe.yield bs
-		adler32' nm
-		-}
-
 data A = A Word32 Word32 deriving Show
 
 toWord32 :: A -> Word32
-toWord32 = uncurry (.|.) . second (`shiftL` 16)
+toWord32 = uncurry (.|.) . first (`mod` 65521) . second ((`shiftL` 16) . (`mod` 65521))
+
+first :: (Word32 -> Word32) -> A -> A
+first f (A a b) = A (f a) b
 
 second :: (Word32 -> Word32) -> A -> A
 second f (A a b) = A a (f b)
