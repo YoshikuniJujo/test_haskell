@@ -12,6 +12,7 @@
 
 module Main (main) where
 
+
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -23,14 +24,17 @@ import Control.Monad.Yaftee.IO qualified as IO
 import System.IO
 import System.Environment
 
-import Control.Monad.Yaftee.Pipe.Png.Decode
+import Control.Monad.Yaftee.Pipe.Png.DecodeNew
 
 main :: IO ()
 main = do
 	fp : _ <- getArgs
 	let	processHeader = IO.print
 	h <- openFile fp ReadMode
-	void . Eff.runM . pngRun @"chunk" @"deflate"
+	void . Eff.runM
+
+		. pngRun @"chunk" @"deflate"
+
 		. Except.run @String . Fail.runExc id . Pipe.run
 		$ PipeBS.hGet 64 h Pipe.=$=
 			(void (png "chunk" "deflate" processHeader) `Except.catch` IO.print @String) Pipe.=$= do
