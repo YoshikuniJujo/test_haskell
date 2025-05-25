@@ -103,7 +103,7 @@ png nmcnk nmzlib processHeader =
 		IO.print @Chunk =<< State.getN nmcnk
 
 		_ <- OnDemand.onDemandWithInitial nmzlib bs Pipe.=$= do
-			Zlib.decompress nmzlib
+			Zlib.decompress nmzlib 65
 
 		IO.print =<< State.getN @Chunk nmcnk
 		_ <- forever $ Pipe.yield =<< Pipe.await

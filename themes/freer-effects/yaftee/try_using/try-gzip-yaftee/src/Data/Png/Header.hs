@@ -17,6 +17,10 @@ data Header = Header {
 	headerInterlaceMethod :: InterlaceMethod }
 	deriving Show
 
+headerToRowBytes hdr =
+	(fromIntegral (headerWidth hdr) * fromIntegral (headerBitDepth hdr) *
+		sampleNum (headerColorType hdr) - 1) `div` 8 + 1
+
 header0 = Header {
 	headerWidth = 0,
 	headerHeight = 0,

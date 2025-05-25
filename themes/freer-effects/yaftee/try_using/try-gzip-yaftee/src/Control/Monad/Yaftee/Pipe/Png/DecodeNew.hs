@@ -107,8 +107,10 @@ png nmcnk nmhdr processHeader =
 
 		IO.print @Chunk =<< State.getN nmcnk
 
+		hdr <- State.getN nmhdr
+
 		_ <- OnDemand.onDemandWithInitial nmhdr bs Pipe.=$= do
-			Zlib.decompress nmhdr
+			Zlib.decompress nmhdr (headerToRowBytes hdr + 1)
 
 		IO.print =<< State.getN @Chunk nmcnk
 		_ <- forever $ Pipe.yield =<< Pipe.await

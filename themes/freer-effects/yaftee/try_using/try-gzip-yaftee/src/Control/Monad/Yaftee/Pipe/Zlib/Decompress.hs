@@ -44,8 +44,9 @@ type States nm = Deflate.States nm `Append` '[
 decompress :: forall nm -> (
 	U.Member Pipe.P es, Members nm es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
+	Int ->
 	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
-decompress nm = do
+decompress nm fnum = do
 	State.putN nm $ OnDemand.RequestBytes 1
 	h1 <- BS.toBits @Word8 <$> (Except.getRight @String msgNotRight =<< Pipe.await)
 	let	cm = h1 .&. 0xf
@@ -59,7 +60,7 @@ decompress nm = do
 	when (fdict /= 0) $ Except.throw "Preset dictionary must not be used"
 	when ((chk :: Word16) `mod` 31 /= 0) $ Except.throw "zlib header check bits error"
 --	(Deflate.decompress nm 65 `Except.catch` IO.print @String) Pipe.=$= Adler32.adler32'
-	_ <- Deflate.decompress nm 65 Pipe.=$= Adler32.adler32' nm
+	_ <- Deflate.decompress nm fnum Pipe.=$= Adler32.adler32' nm
 	State.putN nm $ OnDemand.RequestBytes 4
 	cs0 <- BS.toBitsBE @Word32 <$> skipLeft1
 	cs1 <- Adler32.toWord32 <$> State.getN @Adler32.A nm
