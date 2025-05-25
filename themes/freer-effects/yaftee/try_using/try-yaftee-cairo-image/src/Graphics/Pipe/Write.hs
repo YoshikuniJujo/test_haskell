@@ -26,16 +26,16 @@ import Data.HigherFunctor qualified as HFunctor
 
 writeDrawPipe :: forall sts ->
 	HFunctor.Tight (U.U (Append sts '[IO.I])) =>
-	FilePath -> Argb32Mut RealWorld ->
+	FilePath -> Int -> Int -> Argb32Mut RealWorld ->
 	(forall r' . Eff.E (sts `Append` '[IO.I]) i o r' -> Eff.E '[IO.I] i o r'') ->
 	Eff.E (Pipe.P ': (sts `Append` '[U.FromFirst IO])) i o r -> IO ()
 --	Eff.E '[Pipe.P, U.FromFirst IO] i o r -> IO ()
-writeDrawPipe sts fp img rn pp = do
+writeDrawPipe sts fp wdt hgt img rn pp = do
 	let	img' = CairoImageMutArgb32 img
 
 	_ <- Eff.runM . rn . Pipe.run $ pp
 
-	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 16 16
+	sfc0 <- cairoImageSurfaceCreate CairoFormatArgb32 (fromIntegral wdt) (fromIntegral hgt)
 	cr <- cairoCreate sfc0
 
 	sfc <- CairoSurfaceTImage <$> cairoImageSurfaceCreateForCairoImageMut img'
