@@ -17,6 +17,15 @@ data Header = Header {
 	headerInterlaceMethod :: InterlaceMethod }
 	deriving Show
 
+header0 = Header {
+	headerWidth = 0,
+	headerHeight = 0,
+	headerBitDepth = 0,
+	headerColorType = ColorType 0,
+	headerCompressionMethod = CompressionMethod 0,
+	headerFilterMethod = FilterMethod 0,
+	headerInterlaceMethod = InterlaceMethod 0 }
+
 newtype ColorType = ColorType Word8 deriving (Eq, Bits)
 
 pattern ColorTypePalletUsed, ColorTypeColorUsed, ColorTypeAlphaChannelUsed ::

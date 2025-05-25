@@ -41,16 +41,16 @@ import Data.ByteString.ToolsYj qualified as BS
 import Data.ByteString.BitArray qualified as BitArray
 import Data.Png.Header
 
-import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
+import Control.Monad.Yaftee.Pipe.Png.Decode.HeaderNew qualified as Header
 import Control.Monad.Yaftee.Pipe.Deflate.Decompress qualified as Deflate
 import Control.Monad.Yaftee.Pipe.Zlib.Decompress qualified as Zlib
 
 pngRun :: forall nmcnk nmhdr es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (PngStates nmcnk nmhdr `Append` es) i o r -> Eff.E es i o ()
-pngRun = void . chunkRun . Zlib.run_
+pngRun = void . (`State.runN` header0) . chunkRun . Zlib.run_
 
 type PngStates nmcnk nmhdr =
-	Zlib.States nmhdr `Append` ChunkStates nmcnk
+	Zlib.States nmhdr `Append` ChunkStates nmcnk `Append` '[State.Named nmhdr Header]
 
 chunkRun :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (ChunkStates nm `Append` es) i o r ->
@@ -140,6 +140,7 @@ pngHeader nmcnk nmhdr processHeader =
 		pure ()
 
 type PngMembers nmcnk nmhdr es = (
+	U.Member (State.Named nmhdr Header) es,
 	ChunkMembers nmcnk es,
 	OnDemand.Members nmhdr es )
 
