@@ -40,6 +40,7 @@ import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
 import Data.ByteString.BitArray qualified as BitArray
 import Data.Png.Header
+import Data.Png.Filters
 
 import Control.Monad.Yaftee.Pipe.Png.Decode.HeaderNew qualified as Header
 import Control.Monad.Yaftee.Pipe.Deflate.Decompress qualified as Deflate
@@ -124,12 +125,29 @@ png nmcnk nmhdr processHeader =
 			hgt = headerHeight h
 			dpt = headerBitDepth h
 			ct = headerColorType h
+			bpp = headerToBpp h
+			rbs = headerToRowBytes h
 		IO.print wdt
 		IO.print hgt
 		IO.print dpt
 		IO.print ct
-		Pipe.yield bs
-		forever $ Pipe.yield =<< Pipe.await
+		IO.print bpp
+		IO.print rbs
+		bs' <- either Except.throw pure
+			$ unfilter bpp (BS.replicate rbs 0) bs
+		Pipe.yield bs'
+		unfilterAll bpp bs'
+--		forever $ Pipe.yield =<< Pipe.await
+
+unfilterAll bpp prior = do
+	mbs <- Pipe.awaitMaybe
+	case mbs of
+		Nothing -> pure ()
+		Just "" -> pure ()
+		Just bs -> do
+			bs' <- either Except.throw pure $ unfilter bpp prior bs
+			Pipe.yield bs'
+			unfilterAll bpp bs'
 
 pngHeader :: forall nmcnk nmhdr -> (
 	U.Member Pipe.P es,

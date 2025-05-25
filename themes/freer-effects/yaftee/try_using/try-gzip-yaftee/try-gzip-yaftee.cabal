@@ -39,6 +39,7 @@ library
       Data.Gzip.GzipHeader
       Data.Huffman
       Data.PackageMerge
+      Data.Png.Filters
       Data.Png.Header
       Pipe.Huffman
       Pipe.Runlength
