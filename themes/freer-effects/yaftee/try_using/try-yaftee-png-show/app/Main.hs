@@ -44,10 +44,10 @@ main = do
 	h <- openFile fpi ReadMode
 
 	img <- newImageMut @Argb32Mut wdt hgt
-	writeDrawPipe Effs fpo img (Except.run . Fail.runExc id . pngRun) $
+	writeDrawPipe Effs fpo (fromIntegral wdt) (fromIntegral hgt) img (Except.run . Fail.runExc id . pngRun) $
 		PipeBS.hGet 64 h Pipe.=$=
 		(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
-		PipeT.convert BS.tail Pipe.=$=
+--		PipeT.convert BS.tail Pipe.=$=
 		drawCairoImageRgba32 IO img wdt hgt
 
 type Effs = PngStates "chunk" "deflate" `Append` '[Fail.F, (Except.E String)]
