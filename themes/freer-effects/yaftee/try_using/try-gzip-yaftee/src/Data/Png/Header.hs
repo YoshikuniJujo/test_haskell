@@ -34,6 +34,21 @@ pattern ColorTypePalletUsed = ColorType 1
 pattern ColorTypeColorUsed = ColorType 2
 pattern ColorTypeAlphaChannelUsed = ColorType 4
 
+pattern ColorTypeGrayscale, ColorTypePallete, ColorTypeColorAlpha :: ColorType
+pattern ColorTypeGrayscale = ColorType 0
+pattern ColorTypeColor = ColorType 2
+pattern ColorTypePallete = ColorType 3
+pattern ColorTypeAlpha = ColorType 4
+pattern ColorTypeColorAlpha = ColorType 6
+
+sampleNum :: ColorType -> Int
+sampleNum ColorTypeGrayscale = 1
+sampleNum ColorTypeColorUsed = 3
+sampleNum ColorTypePallete = 1
+sampleNum ColorTypeAlpha = 2
+sampleNum ColorTypeColorAlpha = 4
+sampleNum _ = error "not allowed color type"
+
 instance Show ColorType where
 	show ColorTypePalletUsed  = "ColorTypePaletteUsed"
 	show ColorTypeColorUsed = "ColorTypeColorUsed"
