@@ -114,6 +114,21 @@ png nmcnk nmhdr processHeader =
 		_ <- forever $ Pipe.yield =<< Pipe.await
 		IO.print =<< State.getN @Chunk nmcnk
 
+	Pipe.=$= do
+		bs <- Pipe.await
+		IO.print @String "foobar"
+		h <- State.getN nmhdr
+		let	wdt = headerWidth h
+			hgt = headerHeight h
+			dpt = headerBitDepth h
+			ct = headerColorType h
+		IO.print wdt
+		IO.print hgt
+		IO.print dpt
+		IO.print ct
+		Pipe.yield bs
+		forever $ Pipe.yield =<< Pipe.await
+
 pngHeader :: forall nmcnk nmhdr -> (
 	U.Member Pipe.P es,
 
