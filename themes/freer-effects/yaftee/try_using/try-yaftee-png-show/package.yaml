@@ -30,6 +30,8 @@ dependencies:
 - try-yaftee-conduit-bytestring
 - cairo-image
 - typelevel-tools-yj
+- simple-cairo
+- moffy-samples-gtk3-run
 
 ghc-options:
 - -Wall
@@ -48,6 +50,16 @@ library:
 executables:
   try-yaftee-png-show-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-yaftee-png-show
+  try-with-window:
+    main:                try-with-window.hs
+    other-modules:       []
     source-dirs:         app
     ghc-options:
     - -threaded

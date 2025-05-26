@@ -37,12 +37,35 @@ library
       base >=4.7 && <5
     , bytestring
     , cairo-image
+    , moffy-samples-gtk3-run
+    , simple-cairo
     , try-gzip-yaftee
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-cairo-image
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
+    , typelevel-tools-yj
+  default-language: Haskell2010
+
+executable try-with-window
+  main-is: try-with-window.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , cairo-image
+    , moffy-samples-gtk3-run
+    , simple-cairo
+    , try-gzip-yaftee
+    , try-yaftee
+    , try-yaftee-basic-monads
+    , try-yaftee-cairo-image
+    , try-yaftee-conduit
+    , try-yaftee-conduit-bytestring
+    , try-yaftee-png-show
     , typelevel-tools-yj
   default-language: Haskell2010
 
@@ -59,6 +82,8 @@ executable try-yaftee-png-show-exe
       base >=4.7 && <5
     , bytestring
     , cairo-image
+    , moffy-samples-gtk3-run
+    , simple-cairo
     , try-gzip-yaftee
     , try-yaftee
     , try-yaftee-basic-monads
@@ -83,6 +108,8 @@ test-suite try-yaftee-png-show-test
       base >=4.7 && <5
     , bytestring
     , cairo-image
+    , moffy-samples-gtk3-run
+    , simple-cairo
     , try-gzip-yaftee
     , try-yaftee
     , try-yaftee-basic-monads

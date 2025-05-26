@@ -55,7 +55,7 @@ main = do
 				PipeBS.hGet (64 * 64) h Pipe.=$=
 				(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
 		--		PipeT.convert BS.tail Pipe.=$=
-				drawCairoImageRgba32 IO img wdt hgt
+				drawCairoImageRgba32 IO img wdt hgt (pure ())
 
 		ColorTypeColor -> do
 
@@ -66,6 +66,6 @@ main = do
 				PipeBS.hGet (64 * 64) h Pipe.=$=
 				(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
 		--		PipeT.convert BS.tail Pipe.=$=
-				drawCairoImageRgb24 IO img wdt hgt
+				drawCairoImageRgb24 IO img wdt hgt (pure ())
 
 type Effs = PngStates "chunk" "deflate" `Append` '[Fail.F, (Except.E String)]
