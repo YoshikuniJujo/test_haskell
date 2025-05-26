@@ -61,7 +61,7 @@ drawCairoImageRgba32Adam7 m img w h act = ($ 0) $ fix \go p ->
 calcPos :: Integral n => n -> n -> n -> (n, n)
 calcPos w h p
 	| p < wh64 = (p `mod` w8 * 8, p `div` w8 * 8)
-	| p < wh32 = let p' = p - wh64 in (p' `mod` w8 * 8 + 4, p `div` w8 * 8)
+	| p < wh32 = let p' = p - wh64 in (p' `mod` w8 * 8 + 4, p' `div` w8 * 8)
 	| p < wh16 = let p' = p - wh32 in (p' `mod` w4 * 4, p' `div` w4 * 8 + 4)
 	| p < wh8 = let p' = p - wh16 in (p' `mod` w4 * 4 + 2, p' `div` w4 * 4)
 	| p < wh4 = let p' = p - wh8 in (p' `mod` w2 * 2, p' `div` w2 * 4 + 2)
