@@ -35,7 +35,7 @@ main = do
 
 	(_, hdr) <- Eff.runM . (`State.run` header0)
 		. Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run
-		$ PipeBS.hGet 64 hh Pipe.=$= pngHeader "chunk" "deflate" \hdr -> do
+		$ PipeBS.hGet (64 * 64) hh Pipe.=$= pngHeader "chunk" "deflate" \hdr -> do
 			IO.print hdr
 			State.put hdr
 	hClose hh
@@ -52,7 +52,7 @@ main = do
 
 			img <- newImageMut @Argb32Mut wdt hgt
 			writeDrawPipe Effs fpo (fromIntegral wdt) (fromIntegral hgt) img (Except.run . Fail.runExc id . pngRun) $
-				PipeBS.hGet 64 h Pipe.=$=
+				PipeBS.hGet (64 * 64) h Pipe.=$=
 				(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
 		--		PipeT.convert BS.tail Pipe.=$=
 				drawCairoImageRgba32 IO img wdt hgt
@@ -63,7 +63,7 @@ main = do
 
 			img <- newImageMut @Argb32Mut wdt hgt
 			writeDrawPipe Effs fpo (fromIntegral wdt) (fromIntegral hgt) img (Except.run . Fail.runExc id . pngRun) $
-				PipeBS.hGet 64 h Pipe.=$=
+				PipeBS.hGet (64 * 64) h Pipe.=$=
 				(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
 		--		PipeT.convert BS.tail Pipe.=$=
 				drawCairoImageRgb24 IO img wdt hgt
