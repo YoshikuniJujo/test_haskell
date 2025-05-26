@@ -9,6 +9,8 @@ import Control.Arrow
 import Data.Word
 import Data.ByteString qualified as BS
 
+import Debug.Trace
+
 unfilter :: Int -> BS.ByteString -> BS.ByteString -> Either String BS.ByteString
 unfilter bpp prior (BS.uncons -> filtered) = case filtered of
 	Nothing -> Left "empty line"
@@ -16,8 +18,8 @@ unfilter bpp prior (BS.uncons -> filtered) = case filtered of
 		0 -> Right fs
 		1 -> Right $ unfilterSub (BS.replicate bpp 0) fs
 		2 -> Right $ unfilterUp prior fs
-		3 -> Right $ unfilterAverage prior (BS.replicate bpp 0) fs
-		4 -> Right $ unfilterPaeth
+		3 -> trace "AVERAGE" . Right $ unfilterAverage prior (BS.replicate bpp 0) fs
+		4 -> trace "PAETH" . Right $ unfilterPaeth
 			(BS.replicate bpp 0) prior (BS.replicate bpp 0) fs
 		_ -> Left "unknown filter type"
 
@@ -41,7 +43,7 @@ unfilterAverage (BS.uncons -> prior) (BS.uncons -> raw) (BS.uncons -> average) =
 		(Just (p, ps), Just (r, rs), Just (a, as)) ->
 			r' `BS.cons` unfilterAverage ps (rs `BS.snoc` r') as
 			where
-			r' = ((p + r) `div` 2) + a
+			r' = fromIntegral ((fromIntegral p + fromIntegral r) `div` 2 :: Int) + a
 		_ -> error "never occur"
 
 unfilterPaeth :: BS.ByteString ->
