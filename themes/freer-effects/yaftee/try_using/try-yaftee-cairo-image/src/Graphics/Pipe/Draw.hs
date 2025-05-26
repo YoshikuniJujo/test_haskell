@@ -40,14 +40,16 @@ drawCairoImageRgba32 m img w h act = ($ 0) $ fix \go p ->
 
 drawCairoImageRgb24 :: forall m ->
 	(PrimMonad m, U.Member Pipe.P es, U.Base (U.FromFirst m) es) =>
-	Argb32Mut (PrimState m) -> CInt -> CInt -> Eff.E es BS.ByteString o ()
-drawCairoImageRgb24 m img w h = ($ 0) $ fix \go p ->
+	Argb32Mut (PrimState m) -> CInt -> CInt -> Eff.E es BS.ByteString o () ->
+	Eff.E es BS.ByteString o ()
+drawCairoImageRgb24 m img w h act = ($ 0) $ fix \go p ->
 	if p < w * h
 	then do
 		cs <- byteStringToTuple3s <$> Pipe.await
 		let	ln = L.genericLength cs
 		Eff.effBase $ for_ ([p .. p + ln - 1] `zip` cs) \(p', c) ->
 			uncurry4 (draw p') $ rgbToArgb c
+		act
 		go $ p + ln
 	else pure ()
 	where
