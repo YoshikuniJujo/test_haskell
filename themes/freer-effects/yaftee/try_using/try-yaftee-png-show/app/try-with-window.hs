@@ -61,6 +61,10 @@ main = do
 
 	let	(fromIntegral -> wdt, fromIntegral -> hgt) = (headerWidth hdr, headerHeight hdr)
 		ct = headerColorType hdr
+		itl = headerInterlaceMethod hdr
+
+	putStrLn "hogepiyo"
+	print itl
 
 	img <- newImageMut @Argb32Mut wdt hgt
 	
@@ -77,8 +81,8 @@ main = do
 	forkIO do
 		h <- openFile fpi ReadMode
 
-		case ct of
-			ColorTypeColorAlpha ->
+		case (ct, itl) of
+			(ColorTypeColorAlpha, InterlaceMethodNon) ->
 
 				Eff.runM . Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run $
 					PipeBS.hGet (64 * 64) h Pipe.=$=
@@ -86,7 +90,15 @@ main = do
 					(drawCairoImageRgba32 IO img wdt hgt . void . Eff.effBase $
 						G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
 
-			ColorTypeColor ->
+			(ColorTypeColorAlpha, InterlaceMethodAdam7) ->
+
+				Eff.runM . Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run $
+					PipeBS.hGet (64 * 64) h Pipe.=$=
+					(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
+					(drawCairoImageRgba32Adam7 IO img wdt hgt . void . Eff.effBase $
+						G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
+
+			(ColorTypeColor, InterlaceMethodNon) ->
 
 				Eff.runM . Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run $
 					PipeBS.hGet (64 * 64) h Pipe.=$=
@@ -96,6 +108,7 @@ main = do
 
 		hClose h
 
+{-
 	forkIO do
 
 		putMultiPixels img positions $ PixelArgb32Straight 255 255 255 0
@@ -109,6 +122,7 @@ main = do
 		G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null
 
 		pure ()
+		-}
 
 	Gtk.Widget.showAll w
 	Gtk.main
