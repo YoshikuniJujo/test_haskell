@@ -22,4 +22,4 @@ main = do
 	img <- newImageMut @Argb32Mut 16 16
 	writeDrawPipe [] "try-yaftee-cairo-image-exe.png" 16 16 img (void . id)
 		$ Pipe.yield (BS.concat (replicate 195 "\0\0\0\255")) Pipe.=$=
-			drawCairoImageRgba32 IO img 16 16
+			drawCairoImageRgba32 IO img 16 16 (pure ())
