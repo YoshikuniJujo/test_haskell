@@ -33,21 +33,39 @@ main = do
 	fpi : fpo : _ <- getArgs
 	hh <- openFile fpi ReadMode
 
-	(_, (fromIntegral -> wdt, fromIntegral -> hgt)) <- Eff.runM . (`State.run` ((0, 0) :: (Word32, Word32)))
+	(_, hdr) <- Eff.runM . (`State.run` header0)
 		. Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run
 		$ PipeBS.hGet 64 hh Pipe.=$= pngHeader "chunk" "deflate" \hdr -> do
 			IO.print hdr
-			State.put (headerWidth hdr, headerHeight hdr)
-
+			State.put hdr
 	hClose hh
 
-	h <- openFile fpi ReadMode
+	let	(fromIntegral -> wdt, fromIntegral -> hgt) = (headerWidth hdr, headerHeight hdr)
+		ct = headerColorType hdr
 
-	img <- newImageMut @Argb32Mut wdt hgt
-	writeDrawPipe Effs fpo (fromIntegral wdt) (fromIntegral hgt) img (Except.run . Fail.runExc id . pngRun) $
-		PipeBS.hGet 64 h Pipe.=$=
-		(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
---		PipeT.convert BS.tail Pipe.=$=
-		drawCairoImageRgba32 IO img wdt hgt
+	print ct
+
+	case ct of
+		ColorTypeColorAlpha -> do
+
+			h <- openFile fpi ReadMode
+
+			img <- newImageMut @Argb32Mut wdt hgt
+			writeDrawPipe Effs fpo (fromIntegral wdt) (fromIntegral hgt) img (Except.run . Fail.runExc id . pngRun) $
+				PipeBS.hGet 64 h Pipe.=$=
+				(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
+		--		PipeT.convert BS.tail Pipe.=$=
+				drawCairoImageRgba32 IO img wdt hgt
+
+		ColorTypeColor -> do
+
+			h <- openFile fpi ReadMode
+
+			img <- newImageMut @Argb32Mut wdt hgt
+			writeDrawPipe Effs fpo (fromIntegral wdt) (fromIntegral hgt) img (Except.run . Fail.runExc id . pngRun) $
+				PipeBS.hGet 64 h Pipe.=$=
+				(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
+		--		PipeT.convert BS.tail Pipe.=$=
+				drawCairoImageRgb24 IO img wdt hgt
 
 type Effs = PngStates "chunk" "deflate" `Append` '[Fail.F, (Except.E String)]
