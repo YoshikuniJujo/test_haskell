@@ -85,7 +85,7 @@ png nmcnk nmhdr processHeader =
 	PipeT.checkRight Pipe.=$= Crc.crc32 nmcnk Pipe.=$= do
 		State.putN nmcnk $ OnDemand.RequestBytes 8
 		IO.print =<< Pipe.await
-		doWhile_ $ chunk1 nmcnk 10
+		doWhile_ $ chunk1 nmcnk 100
 	Pipe.=$= do
 		Left (ChunkBegin "IHDR") <- Pipe.await
 		_ <- PipeT.checkRight Pipe.=$=

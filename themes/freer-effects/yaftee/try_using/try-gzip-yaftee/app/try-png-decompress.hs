@@ -36,6 +36,6 @@ main = do
 		. pngRun @"chunk" @"deflate"
 
 		. Except.run @String . Fail.runExc id . Pipe.run
-		$ PipeBS.hGet 64 h Pipe.=$=
+		$ PipeBS.hGet (64 * 64) h Pipe.=$=
 			(void (png "chunk" "deflate" processHeader) `Except.catch` IO.print @String) Pipe.=$= do
 			PipeIO.print'
