@@ -10,7 +10,7 @@
 module Control.Monad.Yaftee.Pipe.Zlib.Decompress (
 
 	run_, States,
-	decompress, Members
+	decompress, decompress', Members
 
 	) where
 
@@ -61,6 +61,31 @@ decompress nm fnum = do
 	when ((chk :: Word16) `mod` 31 /= 0) $ Except.throw "zlib header check bits error"
 --	(Deflate.decompress nm 65 `Except.catch` IO.print @String) Pipe.=$= Adler32.adler32'
 	_ <- Deflate.decompress nm fnum Pipe.=$= Adler32.adler32' nm
+	State.putN nm $ OnDemand.RequestBytes 4
+	cs0 <- BS.toBitsBE @Word32 <$> skipLeft1
+	cs1 <- Adler32.toWord32 <$> State.getN @Adler32.A nm
+	when (cs0 /= cs1) $ Except.throw @String ("zlib: Alder-32 checksum error: " ++ show cs0 ++ " " ++ show cs1)
+
+decompress' :: forall nm -> (
+	U.Member Pipe.P es, Members nm es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) =>
+	Int -> Int -> Int ->
+	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
+decompress' nm w h bpp = do
+	State.putN nm $ OnDemand.RequestBytes 1
+	h1 <- BS.toBits @Word8 <$> (Except.getRight @String msgNotRight =<< Pipe.await)
+	let	cm = h1 .&. 0xf
+		cinfo = h1 `shiftR` 4
+		_wnsize = (2 :: Int) ^ (cinfo + 8)
+	when (cm /= 8) $ Except.throw "Compression method must be 8"
+	h2 <- BS.toBits @Word8 <$> (Except.getRight @String msgNotRight =<< Pipe.await)
+	let	_flevel = h2 `shiftR` 6
+		fdict = (h2 `shiftR` 5) .&. 1
+		chk = (fromIntegral h1 `shiftL` 8) .|. fromIntegral h2
+	when (fdict /= 0) $ Except.throw "Preset dictionary must not be used"
+	when ((chk :: Word16) `mod` 31 /= 0) $ Except.throw "zlib header check bits error"
+--	(Deflate.decompress' nm 65 `Except.catch` IO.print @String) Pipe.=$= Adler32.adler32'
+	_ <- Deflate.decompress' nm w h bpp Pipe.=$= Adler32.adler32' nm
 	State.putN nm $ OnDemand.RequestBytes 4
 	cs0 <- BS.toBitsBE @Word32 <$> skipLeft1
 	cs1 <- Adler32.toWord32 <$> State.getN @Adler32.A nm

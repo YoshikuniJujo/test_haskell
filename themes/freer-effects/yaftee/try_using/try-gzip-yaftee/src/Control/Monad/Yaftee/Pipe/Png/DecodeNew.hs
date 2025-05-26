@@ -109,9 +109,26 @@ png nmcnk nmhdr processHeader =
 		IO.print @Chunk =<< State.getN nmcnk
 
 		hdr <- State.getN nmhdr
+		let	wdt = fromIntegral $ headerWidth hdr
+			hgt = fromIntegral $ headerHeight hdr
+			dpt = headerBitDepth hdr
+			ct = headerColorType hdr
+			bpp = fromIntegral $ headerToBpp hdr
+			rbs = headerToRowBytes hdr
 
-		_ <- OnDemand.onDemandWithInitial nmhdr bs Pipe.=$= do
-			Zlib.decompress nmhdr (headerToRowBytes hdr + 1)
+		IO.print hdr
+		IO.print "bpp"
+		IO.print bpp
+		IO.print $ headerInterlaceMethod hdr
+
+		case headerInterlaceMethod hdr of
+			InterlaceMethodNon ->
+				void $ OnDemand.onDemandWithInitial nmhdr bs Pipe.=$= do
+					Zlib.decompress nmhdr (headerToRowBytes hdr + 1)
+			InterlaceMethodAdam7 ->
+				void $ OnDemand.onDemandWithInitial nmhdr bs Pipe.=$= do
+					Zlib.decompress' nmhdr wdt hgt bpp
+			_ -> Except.throw "no such interlace methods"
 
 		IO.print =<< State.getN @Chunk nmcnk
 		_ <- forever $ Pipe.yield =<< Pipe.await

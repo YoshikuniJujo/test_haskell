@@ -12,7 +12,7 @@ module Control.Monad.Yaftee.Pipe.Deflate.Decompress (
 
 	run_, States,
 
-	decompress, Members,
+	decompress, decompress', Members,
 
 	BitArray, FormatBuffer
 
@@ -74,6 +74,15 @@ decompress :: forall nm -> (
 	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
 decompress nm ln =
 	void $ doWhile_ (block nm) Pipe.=$= RunLength.runlength nm Pipe.=$= format nm ln Pipe.=$=
+		PipeB.length' nm Pipe.=$= Crc.crc32' nm
+
+decompress' :: forall nm -> (
+	U.Member Pipe.P es,
+	Members nm es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) => Int -> Int -> Int ->
+	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
+decompress' nm w h bpp =
+	void $ doWhile_ (block nm) Pipe.=$= RunLength.runlength nm Pipe.=$= format' nm w h bpp Pipe.=$=
 		PipeB.length' nm Pipe.=$= Crc.crc32' nm
 
 type Members nm es = (
@@ -222,3 +231,29 @@ format nm n = fix \go -> St.getsN nm unFormatBuffer >>= \bs -> bool
 
 newtype FormatBuffer =
 	FormatBuffer { unFormatBuffer :: BS.ByteString } deriving Show
+
+format' :: forall nm -> (
+	U.Member Pipe.P es,
+	U.Member (St.Named nm FormatBuffer) es ) =>
+	Int -> Int -> Int -> Eff.E es (Either Word8 BS.ByteString) BS.ByteString ()
+-- format' nm w h bpp = ($ interlacePixelNums w h) $ fix \go (((+ 1) . (* bpp) -> n) : ns) -> St.getsN nm unFormatBuffer >>= \bs -> bool
+format' nm w h bpp = ($ interlacePixelNums w h) $ fix \go -> \case
+	[] -> pure ()
+	na@(((+ 1) . (* bpp) -> n) : ns) -> St.getsN nm unFormatBuffer >>= \bs -> bool
+		(uncurry (>>) ((Pipe.yield *** St.putN nm . FormatBuffer) $ BS.splitAt n bs) >> go ns)
+		(maybe (Pipe.yield bs) ((>> go na)
+			. St.putN nm . FormatBuffer
+			. either (BS.snoc bs) (BS.append bs)) =<< Pipe.awaitMaybe)
+		(BS.length bs < n)
+
+interlacePixelNums :: Int -> Int -> [Int]
+interlacePixelNums w h =
+	replicate (h `div'` 8) (w `div'` 8) ++
+	replicate (h `div'` 8) (w `div'` 8) ++
+	replicate (h `div'` 8) (w `div'` 4) ++
+	replicate (h `div'` 4) (w `div'` 4) ++
+	replicate (h `div'` 4) (w `div'` 2) ++
+	replicate (h `div'` 2) (w `div'` 2) ++
+	replicate (h `div'` 2) w ++ [0]
+
+m `div'`n = (m - 1) `div` n + 1
