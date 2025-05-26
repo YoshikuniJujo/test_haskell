@@ -5,7 +5,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pipe.Draw (drawCairoImageRgba32) where
+module Graphics.Pipe.Draw (
+	drawCairoImageRgba32, drawCairoImageRgb24 ) where
 
 import Foreign.C.Types
 import Control.Monad.Fix
@@ -36,14 +37,40 @@ drawCairoImageRgba32 m img w h = ($ 0) $ fix \go p ->
 	draw p a r g b = putPixel (img :: Argb32Mut (PrimState m)) (p `mod` w) (p `div` w)
 		(PixelArgb32Straight a r g b)
 
+drawCairoImageRgb24 :: forall m ->
+	(PrimMonad m, U.Member Pipe.P es, U.Base (U.FromFirst m) es) =>
+	Argb32Mut (PrimState m) -> CInt -> CInt -> Eff.E es BS.ByteString o ()
+drawCairoImageRgb24 m img w h = ($ 0) $ fix \go p ->
+	if p < w * h
+	then do
+		cs <- byteStringToTuple3s <$> Pipe.await
+		let	ln = L.genericLength cs
+		Eff.effBase $ for_ ([p .. p + ln - 1] `zip` cs) \(p', c) ->
+			uncurry4 (draw p') $ rgbToArgb c
+		go $ p + ln
+	else pure ()
+	where
+	draw :: CInt -> Word8 -> Word8 -> Word8 -> Word8 -> m ()
+	draw p a r g b = putPixel (img :: Argb32Mut (PrimState m)) (p `mod` w) (p `div` w)
+		(PixelArgb32Straight a r g b)
+
 uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
 uncurry4 f (x, y, z, w) = f x y z w
 
 rgbaToArgb :: (r, g, b, a) -> (a, r, g, b)
 rgbaToArgb (r, g, b, a) = (a, r, g, b)
 
+rgbToArgb :: (r, g, b) -> (Word8, r, g, b)
+rgbToArgb (r, g, b) = (255, r, g, b)
+
 byteStringToTuple4s :: BS.ByteString -> [(Word8, Word8, Word8, Word8)]
 byteStringToTuple4s = go . BS.unpack
 	where
 	go (x : y : z : w : xs) = (x, y, z, w) : go xs
+	go _ = []
+
+byteStringToTuple3s :: BS.ByteString -> [(Word8, Word8, Word8)]
+byteStringToTuple3s = go . BS.unpack
+	where
+	go (x : y : z : xs) = (x, y, z) : go xs
 	go _ = []
