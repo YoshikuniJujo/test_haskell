@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -24,12 +24,13 @@ import Stopgap.Graphics.UI.Gtk.Container qualified as Gtk.Container
 import Stopgap.Graphics.UI.Gtk.Window qualified as Gtk.Window
 import Stopgap.Graphics.UI.Gtk.DrawingArea qualified as Gtk.DrawingArea
 
+import Control.Concurrent
+
+import Stopgap.System.GLib qualified as G
+
 main :: IO ()
 main = do
 	img <- newImageMut @Argb32Mut 16 16
-
-	putMultiPixels img positions $ PixelArgb32Straight 255 255 255 0
-	putMultiPixels img positions2 $ PixelArgb32Straight 255 0 0 0
 	
 	putStrLn "Slozsoft"
 	join $ Gtk.init <$> getProgName <*> getArgs
@@ -40,6 +41,20 @@ main = do
 	da <- Gtk.DrawingArea.new
 	Gtk.Container.add w da
 	G.Signal.connect_self_cairo_ud da "draw" (drawFunction img) Null
+
+	forkIO do
+
+		putMultiPixels img positions $ PixelArgb32Straight 255 255 255 0
+
+		G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null
+
+		threadDelay 1000000
+
+		putMultiPixels img positions2 $ PixelArgb32Straight 255 0 0 0
+
+		G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null
+
+		pure ()
 
 	Gtk.Widget.showAll w
 	Gtk.main
