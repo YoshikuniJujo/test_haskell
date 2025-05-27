@@ -60,12 +60,12 @@ drawCairoImageRgba32Adam7 m img w h act = ($ 0) $ fix \go p ->
 
 calcPos :: Integral n => n -> n -> n -> (n, n)
 calcPos w h p
-	| p < wh1 = (p `mod` w8 * 8, p `div` w8 * 8)
-	| p < wh2 = let p' = p - wh1 in (p' `mod` w8 * 8 + 4, p' `div` w8 * 8)
-	| p < wh3 = let p' = p - wh2 in (p' `mod` w4 * 4, p' `div` w4 * 8 + 4)
+	| p < wh1 = (p `mod` w1 * 8, p `div` w1 * 8)
+	| p < wh2 = let p' = p - wh1 in (p' `mod` w2 * 8 + 4, p' `div` w2 * 8)
+	| p < wh3 = let p' = p - wh2 in (p' `mod` w3 * 4, p' `div` w3 * 8 + 4)
 	| p < wh4 = let p' = p - wh3 in (p' `mod` w4 * 4 + 2, p' `div` w4 * 4)
-	| p < wh5 = let p' = p - wh4 in (p' `mod` w2 * 2, p' `div` w2 * 4 + 2)
-	| p < wh6 = let p' = p - wh5 in (p' `mod` w2 * 2 + 1, p' `div` w2 * 2)
+	| p < wh5 = let p' = p - wh4 in (p' `mod` w5 * 2, p' `div` w5 * 4 + 2)
+	| p < wh6 = let p' = p - wh5 in (p' `mod` w6 * 2 + 1, p' `div` w6 * 2)
 	| p < wh7 = let p' = p - wh6 in (p' `mod` w, p' `div` w * 2 + 1)
 	where
 	wh1 = (w `div'` 8) * (h `div'` 8)
@@ -75,9 +75,12 @@ calcPos w h p
 	wh5 = (w `div'` 2) * (h `div'` 2)
 	wh6 = w * (h `div'` 2)
 	wh7 = w * h
-	w8 = w `div'` 8
-	w4 = w `div'` 4
-	w2 = w `div'` 2
+	w1 = w `div'` 8
+	w2 = w `div'` 4 `div` 2
+	w3 = w `div'` 4
+	w4 = w `div'` 2 `div` 2
+	w5 = w `div'` 2
+	w6 = w `div` 2
 
 a `div'` b = (a - 1) `div` b + 1
 
