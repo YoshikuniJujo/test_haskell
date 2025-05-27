@@ -23,7 +23,9 @@ module Gpu.Vulkan.ImGui.Helper (
 
 	createWindowRenderPassRaw, setWdRenderPass,
 
-	createWindowImageViewsRaw, copyImageViewsToWd, copyImageViewsToWd'
+	createWindowImageViewsRaw, copyImageViewsToWd, copyImageViewsToWd',
+
+	createWindowFramebufferRaw, copyFramebufferToWd
 
 	) where
 
@@ -43,6 +45,8 @@ import Gpu.Vulkan.Image.Internal qualified as Vk.Img
 import Gpu.Vulkan.ImageView.Type qualified as Vk.ImgVw
 import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
 import Gpu.Vulkan.RenderPass.Type qualified as Vk.RndrPss
+import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
+import Gpu.Vulkan.Framebuffer.Type qualified as Vk.Frmbffr
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.Internal qualified as Vk.Sfc
@@ -132,6 +136,29 @@ createWindowFramebuffer :: Vk.AllocCallbacks.ToMiddle mac =>
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
 createWindowFramebuffer (Vk.Dvc.D dvc) wd mac =
 	M.createWindowFramebuffer dvc wd (Vk.AllocCallbacks.toMiddle mac)
+
+-- createWindowFramebufferRaw :: (Vk.AllocCallbacks.ToMiddle mac, HPList.FromList sfbs) =>
+createWindowFramebufferRaw :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Dvc.D sd -> TPMaybe.M (U2 Vk.AllocCallbacks.A) mac ->
+	Bool -> Vk.RndrPss.R srp -> Int32 -> Int32 ->
+--	HPList.PL (Vk.ImgVw.I nm fmt) sivs -> (HPList.PL Vk.Frmbffr.F sfbs -> IO a) -> IO a
+	HPList.PL (Vk.ImgVw.I nm fmt) sivs -> IO [Vk.Frmbffr.F sfb]
+-- createWindowFramebufferRaw (Vk.Dvc.D dvc) mac udr (Vk.RndrPss.R rp) wdt hgt ivs f = f =<<
+--	HPList.fromList Vk.Frmbffr.F <$>
+createWindowFramebufferRaw (Vk.Dvc.D dvc) mac udr (Vk.RndrPss.R rp) wdt hgt ivs =
+	(Vk.Frmbffr.F <$>) <$>
+		M.createWindowFramebufferRaw dvc (Vk.AllocCallbacks.toMiddle mac) udr
+			rp wdt hgt (HPList.toList (\(Vk.ImgVw.I iv) -> iv) ivs)
+
+copyFramebufferToWd ::
+	Bool -> Vk.ImGui.H.Win.W -> [Vk.Frmbffr.F sfb] -> IO ()
+copyFramebufferToWd udr wd fbs =
+	M.copyFramebufferToWd udr wd ((\(Vk.Frmbffr.F fb) -> fb) <$> fbs)
+
+copyFramebufferToWd' ::
+	Bool -> Vk.ImGui.H.Win.W -> HPList.PL Vk.Frmbffr.F sfbs -> IO ()
+copyFramebufferToWd' udr wd fbs =
+	M.copyFramebufferToWd udr wd (HPList.toList (\(Vk.Frmbffr.F fb) -> fb) fbs)
 
 createWindowRenderPassRaw :: forall (fmt :: Vk.T.Format) sd mac srp . (
 	Vk.AllocCallbacks.ToMiddle mac, Vk.T.FormatToValue fmt

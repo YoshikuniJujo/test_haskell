@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-04-11
+snapshot: nightly-2025-05-27
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
+    commit: 1da373344659a215ba142963360f9e1a434c8af7
     subdirs:
     - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
     - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils

@@ -1786,6 +1786,8 @@ ImGui_ImplVulkanH_CreateWindowFramebufferRaw(
 	bool udr, int im_count, VkRenderPass* rp, int wdt, int hgt, VkImageView* bv
 	)
 {
+	printf("ImGui_ImplVulkanH_CreateWindowFramebufferRaw begin\n");
+
     VkResult err;
     VkFramebuffer* fbs = (VkFramebuffer*)malloc(sizeof(VkFramebuffer) * im_count);
 

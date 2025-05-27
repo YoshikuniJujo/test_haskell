@@ -315,6 +315,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 
 	Vk.RndrPss.create dvc rndrpssInfo nil \rp ->
 	createImageViews dvc imgvwInfo scis \scvs ->
+	Vk.ImGui.H.createWindowFramebufferRaw dvc nil False rp wdt' hgt' scvs >>= \fbs ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
@@ -323,8 +324,8 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.H.createSwapChainModifyWd wdcxx scis $
 	Vk.ImGui.H.setWdRenderPass wdcxx rp >>
 	Vk.ImGui.H.copyImageViewsToWd' wdcxx scvs >>
+	Vk.ImGui.H.copyFramebufferToWd False wdcxx fbs >>
 
-	Vk.ImGui.H.createWindowFramebuffer dvc wdcxx nil >>
 	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil >>
 
 	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo -> do

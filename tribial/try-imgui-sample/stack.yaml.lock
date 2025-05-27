@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
+    commit: 1da373344659a215ba142963360f9e1a434c8af7
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-ext-debug-utils
     pantry-tree:
@@ -14,11 +14,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
     version: 0.1.0.8
   original:
-    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
+    commit: 1da373344659a215ba142963360f9e1a434c8af7
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
 - completed:
-    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
+    commit: 1da373344659a215ba142963360f9e1a434c8af7
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-middle-ext-debug-utils
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
     version: 0.1.0.4
   original:
-    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
+    commit: 1da373344659a215ba142963360f9e1a434c8af7
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
 - completed:
-    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
+    commit: 1da373344659a215ba142963360f9e1a434c8af7
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core-ext-debug-utils
     pantry-tree:
@@ -40,7 +40,7 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
     version: 0.1.0.0
   original:
-    commit: c933f7eb7c4e3cc444baff0fd3a7899b43fbd0ed
+    commit: 1da373344659a215ba142963360f9e1a434c8af7
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
@@ -175,7 +175,7 @@ packages:
     hackage: tools-yj-0.1.0.23
 snapshots:
 - completed:
-    sha256: 6f7930c21d9dd62e60acfce49814bdf393545c0598ca32a452a7e72794505f79
-    size: 679675
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/4/11.yaml
-  original: nightly-2025-04-11
+    sha256: 9a64c887c5597337c5adc679a20abb7f1b5c22b8930903ec9da3a5dc0985e9e8
+    size: 712232
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/5/27.yaml
+  original: nightly-2025-05-27
