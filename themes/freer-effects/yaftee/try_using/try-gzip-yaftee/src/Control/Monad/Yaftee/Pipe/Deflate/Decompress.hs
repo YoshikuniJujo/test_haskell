@@ -249,11 +249,11 @@ format' nm w h bpp = ($ interlacePixelNums w h) $ fix \go -> \case
 interlacePixelNums :: Int -> Int -> [Int]
 interlacePixelNums w h =
 	replicate (h `div'` 8) (w `div'` 8) ++
-	replicate (h `div'` 8) (w `div'` 8) ++
-	replicate (h `div'` 8) (w `div'` 4) ++
-	replicate (h `div'` 4) (w `div'` 4) ++
-	replicate (h `div'` 4) (w `div'` 2) ++
-	replicate (h `div'` 2) (w `div'` 2) ++
-	replicate (h `div'` 2) w ++ [0]
+	replicate (h `div'` 8) (w `div'` 4 `div` 2) ++
+	replicate (h `div'` 4 `div` 2) (w `div'` 4) ++
+	replicate (h `div'` 4) (w `div'` 2 `div` 2) ++
+	replicate (h `div'` 2 `div` 2) (w `div'` 2) ++
+	replicate (h `div'` 2) (w `div` 2) ++
+	replicate (h `div` 2) w ++ [0]
 
 m `div'`n = (m - 1) `div` n + 1
