@@ -106,6 +106,14 @@ main = do
 					(drawCairoImageRgb24 IO img wdt hgt . void . Eff.effBase $
 						G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
 
+			(ColorTypeColor, InterlaceMethodAdam7) ->
+
+				Eff.runM . Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run $
+					PipeBS.hGet (64 * 64) h Pipe.=$=
+					(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
+					(drawCairoImageRgb24Adam7 IO img wdt hgt . void . Eff.effBase $
+						G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
+
 		hClose h
 
 {-
