@@ -75,9 +75,9 @@ calcPos w h p
 	wh5 = (w `div'` 2) * (h `div'` 2)
 	wh6 = w * (h `div'` 2)
 	wh7 = w * h
-	w8 = w `div` 8
-	w4 = w `div` 4
-	w2 = w `div` 2
+	w8 = w `div'` 8
+	w4 = w `div'` 4
+	w2 = w `div'` 2
 
 a `div'` b = (a - 1) `div` b + 1
 
