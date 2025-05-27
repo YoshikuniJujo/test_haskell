@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: df3fa995aba524b7e6f4de07066a5f61fb75eb16
+    commit: 7a5a135373511f77eeaa85645ce52c9ba332a53b
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee
       - themes/freer-effects/yaftee/try-yaftee-conduit

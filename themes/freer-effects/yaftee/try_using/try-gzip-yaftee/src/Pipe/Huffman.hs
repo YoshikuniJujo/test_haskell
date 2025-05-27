@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
@@ -53,16 +54,14 @@ huffman :: forall a eb es r . forall nm -> Bits eb => (
 	U.Member (State.Named nm ExtraBits) es,
 	U.Member Fail.F es ) =>
 	Eff.E es Bit.B (Either a eb) r
-huffman nm = do
-	eb <- State.getN nm
-	case eb of
-		ExtraBits 0 ->
-			(\b -> (maybe (pure ()) (Pipe.yield . Left) =<< step nm b) >> huffman nm)
-				=<< Pipe.await
-		ExtraBits n -> do
-			Pipe.yield . Right =<< takeBits16' @eb @(Either a eb) n
-			State.putN nm $ ExtraBits 0
-			huffman nm
+huffman nm = State.getN nm >>= \case
+	ExtraBits 0 ->
+		(\b -> (maybe (pure ()) (Pipe.yield . Left) =<< step nm b) >> huffman nm)
+			=<< Pipe.await
+	ExtraBits n -> do
+		Pipe.yield . Right =<< takeBits16' @eb @(Either a eb) n
+		State.putN nm $ ExtraBits 0
+		huffman nm
 
 type Members nm a es = (
 	U.Member (State.Named nm (BinTreePair a)) es,
