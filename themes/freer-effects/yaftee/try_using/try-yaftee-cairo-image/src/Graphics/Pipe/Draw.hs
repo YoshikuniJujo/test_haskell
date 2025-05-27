@@ -111,10 +111,10 @@ drawCairoImageRgb24 m img w h act = ($ 0) $ fix \go p ->
 		(PixelArgb32Straight a r g b)
 
 drawCairoImageRgb24Adam7 :: forall m ->
-	(PrimMonad m, U.Member Pipe.P es, U.Base (U.FromFirst m) es) =>
+	(PrimMonad m, U.Member Pipe.P es, U.Base (U.FromFirst m) es) => Bool ->
 	Argb32Mut (PrimState m) -> CInt -> CInt -> Eff.E es BS.ByteString o () ->
 	Eff.E es BS.ByteString o ()
-drawCairoImageRgb24Adam7 m img w h act = ($ 0) $ fix \go p ->
+drawCairoImageRgb24Adam7 m blk img w h act = ($ 0) $ fix \go p ->
 	if p < w * h
 	then do
 		cs <- byteStringToTuple3s <$> Pipe.await
@@ -126,9 +126,11 @@ drawCairoImageRgb24Adam7 m img w h act = ($ 0) $ fix \go p ->
 	else pure ()
 	where
 	draw :: CInt -> Word8 -> Word8 -> Word8 -> Word8 -> m ()
-	draw p a r g b = putPixel (img :: Argb32Mut (PrimState m)) x y
-		(PixelArgb32Straight a r g b)
-		where ((x, y), _) = calcPos w h p
+	draw p a r g b = if blk
+		then uncurry (putBlock img) xywh (PixelArgb32Straight a r g b)
+		else putPixel (img :: Argb32Mut (PrimState m)) x y
+			(PixelArgb32Straight a r g b)
+		where xywh@((x, y), _) = calcPos w h p
 
 uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
 uncurry4 f (x, y, z, w) = f x y z w
