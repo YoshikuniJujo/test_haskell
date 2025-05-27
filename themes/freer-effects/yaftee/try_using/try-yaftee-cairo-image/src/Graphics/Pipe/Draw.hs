@@ -58,7 +58,7 @@ drawCairoImageRgba32Adam7 m blk img w h act = ($ 0) $ fix \go p ->
 		then uncurry (putBlock img) xywh (PixelArgb32Straight a r g b)
 		else putPixel (img :: Argb32Mut (PrimState m)) x y
 			(PixelArgb32Straight a r g b)
-		where xywh@((x, y), (w, h)) = calcPos w h p
+		where xywh@((x, y), _) = calcPos w h p
 
 putBlock :: (PrimMonad m, ImageMut im) =>
 	im (PrimState m) -> (CInt, CInt) -> (CInt, CInt) -> PixelMut im -> m ()
@@ -128,7 +128,7 @@ drawCairoImageRgb24Adam7 m img w h act = ($ 0) $ fix \go p ->
 	draw :: CInt -> Word8 -> Word8 -> Word8 -> Word8 -> m ()
 	draw p a r g b = putPixel (img :: Argb32Mut (PrimState m)) x y
 		(PixelArgb32Straight a r g b)
-		where ((x, y), (w, h)) = calcPos w h p
+		where ((x, y), _) = calcPos w h p
 
 uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
 uncurry4 f (x, y, z, w) = f x y z w
