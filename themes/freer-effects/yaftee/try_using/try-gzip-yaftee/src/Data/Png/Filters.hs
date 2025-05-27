@@ -19,8 +19,8 @@ unfilter bpp prior (BS.uncons -> filtered) = case filtered of
 		1 -> Right $ unfilterSub (BS.replicate bpp 0) fs
 		2 -> Right $ unfilterUp prior fs
 		3 -> trace "AVERAGE" . Right $ unfilterAverage prior (BS.replicate bpp 0) fs
-		4 -> trace "PAETH" . Right $ unfilterPaeth
-			(BS.replicate bpp 0) prior (BS.replicate bpp 0) fs
+--		4 -> trace "PAETH" . Right $ unfilterPaeth
+		4 -> Right $ unfilterPaeth (BS.replicate bpp 0) prior (BS.replicate bpp 0) fs
 		_ -> Left "unknown filter type"
 
 unfilterSub :: BS.ByteString -> BS.ByteString -> BS.ByteString
