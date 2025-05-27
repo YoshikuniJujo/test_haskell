@@ -48,7 +48,10 @@ import Graphics.Pipe.Draw
 
 main :: IO ()
 main = do
-	fpi : _ <- getArgs
+	fpi : opts <- getArgs
+
+	let	block = opts == ["--block"]
+
 	hh <- openFile fpi ReadMode
 
 	(_, hdr) <- Eff.runM . (`State.run` header0)
@@ -95,7 +98,7 @@ main = do
 				Eff.runM . Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run $
 					PipeBS.hGet (64 * 64) h Pipe.=$=
 					(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
-					(drawCairoImageRgba32Adam7 IO img wdt hgt . void . Eff.effBase $
+					(drawCairoImageRgba32Adam7 IO block img wdt hgt . void . Eff.effBase $
 						G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
 
 			(ColorTypeColor, InterlaceMethodNon) ->
@@ -111,7 +114,7 @@ main = do
 				Eff.runM . Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run $
 					PipeBS.hGet (64 * 64) h Pipe.=$=
 					(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
-					(drawCairoImageRgb24Adam7 IO img wdt hgt . void . Eff.effBase $
+					(drawCairoImageRgb24Adam7 IO block img wdt hgt . void . Eff.effBase $
 						G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
 
 		hClose h
