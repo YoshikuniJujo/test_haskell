@@ -89,7 +89,7 @@ huffman' nm = State.getN nm >>= \case
 		ph <- State.get
 		il <- State.get @(IsLiteral a)
 		if ph == PhaseLitLen
-			then getBuffer nm a >>= step' @a nm il >> huffman' nm
+			then getBuffer nm a >>= step' @a nm il >>= mapM_ (Pipe.yield . Left) >> huffman' nm
 			else await' nm >>= \case
 				Nothing -> pure ()
 				Just b -> (maybe (pure ()) (Pipe.yield . Left) =<< step nm b) >> huffman' nm
@@ -123,6 +123,7 @@ step' nm (IsLiteral p) ba = State.getsN nm unBinTreePair >>= \(t0, t) -> let
 	rs <$ do
 		State.modifyN @(BinTreePair a) nm (binTreePair . (second $ const nt) . unBinTreePair)
 		State.putN nm (BitArray ba')
+		when b $ State.put PhaseOthers
 
 await' :: forall nm -> (
 	U.Member Pipe.P es,
