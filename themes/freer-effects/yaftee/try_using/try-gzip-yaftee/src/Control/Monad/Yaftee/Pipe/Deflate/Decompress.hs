@@ -10,9 +10,11 @@
 
 module Control.Monad.Yaftee.Pipe.Deflate.Decompress (
 
-	run_, States,
+	run_, runNew_, States, States',
 
 	decompress, decompress', Members,
+
+	decompressNew, decompressNew', Members',
 
 	BitArray, FormatBuffer
 
@@ -58,6 +60,14 @@ run_ = void
 	. RunLength.run_ . Huffman.run . OnDemand.run_ @nm
 	. PipeB.lengthRun . Crc.runCrc32
 
+runNew_ :: forall (nm :: Symbol) es i o a . HFunctor.Loose (U.U es) =>
+	Eff.E  (States' nm `Append` es) i o a -> Eff.E es i o ()
+runNew_ = void
+	. (`St.runN` FormatBuffer "")
+	. (`St.runN` Huffman.BitArray (BitArray.fromByteString ""))
+	. RunLength.run_ . Huffman.run . OnDemand.run_ @nm
+	. PipeB.lengthRun . Crc.runCrc32
+
 type States nm = '[ 
 	St.Named nm Crc.Crc32,
 	St.Named nm PipeB.Length ] `Append`
@@ -65,6 +75,15 @@ type States nm = '[
 	Huffman.States nm Int `Append`
 	RunLength.States nm `Append` [
 	St.Named nm BitArray,
+	St.Named nm FormatBuffer ]
+
+type States' nm = '[ 
+	St.Named nm Crc.Crc32,
+	St.Named nm PipeB.Length ] `Append`
+	OnDemand.States nm `Append`
+	Huffman.States nm Int `Append`
+	RunLength.States nm `Append` [
+	St.Named nm Huffman.BitArray,
 	St.Named nm FormatBuffer ]
 
 decompress :: forall nm -> (
@@ -85,6 +104,24 @@ decompress' nm w h bpp =
 	void $ doWhile_ (block nm) Pipe.=$= RunLength.runlength nm Pipe.=$= format' nm w h bpp Pipe.=$=
 		PipeB.length' nm Pipe.=$= Crc.crc32' nm
 
+decompressNew :: forall nm -> (
+	U.Member Pipe.P es,
+	Members' nm es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) => Int ->
+	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
+decompressNew nm ln =
+	void $ doWhile_ (block' nm) Pipe.=$= RunLength.runlength nm Pipe.=$= format nm ln Pipe.=$=
+		PipeB.length' nm Pipe.=$= Crc.crc32' nm
+
+decompressNew' :: forall nm -> (
+	U.Member Pipe.P es,
+	Members' nm es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) => Int -> Int -> Int ->
+	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
+decompressNew' nm w h bpp =
+	void $ doWhile_ (block' nm) Pipe.=$= RunLength.runlength nm Pipe.=$= format' nm w h bpp Pipe.=$=
+		PipeB.length' nm Pipe.=$= Crc.crc32' nm
+
 type Members nm es = (
 	OnDemand.Members nm es,
 	Huffman.Members nm Int es,
@@ -92,6 +129,15 @@ type Members nm es = (
 	U.Member (St.Named nm Crc.Crc32 ) es,
 	U.Member (St.Named nm PipeB.Length) es,
 	U.Member (St.Named nm BitArray) es,
+	U.Member (St.Named nm FormatBuffer) es )
+
+type Members' nm es = (
+	OnDemand.Members nm es,
+	Huffman.Members nm Int es,
+	RunLength.Members nm es,
+	U.Member (St.Named nm Crc.Crc32 ) es,
+	U.Member (St.Named nm PipeB.Length) es,
+	U.Member (St.Named nm Huffman.BitArray) es,
 	U.Member (St.Named nm FormatBuffer) es )
 
 nvrocc :: String
@@ -125,20 +171,9 @@ block nm = do
 					hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
 					pure (Just (hlit, hlit + hdist), Just hclen)
 				St.putN nm $ OnDemand.RequestBuffer 1000
-				void $ bits nm Pipe.=$= do
 
-					whenMaybe mhclen \hclen -> do
-						rtt <- replicateM hclen (Bit.listToNum @Word8 <$> replicateM 3 Pipe.await)
-						let tt = Huffman.makeTree codeLengthList rtt
-						Huffman.putTree nm tt
+				huffmanBits nm mhclen mhlithdist
 
-					Huffman.huffman @Int @Word16 nm Pipe.=$= do
-						(ht, hdt) <- whenMaybeDef (
-								Huffman.makeTree [0 :: Int ..] fixedHuffmanList,
-								Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList ) mhlithdist \(hlit, hlitdist) ->
-							(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> codeLengths nm 0 hlitdist
-						Huffman.putTree nm ht
-						litLen nm ht hdt 0
 				St.putN nm . OnDemand.RequestPushBack =<< St.getsN nm unBitArray
 				St.putN nm $ BitArray BitArray.empty
 				Right "" <- Pipe.await; pure ()
@@ -148,6 +183,100 @@ block nm = do
 		when (BS.length bs0 /= 4) $ Except.throw @String "not 4 bytes"
 		when (ln /= complement cln) $ Except.throw @String "bad pair"
 		where (ln, cln) = (BS.toBits *** BS.toBits) $ BS.splitAt 2 bs0
+
+block' :: forall nm -> (
+	U.Member Pipe.P es,
+	U.Member (St.Named nm OnDemand.Request) es,
+	U.Member (St.Named nm Huffman.BitArray) es,
+	U.Member (St.Named nm (Huffman.BinTreePair Int)) es,
+	U.Member (St.Named nm Huffman.ExtraBits) es,
+	U.Member (Except.E String) es,
+	U.Member (U.FromFirst U.Fail) es ) =>
+	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R Bool
+block' nm = do
+	St.putN nm $ OnDemand.RequestBits 1
+	Just bf <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
+	St.putN nm $ OnDemand.RequestBits 2
+	Just bt <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
+	(bf /= 1) <$ case bt of
+		0 -> do	St.putN nm $ OnDemand.RequestBytes 4
+			ln <- pairToLength =<< PipeT.skipLeft1
+			St.putN nm $ OnDemand.RequestBytes ln
+			Pipe.yield . RunLength.LiteralBS =<< Except.getRight @String "bad" =<< Pipe.await
+		_	| bt == 1 || bt == 2 -> do
+				(mhlithdist, mhclen) <- whenDef (Nothing, Nothing) (bt == 2) do
+					St.putN nm $ OnDemand.RequestBits 5
+					hlit <- (+ 257) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
+					hdist <- (+ 1) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
+					St.putN nm $ OnDemand.RequestBits 4
+					hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
+					pure (Just (hlit, hlit + hdist), Just hclen)
+				St.putN nm $ OnDemand.RequestBuffer 1000
+
+				huffmanBits' nm mhclen mhlithdist
+
+				St.putN nm . OnDemand.RequestPushBack =<< St.getsN nm Huffman.unBitArray
+				St.putN nm $ Huffman.BitArray BitArray.empty
+				Right "" <- Pipe.await; pure ()
+		_ -> error "bad"
+	where
+	pairToLength bs0 = fromIntegral @Word16 ln <$ do
+		when (BS.length bs0 /= 4) $ Except.throw @String "not 4 bytes"
+		when (ln /= complement cln) $ Except.throw @String "bad pair"
+		where (ln, cln) = (BS.toBits *** BS.toBits) $ BS.splitAt 2 bs0
+
+huffmanBits :: forall (nm :: Symbol) -> (
+	U.Member Pipe.P es,
+	U.Member (St.Named nm BitArray) es,
+	U.Member (St.Named nm (Huffman.BinTreePair Int)) es,
+	U.Member (St.Named nm Huffman.ExtraBits) es,
+	U.Member Fail.F es
+	) =>
+	Maybe Int -> Maybe (Int, Int) ->
+	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R ()
+huffmanBits nm mhclen mhlithdist = void $ bits nm Pipe.=$= do
+
+	whenMaybe mhclen \hclen -> do
+		rtt <- replicateM hclen (Bit.listToNum @Word8 <$> replicateM 3 Pipe.await)
+		let tt = Huffman.makeTree codeLengthList rtt
+		Huffman.putTree nm tt
+
+	Huffman.huffman @Int @Word16 nm Pipe.=$= do
+		(ht, hdt) <- whenMaybeDef (
+				Huffman.makeTree [0 :: Int ..] fixedHuffmanList,
+				Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList ) mhlithdist \(hlit, hlitdist) ->
+			(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> codeLengths nm 0 hlitdist
+		Huffman.putTree nm ht
+		litLen nm ht hdt 0
+
+huffmanBits' :: forall (nm :: Symbol) -> (
+	U.Member Pipe.P es,
+	U.Member (St.Named nm (Huffman.BinTreePair Int)) es,
+	U.Member (St.Named nm Huffman.ExtraBits) es,
+	U.Member (St.Named nm OnDemand.Request) es,
+	U.Member (St.Named nm Huffman.BitArray) es,
+	U.Member Fail.F es
+	) =>
+	Maybe Int -> Maybe (Int, Int) ->
+	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R ()
+huffmanBits' nm mhclen mhlithdist = void do
+
+	whenMaybe mhclen \hclen -> do
+		St.putN nm $ OnDemand.RequestBits 3
+		rtt <- replicateM hclen (BitArray.toBits @Word8 . either id BitArray.fromByteString <$> Pipe.await)
+--		rtt <- replicateM hclen (Bit.listToNum @Word8 <$> replicateM 3 Pipe.await)
+		let tt = Huffman.makeTree codeLengthList rtt
+		Huffman.putTree nm tt
+
+	St.putN nm $ OnDemand.RequestBuffer 10000
+
+	Huffman.huffman' @Int @Word16 nm Pipe.=$= do
+		(ht, hdt) <- whenMaybeDef (
+				Huffman.makeTree [0 :: Int ..] fixedHuffmanList,
+				Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList ) mhlithdist \(hlit, hlitdist) ->
+			(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> codeLengths nm 0 hlitdist
+		Huffman.putTree nm ht
+		litLen nm ht hdt 0
 
 codeLengths :: forall nm -> (
 	U.Member Pipe.P es,

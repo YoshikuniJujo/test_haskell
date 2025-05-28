@@ -15,7 +15,10 @@ module Control.Monad.Yaftee.Pipe.Png.DecodeNew (
 	pngRun, PngStates,
 	png, PngMembers,
 
-	pngHeader
+	pngHeader,
+
+	pngRunNew, PngStates',
+	png',
 
 	) where
 
@@ -50,8 +53,15 @@ pngRun :: forall nmcnk nmhdr es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (PngStates nmcnk nmhdr `Append` es) i o r -> Eff.E es i o ()
 pngRun = void . (`State.runN` header0) . chunkRun . Zlib.run_
 
+pngRunNew :: forall nmcnk nmhdr es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (PngStates' nmcnk nmhdr `Append` es) i o r -> Eff.E es i o ()
+pngRunNew = void . (`State.runN` header0) . chunkRun . Zlib.runNew_
+
 type PngStates nmcnk nmhdr =
 	Zlib.States nmhdr `Append` ChunkStates nmcnk `Append` '[State.Named nmhdr Header]
+
+type PngStates' nmcnk nmhdr =
+	Zlib.States' nmhdr `Append` ChunkStates nmcnk `Append` '[State.Named nmhdr Header]
 
 chunkRun :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (ChunkStates nm `Append` es) i o r ->
@@ -128,6 +138,96 @@ png nmcnk nmhdr processHeader =
 			InterlaceMethodAdam7 ->
 				void $ OnDemand.onDemandWithInitial nmhdr bs Pipe.=$= do
 					Zlib.decompress' nmhdr wdt hgt bpp
+			_ -> Except.throw "no such interlace methods"
+
+		IO.print =<< State.getN @Chunk nmcnk
+		_ <- forever $ Pipe.yield =<< Pipe.await
+		IO.print =<< State.getN @Chunk nmcnk
+
+	Pipe.=$= do
+		bs <- Pipe.await
+		IO.print @String "foobar"
+		h <- State.getN nmhdr
+		let	wdt = headerWidth h
+			hgt = headerHeight h
+			dpt = headerBitDepth h
+			ct = headerColorType h
+			bpp = headerToBpp h
+			rbs = headerToRowBytes h
+		IO.print wdt
+		IO.print hgt
+		IO.print dpt
+		IO.print ct
+		IO.print bpp
+		IO.print rbs
+		bs' <- either Except.throw pure
+			$ unfilter bpp (BS.replicate rbs 0) bs
+		Pipe.yield bs'
+		unfilterAll bpp bs'
+--		forever $ Pipe.yield =<< Pipe.await
+
+png' :: forall nmcnk nmhdr -> (
+	U.Member Pipe.P es,
+
+	PngMembers nmcnk nmhdr es,
+
+	Deflate.Members' nmhdr es,
+	U.Member (State.Named nmhdr Adler32.A) es,
+
+	U.Member (Except.E String) es,
+	U.Member Fail.F es,
+	U.Base IO.I es
+	) =>
+	(Header -> Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()) ->
+	Eff.E es BS.ByteString BS.ByteString ()
+png' nmcnk nmhdr processHeader =
+	void $ OnDemand.onDemand nmcnk Pipe.=$=
+	PipeT.checkRight Pipe.=$= Crc.crc32 nmcnk Pipe.=$= do
+		State.putN nmcnk $ OnDemand.RequestBytes 8
+		IO.print =<< Pipe.await
+		doWhile_ $ chunk1 nmcnk 100
+	Pipe.=$= do
+		Left (ChunkBegin "IHDR") <- Pipe.await
+		_ <- PipeT.checkRight Pipe.=$=
+			OnDemand.onDemand nmhdr Pipe.=$=
+			(Header.read nmhdr processHeader `Except.catch` IO.print @String)
+		Left (ChunkEnd "IHDR") <- Pipe.await
+
+		chunkToByteString nmcnk
+
+--				forever $ Pipe.yield =<< Pipe.await
+	Pipe.=$= do
+
+		IO.print =<< Pipe.isMore
+
+		IO.print @Chunk =<< State.getN nmcnk
+
+--				bs <- Pipe.await
+		bs <- untilIdat nmcnk
+		IO.print =<< Pipe.isMore
+
+		IO.print @Chunk =<< State.getN nmcnk
+
+		hdr <- State.getN nmhdr
+		let	wdt = fromIntegral $ headerWidth hdr
+			hgt = fromIntegral $ headerHeight hdr
+			dpt = headerBitDepth hdr
+			ct = headerColorType hdr
+			bpp = fromIntegral $ headerToBpp hdr
+			rbs = headerToRowBytes hdr
+
+		IO.print hdr
+		IO.print "bpp"
+		IO.print bpp
+		IO.print $ headerInterlaceMethod hdr
+
+		case headerInterlaceMethod hdr of
+			InterlaceMethodNon ->
+				void $ OnDemand.onDemandWithInitial nmhdr bs Pipe.=$= do
+					Zlib.decompressNew nmhdr (headerToRowBytes hdr + 1)
+			InterlaceMethodAdam7 ->
+				void $ OnDemand.onDemandWithInitial nmhdr bs Pipe.=$= do
+					Zlib.decompressNew' nmhdr wdt hgt bpp
 			_ -> Except.throw "no such interlace methods"
 
 		IO.print =<< State.getN @Chunk nmcnk
