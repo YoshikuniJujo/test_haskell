@@ -52,6 +52,12 @@ step nm b = State.getsN nm unBinTreePair >>= \(t0, t) -> let
 	(mr, nt) = decode1 t0 t b in
 	mr <$ State.modifyN @(BinTreePair a) nm (binTreePair . (second $ const nt) . unBinTreePair)
 
+step' :: forall a es i o . forall nm -> U.Member (State.Named nm (BinTreePair a)) es =>
+	BitArray.B -> Eff.E es i o [a]
+step' nm ba = State.getsN nm unBinTreePair >>= \(t0, t) -> let
+	(rs, nt) = decodeBitArray t0 t ba in
+	rs <$ State.modifyN @(BinTreePair a) nm (binTreePair . (second $ const nt) . unBinTreePair)
+
 newtype ExtraBits = ExtraBits Int deriving Show
 
 huffman :: forall a eb es r . forall nm -> Bits eb => (
@@ -80,6 +86,8 @@ huffman' nm = State.getN nm >>= \case
 	ExtraBits 0 -> await' nm >>= \case
 		Nothing -> pure ()
 		Just b -> (maybe (pure ()) (Pipe.yield . Left) =<< step nm b) >> huffman' nm
+--	ExtraBits 0 -> Pipe.await >>= \case
+--		(either id BitArray.fromByteString -> ba)-> (((Pipe.yield . Left) `mapM`) =<< step' nm ba) >> huffman' nm
 	ExtraBits n -> takeBits16New nm n >>= \case
 		Nothing -> pure ()
 		Just eb -> do
