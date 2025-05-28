@@ -12,11 +12,11 @@ module Control.Monad.Yaftee.State (
 
 -- * NORMAL
 
-S, get, gets, put, modify, run,
+S, get, gets, put, modify, modify', run,
 
 -- * NAMED
 
-Named, getN, getsN, putN, modifyN, runN
+Named, getN, getsN, putN, modifyN, modifyN', runN
 
 ) where
 
@@ -41,8 +41,9 @@ gets = getsN ""
 put :: Union.Member (S s) effs => s -> Eff.E effs i o ()
 put = putN ""
 
-modify :: Union.Member (S s) effs => (s -> s) -> Eff.E effs i o ()
+modify, modify' :: Union.Member (S s) effs => (s -> s) -> Eff.E effs i o ()
 modify = modifyN ""
+modify' = modifyN' ""
 
 run :: HFunctor.Loose (Union.U effs) =>
 	Eff.E (S s ': effs) i o a -> s -> Eff.E effs i o (a, s)
@@ -54,6 +55,7 @@ type Named nm s = Union.FromFirst (Named_ nm s)
 
 data Named_ (nm :: Symbol) s a where
 	Get :: Named_ nm s s; Put :: forall nm s . !s -> Named_ nm s ()
+	Modify :: forall nm s . (s -> s) -> Named_ nm s ()
 
 getN :: forall s effs i o .
 	forall nm -> Union.Member (Named nm s) effs => Eff.E effs i o s
@@ -69,7 +71,11 @@ putN nm = Eff.eff . Put @nm
 
 modifyN :: forall nm -> Union.Member (Named nm s) effs =>
 	(s -> s) -> Eff.E effs i o ()
-modifyN nm f = putN nm . f =<< getN nm
+modifyN nm = Eff.eff . Modify @nm
+
+modifyN' :: forall nm -> Union.Member (Named nm s) effs =>
+	(s -> s) -> Eff.E effs i o ()
+modifyN' nm f = putN nm . f =<< getN nm
 
 runN :: forall nm effs s i o a .
 	HFunctor.Loose (Union.U effs) =>
@@ -86,3 +92,4 @@ transactionNoGoodN nm s m =
 			Nothing -> u F.:>>= Q.singleton (go s' F.. q)
 			Just (Union.FromFirst Get k) -> go s' $ q F.$ k s'
 			Just (Union.FromFirst (Put t) k) -> go t $ q F.$ k ()
+			Just (Union.FromFirst (Modify f) k) -> go (f s') $ q F.$ k ()
