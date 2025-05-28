@@ -36,7 +36,7 @@ import Data.Bool
 data P f i o a where
 	IsMore :: forall f i o . P f i o Bool
 	Await :: P f i o i
-	Yield :: forall f i o . o -> P f i o ()
+	Yield :: forall f i o . !o -> P f i o ()
 	(:=$=) :: forall f i x o r r' .
 		f i x r -> f x o r' -> P f i o (f i x r, f x o r')
 	(:=@=) :: forall f i x o r r' .
