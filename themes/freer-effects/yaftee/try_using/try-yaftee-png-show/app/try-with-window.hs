@@ -46,6 +46,8 @@ import Control.Concurrent
 
 import Graphics.Pipe.Draw
 
+import Pipe.Huffman qualified as Huffman
+
 main :: IO ()
 main = do
 	fpi : opts <- getArgs
@@ -87,33 +89,53 @@ main = do
 		case (ct, itl) of
 			(ColorTypeColorAlpha, InterlaceMethodNon) ->
 
-				Eff.runM . Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run $
+				Eff.runM . Except.run @String . Fail.runExc id . pngRunNew @"chunk" @"deflate"
+
+					. (`State.run` Huffman.PhaseOthers)
+					. (`State.run` Huffman.IsLiteral @Int (const False))
+
+					. Pipe.run $
 					PipeBS.hGet (64 * 64) h Pipe.=$=
-					(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
+					(void (png' "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
 					(drawCairoImageRgba32 IO img wdt hgt . void . Eff.effBase $
 						G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
 
 			(ColorTypeColorAlpha, InterlaceMethodAdam7) ->
 
-				Eff.runM . Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run $
+				Eff.runM . Except.run @String . Fail.runExc id . pngRunNew @"chunk" @"deflate"
+
+					. (`State.run` Huffman.PhaseOthers)
+					. (`State.run` Huffman.IsLiteral @Int (const False))
+
+					. Pipe.run $
 					PipeBS.hGet (64 * 64) h Pipe.=$=
-					(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
+					(void (png' "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
 					(drawCairoImageRgba32Adam7 IO block img wdt hgt . void . Eff.effBase $
 						G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
 
 			(ColorTypeColor, InterlaceMethodNon) ->
 
-				Eff.runM . Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run $
+				Eff.runM . Except.run @String . Fail.runExc id . pngRunNew @"chunk" @"deflate"
+
+					. (`State.run` Huffman.PhaseOthers)
+					. (`State.run` Huffman.IsLiteral @Int (const False))
+
+					. Pipe.run $
 					PipeBS.hGet (64 * 64) h Pipe.=$=
-					(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
+					(void (png' "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
 					(drawCairoImageRgb24 IO img wdt hgt . void . Eff.effBase $
 						G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
 
 			(ColorTypeColor, InterlaceMethodAdam7) ->
 
-				Eff.runM . Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run $
+				Eff.runM . Except.run @String . Fail.runExc id . pngRunNew @"chunk" @"deflate"
+
+					. (`State.run` Huffman.PhaseOthers)
+					. (`State.run` Huffman.IsLiteral @Int (const False))
+
+					. Pipe.run $
 					PipeBS.hGet (64 * 64) h Pipe.=$=
-					(void (png "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
+					(void (png' "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
 					(drawCairoImageRgb24Adam7 IO block img wdt hgt . void . Eff.effBase $
 						G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
 
