@@ -276,7 +276,7 @@ huffmanBits' nm mhclen mhlithdist = void do
 		let tt = Huffman.makeTree codeLengthList rtt
 		Huffman.putTree nm tt
 
-	St.putN nm $ OnDemand.RequestBuffer 10000
+	St.putN nm $ OnDemand.RequestBuffer 1000
 
 	Huffman.huffman' @Int @Word16 nm Pipe.=$= do
 		(ht, hdt) <- whenMaybeDef (
