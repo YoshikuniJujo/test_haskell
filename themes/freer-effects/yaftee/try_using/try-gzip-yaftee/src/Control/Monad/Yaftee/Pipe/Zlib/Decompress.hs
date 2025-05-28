@@ -81,6 +81,8 @@ decompress nm fnum = do
 
 decompressNew :: forall nm -> (
 	U.Member Pipe.P es, Members' nm es,
+	U.Member (State.S Huffman.Phase) es,
+	U.Member (State.S (Huffman.IsLiteral Int)) es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	Int ->
 	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
@@ -131,6 +133,8 @@ decompress' nm w h bpp = do
 
 decompressNew' :: forall nm -> (
 	U.Member Pipe.P es, Members' nm es,
+	U.Member (State.S Huffman.Phase) es,
+	U.Member (State.S (Huffman.IsLiteral Int)) es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	Int -> Int -> Int ->
 	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()

@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
@@ -15,11 +15,14 @@ import Data.ByteString.BitArray qualified as BitArray
 
 data BinTree a = Leaf a | Node (BinTree a) (BinTree a) deriving Show
 
-decodeBitArray :: BinTree a -> BinTree a -> BitArray.B -> ([a], BinTree a)
-decodeBitArray t0 t ba = case BitArray.pop ba of
-	Nothing -> ([], t)
+decodeBitArray :: (a -> Bool) -> BinTree a -> BinTree a -> BitArray.B -> (([a], BinTree a), (BitArray.B, Bool))
+decodeBitArray p t0 t ba = case BitArray.pop ba of
+	Nothing -> (([], t), (BitArray.fromByteString "", False))
 	Just (b, ba') -> let (mr, t') = decode1 t0 t b in
-		maybe id (first . (:)) mr $ decodeBitArray t0 t' ba'
+		case mr of
+			Nothing -> decodeBitArray p t0 t' ba'
+			Just r	| p r -> first (first (r :)) $ decodeBitArray p t0 t' ba'
+				| otherwise -> (([r], t'), (ba', True))
 
 decode1 :: BinTree a -> BinTree a -> Bit.B -> (Maybe a, BinTree a)
 decode1 t0 (Node (Leaf x) _) O = (Just x, t0)

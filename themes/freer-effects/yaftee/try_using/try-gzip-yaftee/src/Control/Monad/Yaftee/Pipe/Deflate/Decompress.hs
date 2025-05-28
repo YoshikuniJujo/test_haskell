@@ -106,6 +106,8 @@ decompress' nm w h bpp =
 
 decompressNew :: forall nm -> (
 	U.Member Pipe.P es,
+	U.Member (St.S Huffman.Phase) es,
+	U.Member (St.S (Huffman.IsLiteral Int)) es,
 	Members' nm es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) => Int ->
 	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
@@ -115,6 +117,8 @@ decompressNew nm ln =
 
 decompressNew' :: forall nm -> (
 	U.Member Pipe.P es,
+	U.Member (St.S Huffman.Phase) es,
+	U.Member (St.S (Huffman.IsLiteral Int)) es,
 	Members' nm es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) => Int -> Int -> Int ->
 	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
@@ -186,6 +190,8 @@ block nm = do
 
 block' :: forall nm -> (
 	U.Member Pipe.P es,
+	U.Member (St.S Huffman.Phase) es,
+	U.Member (St.S (Huffman.IsLiteral Int)) es,
 	U.Member (St.Named nm OnDemand.Request) es,
 	U.Member (St.Named nm Huffman.BitArray) es,
 	U.Member (St.Named nm (Huffman.BinTreePair Int)) es,
@@ -251,6 +257,8 @@ huffmanBits nm mhclen mhlithdist = void $ bits nm Pipe.=$= do
 
 huffmanBits' :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
+	U.Member (St.S Huffman.Phase) es,
+	U.Member (St.S (Huffman.IsLiteral Int)) es,
 	U.Member (St.Named nm (Huffman.BinTreePair Int)) es,
 	U.Member (St.Named nm Huffman.ExtraBits) es,
 	U.Member (St.Named nm OnDemand.Request) es,
@@ -275,8 +283,12 @@ huffmanBits' nm mhclen mhlithdist = void do
 				Huffman.makeTree [0 :: Int ..] fixedHuffmanList,
 				Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList ) mhlithdist \(hlit, hlitdist) ->
 			(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> codeLengths nm 0 hlitdist
+
+		St.put Huffman.PhaseLitLen
+		St.put $ Huffman.IsLiteral \i -> (0 :: Int) <= i && i <= 255
+
 		Huffman.putTree nm ht
-		litLen nm ht hdt 0
+		litLen' nm ht hdt 0
 
 codeLengths :: forall nm -> (
 	U.Member Pipe.P es,
@@ -386,3 +398,49 @@ interlacePixelNums w h =
 	replicate (h `div` 2) w ++ [0]
 
 m `div'`n = (m - 1) `div` n + 1
+
+litLen' :: forall nm -> (
+	U.Member Pipe.P es,
+	U.Member (St.S Huffman.Phase) es,
+	U.Member (St.Named nm
+		(Huffman.BinTreePair Int)) es,
+	U.Member (St.Named nm Huffman.ExtraBits) es ) =>
+	Huffman.BinTree Int -> Huffman.BinTree Int -> Int ->
+	Eff.E es (Either Int Word16) RunLength.R ()
+litLen' nm t dt pri = Pipe.await >>= \case
+	Left 256 -> pure ()
+	Left i	| 0 <= i && i <= 255 -> do
+			Pipe.yield (RunLength.Literal $ fromIntegral i)
+			litLen' nm t dt 0
+		| 257 <= i && i <= 264 -> Huffman.putTree nm dt >> dist' nm t dt (calcLength i 0) 0
+		| 265 <= i && i <= 284 -> do
+			Huffman.putExtraBits nm $ (i - 261) `div` 4
+			litLen' nm t dt i
+		| i == 285 -> Huffman.putTree nm dt >> dist' nm t dt (calcLength i 0) 0
+	Right eb -> do
+		Huffman.putTree nm dt
+		dist' nm t dt (calcLength pri eb) 0
+	err -> error $ show err
+
+dist' :: forall nm -> (
+	U.Member Pipe.P es,
+	U.Member (St.S Huffman.Phase) es,
+	U.Member (St.Named nm (Huffman.BinTreePair Int)) es,
+	U.Member (St.Named nm Huffman.ExtraBits) es ) =>
+	Huffman.BinTree Int -> Huffman.BinTree Int -> RunLength.Length -> Int ->
+	Eff.E es (Either Int Word16) RunLength.R ()
+dist' nm t dt ln pri = Pipe.await >>= \case
+	Left i	| 0 <= i && i <= 3 -> do
+			Pipe.yield $ RunLength.LenDist ln (calcDist i 0)
+			St.put Huffman.PhaseLitLen
+			Huffman.putTree nm t
+			litLen' nm t dt 0
+		| 4 <= i && i <= 29 -> do
+			Huffman.putExtraBits nm $ (i - 2) `div` 2
+			dist' nm t dt ln i
+		| otherwise -> error $ "putDist: yet " ++ show i
+	Right eb -> do
+		Pipe.yield (RunLength.LenDist ln (calcDist pri eb))
+		St.put Huffman.PhaseLitLen
+		Huffman.putTree nm t
+		litLen' nm t dt 0

@@ -18,6 +18,7 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
+import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
@@ -25,6 +26,7 @@ import System.IO
 import System.Environment
 
 import Control.Monad.Yaftee.Pipe.Png.DecodeNew
+import Pipe.Huffman qualified as Huffman
 
 main :: IO ()
 main = do
@@ -32,6 +34,9 @@ main = do
 	let	processHeader = IO.print
 	h <- openFile fp ReadMode
 	void . Eff.runM
+		
+		. (`State.run` Huffman.PhaseOthers)
+		. (`State.run` Huffman.IsLiteral @Int (const False))
 
 		. pngRunNew @"chunk" @"deflate"
 

@@ -16,6 +16,8 @@ module Pipe.Huffman (
 
 	BinTreePair, BinTree, ExtraBits(..), Pkg,
 
+	Phase(..), IsLiteral(..)
+
 	) where
 
 import GHC.TypeLits
@@ -52,12 +54,6 @@ step nm b = State.getsN nm unBinTreePair >>= \(t0, t) -> let
 	(mr, nt) = decode1 t0 t b in
 	mr <$ State.modifyN @(BinTreePair a) nm (binTreePair . (second $ const nt) . unBinTreePair)
 
-step' :: forall a es i o . forall nm -> U.Member (State.Named nm (BinTreePair a)) es =>
-	BitArray.B -> Eff.E es i o [a]
-step' nm ba = State.getsN nm unBinTreePair >>= \(t0, t) -> let
-	(rs, nt) = decodeBitArray t0 t ba in
-	rs <$ State.modifyN @(BinTreePair a) nm (binTreePair . (second $ const nt) . unBinTreePair)
-
 newtype ExtraBits = ExtraBits Int deriving Show
 
 huffman :: forall a eb es r . forall nm -> Bits eb => (
@@ -75,17 +71,28 @@ huffman nm = State.getN nm >>= \case
 		State.putN nm $ ExtraBits 0
 		huffman nm
 
+data Phase = PhaseLitLen | PhaseOthers deriving (Show, Eq)
+
+newtype IsLiteral a = IsLiteral (a -> Bool)
+
 huffman' :: forall a eb es r . forall nm -> Bits eb => (
 	U.Member Pipe.P es,
+	U.Member (State.S Phase) es,
+	U.Member (State.S (IsLiteral a)) es,
 	U.Member (State.Named nm (BinTreePair a)) es,
 	U.Member (State.Named nm ExtraBits) es,
 	U.Member (State.Named nm BitArray) es,
 	U.Member Fail.F es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) (Either a eb) ()
 huffman' nm = State.getN nm >>= \case
-	ExtraBits 0 -> await' nm >>= \case
-		Nothing -> pure ()
-		Just b -> (maybe (pure ()) (Pipe.yield . Left) =<< step nm b) >> huffman' nm
+	ExtraBits 0 -> do
+		ph <- State.get
+		il <- State.get @(IsLiteral a)
+		if ph == PhaseLitLen
+			then getBuffer nm a >>= step' @a nm il >> huffman' nm
+			else await' nm >>= \case
+				Nothing -> pure ()
+				Just b -> (maybe (pure ()) (Pipe.yield . Left) =<< step nm b) >> huffman' nm
 --	ExtraBits 0 -> Pipe.await >>= \case
 --		(either id BitArray.fromByteString -> ba)-> (((Pipe.yield . Left) `mapM`) =<< step' nm ba) >> huffman' nm
 	ExtraBits n -> takeBits16New nm n >>= \case
@@ -94,6 +101,28 @@ huffman' nm = State.getN nm >>= \case
 			Pipe.yield $ Right eb
 			State.putN nm $ ExtraBits 0
 			huffman' nm
+
+getBuffer :: forall (nm :: Symbol) a -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm (BinTreePair a)) es,
+	U.Member (State.Named nm BitArray) es
+	) =>
+	Eff.E es (Either BitArray.B BS.ByteString) o BitArray.B
+getBuffer nm a = do
+	BitArray ba <- State.getN nm
+	if BitArray.null ba then either id BitArray.fromByteString <$> Pipe.await else pure ba
+
+step' :: forall a es i o . forall nm -> (
+	U.Member (State.S Phase) es,
+	U.Member (State.Named nm BitArray) es,
+	U.Member (State.Named nm (BinTreePair a)) es
+	) => IsLiteral a ->
+	BitArray.B -> Eff.E es i o [a]
+step' nm (IsLiteral p) ba = State.getsN nm unBinTreePair >>= \(t0, t) -> let
+	((rs, nt), (ba', b)) = decodeBitArray p t0 t ba in
+	rs <$ do
+		State.modifyN @(BinTreePair a) nm (binTreePair . (second $ const nt) . unBinTreePair)
+		State.putN nm (BitArray ba')
 
 await' :: forall nm -> (
 	U.Member Pipe.P es,

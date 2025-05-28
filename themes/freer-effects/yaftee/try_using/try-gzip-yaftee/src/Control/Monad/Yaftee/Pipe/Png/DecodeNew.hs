@@ -49,6 +49,8 @@ import Control.Monad.Yaftee.Pipe.Png.Decode.HeaderNew qualified as Header
 import Control.Monad.Yaftee.Pipe.Deflate.Decompress qualified as Deflate
 import Control.Monad.Yaftee.Pipe.Zlib.Decompress qualified as Zlib
 
+import Pipe.Huffman qualified as Huffman
+
 pngRun :: forall nmcnk nmhdr es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (PngStates nmcnk nmhdr `Append` es) i o r -> Eff.E es i o ()
 pngRun = void . (`State.runN` header0) . chunkRun . Zlib.run_
@@ -168,6 +170,9 @@ png nmcnk nmhdr processHeader =
 
 png' :: forall nmcnk nmhdr -> (
 	U.Member Pipe.P es,
+
+	U.Member (State.S Huffman.Phase) es,
+	U.Member (State.S (Huffman.IsLiteral Int)) es,
 
 	PngMembers nmcnk nmhdr es,
 
