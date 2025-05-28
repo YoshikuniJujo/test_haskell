@@ -34,11 +34,11 @@ main = do
 	let	processHeader = IO.print
 	h <- openFile fp ReadMode
 	void . Eff.runM
+
+		. pngRunNew @"chunk" @"deflate"
 		
 		. (`State.run` Huffman.PhaseOthers)
 		. (`State.run` Huffman.IsLiteral @Int (const False))
-
-		. pngRunNew @"chunk" @"deflate"
 
 		. Except.run @String . Fail.runExc id . Pipe.run
 		$ PipeBS.hGet (64 * 64) h Pipe.=$=
