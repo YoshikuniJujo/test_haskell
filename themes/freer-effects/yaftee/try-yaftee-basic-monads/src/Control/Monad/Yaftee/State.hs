@@ -81,7 +81,7 @@ runN :: forall nm effs s i o a .
 	HFunctor.Loose (Union.U effs) =>
 	Eff.E (Named nm s ': effs) i o a -> s -> Eff.E effs i o (a, s)
 runN = ((uncurry (flip (,)) <$>) .) .  Eff.handleRelayS (,) fst snd \st k s ->
-	case st of Get -> k s s; Put s' -> k () s'
+	case st of Get -> k s s; Put s' -> k () s'; Modify f -> k () (f s)
 
 transactionNoGoodN :: forall effs i o a . forall nm s ->
 	Union.Member (Named nm s) effs => Eff.E effs i o a -> Eff.E effs i o a
