@@ -223,4 +223,4 @@ bsToWord16 bs = case fromIntegral <$> BS.unpack bs of
 	_ -> error "bad"
 
 crc :: BS.ByteString -> Word32
-crc = complement . PipeCrc.stepBS 0xffffffff
+crc = complement . PipeCrc.crc32StepBS 0xffffffff

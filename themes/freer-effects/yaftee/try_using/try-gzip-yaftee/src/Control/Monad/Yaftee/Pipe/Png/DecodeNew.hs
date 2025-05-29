@@ -4,7 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -22,6 +22,7 @@ module Control.Monad.Yaftee.Pipe.Png.DecodeNew (
 
 	) where
 
+import GHC.TypeLits
 import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.ToolsYj
@@ -337,6 +338,18 @@ chunk1 nm m = do
 		0 -> []
 		m'	| n < m' -> n : go (m' - n)
 			| otherwise -> [m']
+
+readMore :: forall (nm :: Symbol) -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm ByteString) es
+	) =>
+	Eff.E es BS.ByteString o ()
+readMore nm = Pipe.await >>= State.modifyN nm . flip appendByteString
+
+newtype ByteString = ByteString { unByteString :: BS.ByteString } deriving Show
+
+appendByteString :: ByteString -> BS.ByteString -> ByteString
+appendByteString (ByteString bs1) bs2 = ByteString $ bs1 `BS.append` bs2
 
 data ChunkTag = ChunkBegin BS.ByteString | ChunkEnd BS.ByteString deriving Show
 
