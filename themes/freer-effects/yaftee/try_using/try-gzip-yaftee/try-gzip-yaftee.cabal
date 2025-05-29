@@ -195,6 +195,26 @@ executable try-png-decompress-new
     , typelevel-tools-yj
   default-language: Haskell2010
 
+executable try-zlib-compress
+  main-is: try-zlib-compress.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -O2 -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , containers
+    , tools-yj
+    , try-bitarray-bs
+    , try-gzip-yaftee
+    , try-higher-order-open-union
+    , try-yaftee
+    , try-yaftee-basic-monads
+    , try-yaftee-conduit
+    , try-yaftee-conduit-bytestring
+    , typelevel-tools-yj
+  default-language: Haskell2010
+
 executable try-zlib-decompress
   main-is: try-zlib-decompress.hs
   hs-source-dirs:

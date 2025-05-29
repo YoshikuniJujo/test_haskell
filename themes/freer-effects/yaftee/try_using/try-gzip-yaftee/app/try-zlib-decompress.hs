@@ -14,6 +14,7 @@ import Control.Monad.Yaftee.Pipe.Zlib.Decompress qualified as Zlib
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
+import Control.Monad.Yaftee.IO qualified as IO
 import System.IO
 import System.Environment
 
@@ -26,6 +27,6 @@ main = do
 	void . Eff.runM . Except.run @String . Fail.run . Zlib.runNew_ @"foobar"
 		. (`State.run` Huffman.IsLiteral (const False :: Int -> Bool))
 		. (`State.run` Huffman.PhaseOthers)
-		. Pipe.run $ PipeBS.hGet 64 h Pipe.=$=
+		. Pipe.run $ PipeBS.hGet 64 h Pipe.=$= ((void $
 			OnDemand.onDemand "foobar" Pipe.=$=
-			Zlib.decompressNew "foobar" 100 Pipe.=$= PipeBS.putStr
+			Zlib.decompressNew "foobar" 100 Pipe.=$= PipeBS.putStr ) `Except.catch` IO.putStrLn)

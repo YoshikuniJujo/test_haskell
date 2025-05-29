@@ -91,4 +91,7 @@ runLengthToDist (LenDist _ln dst) = [fst $ distToCode dst]
 runLengthToDist EndOfInput = []
 
 toDistFreqs :: [R] -> [(Int, Int)]
-toDistFreqs = ((head &&& length) <$>) . L.group . L.sort . (runLengthToDist =<<)
+toDistFreqs = addDummyDistFreqs . ((head &&& length) <$>) . L.group . L.sort . (runLengthToDist =<<)
+
+addDummyDistFreqs :: [(Int, Int)] -> [(Int, Int)]
+addDummyDistFreqs fs = fs ++ take (2 - length fs) [(28, 1), (29, 1)]

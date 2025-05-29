@@ -30,13 +30,15 @@ import Data.Gzip.Block
 import Data.TypeLevel.List
 import Data.HigherFunctor qualified as HFunctor
 
+import GHC.Stack
+
 run_ :: forall nm es i o a . HFunctor.Loose (U.U es) =>
 	Eff.E (States nm `Append` es) i o a -> Eff.E es i o ()
 run_ = void . (flip State.runN PipeB.empty) . RunLength.run_
 
 type States nm = RunLength.States nm `Append` '[State.Named nm PipeB.Queue]
 
-compress :: forall (nm :: Symbol) -> (U.Member Pipe.P es, Members nm es) =>
+compress :: forall (nm :: Symbol) -> (HasCallStack, U.Member Pipe.P es, Members nm es) =>
 	Eff.E es BS.ByteString BS.ByteString ()
 compress nm = void $ RunLength.compress nm Pipe.=$= PipeL.bundle' 500 Pipe.=$=
 	PipeT.convert'' runLengthsToBits [] Pipe.=$= PipeB.toByteString' nm

@@ -9,6 +9,7 @@
 
 module Data.Gzip.Block (runLengthsToBits) where
 
+import GHC.Stack
 import Control.Arrow
 import Data.Maybe
 import Data.List qualified as L
@@ -22,7 +23,7 @@ import Data.Huffman (tableToDict)
 import Data.PackageMerge qualified as PackageMerge
 import Pipe.Runlength qualified as RunLength
 
-runLengthsToBits :: Bool -> [RunLength.R] -> [Bit.B]
+runLengthsToBits :: HasCallStack => Bool -> [RunLength.R] -> [Bit.B]
 runLengthsToBits _ [] = []
 runLengthsToBits f ((++ [RunLength.EndOfInput]) -> rl) =
 	[bool O I f, O, I] ++
@@ -43,11 +44,14 @@ encode dl dd (RunLength.LenDist l d) = dl Map.! lc ++ le ++ dd Map.! dc ++ de
 	where (lc, le) = lengthToCode l; (dc, de) = distToCode d
 encode dl _ RunLength.EndOfInput = dl Map.! 256
 
-mkHeader :: Map.Map Int Int -> Map.Map Int Int -> (Int, Int, Int, [Bit.B])
-mkHeader tll td = (
-	lnll, lnd, length clcla,
-	(=<<) (Bit.listFromNum 3) clcla ++
-	(=<<) (uncurry (++) . ((tableToDict tcla Map.!) `first`)) cla )
+mkHeader :: HasCallStack => Map.Map Int Int -> Map.Map Int Int -> (Int, Int, Int, [Bit.B])
+mkHeader tll td
+	| Map.null tll = error "mkHeader: tll is empty"
+	| Map.null td = error "mkHeader: td is empty"
+	| otherwise = (
+		lnll, lnd, length clcla,
+		(=<<) (Bit.listFromNum 3) clcla ++
+		(=<<) (uncurry (++) . ((tableToDict tcla Map.!) `first`)) cla )
 	where
 	(clcla :: [Int]) = dropTrailings 4 (== 0)
 		$ fromMaybe 0 . (tcla Map.!?) <$> codeLenCodeLenAlphOrder
@@ -71,8 +75,10 @@ codeLenAlph l n = (l, []) : go (n - 1)
 		| m < 7 = [(16, Bit.listFromNum 2 (m - 3))]
 		| otherwise = (16, [I, I]) : go (m - 6)
 
-tableToList :: Int -> Map.Map Int Int -> (Int, [Int])
-tableToList m t = (mk + 1, fromMaybe 0 . (t Map.!?) <$> [0 .. mk])
+tableToList :: HasCallStack => Int -> Map.Map Int Int -> (Int, [Int])
+tableToList m t
+	| Map.null t = error "tableToList: empty table"
+	| otherwise = (mk + 1, fromMaybe 0 . (t Map.!?) <$> [0 .. mk])
 	where mk = m `max` fst (Map.findMax t)
 
 codeLenCodeLenAlphOrder :: [Int]
