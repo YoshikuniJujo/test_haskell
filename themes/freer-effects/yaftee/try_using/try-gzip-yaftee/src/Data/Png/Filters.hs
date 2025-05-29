@@ -9,8 +9,6 @@ import Control.Arrow
 import Data.Word
 import Data.ByteString qualified as BS
 
-import Debug.Trace
-
 unfilter :: Int -> BS.ByteString -> BS.ByteString -> Either String BS.ByteString
 unfilter bpp prior (BS.uncons -> filtered) = case filtered of
 	Nothing -> Left "empty line"
@@ -18,8 +16,7 @@ unfilter bpp prior (BS.uncons -> filtered) = case filtered of
 		0 -> Right fs
 		1 -> Right $ unfilterSub (BS.replicate bpp 0) fs
 		2 -> Right $ unfilterUp prior fs
-		3 -> trace "AVERAGE" . Right $ unfilterAverage prior (BS.replicate bpp 0) fs
---		4 -> trace "PAETH" . Right $ unfilterPaeth
+		3 -> Right $ unfilterAverage prior (BS.replicate bpp 0) fs
 		4 -> Right $ unfilterPaeth (BS.replicate bpp 0) prior (BS.replicate bpp 0) fs
 		_ -> Left "unknown filter type"
 
