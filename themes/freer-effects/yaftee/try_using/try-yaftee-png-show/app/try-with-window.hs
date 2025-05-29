@@ -68,12 +68,10 @@ main = do
 		ct = headerColorType hdr
 		itl = headerInterlaceMethod hdr
 
-	putStrLn "hogepiyo"
 	print itl
 
 	img <- newImageMut @Argb32Mut wdt hgt
 	
-	putStrLn "Slozsoft"
 	join $ Gtk.init <$> getProgName <*> getArgs
 	w <- Gtk.Window.new Gtk.Window.Toplevel
 	G.Signal.connect_ab_bool w "delete-event" (\_ _ -> pure False) Null
