@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Monad.Yaftee.Pipe.Deflate.Compress
       Control.Monad.Yaftee.Pipe.Deflate.Decompress
       Control.Monad.Yaftee.Pipe.Gzip.Compress
       Control.Monad.Yaftee.Pipe.Gzip.Decompress
