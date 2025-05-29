@@ -90,9 +90,12 @@ huffman' nm = State.getN nm >>= \case
 		il <- State.get @(IsLiteral a)
 		if ph == PhaseLitLen
 			then getBuffer nm a >>= step' @a nm il >>= mapM_ (Pipe.yield . Left) >> huffman' nm
+			else getBuffer nm a >>= step' @a nm (IsLiteral $ const False) >>= mapM_ (Pipe.yield . Left) >> huffman' nm
+			{-
 			else await' nm >>= \case
 				Nothing -> pure ()
 				Just b -> (maybe (pure ()) (Pipe.yield . Left) =<< step nm b) >> huffman' nm
+				-}
 --	ExtraBits 0 -> Pipe.await >>= \case
 --		(either id BitArray.fromByteString -> ba)-> (((Pipe.yield . Left) `mapM`) =<< step' nm ba) >> huffman' nm
 	ExtraBits n -> takeBits16New nm n >>= \case
