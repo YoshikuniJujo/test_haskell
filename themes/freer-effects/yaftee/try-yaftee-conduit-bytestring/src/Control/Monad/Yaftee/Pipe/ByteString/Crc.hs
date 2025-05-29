@@ -15,7 +15,7 @@ module Control.Monad.Yaftee.Pipe.ByteString.Crc (
 	crc32ToByteString, byteStringToCrc32,
 	crc32ToByteStringBE, byteStringToCrc32BE,
 
-	stepBS
+	crc32StepBS
 
 	) where
 
@@ -58,7 +58,7 @@ compCrc32 nm = State.modifyN nm \(Crc32 c) -> Crc32 $ complement c
 crc32Body :: forall nm -> (U.Member Pipe.P es, U.Member (State.Named nm Crc32) es) =>
 	Eff.E es BS.ByteString BS.ByteString r
 crc32Body nm = fix \go -> Pipe.await >>= \bs -> do
-	State.modifyN nm \(Crc32 c) -> Crc32 $ c `stepBS` bs
+	State.modifyN nm \(Crc32 c) -> Crc32 $ c `crc32StepBS` bs
 	Pipe.yield bs
 	go
 
@@ -66,7 +66,7 @@ crc32Body' :: forall es . forall nm -> (U.Member Pipe.P es, U.Member (State.Name
 	Eff.E es BS.ByteString BS.ByteString ()
 crc32Body' nm = fix \go ->
 	Pipe.isMore >>= bool (pure ()) (Pipe.await >>= \bs -> do
-		State.modifyN nm \(Crc32 c) -> Crc32 $ c `stepBS` bs
+		State.modifyN nm \(Crc32 c) -> Crc32 $ c `crc32StepBS` bs
 		Pipe.yield bs
 		go)
 
@@ -120,5 +120,5 @@ popByte n = (fromIntegral n, n `shiftR` 8)
 step8 :: Word32 -> Word8 -> Word32
 step8 n b = uncurry xor . (first $ (table !) . (`xor` b)) $ popByte n
 
-stepBS :: Word32 -> BS.ByteString -> Word32
-stepBS n = BS.foldl' step8 n
+crc32StepBS :: Word32 -> BS.ByteString -> Word32
+crc32StepBS n = BS.foldl' step8 n
