@@ -73,7 +73,7 @@ crc32Body' :: forall es . forall nm -> (U.Member Pipe.P es, U.Member (State.Name
 	Eff.E es BS.ByteString BS.ByteString ()
 crc32Body' nm = fix \go ->
 	Pipe.isMore >>= bool (pure ()) (Pipe.await >>= \bs -> do
-		State.modifyN nm \(Crc32 c) -> Crc32 $ c `crc32StepBS` bs
+		State.modifyN nm \(Crc32 c) -> Crc32 $! c `crc32StepBS` bs
 		Pipe.yield bs
 		go)
 
