@@ -89,14 +89,56 @@ huffman' nm = State.getN nm >>= \case
 		ph <- State.get
 		il <- State.get @(IsLiteral a)
 		if ph == PhaseLitLen
+			then stepNew nm a il >>= mapM_ (Pipe.yield . Left) >> huffman' nm
+			else stepNew nm a (IsLiteral $ const False) >>= mapM_ (Pipe.yield . Left) >> huffman' nm
+		{-
 			then getBuffer nm a >>= step' @a nm il >>= mapM_ (Pipe.yield . Left) >> huffman' nm
 			else getBuffer nm a >>= step' @a nm (IsLiteral $ const False) >>= mapM_ (Pipe.yield . Left) >> huffman' nm
+			-}
 	ExtraBits n -> takeBits16New nm n >>= \case
 		Nothing -> pure ()
 		Just eb -> do
 			Pipe.yield $ Right eb
 			State.putN nm $ ExtraBits 0
 			huffman' nm
+
+stepNew :: forall (nm :: Symbol) a -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm (BinTreePair a)) es,
+	U.Member (State.Named nm BitArray) es,
+	U.Member (State.S Phase) es
+	) =>
+	IsLiteral a ->
+	Eff.E es (Either BitArray.B BS.ByteString) o [a]
+stepNew nm a (IsLiteral p) = State.getsN nm unBinTreePair >>= \(t0, t) -> do
+	mr <- State.getsModifyN nm $ go t0 t
+	case mr of
+		Nothing -> fillBuffer nm >> stepNew nm a (IsLiteral p)
+		Just (rs, nt, b) -> rs <$ do
+			State.modifyN @(BinTreePair a) nm (binTreePair . (second $ const nt) . unBinTreePair)
+			when b $ State.put $ PhaseOthers
+{-
+	BitArray ba <- State.getN nm
+	if BitArray.null ba
+		then fillBuffer nm >> stepNew nm a (IsLiteral p)
+		else do
+			let	((rs, nt), (ba'', b)) = decodeBitArray p t0 t ba
+			rs <$ do
+				State.modifyN @(BinTreePair a) nm (binTreePair . (second $ const nt) . unBinTreePair)
+				State.putN nm (BitArray ba'')
+				when b $ State.put PhaseOthers
+				-}
+	where
+	go t0 t ba = if BitArray.null $ unBitArray ba
+		then Nothing
+		else let	((rs, nt), (ba'', b)) = decodeBitArray p t0 t $ unBitArray ba in
+				Just ((rs, nt, b), BitArray ba'')
+
+fillBuffer :: forall (nm :: Symbol) -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm BitArray) es ) =>
+	Eff.E es (Either BitArray.B BS.ByteString) o ()
+fillBuffer nm = State.putN nm . BitArray . either id BitArray.fromByteString =<< Pipe.await
 
 getBuffer :: forall (nm :: Symbol) a -> (
 	U.Member Pipe.P es,
@@ -106,7 +148,9 @@ getBuffer :: forall (nm :: Symbol) a -> (
 	Eff.E es (Either BitArray.B BS.ByteString) o BitArray.B
 getBuffer nm a = do
 	BitArray ba <- State.getN nm
-	if BitArray.null ba then either id BitArray.fromByteString <$> Pipe.await else pure ba
+	if BitArray.null ba
+		then either id BitArray.fromByteString <$> Pipe.await
+		else pure ba
 
 step' :: forall a es i o . forall nm -> (
 	U.Member (State.S Phase) es,
@@ -179,9 +223,18 @@ takeBits16New :: forall eb o es . forall (nm :: Symbol) -> (
 	Bits eb
 	) =>
 	Int -> Eff.E es (Either BitArray.B BS.ByteString) o (Maybe eb)
+takeBits16New nm n = State.getsModifyN nm go >>= \case
+	Nothing -> readMore nm >>= bool (pure Nothing) (takeBits16New nm n)
+	Just eb -> pure $ Just eb
+	where
+	go ba = case BitArray.popBits n $ unBitArray ba of
+		Nothing -> Nothing
+		Just (eb, ba) -> Just (eb, BitArray ba)
+	{-
 takeBits16New nm n = State.getsN nm (BitArray.popBits n . unBitArray) >>= \case
 	Nothing -> readMore nm >>= bool (pure Nothing) (takeBits16New nm n)
 	Just (eb, ba) -> Just eb <$ State.putN nm (BitArray ba)
+	-}
 
 bitArrayToWord16 :: Bits eb => BitArray -> eb
 bitArrayToWord16 = BitArray.toBits . unBitArray
