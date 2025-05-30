@@ -40,6 +40,7 @@ import Control.HigherOpenUnion qualified as U
 import Data.TypeLevel.List
 import Data.HigherFunctor qualified as HFunctor
 import Data.Foldable
+import Data.Bool
 import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
 import Data.ByteString.BitArray qualified as BitArray
@@ -98,7 +99,7 @@ png nmcnk nmhdr processHeader =
 	PipeT.checkRight Pipe.=$= Crc.crc32 nmcnk Pipe.=$= do
 		State.putN nmcnk $ OnDemand.RequestBytes 8
 		IO.print =<< Pipe.await
-		doWhile_ $ chunk1 nmcnk 100
+		doWhile_ $ chunk1 nmcnk 1000
 	Pipe.=$= do
 		Left (ChunkBegin "IHDR") <- Pipe.await
 		_ <- PipeT.checkRight Pipe.=$=
@@ -339,12 +340,23 @@ chunk1 nm m = do
 		m'	| n < m' -> n : go (m' - n)
 			| otherwise -> [m']
 
+readBytes :: forall (nm :: Symbol) -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm ByteString) es,
+	U.Member (Except.E String) es ) =>
+	Int -> Eff.E es BS.ByteString o BS.ByteString
+readBytes nm n = State.getsN nm (BS.splitAt' n . unByteString) >>= \case
+	Nothing -> readMore nm
+		>>= bool (Except.throw "no more ByteString") (readBytes nm n)
+	Just (t, d) -> t <$ State.putN nm (ByteString d)
+
 readMore :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
-	U.Member (State.Named nm ByteString) es
-	) =>
-	Eff.E es BS.ByteString o ()
-readMore nm = Pipe.await >>= State.modifyN nm . flip appendByteString
+	U.Member (State.Named nm ByteString) es ) =>
+	Eff.E es BS.ByteString o Bool
+readMore nm = Pipe.awaitMaybe >>= \case
+	Nothing -> pure False
+	Just bs -> True <$ State.modifyN nm (`appendByteString` bs)
 
 newtype ByteString = ByteString { unByteString :: BS.ByteString } deriving Show
 
