@@ -25,7 +25,7 @@ import Control.Monad.Yaftee.IO qualified as IO
 import System.IO
 import System.Environment
 
-import Control.Monad.Yaftee.Pipe.Png.Decode
+import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Pipe.Huffman qualified as Huffman
 
 main :: IO ()
@@ -35,12 +35,12 @@ main = do
 	h <- openFile fp ReadMode
 	void . Eff.runM
 
-		. pngRunNew @"chunk" @"deflate"
+		. Png.run @"deflate"
 		
 		. (`State.run` Huffman.PhaseOthers)
 		. (`State.run` Huffman.IsLiteral @Int (const False))
 
 		. Except.run @String . Fail.runExc id . Pipe.run
 		$ PipeBS.hGet (64 * 64) h Pipe.=$=
-			(void (png' "chunk" "deflate" processHeader) `Except.catch` IO.print @String) Pipe.=$= do
+			(void (Png.decode "deflate" processHeader) `Except.catch` IO.print @String) Pipe.=$= do
 			PipeIO.print'
