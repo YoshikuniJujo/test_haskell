@@ -57,7 +57,7 @@ main = do
 	hh <- openFile fpi ReadMode
 
 	(_, hdr) <- Eff.runM . (`State.run` header0)
-		. Except.run @String . Fail.runExc id . pngRun @"chunk" @"deflate" . Pipe.run
+		. Except.run @String . Fail.runExc id . pngRunNew @"chunk" @"deflate" . Pipe.run
 		$ PipeBS.hGet (64 * 64) hh Pipe.=$= pngHeader "chunk" "deflate" \hdr -> do
 			IO.print hdr
 			State.put hdr
