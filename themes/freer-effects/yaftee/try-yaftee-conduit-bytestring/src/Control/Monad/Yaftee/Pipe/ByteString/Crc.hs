@@ -15,7 +15,7 @@ module Control.Monad.Yaftee.Pipe.ByteString.Crc (
 
 	-- * NO PIPE
 
-	crc32StepBS, initialCrc32, complementCrc32,
+	crc32StepBS, crc32StepBS', initialCrc32, complementCrc32,
 
 	-- * TYPE
 
@@ -128,7 +128,10 @@ step8 :: Word32 -> Word8 -> Word32
 step8 n b = uncurry xor . (first $ (table !) . (`xor` b)) $ popByte n
 
 crc32StepBS :: Word32 -> BS.ByteString -> Word32
-crc32StepBS n = BS.foldl' step8 n
+crc32StepBS = BS.foldl' step8
+
+crc32StepBS' :: Crc32 -> BS.ByteString -> Crc32
+crc32StepBS' = (Crc32 .) . BS.foldl' step8 . unCrc32
 
 initialCrc32 :: Crc32
 initialCrc32 = Crc32 0xffffffff
