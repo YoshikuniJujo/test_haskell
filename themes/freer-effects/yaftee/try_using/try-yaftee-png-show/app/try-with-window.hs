@@ -40,7 +40,7 @@ import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import System.IO
 import Data.Png.Header
-import Control.Monad.Yaftee.Pipe.Png.DecodeNew
+import Control.Monad.Yaftee.Pipe.Png.Decode
 
 import Control.Concurrent
 
