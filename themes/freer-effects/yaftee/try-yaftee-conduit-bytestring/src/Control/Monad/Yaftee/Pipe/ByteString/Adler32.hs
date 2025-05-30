@@ -44,7 +44,7 @@ adler32 :: forall nm -> (
 adler32 nm = ($ 5551) $ fix \go n -> do
 	bs <- Pipe.await
 	a <- State.getN nm
-	let	!(n', a') = adler32Step (n, a) bs
+	let	!(!n', !a') = adler32Step (n, a) bs
 	State.putN nm a'
 	Pipe.yield bs
 	go n'
