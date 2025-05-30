@@ -340,15 +340,51 @@ chunk1 nm m = do
 		m'	| n < m' -> n : go (m' - n)
 			| otherwise -> [m']
 
+chunk1' :: forall (nm :: Symbol) -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm ByteString) es,
+	U.Member (State.Named nm Crc32) es,
+	U.Member (Except.E String) es
+	) =>
+	Int -> Eff.E es BS.ByteString (Either ChunkTag BS.ByteString) Bool
+chunk1' nm m = do
+	n <- BS.toBitsBE <$> readBytes nm 4
+	resetCrc32 nm
+	cn <- readBytes nm 4
+	Pipe.yield . Left $ ChunkBegin cn
+	for_ (split m n) \n' -> Pipe.yield =<< Right <$> readBytes nm n'
+	compCrc32 nm
+	Crc32 crc1 <- State.getN nm
+	crc0 <- Crc.byteStringToCrc32BE <$> readBytes nm 4
+	when (Just crc1 /= crc0) $ Except.throw @String "chunk1': CRC32 error"
+	Pipe.yield . Left $ ChunkEnd cn
+	pure $ cn /= "IEND"
+	where
+	split n = fix \go -> \case
+		0 -> []
+		m'	| n < m' -> n : go (m' - n)
+			| otherwise -> [m']
+
 readBytes :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
 	U.Member (State.Named nm ByteString) es,
+	U.Member (State.Named nm Crc32) es,
 	U.Member (Except.E String) es ) =>
 	Int -> Eff.E es BS.ByteString o BS.ByteString
 readBytes nm n = State.getsN nm (BS.splitAt' n . unByteString) >>= \case
 	Nothing -> readMore nm
 		>>= bool (Except.throw "no more ByteString") (readBytes nm n)
-	Just (t, d) -> t <$ State.putN nm (ByteString d)
+	Just (t, d) -> t <$ do
+		State.modifyN nm $ Crc32 . (`Crc.crc32StepBS'` t) . unCrc32
+		State.putN nm (ByteString d)
+
+resetCrc32 :: forall (nm :: Symbol) ->
+	(U.Member (State.Named nm Crc32) es) => Eff.E es i o ()
+resetCrc32 nm = State.putN nm $ Crc32 Crc.initialCrc32
+
+compCrc32 :: forall (nm :: Symbol) ->
+	(U.Member (State.Named nm Crc32) es) => Eff.E es i o ()
+compCrc32 nm = State.modifyN nm $ Crc32 . Crc.complementCrc32 . unCrc32
 
 readMore :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
@@ -359,6 +395,7 @@ readMore nm = Pipe.awaitMaybe >>= \case
 	Just bs -> True <$ State.modifyN nm (`appendByteString` bs)
 
 newtype ByteString = ByteString { unByteString :: BS.ByteString } deriving Show
+newtype Crc32 = Crc32 { unCrc32 :: Crc.Crc32 } deriving Show
 
 appendByteString :: ByteString -> BS.ByteString -> ByteString
 appendByteString (ByteString bs1) bs2 = ByteString $ bs1 `BS.append` bs2
