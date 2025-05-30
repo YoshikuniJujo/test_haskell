@@ -12,7 +12,7 @@ import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
-import Control.Monad.Yaftee.Pipe.Png.Decode
+import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
@@ -36,8 +36,8 @@ main = do
 	hh <- openFile fpi ReadMode
 
 	(_, hdr) <- Eff.runM . (`State.run` header0)
-		. Except.run @String . Fail.runExc id . pngRunNew @"chunk" @"deflate" . Pipe.run
-		$ PipeBS.hGet (64 * 64) hh Pipe.=$= pngHeader "chunk" "deflate" \hdr -> do
+		. Except.run @String . Fail.runExc id . Png.run @"deflate" . Pipe.run
+		$ PipeBS.hGet (64 * 64) hh Pipe.=$= Png.decodeHeader "deflate" \hdr -> do
 			IO.print hdr
 			State.put hdr
 	hClose hh
@@ -58,9 +58,9 @@ main = do
 					. Fail.runExc id
 					. (`State.runN` Huffman.IsLiteral (const False))
 					. (`State.runN` Huffman.PhaseOthers)
-					. pngRunNew) $
+					. Png.run) $
 				PipeBS.hGet (64 * 64) h Pipe.=$=
-				(void (png' "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
+				(void (Png.decode "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
 		--		PipeT.convert BS.tail Pipe.=$=
 				drawCairoImageRgba32 IO img wdt hgt (pure ())
 
@@ -74,13 +74,13 @@ main = do
 					. Fail.runExc id
 					. (`State.runN` Huffman.IsLiteral (const False))
 					. (`State.runN` Huffman.PhaseOthers)
-					. pngRunNew) $
+					. Png.run) $
 				PipeBS.hGet (64 * 64) h Pipe.=$=
-				(void (png' "chunk" "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
+				(void (Png.decode "deflate" IO.print) `Except.catch` IO.print @String) Pipe.=$=
 		--		PipeT.convert BS.tail Pipe.=$=
 				drawCairoImageRgb24 IO img wdt hgt (pure ())
 
-type Effs = PngStates' "chunk" "deflate" `Append` '[
+type Effs = Png.States "deflate" `Append` '[
 	State.Named "" Huffman.Phase,
 	State.Named "" (Huffman.IsLiteral Int),
 	Fail.F, (Except.E String)
