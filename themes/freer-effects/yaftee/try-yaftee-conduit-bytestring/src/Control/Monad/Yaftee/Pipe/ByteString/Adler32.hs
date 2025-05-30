@@ -62,7 +62,7 @@ adler32' nm = ($ 5551) $ fix \go n -> Pipe.awaitMaybe >>= \case
 		Pipe.yield bs
 		go n'
 
-data A = A Word32 Word32 deriving Show
+data A = A !Word32 !Word32 deriving Show
 
 toWord32 :: A -> Word32
 toWord32 = uncurry (.|.) . first (`mod` 65521) . second ((`shiftL` 16) . (`mod` 65521))
