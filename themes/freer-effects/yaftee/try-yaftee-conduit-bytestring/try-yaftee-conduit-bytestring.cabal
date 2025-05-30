@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           try-yaftee-conduit-bytestring
-version:        0.1.0.2
+version:        0.1.0.3
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-yaftee-conduit-bytestring#readme>
 homepage:       https://github.com/YoshikuniJujo/try-yaftee-conduit-bytestring#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-yaftee-conduit-bytestring/issues
