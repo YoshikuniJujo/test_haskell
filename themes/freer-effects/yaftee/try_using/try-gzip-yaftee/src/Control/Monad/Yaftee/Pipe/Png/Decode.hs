@@ -12,8 +12,19 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Decode (
 
+	-- * PNG
+
 	run, States,
 	decode, decodeHeader, Members,
+
+	readPngHeader,
+
+	-- * CHUNK
+
+	chunkRun_, ChunkStates,
+	chunk1, ChunkMembers,
+
+	Chunk(..)
 
 	) where
 
@@ -29,7 +40,6 @@ import Control.Monad.Yaftee.Pipe.ByteString.Adler32 qualified as Adler32
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
-import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.TypeLevel.List
 import Data.HigherFunctor qualified as HFunctor
@@ -49,30 +59,45 @@ import Pipe.Huffman qualified as Huffman
 
 run :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()
-run = void
-	. (`State.runN` Crc32 Crc.initialCrc32)
-	. (`State.runN` ByteString "")
-	. (`State.runN` header0) . chunkRun' . Zlib.runNew_
+run = void . chunkRun_ . (`State.runN` header0) . Zlib.runNew_
 
 type States nm =
-	Zlib.States' nm `Append` ChunkStates' nm `Append` '[
-		State.Named nm Header, State.Named nm ByteString, State.Named nm Crc32 ]
+	Zlib.States' nm `Append`
+	'[State.Named nm Header] `Append`
+	ChunkStates nm
 
-chunkRun' :: forall nm es i o r . HFunctor.Loose (U.U es) =>
-	Eff.E (ChunkStates' nm `Append` es) i o r ->
-	Eff.E es i o (r, Chunk)
-chunkRun' = (`State.runN` Chunk "IHDR")
+chunkRun_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (ChunkStates nm `Append` es) i o r ->
+	Eff.E es i o ()
+chunkRun_ = void
+	. (`State.runN` Crc32 Crc.initialCrc32)
+	. (`State.runN` ByteString "")
+	. (`State.runN` Chunk "IHDR")
 
-type ChunkStates' nm = '[State.Named nm Chunk]
+type ChunkStates nm =
+	'[State.Named nm Chunk, State.Named nm ByteString, State.Named nm Crc32]
 
-type ChunkMembers' nm es = (
-	U.Member (State.Named nm Chunk) es )
+type ChunkMembers nm es = (
+	U.Member (State.Named nm Chunk) es,
+	U.Member (State.Named nm ByteString) es,
+	U.Member (State.Named nm Crc32) es )
+
+readPngHeader :: forall (nm :: Symbol) -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm ByteString) es,
+	U.Member (State.Named nm Crc32) es,
+	U.Member (Except.E String) es
+	) =>
+	Eff.E es BS.ByteString o ()
+readPngHeader nm = do
+	ph <- readBytes nm 8
+	when (ph /= pngHeader) $ Except.throw @String "PNG File header error"
+
+pngHeader :: BS.ByteString
+pngHeader = "\x89PNG\r\n\SUB\n"
 
 decode :: forall nm -> (
 	U.Member Pipe.P es,
-
-	U.Member (State.Named nm ByteString) es,
-	U.Member (State.Named nm Crc32) es,
 
 	U.Member (State.S Huffman.Phase) es,
 	U.Member (State.S (Huffman.IsLiteral Int)) es,
@@ -83,37 +108,33 @@ decode :: forall nm -> (
 	U.Member (State.Named nm Adler32.A) es,
 
 	U.Member (Except.E String) es,
-	U.Member Fail.F es,
-	U.Base IO.I es
-	) =>
+	U.Member Fail.F es ) =>
 	(Header -> Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()) ->
 	Eff.E es BS.ByteString BS.ByteString ()
 decode nm processHeader = void $ do
-		IO.print =<< readBytes nm 8
-		doWhile_ $ chunk1' nm 100
+		readPngHeader nm
+		doWhile_ $ chunk1 nm 100
 	Pipe.=$= do
 
-		_ <- OnDemand.onDemand nm Pipe.=$=
-			(Header.read nm processHeader `Except.catch` IO.print @String)
+		_ <- OnDemand.onDemand nm Pipe.=$= Header.read nm processHeader
 
-		IO.print =<< Pipe.isMore
+--		IO.print =<< Pipe.isMore
 
-		IO.print @Chunk =<< State.getN nm
+--		IO.print @Chunk =<< State.getN nm
 
---				bs <- Pipe.await
 		bs <- untilIdat nm
-		IO.print =<< Pipe.isMore
+--		IO.print =<< Pipe.isMore
 
-		IO.print @Chunk =<< State.getN nm
+--		IO.print @Chunk =<< State.getN nm
 
 		hdr <- State.getN nm
 		let	wdt = fromIntegral $ headerWidth hdr
 			hgt = fromIntegral $ headerHeight hdr
 			bpp = headerToBpp hdr
 
-		IO.print hdr
-		IO.print bpp
-		IO.print $ headerInterlaceMethod hdr
+--		IO.print hdr
+--		IO.print bpp
+--		IO.print $ headerInterlaceMethod hdr
 
 		case headerInterlaceMethod hdr of
 			InterlaceMethodNon ->
@@ -124,26 +145,16 @@ decode nm processHeader = void $ do
 					Zlib.decompressNew' nm wdt hgt bpp
 			_ -> Except.throw @String "no such interlace methods"
 
-		IO.print =<< State.getN @Chunk nm
-		_ <- forever $ Pipe.yield =<< Pipe.await
-		IO.print =<< State.getN @Chunk nm
+--		IO.print =<< State.getN @Chunk nm
+--		_ <- forever $ Pipe.yield =<< Pipe.await
+--		IO.print =<< State.getN @Chunk nm
 
 	Pipe.=$= do
 		bs <- Pipe.await
-		IO.print @String "foobar"
+--		IO.print @String "foobar"
 		h <- State.getN nm
-		let	wdt = headerWidth h
-			hgt = headerHeight h
-			dpt = headerBitDepth h
-			ct = headerColorType h
-			bpp = headerToBpp h
+		let	bpp = headerToBpp h
 			rbs = headerToRowBytes h
-		IO.print wdt
-		IO.print hgt
-		IO.print dpt
-		IO.print ct
-		IO.print bpp
-		IO.print rbs
 		bs' <- either Except.throw pure
 			$ unfilter bpp (BS.replicate rbs 0) bs
 		Pipe.yield bs'
@@ -165,46 +176,28 @@ unfilterAll bpp prior = do
 			Pipe.yield bs'
 			unfilterAll bpp bs'
 
-decodeHeader :: forall nm -> (
-	U.Member Pipe.P es,
-
-	U.Member (State.Named nm ByteString) es,
-	U.Member (State.Named nm Crc32) es,
-
-	Members nm es,
-
-	U.Member (Except.E String) es,
-	U.Base IO.I es
-	) =>
+decodeHeader :: forall nm ->
+	(U.Member Pipe.P es, Members nm es, U.Member (Except.E String) es ) =>
 	(Header -> Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()) ->
 	Eff.E es BS.ByteString BS.ByteString ()
 decodeHeader nm processHeader =
-	void $ do {- OnDemand.onDemand nm Pipe.=$=
-	PipeT.checkRight Pipe.=$= Crc.crc32 nm Pipe.=$= do -}
-		IO.print =<< readBytes nm 8
-		doWhile_ $ chunk1' nm 100
-	Pipe.=$= do
---		Left (ChunkBegin "IHDR") <- Pipe.await
-		_ <- -- PipeT.checkRight Pipe.=$=
-			OnDemand.onDemand nm Pipe.=$=
-			(Header.read nm processHeader `Except.catch` IO.print @String)
---		Left (ChunkEnd "IHDR") <- Pipe.await
-		pure ()
+	void $ do
+		readPngHeader nm
+		doWhile_ $ chunk1 nm 100
+	Pipe.=$= OnDemand.onDemand nm Pipe.=$= Header.read nm processHeader
 
 type Members nm es = (
 	U.Member (State.Named nm Header) es,
-	ChunkMembers' nm es,
+	ChunkMembers nm es,
 	OnDemand.Members nm es )
 
-chunk1' :: forall (nm :: Symbol) -> (
+chunk1 :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
-	U.Member (State.Named nm Chunk) es,
-	U.Member (State.Named nm ByteString) es,
-	U.Member (State.Named nm Crc32) es,
+	ChunkMembers nm es,
 	U.Member (Except.E String) es
 	) =>
 	Int -> Eff.E es BS.ByteString BS.ByteString Bool
-chunk1' nm m = do
+chunk1 nm m = do
 	n <- BS.toBitsBE <$> readBytes nm 4
 	resetCrc32 nm
 	cn <- readBytes nm 4
@@ -215,7 +208,7 @@ chunk1' nm m = do
 	compCrc32 nm
 	Crc32 crc1 <- State.getN nm
 	crc0 <- Crc.byteStringToCrc32BE <$> readBytes nm 4
-	when (Just crc1 /= crc0) $ Except.throw @String "chunk1': CRC32 error"
+	when (Just crc1 /= crc0) $ Except.throw @String "chunk1: CRC32 error"
 --	Pipe.yield . Left $ ChunkEnd cn
 	pure $ cn /= "IEND"
 	where
@@ -265,16 +258,13 @@ newtype Chunk = Chunk BS.ByteString deriving Show
 
 untilIdat :: forall nm -> (
 	U.Member Pipe.P es,
-	U.Member (State.Named nm Chunk) es,
-	U.Base IO.I es
+	U.Member (State.Named nm Chunk) es
 	) =>
 	Eff.E es BS.ByteString o BS.ByteString
 untilIdat nm = do
-	IO.print =<< Pipe.isMore
 	bs <- Pipe.await
 	State.getN nm >>= \case
 		Chunk "IDAT" -> do
 			pure bs
-		c -> do	IO.print c
-			IO.print bs
+		c -> do
 			untilIdat nm
