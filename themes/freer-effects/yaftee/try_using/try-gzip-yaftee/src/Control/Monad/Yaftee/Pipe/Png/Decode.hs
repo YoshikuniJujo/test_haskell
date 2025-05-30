@@ -12,8 +12,10 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Decode (
 
+{-
 	pngRun, PngStates,
 	png, PngMembers,
+	-}
 
 	pngHeader,
 
@@ -280,26 +282,27 @@ unfilterAll bpp prior = do
 pngHeader :: forall nmcnk nmhdr -> (
 	U.Member Pipe.P es,
 
-	PngMembers nmcnk nmhdr es,
+	U.Member (State.Named nmcnk ByteString) es,
+	U.Member (State.Named nmcnk Crc32) es,
+
+	PngMembers' nmcnk nmhdr es,
 
 	U.Member (Except.E String) es,
-	U.Member Fail.F es,
 	U.Base IO.I es
 	) =>
 	(Header -> Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()) ->
 	Eff.E es BS.ByteString BS.ByteString ()
 pngHeader nmcnk nmhdr processHeader =
-	void $ OnDemand.onDemand nmcnk Pipe.=$=
-	PipeT.checkRight Pipe.=$= Crc.crc32 nmcnk Pipe.=$= do
-		State.putN nmcnk $ OnDemand.RequestBytes 8
-		IO.print =<< Pipe.await
-		doWhile_ $ chunk1 nmcnk 10
+	void $ do {- OnDemand.onDemand nmcnk Pipe.=$=
+	PipeT.checkRight Pipe.=$= Crc.crc32 nmcnk Pipe.=$= do -}
+		IO.print =<< readBytes nmcnk 8
+		doWhile_ $ chunk1' nmcnk 100
 	Pipe.=$= do
-		Left (ChunkBegin "IHDR") <- Pipe.await
-		_ <- PipeT.checkRight Pipe.=$=
+--		Left (ChunkBegin "IHDR") <- Pipe.await
+		_ <- -- PipeT.checkRight Pipe.=$=
 			OnDemand.onDemand nmhdr Pipe.=$=
 			(Header.read nmhdr processHeader `Except.catch` IO.print @String)
-		Left (ChunkEnd "IHDR") <- Pipe.await
+--		Left (ChunkEnd "IHDR") <- Pipe.await
 		pure ()
 
 type PngMembers nmcnk nmhdr es = (
