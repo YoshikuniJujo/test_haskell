@@ -9,13 +9,20 @@
 
 module Control.Monad.Yaftee.Pipe.ByteString.Crc (
 
+	-- * PIPE
+
 	runCrc32, crc32, crc32', resetCrc32, compCrc32,
+
+	-- * NO PIPE
+
+	crc32StepBS, initialCrc32, complementCrc32,
+
+	-- * TYPE
+
 	Crc32(..),
 
 	crc32ToByteString, byteStringToCrc32,
 	crc32ToByteStringBE, byteStringToCrc32BE,
-
-	crc32StepBS
 
 	) where
 
@@ -70,7 +77,7 @@ crc32Body' nm = fix \go ->
 		Pipe.yield bs
 		go)
 
-newtype Crc32 = Crc32 Word32 deriving (Show, Eq)
+newtype Crc32 = Crc32 { unCrc32 :: Word32 } deriving (Show, Eq)
 
 crc32ToByteString :: Crc32 -> BS.ByteString
 crc32ToByteString (Crc32 c) = bs `BS.append` BS.replicate (4 - BS.length bs) 0
@@ -122,3 +129,9 @@ step8 n b = uncurry xor . (first $ (table !) . (`xor` b)) $ popByte n
 
 crc32StepBS :: Word32 -> BS.ByteString -> Word32
 crc32StepBS n = BS.foldl' step8 n
+
+initialCrc32 :: Crc32
+initialCrc32 = Crc32 0xffffffff
+
+complementCrc32 :: Crc32 -> Crc32
+complementCrc32 = Crc32 . complement . unCrc32
