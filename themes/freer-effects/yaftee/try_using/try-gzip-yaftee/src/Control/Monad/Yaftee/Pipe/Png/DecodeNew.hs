@@ -59,13 +59,17 @@ pngRun = void . (`State.runN` header0) . chunkRun . Zlib.run_
 
 pngRunNew :: forall nmcnk nmhdr es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (PngStates' nmcnk nmhdr `Append` es) i o r -> Eff.E es i o ()
-pngRunNew = void . (`State.runN` header0) . chunkRun . Zlib.runNew_
+pngRunNew = void
+	. (`State.runN` Crc32 Crc.initialCrc32)
+	. (`State.runN` ByteString "")
+	. (`State.runN` header0) . chunkRun' . Zlib.runNew_
 
 type PngStates nmcnk nmhdr =
 	Zlib.States nmhdr `Append` ChunkStates nmcnk `Append` '[State.Named nmhdr Header]
 
 type PngStates' nmcnk nmhdr =
-	Zlib.States' nmhdr `Append` ChunkStates nmcnk `Append` '[State.Named nmhdr Header]
+	Zlib.States' nmhdr `Append` ChunkStates' nmcnk `Append` '[
+		State.Named nmhdr Header, State.Named nmcnk ByteString, State.Named nmcnk Crc32 ]
 
 chunkRun :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (ChunkStates nm `Append` es) i o r ->
@@ -75,9 +79,19 @@ chunkRun = Crc.runCrc32 . (`State.runN` Chunk "IHDR") . OnDemand.run_
 type ChunkStates nm = OnDemand.States nm `Append` '[
 	State.Named nm Chunk, State.Named nm Crc.Crc32 ]
 
+chunkRun' :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (ChunkStates' nm `Append` es) i o r ->
+	Eff.E es i o (r, Chunk)
+chunkRun' = (`State.runN` Chunk "IHDR")
+
+type ChunkStates' nm = '[State.Named nm Chunk]
+
 type ChunkMembers nm es = (
 	OnDemand.Members nm es,
 	U.Member (State.Named nm Crc.Crc32) es,
+	U.Member (State.Named nm Chunk) es )
+
+type ChunkMembers' nm es = (
 	U.Member (State.Named nm Chunk) es )
 
 png :: forall nmcnk nmhdr -> (
@@ -125,13 +139,9 @@ png nmcnk nmhdr processHeader =
 		hdr <- State.getN nmhdr
 		let	wdt = fromIntegral $ headerWidth hdr
 			hgt = fromIntegral $ headerHeight hdr
-			dpt = headerBitDepth hdr
-			ct = headerColorType hdr
-			bpp = fromIntegral $ headerToBpp hdr
-			rbs = headerToRowBytes hdr
+			bpp = headerToBpp hdr
 
 		IO.print hdr
-		IO.print "bpp"
 		IO.print bpp
 		IO.print $ headerInterlaceMethod hdr
 
@@ -142,7 +152,7 @@ png nmcnk nmhdr processHeader =
 			InterlaceMethodAdam7 ->
 				void $ OnDemand.onDemandWithInitial nmhdr bs Pipe.=$= do
 					Zlib.decompress' nmhdr wdt hgt bpp
-			_ -> Except.throw "no such interlace methods"
+			_ -> Except.throw @String "no such interlace methods"
 
 		IO.print =<< State.getN @Chunk nmcnk
 		_ <- forever $ Pipe.yield =<< Pipe.await
@@ -173,10 +183,13 @@ png nmcnk nmhdr processHeader =
 png' :: forall nmcnk nmhdr -> (
 	U.Member Pipe.P es,
 
+	U.Member (State.Named nmcnk ByteString) es,
+	U.Member (State.Named nmcnk Crc32) es,
+
 	U.Member (State.S Huffman.Phase) es,
 	U.Member (State.S (Huffman.IsLiteral Int)) es,
 
-	PngMembers nmcnk nmhdr es,
+	PngMembers' nmcnk nmhdr es,
 
 	Deflate.Members' nmhdr es,
 	U.Member (State.Named nmhdr Adler32.A) es,
@@ -187,12 +200,9 @@ png' :: forall nmcnk nmhdr -> (
 	) =>
 	(Header -> Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()) ->
 	Eff.E es BS.ByteString BS.ByteString ()
-png' nmcnk nmhdr processHeader =
-	void $ OnDemand.onDemand nmcnk Pipe.=$=
-	PipeT.checkRight Pipe.=$= Crc.crc32 nmcnk Pipe.=$= do
-		State.putN nmcnk $ OnDemand.RequestBytes 8
-		IO.print =<< Pipe.await
-		doWhile_ $ chunk1 nmcnk 100
+png' nmcnk nmhdr processHeader = void $ do
+		IO.print =<< readBytes nmcnk 8
+		doWhile_ $ chunk1' nmcnk 100
 	Pipe.=$= do
 		Left (ChunkBegin "IHDR") <- Pipe.await
 		_ <- PipeT.checkRight Pipe.=$=
@@ -218,13 +228,9 @@ png' nmcnk nmhdr processHeader =
 		hdr <- State.getN nmhdr
 		let	wdt = fromIntegral $ headerWidth hdr
 			hgt = fromIntegral $ headerHeight hdr
-			dpt = headerBitDepth hdr
-			ct = headerColorType hdr
-			bpp = fromIntegral $ headerToBpp hdr
-			rbs = headerToRowBytes hdr
+			bpp = headerToBpp hdr
 
 		IO.print hdr
-		IO.print "bpp"
 		IO.print bpp
 		IO.print $ headerInterlaceMethod hdr
 
@@ -235,7 +241,7 @@ png' nmcnk nmhdr processHeader =
 			InterlaceMethodAdam7 ->
 				void $ OnDemand.onDemandWithInitial nmhdr bs Pipe.=$= do
 					Zlib.decompressNew' nmhdr wdt hgt bpp
-			_ -> Except.throw "no such interlace methods"
+			_ -> Except.throw @String "no such interlace methods"
 
 		IO.print =<< State.getN @Chunk nmcnk
 		_ <- forever $ Pipe.yield =<< Pipe.await
@@ -263,6 +269,11 @@ png' nmcnk nmhdr processHeader =
 		unfilterAll bpp bs'
 --		forever $ Pipe.yield =<< Pipe.await
 
+unfilterAll :: (
+	U.Member Pipe.P es,
+	U.Member (Except.E String) es
+	) =>
+	Int -> BS.ByteString -> Eff.E es BS.ByteString BS.ByteString ()
 unfilterAll bpp prior = do
 	mbs <- Pipe.awaitMaybe
 	case mbs of
@@ -301,6 +312,11 @@ pngHeader nmcnk nmhdr processHeader =
 type PngMembers nmcnk nmhdr es = (
 	U.Member (State.Named nmhdr Header) es,
 	ChunkMembers nmcnk es,
+	OnDemand.Members nmhdr es )
+
+type PngMembers' nmcnk nmhdr es = (
+	U.Member (State.Named nmhdr Header) es,
+	ChunkMembers' nmcnk es,
 	OnDemand.Members nmhdr es )
 
 chunk1 :: forall nm -> (
@@ -373,7 +389,7 @@ readBytes :: forall (nm :: Symbol) -> (
 	Int -> Eff.E es BS.ByteString o BS.ByteString
 readBytes nm n = State.getsN nm (BS.splitAt' n . unByteString) >>= \case
 	Nothing -> readMore nm
-		>>= bool (Except.throw "no more ByteString") (readBytes nm n)
+		>>= bool (Except.throw @String "no more ByteString") (readBytes nm n)
 	Just (t, d) -> t <$ do
 		State.modifyN nm $ Crc32 . (`Crc.crc32StepBS'` t) . unCrc32
 		State.putN nm (ByteString d)
