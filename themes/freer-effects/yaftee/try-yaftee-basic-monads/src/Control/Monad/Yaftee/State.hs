@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE GADTs #-}
@@ -21,6 +21,7 @@ Named, getN, getsN, putN, modifyN, modifyN', getsModifyN, runN
 ) where
 
 import GHC.TypeLits
+import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.HigherFreer qualified as F
@@ -74,9 +75,15 @@ putN :: forall s effs i o . forall nm ->
 	Union.Member (Named nm s) effs => s -> Eff.E effs i o ()
 putN nm = Eff.eff . Put @nm
 
+{-
 modifyN :: forall nm -> Union.Member (Named nm s) effs =>
 	(s -> s) -> Eff.E effs i o ()
 modifyN nm = Eff.eff . Modify @nm
+-}
+
+modifyN :: forall nm -> Union.Member (Named nm s) effs =>
+	(s -> s) -> Eff.E effs i o ()
+modifyN nm f = void $ getsModifyN nm (Just . (() ,) . f)
 
 modifyN' :: forall nm -> Union.Member (Named nm s) effs =>
 	(s -> s) -> Eff.E effs i o ()
