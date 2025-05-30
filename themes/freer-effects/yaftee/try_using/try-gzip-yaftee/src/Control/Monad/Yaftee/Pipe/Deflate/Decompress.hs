@@ -217,7 +217,7 @@ block' nm = do
 					St.putN nm $ OnDemand.RequestBits 4
 					hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
 					pure (Just (hlit, hlit + hdist), Just hclen)
-				St.putN nm $ OnDemand.RequestBuffer 1000
+				St.putN nm $ OnDemand.RequestBuffer 100
 
 				huffmanBits' nm mhclen mhlithdist
 
