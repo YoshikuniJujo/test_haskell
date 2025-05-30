@@ -115,16 +115,16 @@ png nmcnk nmhdr processHeader =
 		IO.print =<< Pipe.await
 		doWhile_ $ chunk1 nmcnk 1000
 	Pipe.=$= do
-		Left (ChunkBegin "IHDR") <- Pipe.await
-		_ <- PipeT.checkRight Pipe.=$=
-			OnDemand.onDemand nmhdr Pipe.=$=
-			(Header.read nmhdr processHeader `Except.catch` IO.print @String)
-		Left (ChunkEnd "IHDR") <- Pipe.await
 
 		chunkToByteString nmcnk
 
 --				forever $ Pipe.yield =<< Pipe.await
 	Pipe.=$= do
+
+--		Left (ChunkBegin "IHDR") <- Pipe.await
+		_ <- OnDemand.onDemand nmhdr Pipe.=$=
+			(Header.read nmhdr processHeader `Except.catch` IO.print @String)
+--		Left (ChunkEnd "IHDR") <- Pipe.await
 
 		IO.print =<< Pipe.isMore
 
@@ -204,16 +204,9 @@ png' nmcnk nmhdr processHeader = void $ do
 		IO.print =<< readBytes nmcnk 8
 		doWhile_ $ chunk1' nmcnk 100
 	Pipe.=$= do
-		Left (ChunkBegin "IHDR") <- Pipe.await
-		_ <- PipeT.checkRight Pipe.=$=
-			OnDemand.onDemand nmhdr Pipe.=$=
+
+		_ <- OnDemand.onDemand nmhdr Pipe.=$=
 			(Header.read nmhdr processHeader `Except.catch` IO.print @String)
-		Left (ChunkEnd "IHDR") <- Pipe.await
-
-		chunkToByteString nmcnk
-
---				forever $ Pipe.yield =<< Pipe.await
-	Pipe.=$= do
 
 		IO.print =<< Pipe.isMore
 
@@ -358,28 +351,48 @@ chunk1 nm m = do
 
 chunk1' :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
+	U.Member (State.Named nm Chunk) es,
 	U.Member (State.Named nm ByteString) es,
 	U.Member (State.Named nm Crc32) es,
 	U.Member (Except.E String) es
 	) =>
-	Int -> Eff.E es BS.ByteString (Either ChunkTag BS.ByteString) Bool
+	Int -> Eff.E es BS.ByteString BS.ByteString Bool
 chunk1' nm m = do
 	n <- BS.toBitsBE <$> readBytes nm 4
 	resetCrc32 nm
 	cn <- readBytes nm 4
-	Pipe.yield . Left $ ChunkBegin cn
-	for_ (split m n) \n' -> Pipe.yield =<< Right <$> readBytes nm n'
+	State.putN nm $ Chunk cn
+--	Pipe.yield . Left $ ChunkBegin cn
+--	for_ (split m n) \n' -> Pipe.yield =<< Right <$> readBytes nm n'
+	for_ (split m n) \n' -> Pipe.yield =<< readBytes nm n'
 	compCrc32 nm
 	Crc32 crc1 <- State.getN nm
 	crc0 <- Crc.byteStringToCrc32BE <$> readBytes nm 4
 	when (Just crc1 /= crc0) $ Except.throw @String "chunk1': CRC32 error"
-	Pipe.yield . Left $ ChunkEnd cn
+--	Pipe.yield . Left $ ChunkEnd cn
 	pure $ cn /= "IEND"
 	where
 	split n = fix \go -> \case
 		0 -> []
 		m'	| n < m' -> n : go (m' - n)
 			| otherwise -> [m']
+
+chunkToByteString :: forall nm -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm Chunk) es,
+	U.Member (Except.E String) es,
+	U.Member Fail.F es
+	) =>
+	Eff.E es (Either ChunkTag o) o ()
+chunkToByteString nm = do
+	Left (ChunkBegin c) <- Pipe.await
+	case c of
+		"IEND" -> do
+			Left (ChunkEnd "IEND") <- Pipe.await
+			pure ()
+		_ -> do	State.putN nm $ Chunk c
+			getUntilChunkEnd nm
+			chunkToByteString nm
 
 readBytes :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
@@ -417,23 +430,6 @@ appendByteString :: ByteString -> BS.ByteString -> ByteString
 appendByteString (ByteString bs1) bs2 = ByteString $ bs1 `BS.append` bs2
 
 data ChunkTag = ChunkBegin BS.ByteString | ChunkEnd BS.ByteString deriving Show
-
-chunkToByteString :: forall nm -> (
-	U.Member Pipe.P es,
-	U.Member (State.Named nm Chunk) es,
-	U.Member (Except.E String) es,
-	U.Member Fail.F es
-	) =>
-	Eff.E es (Either ChunkTag o) o ()
-chunkToByteString nm = do
-	Left (ChunkBegin c) <- Pipe.await
-	case c of
-		"IEND" -> do
-			Left (ChunkEnd "IEND") <- Pipe.await
-			pure ()
-		_ -> do	State.putN nm $ Chunk c
-			getUntilChunkEnd nm
-			chunkToByteString nm
 
 newtype Chunk = Chunk BS.ByteString deriving Show
 
