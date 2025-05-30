@@ -31,8 +31,6 @@ library
       Control.Monad.Yaftee.Pipe.Gzip.Decompress
       Control.Monad.Yaftee.Pipe.Png.Decode
       Control.Monad.Yaftee.Pipe.Png.Decode.Header
-      Control.Monad.Yaftee.Pipe.Png.Decode.HeaderNew
-      Control.Monad.Yaftee.Pipe.Png.DecodeNew
       Control.Monad.Yaftee.Pipe.Zlib.Decompress
       Data.Gzip
       Data.Gzip.Block
@@ -117,46 +115,6 @@ executable try-gzip-yaftee-exe
       Paths_try_gzip_yaftee
   autogen-modules:
       Paths_try_gzip_yaftee
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -O2 -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , bytestring
-    , containers
-    , tools-yj
-    , try-bitarray-bs
-    , try-gzip-yaftee
-    , try-higher-order-open-union
-    , try-yaftee
-    , try-yaftee-basic-monads
-    , try-yaftee-conduit
-    , try-yaftee-conduit-bytestring
-    , typelevel-tools-yj
-  default-language: Haskell2010
-
-executable try-png-decompress
-  main-is: try-png-decompress.hs
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -O2 -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , bytestring
-    , containers
-    , tools-yj
-    , try-bitarray-bs
-    , try-gzip-yaftee
-    , try-higher-order-open-union
-    , try-yaftee
-    , try-yaftee-basic-monads
-    , try-yaftee-conduit
-    , try-yaftee-conduit-bytestring
-    , typelevel-tools-yj
-  default-language: Haskell2010
-
-executable try-png-decompress-leak
-  main-is: try-png-decompress-leak.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -O2 -threaded -rtsopts -with-rtsopts=-N

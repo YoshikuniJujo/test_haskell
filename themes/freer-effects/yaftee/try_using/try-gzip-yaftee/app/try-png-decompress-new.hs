@@ -25,7 +25,7 @@ import Control.Monad.Yaftee.IO qualified as IO
 import System.IO
 import System.Environment
 
-import Control.Monad.Yaftee.Pipe.Png.DecodeNew
+import Control.Monad.Yaftee.Pipe.Png.Decode
 import Pipe.Huffman qualified as Huffman
 
 main :: IO ()

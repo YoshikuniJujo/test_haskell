@@ -19,6 +19,7 @@ import Data.Png.Header
 read :: forall nm -> (
 	U.Member Pipe.P es,
 	OnDemand.Members nm es,
+	U.Member (State.Named nm Header) es,
 	U.Member (Except.E String) es ) =>
 	(Header -> Eff.E es (Either x BS.ByteString) o ()) ->
 		Eff.E es (Either x BS.ByteString) o ()
@@ -36,13 +37,15 @@ read nm proc = do
 	fm <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
 	State.putN nm $ OnDemand.RequestBytes 1
 	im <- BS.toBitsBE <$> (Except.getRight msgNotRight =<< Pipe.await)
-	proc Header {
-		headerWidth = w, headerHeight = h,
-		headerBitDepth = bd,
-		headerColorType = ct,
-		headerCompressionMethod = cm,
-		headerFilterMethod = fm,
-		headerInterlaceMethod = im }
+	let	hdr = Header {
+			headerWidth = w, headerHeight = h,
+			headerBitDepth = bd,
+			headerColorType = ct,
+			headerCompressionMethod = cm,
+			headerFilterMethod = fm,
+			headerInterlaceMethod = im }
+	proc hdr
+	State.putN nm hdr
 
 msgNotRight :: String
 msgNotRight = "not right"
