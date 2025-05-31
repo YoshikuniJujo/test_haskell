@@ -29,6 +29,7 @@ library
       Control.Monad.Yaftee.Pipe.ByteString
       Control.Monad.Yaftee.Pipe.ByteString.Adler32
       Control.Monad.Yaftee.Pipe.ByteString.Crc
+      Control.Monad.Yaftee.Pipe.ByteString.Lazy
       Control.Monad.Yaftee.Pipe.ByteString.OnDemand
   other-modules:
       Paths_try_yaftee_conduit_bytestring
