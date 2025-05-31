@@ -41,6 +41,7 @@ main = do
 		. (`State.run` Huffman.IsLiteral @Int (const False))
 
 		. Except.run @String . Fail.runExc id . Pipe.run
-		$ PipeBS.hGet (64 * 64) h Pipe.=$=
+--		$ PipeBS.hGet (64 * 64) h Pipe.=$=
+		$ PipeBS.hGet 64 h Pipe.=$=
 			(void (Png.decode "deflate" processHeader) `Except.catch` IO.print @String) Pipe.=$= do
 			PipeIO.print'

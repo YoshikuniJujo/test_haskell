@@ -112,8 +112,8 @@ decompressNew :: forall nm -> (
 	U.Member (Except.E String) es, U.Member Fail.F es ) => Int ->
 	Eff.E es (Either BitArray.B BS.ByteString) BS.ByteString ()
 decompressNew nm ln =
-	void $ doWhile_ (block' nm) Pipe.=$= RunLength.runlength nm Pipe.=$= format nm ln Pipe.=$=
-		PipeB.length' nm Pipe.=$= Crc.crc32' nm
+	void $ doWhile_ (block' nm) Pipe.=$= RunLength.runlength nm Pipe.=$= format nm ln
+--		Pipe.=$= PipeB.length' nm Pipe.=$= Crc.crc32' nm
 
 decompressNew' :: forall nm -> (
 	U.Member Pipe.P es,
@@ -174,7 +174,7 @@ block nm = do
 					St.putN nm $ OnDemand.RequestBits 4
 					hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft @String "bad" =<< Pipe.await)
 					pure (Just (hlit, hlit + hdist), Just hclen)
-				St.putN nm $ OnDemand.RequestBuffer 1000
+				St.putN nm $ OnDemand.RequestBuffer 100
 
 				huffmanBits nm mhclen mhlithdist
 
@@ -276,7 +276,7 @@ huffmanBits' nm mhclen mhlithdist = void do
 		let tt = Huffman.makeTree codeLengthList rtt
 		Huffman.putTree nm tt
 
-	St.putN nm $ OnDemand.RequestBuffer 1000
+	St.putN nm $ OnDemand.RequestBuffer 100
 
 	Huffman.huffman' @Int @Word16 nm Pipe.=$= do
 		(ht, hdt) <- whenMaybeDef (
@@ -364,7 +364,7 @@ format :: forall nm -> (
 	U.Member (St.Named nm FormatBuffer) es ) =>
 	Int -> Eff.E es (Either Word8 BS.ByteString) BS.ByteString ()
 format nm n = fix \go -> St.getsN nm unFormatBuffer >>= \bs -> bool
-	(uncurry (>>) ((Pipe.yield *** St.putN nm . FormatBuffer) $ BS.splitAt n bs) >> go)
+	(uncurry (>>) ((Pipe.yield . BS.copy *** St.putN nm . (FormatBuffer $!) . BS.copy) $ BS.splitAt n bs) >> go)
 	(maybe (Pipe.yield bs) ((>> go)
 		. St.putN nm . FormatBuffer
 		. either (BS.snoc bs) (BS.append bs)) =<< Pipe.awaitMaybe)

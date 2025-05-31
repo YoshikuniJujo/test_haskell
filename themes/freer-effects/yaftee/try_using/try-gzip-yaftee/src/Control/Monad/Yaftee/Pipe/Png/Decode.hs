@@ -113,7 +113,7 @@ decode :: forall nm -> (
 	Eff.E es BS.ByteString BS.ByteString ()
 decode nm processHeader = void $ do
 		readPngHeader nm
-		doWhile_ $ chunk1 nm 100
+		doWhile_ $ chunk1 nm 50
 	Pipe.=$= do
 
 		_ <- OnDemand.onDemand nm Pipe.=$= Header.read nm processHeader
