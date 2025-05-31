@@ -4,6 +4,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE BangPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe (
@@ -107,7 +108,7 @@ o@(u F.:>>= q) =$=! p@(v F.:>>= r) = case (U.decomp u, U.decomp v) of
 	(Right (Yield _), Right IsMore) -> o =$=! (r F.$ True)
 	(Right (o' :=$= p'), Right IsMore) -> ((q F.$) =<< (o' =$=! p')) =$=! p
 	(Right (o' :=@= p'), Right IsMore) -> ((q F.$) =<< (o' =@=! p')) =$=! p
-	(Right (Yield ot), Right Await) -> (q F.$ ()) =$=! (r F.$ ot)
+	(Right (Yield !ot), Right Await) -> (q F.$ ()) =$=! (r F.$ ot)
 	(Right (o' :=$= p'), Right Await) -> ((q F.$) =<< (o' =$=! p')) =$=! p
 	(Right (o' :=@= p'), Right Await) -> ((q F.$) =<< (o' =@=! p')) =$=! p
 	(Left u', _) -> U.weaken (Fn.mapT (=$=!! p) ((, p) . F.Pure) u') F.:>>=
