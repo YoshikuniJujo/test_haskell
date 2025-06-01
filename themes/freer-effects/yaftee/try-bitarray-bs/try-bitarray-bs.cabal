@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           try-bitarray-bs
-version:        0.1.0.0
+version:        0.1.0.1
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-bitarray-bs#readme>
 homepage:       https://github.com/YoshikuniJujo/try-bitarray-bs#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-bitarray-bs/issues
