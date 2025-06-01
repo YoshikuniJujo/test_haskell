@@ -27,6 +27,7 @@ library
   exposed-modules:
       Data.ByteString.Bit
       Data.ByteString.BitArray
+      Data.ByteString.Lazy.BitArray
   other-modules:
       Paths_try_bitarray_bs
   autogen-modules:
