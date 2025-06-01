@@ -1,16 +1,19 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE RequiredTypeArguments #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.ByteString.Lazy.OnDemand where
 
+import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
+import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
 import Data.Bool
 import Data.Int
@@ -18,10 +21,25 @@ import Data.ByteString.Lazy qualified as LBS
 import Data.ByteString.Lazy.ToolsYj qualified as LBS
 import Data.ByteString.Lazy.BitArray qualified as BitArray
 
+onDemand :: forall es r . forall nm -> (
+	U.Member Pipe.P es,
+	Members nm es, U.Member (Except.E String) es ) =>
+	Eff.E es LBS.ByteString (Either BitArray.B LBS.ByteString) r
+onDemand nm = fix \go -> State.getN nm >>= \case
+	RequestBits ln -> takeBits nm ln >>=
+		maybe (Except.throw errne) ((>> go) . Pipe.yield)
+	where
+	errne :: String
+	errne = "Not enough ByteString"
+
+type Members nm es = (
+	U.Member (State.Named nm Request) es,
+	U.Member (State.Named nm BitArray) es )
+
 data Request
-	= RequestBits Int
-	| RequestBytes Int
-	| RequestBuffer Int
+	= RequestBits Int64
+	| RequestBytes Int64
+	| RequestBuffer Int64
 	| RequestString
 	| RequestPushBack BitArray.B
 	deriving Show
@@ -36,6 +54,50 @@ takeBits :: forall es o . forall nm -> (
 takeBits nm ln = State.getsN nm unBitArray >>= \ba -> case BitArray.splitAt ln ba of
 	Nothing -> readMore nm >>= bool (pure Nothing) (takeBits nm ln)
 	Just (t, d) -> Just (BitArray.toByteString t) <$ State.putN nm (BitArray d)
+
+takeBytes :: forall nm -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm BitArray) es ) =>
+	Int64 -> Eff.E es LBS.ByteString o
+		(Maybe (Either BitArray.B LBS.ByteString))
+takeBytes nm ln = State.getsN nm unBitArray >>= \ba -> case BitArray.byteBoundary ba of
+	Left (t, d) -> Just (Left t) <$ State.putN nm (BitArray d)
+	Right b -> case BitArray.toByteString b of
+		Left _ -> error "bad"
+		Right bs -> case LBS.splitAt' ln bs of
+			Nothing -> readMore nm >>= bool (pure Nothing) (takeBytes nm ln)
+			Just (t, d) -> Just (Right t)
+				<$ State.putN nm (BitArray $ BitArray.fromByteString d)
+
+takeBuffer :: forall nm -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm BitArray) es ) =>
+	Int64 -> Eff.E es LBS.ByteString o
+		(Maybe (Either BitArray.B LBS.ByteString))
+takeBuffer nm ln = State.getsN nm unBitArray >>= \ba -> case BitArray.byteBoundary ba of
+	Left (t, d) -> Just (Left t) <$ State.putN nm (BitArray d)
+	Right b -> case BitArray.toByteString b of
+		Left _ -> error "bad"
+		Right bs -> case LBS.splitAt' ln bs of
+			Nothing -> readMore nm >>= bool
+				(bool	(Just (Right bs) <$ State.putN nm (BitArray BitArray.empty))
+					(pure Nothing) (LBS.null bs))
+				(takeBuffer nm ln)
+			Just (t, d) -> Just (Right t)
+				<$ State.putN nm (BitArray $ BitArray.fromByteString d)
+
+takeString :: forall nm ->
+	(U.Member Pipe.P es, U.Member (State.Named nm BitArray) es) =>
+	Eff.E es LBS.ByteString o
+		(Maybe (Either BitArray.B LBS.ByteString))
+takeString nm = State.getsN nm unBitArray >>= \ba -> case BitArray.byteBoundary ba of
+	Left (t, d) -> Just (Left t) <$ State.putN nm (BitArray d)
+	Right b -> case BitArray.toByteString b of
+		Left _ -> error "bad"
+		Right bs -> case splitString bs of
+			Nothing -> readMore nm >>= bool (pure Nothing) (takeString nm)
+			Just (t, d) -> Just (Right t)
+				<$ State.putN nm (BitArray $ BitArray.fromByteString d)
 
 splitString :: LBS.ByteString -> Maybe (LBS.ByteString, LBS.ByteString)
 splitString bs = case LBS.span (/= 0) bs of
