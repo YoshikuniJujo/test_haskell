@@ -6,6 +6,7 @@
 
 module Main (main) where
 
+import Foreign.C.Types
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -15,6 +16,7 @@ import Control.Monad.Yaftee.Pipe.ByteString.Lazy qualified as PipeLBS
 import Control.Monad.Yaftee.Pipe.ByteString.Lazy.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
+import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.ByteString.Lazy qualified as LBS
@@ -27,7 +29,7 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
-	void . Eff.runM . Except.run @String
+	void . Eff.runM . Except.run @String . Fail.runExc id
 			. OnDemand.run_ @"foobar"
 			. Pipe.run $
 		PipeLBS.hGet 64 h Pipe.=$=
@@ -38,8 +40,23 @@ main = do
 					$ Except.throw @String "Bad magic"
 				State.putN "foobar" $ OnDemand.RequestBytes 1
 				IO.print . CompressionMethod . LBS.head =<< Pipe.await
-				IO.print . readFlags . LBS.head =<< Pipe.await
+				Just flgs <- readFlags . LBS.head <$> Pipe.await
+				IO.print flgs
 				State.putN "foobar" $ OnDemand.RequestBytes 4
 				IO.print . CTime . LBS.toBits =<< Pipe.await
+				State.putN "foobar" $ OnDemand.RequestBytes 1
+				IO.print . LBS.head =<< Pipe.await
+				IO.print . OS . LBS.head =<< Pipe.await
+				IO.print =<< if (flagsRawExtra flgs)
+				then do	State.putN "foobar" $ OnDemand.RequestBytes 2
+					xlen <- LBS.toBits <$> Pipe.await
+					State.putN "foobar" $ OnDemand.RequestBytes xlen
+					decodeExtraFields . LBS.toStrict <$> Pipe.await
+				else pure []
+				State.putN "foobar" OnDemand.RequestString
+				IO.print =<< Pipe.await
+				IO.print =<< if flagsRawName flgs
+				then Just <$> Pipe.await
+				else pure Nothing
 				State.putN "foobar" $ OnDemand.RequestBuffer 100
 				PipeIO.print

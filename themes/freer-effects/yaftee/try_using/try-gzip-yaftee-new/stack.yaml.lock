@@ -122,12 +122,12 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/common/try-freer-base-classes
 - completed:
-    hackage: tools-yj-0.1.0.30@sha256:292479247ea1b1295654f7afc36b80970b44851518510bb5990f4671a9d39db9,2343
+    hackage: tools-yj-0.1.0.31@sha256:4d8f981a7f097164e36e874f40d49d422e3b0cd70fa99de1cb996cd0771e7de5,2343
     pantry-tree:
-      sha256: 7bdb385b26ce75be288842f783a2eda92059e0a87d61129fd6d0ab86c7114933
-      size: 1377
+      sha256: 657b0cb29db373b6d6ddb6a75d3d67f98dbfc0ea44d0239297bdc1e4af25f40f
+      size: 1378
   original:
-    hackage: tools-yj-0.1.0.30
+    hackage: tools-yj-0.1.0.31
 snapshots:
 - completed:
     sha256: e9b93acfb8aaf8ae4869050506553a963a8adba95748cd60356f9ffe64f03345
