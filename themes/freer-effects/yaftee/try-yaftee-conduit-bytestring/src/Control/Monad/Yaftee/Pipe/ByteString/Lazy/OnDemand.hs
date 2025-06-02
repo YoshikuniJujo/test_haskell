@@ -1,25 +1,47 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE ExplicitForAll #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
-{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.ByteString.Lazy.OnDemand where
+module Control.Monad.Yaftee.Pipe.ByteString.Lazy.OnDemand (
 
+	-- * RUN
+
+	run_, States,
+
+	-- * ON DEMAND
+
+	onDemand, onDemandWithInitial, Members, Request(..), BitArray
+
+	) where
+
+import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
+import Data.TypeLevel.List
+import Data.HigherFunctor qualified as HFunctor
 import Data.Bool
 import Data.Int
 import Data.ByteString.Lazy qualified as LBS
 import Data.ByteString.Lazy.ToolsYj qualified as LBS
 import Data.ByteString.Lazy.BitArray qualified as BitArray
+
+run_ :: forall nm es i o a . HFunctor.Loose (U.U es) =>
+	Eff.E (States nm `Append` es) i o a -> Eff.E es i o ()
+run_ = void
+	. (flip (State.runN @nm) $ BitArray BitArray.empty)
+	. (flip (State.runN @nm) $ RequestBuffer 100)
+
+type States nm = '[State.Named nm Request, State.Named nm BitArray]
 
 onDemand :: forall es r . forall nm -> (
 	U.Member Pipe.P es,
@@ -28,9 +50,26 @@ onDemand :: forall es r . forall nm -> (
 onDemand nm = fix \go -> State.getN nm >>= \case
 	RequestBits ln -> takeBits nm ln >>=
 		maybe (Except.throw errne) ((>> go) . Pipe.yield)
+	RequestBytes ln -> takeBytes nm ln >>=
+		maybe (Except.throw errne) ((>> go) . Pipe.yield)
+	RequestBuffer ln -> takeBuffer nm ln >>=
+		maybe (Except.throw errne) ((>> go) . Pipe.yield)
+	RequestString -> takeString nm >>=
+		maybe (Except.throw errne) ((>> go) . Pipe.yield)
+	RequestPushBack ba ->
+		State.modifyN nm (BitArray . (ba `BitArray.append`) . unBitArray) >>
+		Pipe.yield (Right "") >> go
 	where
 	errne :: String
 	errne = "Not enough ByteString"
+
+onDemandWithInitial :: forall es r . forall nm ->
+	(U.Member Pipe.P es, Members nm es, U.Member (Except.E String) es) =>
+	LBS.ByteString ->
+	Eff.E es LBS.ByteString (Either BitArray.B LBS.ByteString) r
+onDemandWithInitial nm ib = do
+	State.putN nm . BitArray $ BitArray.fromByteString ib
+	onDemand nm
 
 type Members nm es = (
 	U.Member (State.Named nm Request) es,
