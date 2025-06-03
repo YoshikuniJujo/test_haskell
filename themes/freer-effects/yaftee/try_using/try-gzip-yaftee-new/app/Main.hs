@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -14,11 +14,13 @@ import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString.Lazy qualified as PipeLBS
 import Control.Monad.Yaftee.Pipe.ByteString.Lazy.OnDemand qualified as OnDemand
+import Control.Monad.Yaftee.Pipe.ByteString.Lazy.Crc qualified as Crc
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.Bits
 import Data.ByteString.Lazy qualified as LBS
 import Data.ByteString.Lazy.ToolsYj qualified as LBS
 import Data.Gzip.Header
@@ -31,9 +33,11 @@ main = do
 	h <- openFile fp ReadMode
 	void . Eff.runM . Except.run @String . Fail.runExc id
 			. OnDemand.run_ @"foobar"
+			. Crc.runCrc32 @"foobar"
 			. Pipe.run $
 		PipeLBS.hGet 64 h Pipe.=$=
-			OnDemand.onDemand "foobar" Pipe.=$= PipeT.checkRight Pipe.=$= do
+			OnDemand.onDemand "foobar" Pipe.=$= PipeT.checkRight Pipe.=$=
+			Crc.crc32 "foobar" Pipe.=$= do
 				State.putN "foobar" $ OnDemand.RequestBytes 2
 				ids <- Pipe.await
 				when (ids /= "\31\139")
@@ -58,5 +62,12 @@ main = do
 				IO.print =<< if flagsRawName flgs
 				then Just <$> Pipe.await
 				else pure Nothing
+				when (flagsRawHcrc flgs) do
+					Crc.compCrc32 "foobar"
+					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> State.getN "foobar"
+					State.putN "foobar" $ OnDemand.RequestBytes 2
+					m <- LBS.toBits <$> Pipe.await
+					when (crc /= m) $
+						Except.throw @String "Header CRC check failed"
 				State.putN "foobar" $ OnDemand.RequestBuffer 100
 				PipeIO.print
