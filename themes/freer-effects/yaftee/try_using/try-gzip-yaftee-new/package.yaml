@@ -21,8 +21,10 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- containers
 - bytestring
 - tools-yj
+- typelevel-tools-yj
 - try-bitarray-bs
 - try-yaftee
 - try-yaftee-basic-monads
