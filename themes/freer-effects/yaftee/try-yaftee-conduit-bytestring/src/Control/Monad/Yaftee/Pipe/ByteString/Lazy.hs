@@ -57,7 +57,7 @@ hPutStr' :: (U.Member Pipe.P es, U.Base IO.I es) =>
 hPutStr' h = fix \go -> Pipe.isMore  >>= bool (pure ())
 	((>> go) $ Eff.effBase . LBS.hPut h =<< Pipe.await)
 
-lengthRun :: HFunctor.Loose (U.U es) =>
+lengthRun :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (State.Named nm Length ': es) i o r -> Eff.E es i o (r, Length)
 lengthRun = (`State.runN` (0 :: Length))
 
