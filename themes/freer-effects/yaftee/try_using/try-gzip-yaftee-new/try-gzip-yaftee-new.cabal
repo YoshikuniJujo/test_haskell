@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Monad.Yaftee.Pipe.Gzip.Decompress
       Data.Gzip.Header
   other-modules:
       Paths_try_gzip_yaftee_new

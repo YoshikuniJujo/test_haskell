@@ -1,12 +1,13 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
-import Foreign.C.Types
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -19,55 +20,22 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
-import Control.HigherOpenUnion qualified as U
-import Data.Bits
-import Data.ByteString.Lazy qualified as LBS
-import Data.ByteString.Lazy.ToolsYj qualified as LBS
-import Data.Gzip.Header
 import System.IO
 import System.Environment
+
+import Control.Monad.Yaftee.Pipe.Gzip.Decompress
 
 main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
+	let	f = IO.print
 	void . Eff.runM . Except.run @String . Fail.runExc id
 			. OnDemand.run_ @"foobar"
 			. Crc.runCrc32 @"foobar"
 			. Pipe.run $
 		PipeLBS.hGet 64 h Pipe.=$=
-			OnDemand.onDemand "foobar" Pipe.=$= PipeT.checkRight Pipe.=$=
-			Crc.crc32 "foobar" Pipe.=$= do
-				State.putN "foobar" $ OnDemand.RequestBytes 2
-				ids <- Pipe.await
-				when (ids /= "\31\139")
-					$ Except.throw @String "Bad magic"
-				State.putN "foobar" $ OnDemand.RequestBytes 1
-				IO.print . CompressionMethod . LBS.head =<< Pipe.await
-				Just flgs <- readFlags . LBS.head <$> Pipe.await
-				IO.print flgs
-				State.putN "foobar" $ OnDemand.RequestBytes 4
-				IO.print . CTime . LBS.toBits =<< Pipe.await
-				State.putN "foobar" $ OnDemand.RequestBytes 1
-				IO.print . LBS.head =<< Pipe.await
-				IO.print . OS . LBS.head =<< Pipe.await
-				IO.print =<< if (flagsRawExtra flgs)
-				then do	State.putN "foobar" $ OnDemand.RequestBytes 2
-					xlen <- LBS.toBits <$> Pipe.await
-					State.putN "foobar" $ OnDemand.RequestBytes xlen
-					decodeExtraFields . LBS.toStrict <$> Pipe.await
-				else pure []
-				State.putN "foobar" OnDemand.RequestString
-				IO.print =<< Pipe.await
-				IO.print =<< if flagsRawName flgs
-				then Just <$> Pipe.await
-				else pure Nothing
-				when (flagsRawHcrc flgs) do
-					Crc.compCrc32 "foobar"
-					crc <- (.&. 0xffff) . (\(Crc.Crc32 c) -> c) <$> State.getN "foobar"
-					State.putN "foobar" $ OnDemand.RequestBytes 2
-					m <- LBS.toBits <$> Pipe.await
-					when (crc /= m) $
-						Except.throw @String "Header CRC check failed"
+			OnDemand.onDemand "foobar" Pipe.=$= PipeT.checkRight Pipe.=$= do
+				readHeader "foobar" f
 				State.putN "foobar" $ OnDemand.RequestBuffer 100
 				PipeIO.print
