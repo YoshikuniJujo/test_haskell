@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           try-yaftee-conduit-bytestring
-version:        0.1.0.6
+version:        0.1.0.7
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-yaftee-conduit-bytestring#readme>
 homepage:       https://github.com/YoshikuniJujo/try-yaftee-conduit-bytestring#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-yaftee-conduit-bytestring/issues
@@ -29,7 +29,9 @@ library
       Control.Monad.Yaftee.Pipe.ByteString
       Control.Monad.Yaftee.Pipe.ByteString.Adler32
       Control.Monad.Yaftee.Pipe.ByteString.Crc
+      Control.Monad.Yaftee.Pipe.ByteString.Crc.Common
       Control.Monad.Yaftee.Pipe.ByteString.Lazy
+      Control.Monad.Yaftee.Pipe.ByteString.Lazy.Crc
       Control.Monad.Yaftee.Pipe.ByteString.Lazy.OnDemand
       Control.Monad.Yaftee.Pipe.ByteString.OnDemand
   other-modules:
