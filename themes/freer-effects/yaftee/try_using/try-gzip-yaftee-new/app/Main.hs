@@ -1,10 +1,11 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -12,6 +13,7 @@ module Main (main) where
 import GHC.TypeLits
 import Control.Arrow
 import Control.Monad
+import Control.Monad.Fix
 import Control.Monad.ToolsYj
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -26,6 +28,7 @@ import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Bits
+import Data.Maybe
 import Data.Word
 import Data.ByteString.Lazy qualified as LBS
 import Data.ByteString.Lazy.ToolsYj qualified as LBS
@@ -99,8 +102,8 @@ gzipDecompress = void $ OnDemand.onDemand "foobar" Pipe.=$= do
 	IO.print ln
 
 	State.putN "foobar" $ OnDemand.RequestBytes 4
-	Just crc0 <- Crc.crc32FromByteString <$> (Except.getRight @String "bad" =<< Pipe.await)
-	Just ln0 <- PipeLBS.lengthFromByteString 4 <$> (Except.getRight @String "bad" =<< Pipe.await)
+	Just crc0 <- Crc.crc32FromByteString <$> PipeT.skipLeft1
+	Just ln0 <- PipeLBS.lengthFromByteString 4 <$> (Except.getRight @String "bad 2" =<< Pipe.await)
 
 	when (crc /= crc0) $ Except.throw @String "CRC32 error"
 	when (ln /= ln0) $ Except.throw @String "length error"
@@ -133,10 +136,17 @@ block = do
 			State.putN "foobar" $ OnDemand.RequestBytes 4
 			ln <- pairToLength =<< PipeT.skipLeft1
 			State.putN "foobar" $ OnDemand.RequestBytes ln
-			Pipe.yield . RunLength.LiteralBS =<< Except.getRight @String "bad" =<< Pipe.await
-		_	| bt == 1 -> do
+			Pipe.yield . RunLength.LiteralBS =<< Except.getRight @String "bad 3" =<< Pipe.await
+		_	| bt == 1 || bt == 2 -> do
+			(mhlithdist :: Maybe (Int, Int), mhclen :: Maybe Int) <- whenDef (Nothing, Nothing) (bt == 2) do
+				State.putN "foobar" $ OnDemand.RequestBits 5
+				hlit <- (+ 257) . BitArray.toBits <$> (Except.getLeft @String "bad 4" =<< Pipe.await)
+				hdist <- (+ 1) . BitArray.toBits <$> (Except.getLeft @String "bad 5" =<< Pipe.await)
+				State.putN "foobar" $ OnDemand.RequestBits 4
+				hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft @String "bad 6" =<< Pipe.await)
+				pure (Just (hlit, hlit + hdist), Just hclen)
 			State.putN "foobar" $ OnDemand.RequestBuffer 100
-			huffmanBits "foobar"
+			huffmanBits "foobar" mhclen mhlithdist
 
 			State.putN "foobar" . OnDemand.RequestPushBack =<< State.getsN "foobar" Huffman.unBitArray
 			State.putN "foobar" $ Huffman.BitArray BitArray.empty
@@ -151,6 +161,7 @@ block = do
 
 huffmanBits :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
+	U.Member (State.Named nm OnDemand.Request) es,
 	U.Member (State.S Huffman.Phase) es,
 	U.Member (State.S (Huffman.IsLiteral Int)) es,
 	U.Member (State.Named nm (Huffman.BinTreePair Int)) es,
@@ -158,18 +169,49 @@ huffmanBits :: forall (nm :: Symbol) -> (
 	U.Member (State.Named nm Huffman.ExtraBits) es,
 	U.Member Fail.F es
 	) =>
+	Maybe Int -> Maybe (Int, Int) ->
 	Eff.E es (Either BitArray.B LBS.ByteString) RunLength.R ()
-huffmanBits nm = void do
+huffmanBits nm mhclen mhlithdist = void do
+
+	whenMaybe mhclen \hclen -> do
+		State.putN nm $ OnDemand.RequestBits 3
+		rtt <- replicateM hclen (BitArray.toBits @Word8 . either id BitArray.fromByteString <$> Pipe.await)
+		let tt = Huffman.makeTree codeLengthList rtt
+		Huffman.putTree nm tt
+
+	State.putN nm $ OnDemand.RequestBuffer 100
+
 	Huffman.huffman' @Int @Word16 nm Pipe.=$= do
-		let	(ht, hdt) = (
+		(ht, hdt) <- whenMaybeDef (
 				Huffman.makeTree [0 :: Int ..] fixedHuffmanList,
-				Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList )
+				Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList ) mhlithdist \(hlit, hlitdist) ->
+			(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> codeLengths nm 0 hlitdist
 
 		State.put Huffman.PhaseLitLen
 		State.put $ Huffman.IsLiteral \i -> (0 :: Int) <= i && i <= 255
 
 		Huffman.putTree nm ht
 		litLen' nm ht hdt 0
+
+codeLengths :: forall (nm :: Symbol) -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm Huffman.ExtraBits) es,
+	U.Member Fail.F es,
+	Integral b
+	) =>
+	Int -> Int ->
+	Eff.E es (Either Int b) o [Int]
+codeLengths nm = fix \go pr n -> if n == 0 then pure [] else Pipe.await >>= \case
+	Left al	| 0 <= al && al <= 15 -> (al :) <$> go al (n - 1)
+		| al `elem` [16, 17, 18] -> do
+			let	(ln, eb, k) = fromJust $ lookup al [
+					(16, (pr, 2, 3)),
+					(17, (0, 3, 3)), (18, (0, 7, 11)) ]
+			Huffman.putExtraBits nm eb
+			Right ((+ k) . fromIntegral -> rp) <- Pipe.await
+			(replicate rp ln ++) <$> go pr (n - rp)
+		| otherwise -> error "bad 7"
+	Right _ -> error "bad 8"
 
 litLen' :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
