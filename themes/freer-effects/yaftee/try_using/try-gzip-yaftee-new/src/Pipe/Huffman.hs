@@ -78,8 +78,8 @@ newtype IsLiteral a = IsLiteral (a -> Bool)
 
 huffman' :: forall a eb es r . forall nm -> Bits eb => (
 	U.Member Pipe.P es,
-	U.Member (State.S Phase) es,
-	U.Member (State.S (IsLiteral a)) es,
+	U.Member (State.Named nm Phase) es,
+	U.Member (State.Named nm (IsLiteral a)) es,
 	U.Member (State.Named nm (BinTreePair a)) es,
 	U.Member (State.Named nm ExtraBits) es,
 	U.Member (State.Named nm BitArray) es,
@@ -87,8 +87,8 @@ huffman' :: forall a eb es r . forall nm -> Bits eb => (
 	Eff.E es (Either BitArray.B LBS.ByteString) (Either a eb) ()
 huffman' nm = State.getN nm >>= \case
 	ExtraBits 0 -> do
-		ph <- State.get
-		il <- State.get @(IsLiteral a)
+		ph <- State.getN nm
+		il <- State.getN @(IsLiteral a) nm
 		if ph == PhaseLitLen
 			then stepNew nm a il >>= mapM_ (Pipe.yield . Left) >> huffman' nm
 			else stepNew nm a (IsLiteral $ const False) >>= mapM_ (Pipe.yield . Left) >> huffman' nm
@@ -107,7 +107,7 @@ stepNew :: forall (nm :: Symbol) a -> (
 	U.Member Pipe.P es,
 	U.Member (State.Named nm (BinTreePair a)) es,
 	U.Member (State.Named nm BitArray) es,
-	U.Member (State.S Phase) es
+	U.Member (State.Named nm Phase) es
 	) =>
 	IsLiteral a ->
 	Eff.E es (Either BitArray.B LBS.ByteString) o [a]
@@ -117,7 +117,7 @@ stepNew nm a (IsLiteral p) = State.getsN nm unBinTreePair >>= \(t0, t) -> do
 		Nothing -> fillBuffer nm >> stepNew nm a (IsLiteral p)
 		Just (rs, nt, b) -> rs <$ do
 			State.modifyN @(BinTreePair a) nm (binTreePair . (second $ const nt) . unBinTreePair)
-			when b $ State.put $ PhaseOthers
+			when b $ State.putN nm $ PhaseOthers
 {-
 	BitArray ba <- State.getN nm
 	if BitArray.null ba

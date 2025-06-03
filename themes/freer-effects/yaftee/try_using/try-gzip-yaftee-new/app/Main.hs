@@ -51,8 +51,8 @@ main = do
 
 			. RunLength.run_ @_ @"foobar"
 
-			. (`State.run` Huffman.PhaseOthers)
-			. (`State.run` Huffman.IsLiteral @Int (const False))
+			. (flip (State.runN @"foobar") Huffman.PhaseOthers)
+			. (flip (State.runN @"foobar") $ Huffman.IsLiteral @Int (const False))
 
 			. (flip (State.runN @"foobar") $ Huffman.BitArray (BitArray.fromByteString ""))
 			. Huffman.run @"foobar" @Int
@@ -69,8 +69,8 @@ gzipDecompress :: (
 
 	RunLength.Members "foobar" es,
 
-	U.Member (State.S Huffman.Phase) es,
-	U.Member (State.S (Huffman.IsLiteral Int)) es,
+	U.Member (State.Named "foobar" Huffman.Phase) es,
+	U.Member (State.Named "foobar" (Huffman.IsLiteral Int)) es,
 	U.Member (State.Named "foobar" (Huffman.BinTreePair Int)) es,
 	U.Member (State.Named "foobar" Huffman.BitArray) es,
 	U.Member (State.Named "foobar" Huffman.ExtraBits) es,
@@ -80,8 +80,7 @@ gzipDecompress :: (
 	U.Member (State.Named "foobar" Crc.Crc32) es,
 	U.Member (State.Named "foobar" PipeLBS.Length) es,
 	U.Member (Except.E String) es,
-	U.Member Fail.F es,
-	U.Base IO.I es
+	U.Member Fail.F es
 	) =>
 	Eff.E es LBS.ByteString LBS.ByteString ()
 gzipDecompress = void $ OnDemand.onDemand "foobar" Pipe.=$= do
@@ -91,15 +90,11 @@ gzipDecompress = void $ OnDemand.onDemand "foobar" Pipe.=$= do
 	_ <- doWhile_ block Pipe.=$=
 		RunLength.runlength "foobar" Pipe.=$=
 		PipeT.convert (either (LBS.pack . (: [])) id) Pipe.=$=
---		PipeT.convert RunLength.toByteString Pipe.=$=
 		Crc.crc32 "foobar" Pipe.=$= PipeLBS.length "foobar"
 	Crc.compCrc32 "foobar"
 
 	crc <- State.getN "foobar"
 	ln <- State.getN "foobar"
-
-	IO.print crc
-	IO.print ln
 
 	State.putN "foobar" $ OnDemand.RequestBytes 4
 	Just crc0 <- Crc.crc32FromByteString <$> PipeT.skipLeft1
@@ -112,8 +107,8 @@ gzipDecompress = void $ OnDemand.onDemand "foobar" Pipe.=$= do
 
 block :: (
 	U.Member Pipe.P es,
-	U.Member (State.S Huffman.Phase) es,
-	U.Member (State.S (Huffman.IsLiteral Int)) es,
+	U.Member (State.Named "foobar" Huffman.Phase) es,
+	U.Member (State.Named "foobar" (Huffman.IsLiteral Int)) es,
 	U.Member (State.Named "foobar" (Huffman.BinTreePair Int)) es,
 	U.Member (State.Named "foobar" Huffman.BitArray) es,
 	U.Member (State.Named "foobar" Huffman.ExtraBits) es,
@@ -162,8 +157,8 @@ block = do
 huffmanBits :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
 	U.Member (State.Named nm OnDemand.Request) es,
-	U.Member (State.S Huffman.Phase) es,
-	U.Member (State.S (Huffman.IsLiteral Int)) es,
+	U.Member (State.Named nm Huffman.Phase) es,
+	U.Member (State.Named nm (Huffman.IsLiteral Int)) es,
 	U.Member (State.Named nm (Huffman.BinTreePair Int)) es,
 	U.Member (State.Named nm Huffman.BitArray) es,
 	U.Member (State.Named nm Huffman.ExtraBits) es,
@@ -187,8 +182,8 @@ huffmanBits nm mhclen mhlithdist = void do
 				Huffman.makeTree [0 :: Int ..] fixedHuffmanDstList ) mhlithdist \(hlit, hlitdist) ->
 			(Huffman.makeTree [0 :: Int ..] *** Huffman.makeTree [0 :: Int ..]) . splitAt hlit <$> codeLengths nm 0 hlitdist
 
-		State.put Huffman.PhaseLitLen
-		State.put $ Huffman.IsLiteral \i -> (0 :: Int) <= i && i <= 255
+		State.putN nm Huffman.PhaseLitLen
+		State.putN nm $ Huffman.IsLiteral \i -> (0 :: Int) <= i && i <= 255
 
 		Huffman.putTree nm ht
 		litLen' nm ht hdt 0
@@ -215,7 +210,7 @@ codeLengths nm = fix \go pr n -> if n == 0 then pure [] else Pipe.await >>= \cas
 
 litLen' :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
-	U.Member (State.S Huffman.Phase) es,
+	U.Member (State.Named nm Huffman.Phase) es,
 	U.Member (State.Named nm (Huffman.BinTreePair Int)) es,
 	U.Member (State.Named nm Huffman.ExtraBits) es
 	) =>
@@ -238,7 +233,7 @@ litLen' nm t dt pri = Pipe.await >>= \case
 
 dist' :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
-	U.Member (State.S Huffman.Phase) es,
+	U.Member (State.Named nm Huffman.Phase) es,
 	U.Member (State.Named nm (Huffman.BinTreePair Int)) es,
 	U.Member (State.Named nm Huffman.ExtraBits) es
 	) =>
@@ -247,7 +242,7 @@ dist' :: forall (nm :: Symbol) -> (
 dist' nm t dt ln pri = Pipe.await >>= \case
 	Left i	| 0 <= i && i <= 3 -> do
 			Pipe.yield $ RunLength.LenDist ln (calcDist i 0)
-			State.put Huffman.PhaseLitLen
+			State.putN nm Huffman.PhaseLitLen
 			Huffman.putTree nm t
 			litLen' nm t dt 0
 		| 4 <= i && i <= 29 -> do
@@ -255,7 +250,7 @@ dist' nm t dt ln pri = Pipe.await >>= \case
 			dist' nm t dt ln i
 	Right eb -> do
 		Pipe.yield (RunLength.LenDist ln (calcDist pri eb))
-		State.put Huffman.PhaseLitLen
+		State.putN nm Huffman.PhaseLitLen
 		Huffman.putTree nm t
 		litLen' nm t dt 0
 	r -> error $ "dist': " ++ show r
