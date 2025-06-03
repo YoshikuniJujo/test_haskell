@@ -38,6 +38,7 @@ library
       base >=4.7 && <5
     , bytestring
     , tools-yj
+    , try-bitarray-bs
     , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
@@ -58,6 +59,7 @@ executable try-gzip-yaftee-new-exe
       base >=4.7 && <5
     , bytestring
     , tools-yj
+    , try-bitarray-bs
     , try-gzip-yaftee-new
     , try-higher-order-open-union
     , try-yaftee
@@ -80,6 +82,7 @@ test-suite try-gzip-yaftee-new-test
       base >=4.7 && <5
     , bytestring
     , tools-yj
+    , try-bitarray-bs
     , try-gzip-yaftee-new
     , try-higher-order-open-union
     , try-yaftee
