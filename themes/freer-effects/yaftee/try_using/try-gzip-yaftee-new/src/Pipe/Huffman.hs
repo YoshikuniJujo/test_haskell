@@ -193,15 +193,29 @@ appendBitArray (BitArray ba) ba' = BitArray $ ba `BitArray.append` ba'
 
 type Members nm a es = (
 	U.Member (State.Named nm (BinTreePair a)) es,
-	U.Member (State.Named nm ExtraBits) es )
+	U.Member (State.Named nm ExtraBits) es,
+	U.Member (State.Named nm BitArray) es,
+	U.Member (State.Named nm Phase) es,
+	U.Member (State.Named nm (IsLiteral a)) es )
 
 run :: forall nm a es i o r . (HFunctor.Loose (U.U es), Ord a) =>
 	Eff.E (States nm a `Append` es) i o r ->
-	Eff.E es i o ((r, ExtraBits), (BinTreePair a))
-run = flip (State.runN @nm) (BinTreePair bt bt) . flip (State.runN @nm) (ExtraBits 0)
+	Eff.E es i o (
+		((((r, BinTreePair a), ExtraBits), BitArray), Phase),
+		IsLiteral a )
+run = (`State.runN` IsLiteral (const False))
+	. (`State.runN` PhaseOthers)
+	. (`State.runN` BitArray BitArray.empty)
+	. flip (State.runN @nm) (ExtraBits 0)
+	. flip (State.runN @nm) (BinTreePair bt bt)
 	where bt = makeTree [] ([] :: [Int])
 
-type States nm a = '[State.Named nm ExtraBits, State.Named nm (BinTreePair a)]
+type States nm a = '[
+	State.Named nm (BinTreePair a),
+	State.Named nm ExtraBits,
+	State.Named nm BitArray,
+	State.Named nm Phase,
+	State.Named nm (IsLiteral a) ]
 
 putTree :: forall a es i o . forall nm -> U.Member (State.Named nm (BinTreePair a)) es =>
 	BinTree a -> Eff.E es i o ()
