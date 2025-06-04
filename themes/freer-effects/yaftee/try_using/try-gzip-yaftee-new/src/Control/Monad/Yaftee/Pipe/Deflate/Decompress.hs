@@ -9,7 +9,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.Deflate.Decompress (
-	deflateDecompress, DeflateMembers
+	decompress, Members
 	) where
 
 import GHC.TypeLits
@@ -38,15 +38,15 @@ import Pipe.Runlength qualified as RunLength
 import Data.Gzip
 import Data.Gzip.Calc
 
-deflateDecompress :: forall (nm :: Symbol) -> (
-	U.Member Pipe.P es, DeflateMembers nm es,
+decompress :: forall (nm :: Symbol) -> (
+	U.Member Pipe.P es, Members nm es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	Eff.E es
 		(Either BitArray.B LBS.ByteString)
 		(Either Word8 LBS.ByteString) ()
-deflateDecompress nm = void $ doWhile_ (block nm) Pipe.=$= RunLength.runlength nm
+decompress nm = void $ doWhile_ (block nm) Pipe.=$= RunLength.runlength nm
 
-type DeflateMembers nm es = (
+type Members nm es = (
 	RunLength.Members nm es,
 	Huffman.Members nm Int es,
 	U.Member (State.Named nm OnDemand.Request) es )
