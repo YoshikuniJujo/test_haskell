@@ -27,11 +27,14 @@ library
   exposed-modules:
       Control.Monad.Yaftee.Pipe.Deflate.Decompress
       Control.Monad.Yaftee.Pipe.Gzip.Decompress
+      Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
+      Control.Monad.Yaftee.Pipe.Png.Decode.Header
       Data.Gzip
       Data.Gzip.Calc
       Data.Gzip.Header
       Data.Huffman
       Data.Png
+      Data.Png.Header
       Pipe.Huffman
       Pipe.Runlength
   other-modules:
