@@ -6,6 +6,7 @@ module Data.Png.Header where
 
 import Data.Bits
 import Data.Word
+import Data.Int
 
 data Header = Header {
 	headerWidth :: Word32,
@@ -17,6 +18,11 @@ data Header = Header {
 	headerInterlaceMethod :: InterlaceMethod }
 	deriving Show
 
+headerToRows :: Header -> [Int64]
+headerToRows h@Header { headerInterlaceMethod = InterlaceMethodNon } =
+	replicate (fromIntegral $ headerHeight h) (headerToBpp h * fromIntegral (headerWidth h))
+
+headerToBpp :: Integral n => Header -> n
 headerToBpp hdr =
 	(fromIntegral (headerBitDepth hdr) *
 		sampleNum (headerColorType hdr) - 1) `div` 8 + 1
@@ -49,7 +55,7 @@ pattern ColorTypePallete = ColorType 3
 pattern ColorTypeAlpha = ColorType 4
 pattern ColorTypeColorAlpha = ColorType 6
 
-sampleNum :: ColorType -> Int
+sampleNum :: Num n => ColorType -> n
 sampleNum ColorTypeGrayscale = 1
 sampleNum ColorTypeColorUsed = 3
 sampleNum ColorTypePallete = 1
