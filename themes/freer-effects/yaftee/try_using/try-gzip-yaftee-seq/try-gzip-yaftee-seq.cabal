@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Data.Gzip.Header
       Lib
   other-modules:
       Paths_try_gzip_yaftee_seq
@@ -37,10 +38,13 @@ library
       base >=4.7 && <5
     , bytestring
     , containers
+    , tools-yj
+    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
+    , try-yaftee-conduit-containers
   default-language: Haskell2010
 
 executable try-gzip-yaftee-seq-exe
@@ -56,11 +60,14 @@ executable try-gzip-yaftee-seq-exe
       base >=4.7 && <5
     , bytestring
     , containers
+    , tools-yj
     , try-gzip-yaftee-seq
+    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
+    , try-yaftee-conduit-containers
   default-language: Haskell2010
 
 test-suite try-gzip-yaftee-seq-test
@@ -77,9 +84,12 @@ test-suite try-gzip-yaftee-seq-test
       base >=4.7 && <5
     , bytestring
     , containers
+    , tools-yj
     , try-gzip-yaftee-seq
+    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
+    , try-yaftee-conduit-containers
   default-language: Haskell2010

@@ -23,10 +23,13 @@ dependencies:
 - base >= 4.7 && < 5
 - containers
 - bytestring
+- tools-yj
 - try-yaftee
 - try-yaftee-basic-monads
 - try-yaftee-conduit
+- try-yaftee-conduit-containers
 - try-yaftee-conduit-bytestring
+- try-higher-order-open-union
 
 ghc-options:
 - -Wall
