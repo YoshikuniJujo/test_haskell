@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.Monad.Yaftee.Pipe.BitArray.OnDemand
+      Control.Monad.Yaftee.Pipe.Sequence.Crc32
   other-modules:
       Paths_try_yaftee_conduit_containers
   autogen-modules:
