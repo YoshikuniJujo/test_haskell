@@ -55,9 +55,14 @@ main = do
 				State.putN "foobar" $ OnDemand.RequestBytes 4
 				ln <- pairToLength =<< PipeT.skipLeft1
 				State.putN "foobar" $ OnDemand.RequestBytes ln
-				IO.print =<< Pipe.await
-				State.putN "foobar" $ OnDemand.RequestBytes 8
-				IO.print =<< Pipe.await
+				(Pipe.yield =<< Except.getRight @String "bad" =<< Pipe.await)
+					Pipe.=$= PipeCrc32.crc32 "foobar" Pipe.=$= PipeIO.print
+				PipeCrc32.complement "foobar"
+				IO.print @Crc32.C =<< State.getN "foobar"
+				State.putN "foobar" $ OnDemand.RequestBytes 4
+				IO.print @Word32 . Seq.toBits =<< Except.getRight @String "bad" =<< Pipe.await
+				State.putN "foobar" $ OnDemand.RequestBytes 4
+				IO.print @Word32 . Seq.toBits =<< Except.getRight @String "bad" =<< Pipe.await
 
 pairToLength ::
 	U.Member (Except.E String) es => Seq.Seq Word8 -> Eff.E es i o Int
