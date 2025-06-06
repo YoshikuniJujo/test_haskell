@@ -39,6 +39,7 @@ library
     , bytestring
     , containers
     , tools-yj
+    , try-bitarray-seq
     , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
@@ -61,6 +62,7 @@ executable try-gzip-yaftee-seq-exe
     , bytestring
     , containers
     , tools-yj
+    , try-bitarray-seq
     , try-gzip-yaftee-seq
     , try-higher-order-open-union
     , try-yaftee
@@ -85,6 +87,7 @@ test-suite try-gzip-yaftee-seq-test
     , bytestring
     , containers
     , tools-yj
+    , try-bitarray-seq
     , try-gzip-yaftee-seq
     , try-higher-order-open-union
     , try-yaftee

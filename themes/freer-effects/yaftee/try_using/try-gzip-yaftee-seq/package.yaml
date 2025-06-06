@@ -30,6 +30,7 @@ dependencies:
 - try-yaftee-conduit-containers
 - try-yaftee-conduit-bytestring
 - try-higher-order-open-union
+- try-bitarray-seq
 
 ghc-options:
 - -Wall
