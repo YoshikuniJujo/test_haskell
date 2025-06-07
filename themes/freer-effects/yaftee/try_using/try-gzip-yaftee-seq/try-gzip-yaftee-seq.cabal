@@ -27,7 +27,9 @@ library
   exposed-modules:
       Data.Gzip.Calc
       Data.Gzip.Header
+      Data.Huffman
       Lib
+      Pipe.Huffman
       Pipe.Runlength
   other-modules:
       Paths_try_gzip_yaftee_seq
