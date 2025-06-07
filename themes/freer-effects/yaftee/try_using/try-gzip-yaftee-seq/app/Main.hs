@@ -40,14 +40,34 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
+	let	f = IO.print
 	void . Eff.runM
 		. Except.run @String . Fail.runExc id . OnDemand.run_ @"foobar"
 		. PipeCrc32.run @"foobar"
 		. Pipe.run
 		. (`Except.catch` IO.putStrLn) . void $ PipeBS.hGet 64 h Pipe.=$=
+
 			PipeT.convert bsToSeq Pipe.=$=
 			OnDemand.onDemand "foobar" Pipe.=$= do
-				_ <- PipeT.checkRight Pipe.=$= readHeader "foobar" IO.print
+				_ <- PipeT.checkRight Pipe.=$= readHeader "foobar" f
+
+				block1 Pipe.=$= PipeCrc32.crc32 "foobar" Pipe.=$= PipeIO.print
+
+				PipeCrc32.complement "foobar"
+				IO.print @Crc32.C =<< State.getN "foobar"
+				State.putN "foobar" $ OnDemand.RequestBytes 4
+				IO.print @Word32 . Seq.toBits =<< Except.getRight @String "bad" =<< Pipe.await
+				State.putN "foobar" $ OnDemand.RequestBytes 4
+				IO.print @Word32 . Seq.toBits =<< Except.getRight @String "bad" =<< Pipe.await
+
+block1 :: (
+	U.Member Pipe.P es,
+	U.Member (State.Named "foobar" OnDemand.Request) es,
+	U.Member (Except.E String) es,
+	U.Base IO.I es
+	) =>
+	Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) ()
+block1 = do
 				State.putN "foobar" $ OnDemand.RequestBits 1
 				IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
 				State.putN "foobar" $ OnDemand.RequestBits 2
@@ -56,13 +76,6 @@ main = do
 				ln <- pairToLength =<< PipeT.skipLeft1
 				State.putN "foobar" $ OnDemand.RequestBytes ln
 				(Pipe.yield =<< Except.getRight @String "bad" =<< Pipe.await)
-					Pipe.=$= PipeCrc32.crc32 "foobar" Pipe.=$= PipeIO.print
-				PipeCrc32.complement "foobar"
-				IO.print @Crc32.C =<< State.getN "foobar"
-				State.putN "foobar" $ OnDemand.RequestBytes 4
-				IO.print @Word32 . Seq.toBits =<< Except.getRight @String "bad" =<< Pipe.await
-				State.putN "foobar" $ OnDemand.RequestBytes 4
-				IO.print @Word32 . Seq.toBits =<< Except.getRight @String "bad" =<< Pipe.await
 
 pairToLength ::
 	U.Member (Except.E String) es => Seq.Seq Word8 -> Eff.E es i o Int
