@@ -12,6 +12,7 @@ import Prelude hiding (head)
 import Foreign.C.Types
 import Control.Arrow
 import Control.Monad
+import Control.Monad.ToolsYj
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
@@ -50,8 +51,8 @@ main = do
 			PipeT.convert bsToSeq Pipe.=$=
 			OnDemand.onDemand "foobar" Pipe.=$= do
 				_ <- PipeT.checkRight Pipe.=$= readHeader "foobar" f
-
-				block1 Pipe.=$= PipeCrc32.crc32 "foobar" Pipe.=$= PipeIO.print
+				_ <- doWhile_ (block1 "foobar") Pipe.=$=
+					PipeCrc32.crc32 "foobar" Pipe.=$= PipeIO.print
 
 				PipeCrc32.complement "foobar"
 				IO.print @Crc32.C =<< State.getN "foobar"
@@ -60,22 +61,23 @@ main = do
 				State.putN "foobar" $ OnDemand.RequestBytes 4
 				IO.print @Word32 . Seq.toBits =<< Except.getRight @String "bad" =<< Pipe.await
 
-block1 :: (
+block1 :: forall nm -> (
 	U.Member Pipe.P es,
-	U.Member (State.Named "foobar" OnDemand.Request) es,
+	U.Member (State.Named nm OnDemand.Request) es,
 	U.Member (Except.E String) es,
-	U.Base IO.I es
-	) =>
-	Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) ()
-block1 = do
-				State.putN "foobar" $ OnDemand.RequestBits 1
-				IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
-				State.putN "foobar" $ OnDemand.RequestBits 2
-				IO.print . either (Just . BitArray.toBits @Word8) (const Nothing) =<< Pipe.await
-				State.putN "foobar" $ OnDemand.RequestBytes 4
-				ln <- pairToLength =<< PipeT.skipLeft1
-				State.putN "foobar" $ OnDemand.RequestBytes ln
-				(Pipe.yield =<< Except.getRight @String "bad" =<< Pipe.await)
+	U.Member Fail.F es ) =>
+	Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) Bool
+block1 nm = do
+	State.putN nm $ OnDemand.RequestBits 1
+	Just bf <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
+	State.putN nm $ OnDemand.RequestBits 2
+	Just bt <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
+	(bf /= 1) <$ case bt of
+		0 -> do	State.putN nm $ OnDemand.RequestBytes 4
+			ln <- pairToLength =<< PipeT.skipLeft1
+			State.putN nm $ OnDemand.RequestBytes ln
+			(Pipe.yield =<< Except.getRight @String "bad" =<< Pipe.await)
+		_ -> error "yet"
 
 pairToLength ::
 	U.Member (Except.E String) es => Seq.Seq Word8 -> Eff.E es i o Int
