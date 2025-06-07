@@ -37,13 +37,17 @@ import Data.Gzip.Header
 import System.IO
 import System.Environment
 
+import Pipe.Runlength qualified as Runlength
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	let	f = IO.print
 	void . Eff.runM
-		. Except.run @String . Fail.runExc id . OnDemand.run_ @"foobar"
+		. Except.run @String . Fail.runExc id
+		. Runlength.run_ @_ @"foobar"
+		. OnDemand.run_ @"foobar"
 		. PipeCrc32.run @"foobar"
 		. Pipe.run
 		. (`Except.catch` IO.putStrLn) . void $ PipeBS.hGet 64 h Pipe.=$=
@@ -51,7 +55,8 @@ main = do
 			PipeT.convert bsToSeq Pipe.=$=
 			OnDemand.onDemand "foobar" Pipe.=$= do
 				_ <- PipeT.checkRight Pipe.=$= readHeader "foobar" f
-				_ <- doWhile_ (block1 "foobar") Pipe.=$=
+				_ <- doWhile_ (block1 "foobar") Pipe.=$= Runlength.runlength "foobar" Pipe.=$=
+					PipeT.convert (either Seq.singleton id) Pipe.=$=
 					PipeCrc32.crc32 "foobar" Pipe.=$= PipeIO.print
 
 				PipeCrc32.complement "foobar"
@@ -66,7 +71,8 @@ block1 :: forall nm -> (
 	U.Member (State.Named nm OnDemand.Request) es,
 	U.Member (Except.E String) es,
 	U.Member Fail.F es ) =>
-	Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) Bool
+--	Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) Bool
+	Eff.E es (Either BitArray.B (Seq.Seq Word8)) Runlength.R Bool
 block1 nm = do
 	State.putN nm $ OnDemand.RequestBits 1
 	Just bf <- either (Just . BitArray.toBits @Word8) (const Nothing) <$> Pipe.await
@@ -76,7 +82,7 @@ block1 nm = do
 		0 -> do	State.putN nm $ OnDemand.RequestBytes 4
 			ln <- pairToLength =<< PipeT.skipLeft1
 			State.putN nm $ OnDemand.RequestBytes ln
-			(Pipe.yield =<< Except.getRight @String "bad" =<< Pipe.await)
+			(Pipe.yield . Runlength.LiteralBS =<< Except.getRight @String "bad" =<< Pipe.await)
 		_ -> error "yet"
 
 pairToLength ::

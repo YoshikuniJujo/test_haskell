@@ -24,6 +24,7 @@ dependencies:
 - containers
 - bytestring
 - tools-yj
+- typelevel-tools-yj
 - try-yaftee
 - try-yaftee-basic-monads
 - try-yaftee-conduit
