@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Data.Gzip
       Data.Gzip.Calc
       Data.Gzip.Header
       Data.Huffman
