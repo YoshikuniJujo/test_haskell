@@ -53,6 +53,7 @@ main = do
 		. (`Except.catch` IO.putStrLn) . void $ PipeBS.hGet 64 h Pipe.=$=
 
 			PipeT.convert bsToSeq Pipe.=$=
+
 			OnDemand.onDemand "foobar" Pipe.=$= do
 				_ <- PipeT.checkRight Pipe.=$= readHeader "foobar" f
 
@@ -63,7 +64,7 @@ main = do
 				PipeCrc32.complement "foobar"
 				IO.print @Crc32.C =<< State.getN "foobar"
 				State.putN "foobar" $ OnDemand.RequestBytes 4
-				IO.print @Word32 . Seq.toBits =<< PipeT.skipLeft1 -- Except.getRight @String "bad 1" =<< Pipe.await
+				IO.print @Word32 . Seq.toBits =<< PipeT.skipLeft1
 				State.putN "foobar" $ OnDemand.RequestBytes 4
 				IO.print @Word32 . Seq.toBits =<< Except.getRight @String "bad 2" =<< Pipe.await
 
