@@ -3,7 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -36,10 +36,7 @@ import Data.Gzip.Header
 import System.IO
 import System.Environment
 
-import Pipe.Huffman qualified as Huffman
-import Pipe.Runlength qualified as Runlength
-
-import Control.Monad.Yaftee.Pipe.Deflate.Decompress
+import Control.Monad.Yaftee.Pipe.Deflate.Decompress qualified as Deflate
 
 main :: IO ()
 main = do
@@ -48,9 +45,8 @@ main = do
 	let	f = IO.print
 	void . Eff.runM
 		. Except.run @String . Fail.runExc id
-		. Huffman.run @"foobar" @Int
-		. Runlength.run_ @_ @"foobar"
-		. OnDemand.run_ @"foobar"
+		. Deflate.run_ @"foobar"
+
 		. PipeCrc32.run @"foobar"
 		. Pipe.run
 		. (`Except.catch` IO.putStrLn) . void $ PipeBS.hGet 64 h Pipe.=$=
@@ -59,7 +55,7 @@ main = do
 			OnDemand.onDemand "foobar" Pipe.=$= do
 				_ <- PipeT.checkRight Pipe.=$= readHeader "foobar" f
 
-				_ <- decompress Pipe.=$=
+				_ <- Deflate.decompress Pipe.=$=
 					PipeT.convert (either Seq.singleton id) Pipe.=$=
 					PipeCrc32.crc32 "foobar" Pipe.=$= PipeIO.print
 

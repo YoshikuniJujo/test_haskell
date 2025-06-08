@@ -2,13 +2,14 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Deflate.Decompress (decompress) where
+module Control.Monad.Yaftee.Pipe.Deflate.Decompress (
+	run_, States, decompress, Members ) where
 
 import Prelude hiding (head)
 import GHC.TypeLits
@@ -24,6 +25,8 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.HigherOpenUnion qualified as U
+import Data.TypeLevel.List (Append)
+import Data.HigherFunctor qualified as HFunctor
 import Data.Bits
 import Data.Maybe
 import Data.Sequence qualified as Seq
@@ -36,18 +39,29 @@ import Data.Gzip.Calc
 import Pipe.Huffman qualified as Huffman
 import Pipe.Runlength qualified as Runlength
 
+run_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()
+run_ = void . Huffman.run @nm @Int
+	. Runlength.run_ @_ @nm
+	. OnDemand.run_ @nm
+
+type States nm =
+	OnDemand.States nm `Append`
+	Runlength.States nm `Append`
+	Huffman.States nm Int
+
 decompress :: (
-	U.Member Pipe.P es,
-	Huffman.Members "foobar" Int es,
-	Runlength.Members "foobar" es,
-	OnDemand.Members "foobar" es,
-	U.Member (Except.E String) es,
-	U.Member Fail.F es
-	) =>
+	U.Member Pipe.P es, Members "foobar" es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	Eff.E es
 		(Either BitArray.B (Seq.Seq Word8))
 		(Either Word8 (Seq.Seq Word8)) ()
 decompress = void $ doWhile_ (block1 "foobar") Pipe.=$= Runlength.runlength "foobar"
+
+type Members nm es = (
+	Huffman.Members nm Int es,
+	Runlength.Members nm es,
+	OnDemand.Members nm es )
 
 block1 :: forall nm -> (
 	U.Member Pipe.P es,
