@@ -45,17 +45,18 @@ main = do
 	let	f = IO.print
 	void . Eff.runM
 		. Except.run @String . Fail.runExc id
-		. Deflate.run_ @"foobar"
 
+		. Deflate.run_ @"foobar"
 		. PipeCrc32.run @"foobar"
 		. Pipe.run
+
 		. (`Except.catch` IO.putStrLn) . void $ PipeBS.hGet 64 h Pipe.=$=
 
 			PipeT.convert bsToSeq Pipe.=$=
 			OnDemand.onDemand "foobar" Pipe.=$= do
 				_ <- PipeT.checkRight Pipe.=$= readHeader "foobar" f
 
-				_ <- Deflate.decompress Pipe.=$=
+				_ <- Deflate.decompress "foobar" Pipe.=$=
 					PipeT.convert (either Seq.singleton id) Pipe.=$=
 					PipeCrc32.crc32 "foobar" Pipe.=$= PipeIO.print
 
@@ -68,9 +69,6 @@ main = do
 
 bsToSeq :: BS.ByteString -> Seq.Seq Word8
 bsToSeq = Seq.fromList . BS.unpack
-
-seqToBs :: Seq.Seq Word8 -> BS.ByteString
-seqToBs = BS.pack . toList
 
 readHeader :: forall nm -> (
 	U.Member Pipe.P es,
@@ -124,6 +122,9 @@ readHeader nm f = void $ PipeCrc32.crc32 nm Pipe.=$= do
 		gzipHeaderExtraField = mexflds,
 		gzipHeaderFileName = mnm,
 		gzipHeaderComment = mcmmt }
+
+seqToBs :: Seq.Seq Word8 -> BS.ByteString
+seqToBs = BS.pack . toList
 
 head :: U.Member (Except.E String) es => Seq.Seq a -> Eff.E es i o a
 head = \case

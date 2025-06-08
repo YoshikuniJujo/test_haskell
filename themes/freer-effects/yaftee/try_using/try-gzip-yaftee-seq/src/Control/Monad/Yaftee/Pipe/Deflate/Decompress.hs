@@ -50,13 +50,13 @@ type States nm =
 	Runlength.States nm `Append`
 	Huffman.States nm Int
 
-decompress :: (
-	U.Member Pipe.P es, Members "foobar" es,
+decompress :: forall nm -> (
+	U.Member Pipe.P es, Members nm es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	Eff.E es
 		(Either BitArray.B (Seq.Seq Word8))
 		(Either Word8 (Seq.Seq Word8)) ()
-decompress = void $ doWhile_ (block1 "foobar") Pipe.=$= Runlength.runlength "foobar"
+decompress nm = void $ doWhile_ (block1 nm) Pipe.=$= Runlength.runlength nm
 
 type Members nm es = (
 	Huffman.Members nm Int es,
