@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Monad.Yaftee.Pipe.Deflate.Decompress
       Data.Gzip
       Data.Gzip.Calc
       Data.Gzip.Header
