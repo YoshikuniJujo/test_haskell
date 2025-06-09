@@ -8,7 +8,9 @@
 
 module Control.Monad.Yaftee.Pipe.Sequence.Crc32 (
 
-	run, reset, complement, crc32
+	run, reset, complement, crc32,
+
+	step
 
 	) where
 
@@ -42,9 +44,9 @@ body :: forall nm ->
 	(U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es) =>
 	Eff.E es (Seq.Seq Word8) (Seq.Seq Word8) r
 body nm = fix \go -> Pipe.await >>= \s -> do
-	State.modifyN nm (`stepSeq` s)
+	State.modifyN nm (`step` s)
 	Pipe.yield s
 	go
 
-stepSeq :: Crc32.C -> Seq.Seq Word8 -> Crc32.C
-stepSeq = foldl Crc32.step
+step :: Crc32.C -> Seq.Seq Word8 -> Crc32.C
+step = foldl Crc32.step
