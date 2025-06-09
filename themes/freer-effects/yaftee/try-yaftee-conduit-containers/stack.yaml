@@ -52,7 +52,7 @@ extra-deps:
       - themes/freer-effects/yaftee/try-bitarray-seq
       - themes/freer-effects/common/try-ftcqueue
       - themes/freer-effects/common/try-freer-base-classes
-  - tools-yj-0.1.0.37
+  - tools-yj-0.1.0.38
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
