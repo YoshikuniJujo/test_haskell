@@ -20,7 +20,6 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.HigherOpenUnion qualified as U
 import Data.HigherFunctor qualified as HFunctor
-import Data.Sequence qualified as Seq
 import Data.Word
 import Data.Word.Crc32 qualified as Crc32
 
@@ -36,17 +35,17 @@ complement ::
 complement nm = State.modifyN nm Crc32.complement
 
 crc32 :: forall nm ->
-	(U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es) =>
-	Eff.E es (Seq.Seq Word8) (Seq.Seq Word8) r
+	(Foldable t, U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es) =>
+	Eff.E es (t Word8) (t Word8) r
 crc32 nm = State.putN nm Crc32.initial >> body nm
 
 body :: forall nm ->
-	(U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es) =>
-	Eff.E es (Seq.Seq Word8) (Seq.Seq Word8) r
+	(Foldable t, U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es) =>
+	Eff.E es (t Word8) (t Word8) r
 body nm = fix \go -> Pipe.await >>= \s -> do
 	State.modifyN nm (`step` s)
 	Pipe.yield s
 	go
 
-step :: Crc32.C -> Seq.Seq Word8 -> Crc32.C
+step :: Foldable t => Crc32.C -> t Word8 -> Crc32.C
 step = foldl Crc32.step
