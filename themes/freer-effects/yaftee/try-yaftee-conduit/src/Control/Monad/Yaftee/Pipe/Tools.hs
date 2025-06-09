@@ -33,6 +33,7 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
 import Data.HigherFunctor qualified as HFunctor
+import Data.Bits
 import Data.Bool
 
 convert :: U.Member Pipe.P effs => (a -> b) -> Eff.E effs a b r
@@ -72,4 +73,4 @@ length nm = forever $ Pipe.await >>= \s ->
 	State.modifyN nm (+ Length (P.length s)) >> Pipe.yield s
 
 newtype Length = Length { unLength :: Int }
-	deriving (Show, Eq, Ord, Enum, Num, Real, Integral)
+	deriving (Show, Eq, Bits, FiniteBits, Ord, Enum, Num, Real, Integral)
