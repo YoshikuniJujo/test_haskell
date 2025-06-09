@@ -27,10 +27,12 @@ library
   exposed-modules:
       Control.Monad.Yaftee.Pipe.Deflate.Decompress
       Control.Monad.Yaftee.Pipe.Gzip.Decompress
+      Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
       Data.Gzip
       Data.Gzip.Calc
       Data.Gzip.Header
       Data.Huffman
+      Data.Png
       Lib
       Pipe.Huffman
       Pipe.Runlength
@@ -62,6 +64,27 @@ executable try-gzip-yaftee-seq-exe
       Paths_try_gzip_yaftee_seq
   autogen-modules:
       Paths_try_gzip_yaftee_seq
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , containers
+    , tools-yj
+    , try-bitarray-seq
+    , try-gzip-yaftee-seq
+    , try-higher-order-open-union
+    , try-yaftee
+    , try-yaftee-basic-monads
+    , try-yaftee-conduit
+    , try-yaftee-conduit-bytestring
+    , try-yaftee-conduit-containers
+    , typelevel-tools-yj
+  default-language: Haskell2010
+
+executable try-png-decode
+  main-is: try-png-decode.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
