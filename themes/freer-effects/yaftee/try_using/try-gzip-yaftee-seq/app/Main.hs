@@ -16,7 +16,6 @@ import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
-import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.Sequence.Crc32 qualified as PipeCrc32
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.BitArray.OnDemand qualified as OnDemand
@@ -31,6 +30,7 @@ import Data.Sequence qualified as Seq
 import Data.Sequence.Word8 qualified as Seq
 import Data.Word
 import Data.Word.Crc32 qualified as Crc32
+import Data.Char
 import Data.ByteString qualified as BS
 import Data.Gzip.Header
 import System.IO
@@ -48,28 +48,42 @@ main = do
 
 		. Deflate.run_ @"foobar"
 		. PipeCrc32.run @"foobar"
+		. PipeT.lengthRun @"foobar"
 		. Pipe.run
 
-		. (`Except.catch` IO.putStrLn) . void $ PipeBS.hGet 64 h Pipe.=$=
-
-			PipeT.convert bsToSeq Pipe.=$=
-
-			OnDemand.onDemand "foobar" Pipe.=$= do
-				_ <- PipeT.checkRight Pipe.=$= readHeader "foobar" f
-
-				_ <- Deflate.decompress "foobar" Pipe.=$=
-					PipeT.convert (either Seq.singleton id) Pipe.=$=
-					PipeCrc32.crc32 "foobar" Pipe.=$= PipeIO.print
-
-				PipeCrc32.complement "foobar"
-				IO.print @Crc32.C =<< State.getN "foobar"
-				State.putN "foobar" $ OnDemand.RequestBytes 4
-				IO.print @Word32 . Seq.toBits =<< PipeT.skipLeft1
-				State.putN "foobar" $ OnDemand.RequestBytes 4
-				IO.print @Word32 . Seq.toBits =<< Except.getRight @String "bad 2" =<< Pipe.await
+		. (`Except.catch` IO.putStrLn) . void $
+			PipeBS.hGet 64 h Pipe.=$=
+			PipeT.convert bsToSeq Pipe.=$= decompress f Pipe.=$=
+			forever (((Eff.effBase . putChar . chr . fromIntegral) `mapM`) =<< Pipe.await)
 
 bsToSeq :: BS.ByteString -> Seq.Seq Word8
 bsToSeq = Seq.fromList . BS.unpack
+
+decompress :: (
+	U.Member Pipe.P es,
+	Deflate.Members "foobar" es,
+	U.Member (State.Named "foobar" Crc32.C) es,
+	U.Member (State.Named "foobar" PipeT.Length) es,
+	U.Member (Except.E String) es,
+	U.Member Fail.F es
+	) =>
+	(GzipHeader -> Eff.E es (Seq.Seq Word8) (Seq.Seq Word8) r) ->
+	Eff.E es (Seq.Seq Word8) (Seq.Seq Word8) ()
+decompress f = void $ OnDemand.onDemand "foobar" Pipe.=$= do
+	_ <- PipeT.checkRight Pipe.=$= readHeader "foobar" f
+	_ <- Deflate.decompress "foobar" Pipe.=$=
+		PipeT.convert (either Seq.singleton id) Pipe.=$=
+		PipeCrc32.crc32 "foobar" Pipe.=$=
+		PipeT.length "foobar"
+	PipeCrc32.complement "foobar"
+	crc1 <- State.getN "foobar"
+	ln1 <- State.getN @PipeT.Length "foobar"
+	State.putN "foobar" $ OnDemand.RequestBytes 4
+	crc0 <- Crc32.fromWord . Seq.toBits <$> PipeT.skipLeft1
+	State.putN "foobar" $ OnDemand.RequestBytes 4
+	(ln0 :: PipeT.Length) <- Seq.toBits <$> (Except.getRight @String "bad 2" =<< Pipe.await)
+	when (crc1 /= crc0) $ Except.throw @String "CRC error"
+	when (ln1 /= ln0) $ Except.throw @String "Length error"
 
 readHeader :: forall nm -> (
 	U.Member Pipe.P es,
