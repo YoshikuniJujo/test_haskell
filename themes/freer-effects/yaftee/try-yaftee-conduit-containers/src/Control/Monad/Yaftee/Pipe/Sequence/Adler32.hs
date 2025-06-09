@@ -6,7 +6,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Sequence.Adler32 where
+module Control.Monad.Yaftee.Pipe.Sequence.Adler32 (
+
+	run, reset, adler32, step
+
+	) where
 
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -20,6 +24,9 @@ import Data.Word.Adler32 qualified as Adler32
 run :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (State.Named nm (Int, Adler32.A) ': es) i o r -> Eff.E es i o (r, (Int, Adler32.A))
 run = (`State.runN` Adler32.initial)
+
+reset :: forall nm -> U.Member (State.Named nm (Int, Adler32.A)) es => Eff.E es i o ()
+reset nm = State.putN nm Adler32.initial
 
 adler32 :: forall nm -> (
 	Foldable t,
