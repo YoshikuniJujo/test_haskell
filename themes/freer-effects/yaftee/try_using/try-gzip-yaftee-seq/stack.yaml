@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: ac248e98c2c435aa6104fdf69e3f258f74b40a0a
+    commit: 1bc6ae1cbd0a2dd30b05dbbcb768b9749c3d6172
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee
       - themes/freer-effects/yaftee/try-yaftee-conduit
@@ -55,7 +55,7 @@ extra-deps:
       - themes/freer-effects/yaftee/try-bitarray-bs
       - themes/freer-effects/common/try-ftcqueue
       - themes/freer-effects/common/try-freer-base-classes
-  - tools-yj-0.1.0.36
+  - tools-yj-0.1.0.38
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

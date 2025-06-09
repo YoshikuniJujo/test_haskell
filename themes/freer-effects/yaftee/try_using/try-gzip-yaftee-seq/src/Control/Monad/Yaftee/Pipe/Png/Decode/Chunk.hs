@@ -132,4 +132,7 @@ newtype Crc32 = Crc32 { unCrc32 :: Crc32.C } deriving Show
 appendSequence :: Sequence -> Seq.Seq Word8 -> Sequence
 appendSequence (Sequence bs1) bs2 = Sequence $ bs1 Seq.>< bs2
 
-newtype Chunk = Chunk (Seq.Seq Word8) deriving Show
+newtype Chunk = Chunk (Seq.Seq Word8)
+
+instance Show Chunk where
+	show (Chunk s) = "(Chunk " ++ (chr . fromIntegral <$> toList s) ++ ")"
