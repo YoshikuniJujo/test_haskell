@@ -62,31 +62,29 @@ main = do
 					Chunk.chunk "foobar" 500
 				Pipe.=$= do
 					_ <- OnDemand.onDemand "foobar" Pipe.=$= Header.read "foobar" IO.print
+					rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
 					bs <- untilIdat "foobar"
-					OnDemand.onDemandWithInitial "foobar" bs Pipe.=$= -- do
-						zlibDecompress IO.print Pipe.=$= pngUnfilter "foobar"
+					OnDemand.onDemandWithInitial "foobar" bs Pipe.=$=
+						zlibDecompress "foobar" IO.print rs Pipe.=$= pngUnfilter "foobar"
 
-zlibDecompress :: (
+zlibDecompress :: forall nm -> (
 	U.Member Pipe.P es,
-	Deflate.Members "foobar" es,
-	U.Member (State.Named "foobar" Header.Header) es,
-	U.Member (State.Named "foobar" Sequence) es,
-	U.Member (State.Named "foobar" (Int, Adler32.A)) es,
+	Deflate.Members nm es,
+	U.Member (State.Named nm Sequence) es,
+	U.Member (State.Named nm (Int, Adler32.A)) es,
 	U.Member (Except.E String) es, U.Member Fail.F es) =>
 	(Zlib.Header ->
 		Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) r) ->
+	[Int] ->
 	Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) ()
-zlibDecompress f = do
-	State.putN "foobar" $ OnDemand.RequestBytes 2
-	f =<< zlibHeader =<< Except.getRight @String "bad" =<< Pipe.await
-	State.putN "foobar" $ OnDemand.RequestBuffer 500
-	rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
-	bpp <- Header.headerToBpp <$> State.getN "foobar"
-	rbs <- Header.headerToRowBytes <$> State.getN "foobar"
-	Deflate.decompress "foobar" Pipe.=$=
-		format "foobar" rs Pipe.=$= PipeAdler32.adler32 "foobar"
-	State.putN "foobar" $ OnDemand.RequestBytes 4
-	adl1 <- Adler32.toWord32 . snd <$> State.getN @(Int, Adler32.A) "foobar"
+zlibDecompress nm f rs = do
+	State.putN nm $ OnDemand.RequestBytes 2
+	_ <- f =<< zlibHeader =<< Except.getRight @String "bad" =<< Pipe.await
+	State.putN nm $ OnDemand.RequestBuffer 500
+	_ <- Deflate.decompress nm Pipe.=$=
+		format nm rs Pipe.=$= PipeAdler32.adler32 nm
+	State.putN nm $ OnDemand.RequestBytes 4
+	adl1 <- Adler32.toWord32 . snd <$> State.getN @(Int, Adler32.A) nm
 	adl0 <- Seq.toBitsBE <$> PipeT.skipLeft1
 	when (adl1 /= adl0) $ Except.throw @String "ADLER-32 error"
 

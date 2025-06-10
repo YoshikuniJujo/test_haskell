@@ -6,7 +6,6 @@ module Data.Png.Header where
 
 import Data.Bits
 import Data.Word
-import Data.Int
 
 data Header = Header {
 	headerWidth :: Word32,
