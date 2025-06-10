@@ -26,6 +26,7 @@ import System.IO
 import System.Environment
 
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
+import Data.Color
 
 main :: IO ()
 main = do
@@ -37,6 +38,7 @@ main = do
 		$ PipeBS.hGet (32 * 32) h Pipe.=$=
 			PipeT.convert bsToSeq Pipe.=$=
 			Png.decode @Double IO.print IO.print Pipe.=$=
+			PipeT.convert (either ((`toRgba` AlphaWord8 255) <$>) id) Pipe.=$=
 			PipeIO.print
 
 bsToSeq :: BS.ByteString -> Seq.Seq Word8
