@@ -90,7 +90,7 @@ block1 nm = do
 				State.putN nm $ OnDemand.RequestBits 4
 				hclen <- (+ 4) . BitArray.toBits <$> (Except.getLeft @String "bad 6" =<< Pipe.await)
 				pure (Just (hlit, hlit + hdist), Just hclen)
-			State.putN nm $ OnDemand.RequestBuffer 100
+			State.putN nm $ OnDemand.RequestBuffer 500
 			huffmanBits nm mhclen mhlithdist
 
 			State.putN nm . OnDemand.RequestPushBack =<< State.getsN nm Huffman.unBitArray
