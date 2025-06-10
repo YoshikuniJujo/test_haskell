@@ -3,7 +3,7 @@
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -18,10 +18,8 @@ import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.BitArray.OnDemand qualified as OnDemand
-import Control.Monad.Yaftee.Pipe.Sequence.Adler32 qualified as PipeAdler32
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
-import Control.Monad.Yaftee.Pipe.Deflate.Decompress qualified as Deflate
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
@@ -29,31 +27,29 @@ import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Foldable
 import Data.Sequence qualified as Seq
-import Data.Sequence.ToolsYj qualified as Seq
-import Data.Sequence.Word8 qualified as Seq
-import Data.Sequence.BitArray qualified as BitArray
 import Data.Word
 import Data.Char
 import Data.ByteString qualified as BS
-import Data.Word.Adler32 qualified as Adler32
 import Data.Png
 import Data.Png.Header qualified as Header
 import Data.Png.Filters
-import Data.Zlib qualified as Zlib
 import System.IO
 import System.Environment
+
+import Control.Monad.Yaftee.Pipe.Zlib.Decompress qualified as Zlib
 
 main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	void . Eff.runM . Except.run @String . Fail.runExc id
-		. Deflate.run_ @"foobar"
+
+		. Zlib.run_
+
 		. OnDemand.run_ @"foobar"
-		. flip (State.runN @"foobar") (Sequence Seq.empty)
-		. flip (State.runN @"foobar") Adler32.initial
 		. flip (State.runN @"foobar") Header.header0
-		. Chunk.chunkRun_ @"foobar" . Pipe.run
+		. Chunk.chunkRun_ @"foobar"
+		. Pipe.run
 		. (`Except.catch` IO.putStrLn) . void
 		$ PipeBS.hGet (32 * 32) h Pipe.=$=
 			PipeT.convert bsToSeq Pipe.=$= do
@@ -65,28 +61,7 @@ main = do
 					rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
 					bs <- untilIdat "foobar"
 					OnDemand.onDemandWithInitial "foobar" bs Pipe.=$=
-						zlibDecompress "foobar" IO.print rs Pipe.=$= pngUnfilter "foobar"
-
-zlibDecompress :: forall nm -> (
-	U.Member Pipe.P es,
-	Deflate.Members nm es,
-	U.Member (State.Named nm Sequence) es,
-	U.Member (State.Named nm (Int, Adler32.A)) es,
-	U.Member (Except.E String) es, U.Member Fail.F es) =>
-	(Zlib.Header ->
-		Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) r) ->
-	[Int] ->
-	Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) ()
-zlibDecompress nm f rs = do
-	State.putN nm $ OnDemand.RequestBytes 2
-	_ <- f =<< zlibHeader =<< Except.getRight @String "bad" =<< Pipe.await
-	State.putN nm $ OnDemand.RequestBuffer 500
-	_ <- Deflate.decompress nm Pipe.=$=
-		format nm rs Pipe.=$= PipeAdler32.adler32 nm
-	State.putN nm $ OnDemand.RequestBytes 4
-	adl1 <- Adler32.toWord32 . snd <$> State.getN @(Int, Adler32.A) nm
-	adl0 <- Seq.toBitsBE <$> PipeT.skipLeft1
-	when (adl1 /= adl0) $ Except.throw @String "ADLER-32 error"
+						Zlib.decompress "foobar" IO.print rs Pipe.=$= pngUnfilter "foobar"
 
 pngUnfilter :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
@@ -121,43 +96,8 @@ untilIdat nm = do
 		c -> do
 			untilIdat nm
 
-seqFromString :: String -> Seq.Seq Word8
-seqFromString = Seq.fromList . (fromIntegral . ord <$>)
-
 seqToString :: Seq.Seq Word8 -> String
 seqToString = toList . (chr . fromIntegral <$>)
-
-zlibHeader :: (U.Member (Except.E String) es, U.Member Fail.F es) =>
-	Seq.Seq Word8 -> Eff.E es i o Zlib.Header
-zlibHeader bs = do
-	[cmf, flg] <- pure $ toList bs
-	maybe (Except.throw @String "Zlib header check bits error")
-		pure (Zlib.readHeader cmf flg)
-
-newtype Sequence = Sequence { unSequence :: Seq.Seq Word8 } deriving Show
-
-format :: forall (nm :: Symbol) -> (
-	U.Member Pipe.P es,
-	U.Member (State.Named nm Sequence) es,
-	U.Member Fail.F es ) =>
-	[Int] -> Eff.E es (Either Word8 (Seq.Seq Word8)) (Seq.Seq Word8) ()
-format nm = \case
-	[] -> do { Right Seq.Empty <- Pipe.await; pure () }
-	r : rs -> (Pipe.yield =<< getBytes nm r) >> format nm rs
-
-getBytes :: forall (nm :: Symbol) ->
-	(U.Member Pipe.P es, U.Member (State.Named nm Sequence) es) =>
-	Int -> Eff.E es (Either Word8 (Seq.Seq Word8)) o (Seq.Seq Word8)
-getBytes nm n = State.getsN nm (Seq.splitAt' n . unSequence) >>= \case
-	Nothing -> readMore nm >> getBytes nm n
-	Just (t, d) -> t <$ State.putN nm (Sequence d)
-
-readMore :: forall (nm :: Symbol) ->
-	(U.Member Pipe.P es, U.Member (State.Named nm Sequence) es) =>
-	Eff.E es (Either Word8 (Seq.Seq Word8)) o ()
-readMore nm = Pipe.await >>= \case
-	Left w -> State.modifyN nm $ Sequence . (Seq.:|> w) . unSequence
-	Right s -> State.modifyN nm $ Sequence . (Seq.>< s) . unSequence
 
 unfilterAll :: (
 	U.Member Pipe.P es,
