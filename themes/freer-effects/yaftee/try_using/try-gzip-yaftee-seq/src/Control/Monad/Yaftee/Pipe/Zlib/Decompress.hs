@@ -53,6 +53,7 @@ type States nm = Deflate.States nm `Append` '[
 
 decompress :: forall nm -> (
 	U.Member Pipe.P es, Members nm es,
+	U.Member (State.Named nm OnDemand.Request) es,
 	U.Member (Except.E String) es, U.Member Fail.F es) =>
 	(Zlib.Header ->
 		Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) r) ->

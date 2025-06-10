@@ -43,15 +43,14 @@ run_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()
 run_ = void . Huffman.run @nm @Int
 	. Runlength.run_ @_ @nm
-	. OnDemand.run_ @nm
 
 type States nm =
-	OnDemand.States nm `Append`
 	Runlength.States nm `Append`
 	Huffman.States nm Int
 
 decompress :: forall nm -> (
 	U.Member Pipe.P es, Members nm es,
+	U.Member (State.Named nm OnDemand.Request) es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	Eff.E es
 		(Either BitArray.B (Seq.Seq Word8))
@@ -60,8 +59,7 @@ decompress nm = void $ doWhile_ (block1 nm) Pipe.=$= Runlength.runlength nm
 
 type Members nm es = (
 	Huffman.Members nm Int es,
-	Runlength.Members nm es,
-	OnDemand.Members nm es )
+	Runlength.Members nm es )
 
 block1 :: forall nm -> (
 	U.Member Pipe.P es,

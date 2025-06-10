@@ -43,9 +43,10 @@ import Control.Monad.Yaftee.Pipe.Deflate.Decompress qualified as Deflate
 
 run_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()	
-run_ = void . PipeT.lengthRun . PipeCrc32.run . Deflate.run_
+run_ = void . PipeT.lengthRun . PipeCrc32.run . OnDemand.run_ . Deflate.run_
 
-type States nm = Deflate.States nm `Append` '[
+type States nm = Deflate.States nm `Append`
+	OnDemand.States nm `Append` '[
 	State.Named nm Crc32.C,
 	State.Named nm PipeT.Length ]
 
@@ -72,6 +73,7 @@ decompress nm f = void $ OnDemand.onDemand nm Pipe.=$= do
 
 type Members nm es = (
 	Deflate.Members nm es,
+	OnDemand.Members nm es,
 	U.Member (State.Named nm Crc32.C) es,
 	U.Member (State.Named nm PipeT.Length) es )
 

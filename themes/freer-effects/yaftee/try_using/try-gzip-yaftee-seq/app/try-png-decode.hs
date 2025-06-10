@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -37,39 +37,63 @@ import System.IO
 import System.Environment
 
 import Control.Monad.Yaftee.Pipe.Zlib.Decompress qualified as Zlib
+import Data.TypeLevel.List
+import Data.Zlib qualified as Zlib
+import Data.Sequence.BitArray qualified as BitArray
+import Data.HigherFunctor qualified as HFunctor
 
 main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	void . Eff.runM . Except.run @String . Fail.runExc id
-
-		. Zlib.run_
-
-		. OnDemand.run_ @"foobar"
-		. flip (State.runN @"foobar") Header.header0
-		. Chunk.chunkRun_ @"foobar"
-		. Pipe.run
+		. pngRun . Pipe.run
 		. (`Except.catch` IO.putStrLn) . void
 		$ PipeBS.hGet (32 * 32) h Pipe.=$=
-			PipeT.convert bsToSeq Pipe.=$= do
-					fhdr <- Chunk.readBytes "foobar" 8
-					when (fhdr /= fileHeader) $ Except.throw "File header error"
-					Chunk.chunk "foobar" 500
-				Pipe.=$= do
-					_ <- OnDemand.onDemand "foobar" Pipe.=$= Header.read "foobar" IO.print
-					rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
-					bs <- untilIdat "foobar"
-					OnDemand.onDemandWithInitial "foobar" bs Pipe.=$=
-						Zlib.decompress "foobar" IO.print rs Pipe.=$= pngUnfilter "foobar"
+			PipeT.convert bsToSeq Pipe.=$=
+			pngDecode IO.print IO.print Pipe.=$= PipeIO.print
+
+pngRun :: HFunctor.Loose (U.U es) =>
+	Eff.E (States "foobar" `Append` es) i o r -> Eff.E es i o ()
+pngRun = void
+	. flip (State.runN @"foobar") Header.header0 . Chunk.chunkRun_ @"foobar"
+	. OnDemand.run_ @"foobar" . Zlib.run_
+
+type States nm =
+	Zlib.States nm `Append`
+	OnDemand.States nm `Append`
+	Chunk.ChunkStates nm `Append` '[
+	State.Named nm Header.Header ]
+
+pngDecode :: (
+	U.Member Pipe.P es, Members "foobar" es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) =>
+	(Header.Header -> Eff.E es (Either BitArray.B (Seq.Seq Word8)) [Word8] ()) ->
+	(Zlib.Header -> Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) r) ->
+	Eff.E es (Seq.Seq Word8) [Word8] ()
+pngDecode f g = void $ do
+		fhdr <- Chunk.readBytes "foobar" 8
+		when (fhdr /= fileHeader) $ Except.throw "File header error"
+		Chunk.chunk "foobar" 500
+	Pipe.=$= do
+		_ <- OnDemand.onDemand "foobar" Pipe.=$= Header.read "foobar" f
+		rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
+		bs <- untilIdat "foobar"
+		OnDemand.onDemandWithInitial "foobar" bs Pipe.=$=
+			Zlib.decompress "foobar" g rs Pipe.=$=
+			pngUnfilter "foobar"
+
+type Members nm es = (
+	Zlib.Members nm es,
+	OnDemand.Members nm es,
+	Chunk.ChunkMembers nm es,
+	U.Member (State.Named nm Header.Header) es )
 
 pngUnfilter :: forall (nm :: Symbol) -> (
 	U.Member Pipe.P es,
 	U.Member (State.Named nm Header.Header) es,
-	U.Member (Except.E String) es,
-	U.Base IO.I es
-	) =>
-	Eff.E es (Seq.Seq Word8) o ()
+	U.Member (Except.E String) es ) =>
+	Eff.E es (Seq.Seq Word8) [Word8] ()
 pngUnfilter nm = void do
 	bs <- Pipe.await
 	h <- State.getN nm
@@ -77,8 +101,8 @@ pngUnfilter nm = void do
 		rbs = Header.headerToRowBytes h
 	bs' <- either Except.throw pure
 		$ unfilter bpp (replicate rbs 0) bs
-	IO.print bs'
-	unfilterAll bpp bs' Pipe.=$= PipeIO.print
+	Pipe.yield bs'
+	unfilterAll bpp bs'
 
 bsToSeq :: BS.ByteString -> Seq.Seq Word8
 bsToSeq = Seq.fromList . BS.unpack
