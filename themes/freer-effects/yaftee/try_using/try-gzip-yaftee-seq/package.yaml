@@ -25,6 +25,7 @@ dependencies:
 - bytestring
 - tools-yj
 - typelevel-tools-yj
+- union-color
 - try-yaftee
 - try-yaftee-basic-monads
 - try-yaftee-conduit

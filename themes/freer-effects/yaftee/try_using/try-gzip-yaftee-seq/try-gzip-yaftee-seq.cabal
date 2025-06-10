@@ -62,6 +62,7 @@ library
     , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-containers
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010
 
 executable try-gzip-yaftee-seq-exe
@@ -87,6 +88,7 @@ executable try-gzip-yaftee-seq-exe
     , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-containers
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010
 
 executable try-png-decode
@@ -108,6 +110,7 @@ executable try-png-decode
     , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-containers
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010
 
 test-suite try-gzip-yaftee-seq-test
@@ -134,4 +137,5 @@ test-suite try-gzip-yaftee-seq-test
     , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-containers
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010
