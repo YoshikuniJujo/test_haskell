@@ -33,7 +33,7 @@ main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	void . Eff.runM . Except.run @String . Fail.runExc id
-		. Png.run_ . Pipe.run
+		. Png.run_ @"foobar" . Pipe.run
 		. (`Except.catch` IO.putStrLn) . void
 		$ PipeBS.hGet (32 * 32) h Pipe.=$=
 			PipeT.convert bsToSeq Pipe.=$=

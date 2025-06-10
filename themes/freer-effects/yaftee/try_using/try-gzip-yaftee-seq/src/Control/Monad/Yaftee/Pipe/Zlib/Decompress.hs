@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
@@ -39,13 +39,13 @@ import Data.Word
 import Data.Word.Adler32 qualified as Adler32
 import Data.Zlib qualified as Zlib
 
-run_ :: HFunctor.Loose (U.U es) =>
-	Eff.E (States "foobar" `Append` es) i o r ->
+run_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (States nm `Append` es) i o r ->
 	Eff.E es i o ()
 run_ = void
-	. flip (State.runN @"foobar") (Sequence Seq.empty)
-	. flip (State.runN @"foobar") Adler32.initial
-	. Deflate.run_ @"foobar"
+	. flip (State.runN @nm) (Sequence Seq.empty)
+	. flip (State.runN @nm) Adler32.initial
+	. Deflate.run_ @nm
 
 type States nm = Deflate.States nm `Append` '[
 	State.Named nm (Int, Adler32.A),

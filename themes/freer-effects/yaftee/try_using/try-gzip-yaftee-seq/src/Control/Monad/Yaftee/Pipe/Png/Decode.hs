@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
@@ -10,8 +10,15 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Decode (
 
+	-- * DECODE
+
 	run_, States,
-	decode, Members
+	decode, Members,
+
+	-- * DECODE HEADER
+
+	runHeader, StatesHeader,
+	decodeHeader, MembersHeader,
 
 	) where
 
@@ -43,11 +50,11 @@ import Data.HigherFunctor qualified as HFunctor
 import Data.Color
 import Data.Bits
 
-run_ :: HFunctor.Loose (U.U es) =>
-	Eff.E (States "foobar" `Append` es) i o r -> Eff.E es i o ()
+run_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()
 run_ = void
-	. flip (State.runN @"foobar") Header.header0 . Chunk.chunkRun_ @"foobar"
-	. OnDemand.run_ @"foobar" . Zlib.run_
+	. flip (State.runN @nm) Header.header0 . Chunk.chunkRun_ @nm
+	. OnDemand.run_ @nm . Zlib.run_
 
 type States nm =
 	Zlib.States nm `Append`
@@ -75,6 +82,32 @@ decode f g = void $ do
 
 type Members nm es = (
 	Zlib.Members nm es,
+	OnDemand.Members nm es,
+	Chunk.ChunkMembers nm es,
+	U.Member (State.Named nm Header.Header) es )
+
+runHeader :: HFunctor.Loose (U.U es) =>
+	Eff.E (StatesHeader "foobar" `Append` es) i o r -> Eff.E es i o Header.Header
+runHeader = (snd <$>) . flip (State.runN @"foobar") Header.header0 . Chunk.chunkRun_ @"foobar"
+	. OnDemand.run_ @"foobar"
+
+type StatesHeader nm =
+	OnDemand.States nm `Append`
+	Chunk.ChunkStates nm `Append` '[
+	State.Named nm Header.Header ]
+
+decodeHeader :: (
+	U.Member Pipe.P es, MembersHeader "foobar" es,
+	U.Member (Except.E String) es ) =>
+	(Header.Header -> Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Either [Rgb d] [Rgba d]) ()) ->
+	Eff.E es (Seq.Seq Word8) (Either [Rgb d] [Rgba d]) ()
+decodeHeader f = void $ do
+		fhdr <- Chunk.readBytes "foobar" 8
+		when (fhdr /= fileHeader) $ Except.throw "File header error"
+		Chunk.chunk "foobar" 500
+	Pipe.=$= OnDemand.onDemand "foobar" Pipe.=$= Header.read "foobar" f
+
+type MembersHeader nm es = (
 	OnDemand.Members nm es,
 	Chunk.ChunkMembers nm es,
 	U.Member (State.Named nm Header.Header) es )
@@ -168,23 +201,12 @@ pixelsRgba bd bs = case samples bd bs of
 	Left ss -> colorsRgba RgbaWord8 ss
 	Right ss -> colorsRgba RgbaWord16 ss
 
-pixels :: RealFrac d => ColorType -> BitDepth -> [Word8] -> Either [Rgb d] [Rgba d]
-pixels ct bd bs = case samples bd bs of
-	Left ss -> colors ct RgbWord8 RgbaWord8 ss
-	Right ss -> colors ct RgbWord16 RgbaWord16 ss
-
 samples :: BitDepth -> [Word8] -> Either [Word8] [Word16]
 samples BitDepth8 bs = Left bs
 samples BitDepth16 [] = Right []
 samples BitDepth16 ((fromIntegral -> b) : (fromIntegral -> b') : bs) =
 	((b `shiftL` 8 .|. b') :) <$> samples BitDepth16 bs
 samples BitDepth16 [_] = error "bad"
-
-colors :: ColorType ->
-	(s -> s -> s -> Rgb d) -> (s -> s -> s -> s -> Rgba d) -> [s] ->
-	Either [Rgb d] [Rgba d]
-colors Rgb rgb _ = Left . colorsRgb rgb
-colors Rgba _ rgba = Right . colorsRgba rgba	
 
 colorsRgb :: (s -> s -> s -> Rgb d) -> [s] -> [Rgb d]
 colorsRgb rgb = \case
