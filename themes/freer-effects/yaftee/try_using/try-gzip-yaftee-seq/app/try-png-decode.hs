@@ -31,6 +31,7 @@ import Data.Foldable
 import Data.Sequence qualified as Seq
 import Data.Sequence.ToolsYj qualified as Seq
 import Data.Sequence.Word8 qualified as Seq
+import Data.Sequence.BitArray qualified as BitArray
 import Data.Word
 import Data.Char
 import Data.ByteString qualified as BS
@@ -62,23 +63,49 @@ main = do
 				Pipe.=$= do
 					_ <- OnDemand.onDemand "foobar" Pipe.=$= Header.read "foobar" IO.print
 					bs <- untilIdat "foobar"
-					OnDemand.onDemandWithInitial "foobar" bs Pipe.=$= do
-						State.putN "foobar" $ OnDemand.RequestBytes 2
-						IO.print =<< zlibHeader =<< Except.getRight @String "bad" =<< Pipe.await
-						State.putN "foobar" $ OnDemand.RequestBuffer 500
-						rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
-						bpp <- Header.headerToBpp <$> State.getN "foobar"
-						rbs <- Header.headerToRowBytes <$> State.getN "foobar"
-						Deflate.decompress "foobar" Pipe.=$=
-							format "foobar" rs Pipe.=$=
---							PipeT.convert (either Seq.singleton id) Pipe.=$=
-							PipeAdler32.adler32 "foobar" Pipe.=$=
-							unfilterAll bpp (replicate rbs 0) Pipe.=$=
-							PipeIO.print
-						State.putN "foobar" $ OnDemand.RequestBytes 4
-						adl1 <- Adler32.toWord32 . snd <$> State.getN @(Int, Adler32.A) "foobar"
-						adl0 <- Seq.toBitsBE <$> PipeT.skipLeft1
-						when (adl1 /= adl0) $ Except.throw @String "ADLER-32 error"
+					OnDemand.onDemandWithInitial "foobar" bs Pipe.=$= -- do
+						zlibDecompress IO.print Pipe.=$= pngUnfilter "foobar"
+
+zlibDecompress :: (
+	U.Member Pipe.P es,
+	Deflate.Members "foobar" es,
+	U.Member (State.Named "foobar" Header.Header) es,
+	U.Member (State.Named "foobar" Sequence) es,
+	U.Member (State.Named "foobar" (Int, Adler32.A)) es,
+	U.Member (Except.E String) es, U.Member Fail.F es) =>
+	(Zlib.Header ->
+		Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) r) ->
+	Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) ()
+zlibDecompress f = do
+	State.putN "foobar" $ OnDemand.RequestBytes 2
+	f =<< zlibHeader =<< Except.getRight @String "bad" =<< Pipe.await
+	State.putN "foobar" $ OnDemand.RequestBuffer 500
+	rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
+	bpp <- Header.headerToBpp <$> State.getN "foobar"
+	rbs <- Header.headerToRowBytes <$> State.getN "foobar"
+	Deflate.decompress "foobar" Pipe.=$=
+		format "foobar" rs Pipe.=$= PipeAdler32.adler32 "foobar"
+	State.putN "foobar" $ OnDemand.RequestBytes 4
+	adl1 <- Adler32.toWord32 . snd <$> State.getN @(Int, Adler32.A) "foobar"
+	adl0 <- Seq.toBitsBE <$> PipeT.skipLeft1
+	when (adl1 /= adl0) $ Except.throw @String "ADLER-32 error"
+
+pngUnfilter :: forall (nm :: Symbol) -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm Header.Header) es,
+	U.Member (Except.E String) es,
+	U.Base IO.I es
+	) =>
+	Eff.E es (Seq.Seq Word8) o ()
+pngUnfilter nm = void do
+	bs <- Pipe.await
+	h <- State.getN nm
+	let	bpp = Header.headerToBpp h
+		rbs = Header.headerToRowBytes h
+	bs' <- either Except.throw pure
+		$ unfilter bpp (replicate rbs 0) bs
+	IO.print bs'
+	unfilterAll bpp bs' Pipe.=$= PipeIO.print
 
 bsToSeq :: BS.ByteString -> Seq.Seq Word8
 bsToSeq = Seq.fromList . BS.unpack
