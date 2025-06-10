@@ -19,6 +19,7 @@ import GHC.TypeLits
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
+import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.BitArray.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
@@ -39,6 +40,8 @@ import Data.TypeLevel.List
 import Data.Zlib qualified as Zlib
 import Data.Sequence.BitArray qualified as BitArray
 import Data.HigherFunctor qualified as HFunctor
+import Data.Color
+import Data.Bits
 
 run_ :: HFunctor.Loose (U.U es) =>
 	Eff.E (States "foobar" `Append` es) i o r -> Eff.E es i o ()
@@ -53,11 +56,11 @@ type States nm =
 	State.Named nm Header.Header ]
 
 decode :: (
-	U.Member Pipe.P es, Members "foobar" es,
+	RealFrac d, U.Member Pipe.P es, Members "foobar" es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
-	(Header.Header -> Eff.E es (Either BitArray.B (Seq.Seq Word8)) [Word8] ()) ->
+	(Header.Header -> Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Either [Rgb d] [Rgba d]) ()) ->
 	(Zlib.Header -> Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) r) ->
-	Eff.E es (Seq.Seq Word8) [Word8] ()
+	Eff.E es (Seq.Seq Word8) (Either [Rgb d] [Rgba d]) ()
 decode f g = void $ do
 		fhdr <- Chunk.readBytes "foobar" 8
 		when (fhdr /= fileHeader) $ Except.throw "File header error"
@@ -68,7 +71,7 @@ decode f g = void $ do
 		bs <- untilIdat "foobar"
 		OnDemand.onDemandWithInitial "foobar" bs Pipe.=$=
 			Zlib.decompress "foobar" g rs Pipe.=$=
-			pngUnfilter "foobar"
+			pngUnfilter "foobar" Pipe.=$= bytesToColor
 
 type Members nm es = (
 	Zlib.Members nm es,
@@ -121,3 +124,76 @@ unfilterAll bpp prior = do
 			bs' <- either Except.throw pure $ unfilter bpp prior bs
 			Pipe.yield bs'
 			unfilterAll bpp bs'
+
+bytesToColor :: (
+	RealFrac d,
+	U.Member Pipe.P es,
+	U.Member (State.Named "foobar" Header.Header) es,
+	U.Member (Except.E String) es
+	) =>
+	Eff.E es [Word8] (Either [Rgb d] [Rgba d]) r
+bytesToColor = do
+	bs1 <- Pipe.await
+	(ct, bd) <- maybe (Except.throw @String "yet") pure . headerToColorTypeDepth =<< State.getN "foobar"
+	case ct of
+		Rgb -> do
+			Pipe.yield . Left $ pixelsRgb bd bs1
+			PipeT.convert (Left . pixelsRgb bd)
+		Rgba -> do
+			Pipe.yield . Right $ pixelsRgba bd bs1
+			PipeT.convert (Right . pixelsRgba bd)
+
+data ColorType = Rgb | Rgba deriving Show
+data BitDepth = BitDepth8 | BitDepth16 deriving Show
+
+headerToColorTypeDepth :: Header.Header -> Maybe (ColorType, BitDepth)
+headerToColorTypeDepth h = do
+	ct <- case Header.headerColorType h of
+		Header.ColorTypeColorUsed -> Just Rgb
+		Header.ColorType 6 -> Just Rgba
+		_ -> Nothing
+	bd <- case Header.headerBitDepth h of
+		8 -> Just BitDepth8
+		16 -> Just BitDepth16
+		_ -> Nothing
+	pure (ct, bd)
+
+pixelsRgb :: RealFrac d => BitDepth -> [Word8] -> [Rgb d]
+pixelsRgb bd bs = case samples bd bs of
+	Left ss -> colorsRgb RgbWord8 ss
+	Right ss -> colorsRgb RgbWord16 ss
+
+pixelsRgba :: RealFrac d => BitDepth -> [Word8] -> [Rgba d]
+pixelsRgba bd bs = case samples bd bs of
+	Left ss -> colorsRgba RgbaWord8 ss
+	Right ss -> colorsRgba RgbaWord16 ss
+
+pixels :: RealFrac d => ColorType -> BitDepth -> [Word8] -> Either [Rgb d] [Rgba d]
+pixels ct bd bs = case samples bd bs of
+	Left ss -> colors ct RgbWord8 RgbaWord8 ss
+	Right ss -> colors ct RgbWord16 RgbaWord16 ss
+
+samples :: BitDepth -> [Word8] -> Either [Word8] [Word16]
+samples BitDepth8 bs = Left bs
+samples BitDepth16 [] = Right []
+samples BitDepth16 ((fromIntegral -> b) : (fromIntegral -> b') : bs) =
+	((b `shiftL` 8 .|. b') :) <$> samples BitDepth16 bs
+samples BitDepth16 [_] = error "bad"
+
+colors :: ColorType ->
+	(s -> s -> s -> Rgb d) -> (s -> s -> s -> s -> Rgba d) -> [s] ->
+	Either [Rgb d] [Rgba d]
+colors Rgb rgb _ = Left . colorsRgb rgb
+colors Rgba _ rgba = Right . colorsRgba rgba	
+
+colorsRgb :: (s -> s -> s -> Rgb d) -> [s] -> [Rgb d]
+colorsRgb rgb = \case
+	[] -> []
+	r : g : b : ss -> rgb r g b : colorsRgb rgb ss
+	_ -> error "bad"
+
+colorsRgba :: (s -> s -> s -> s -> Rgba d) -> [s] -> [Rgba d]
+colorsRgba rgba = \case
+	[] -> []
+	r : g : b : a : ss -> rgba r g b a : colorsRgba rgba ss
+	_ -> error "bad"
