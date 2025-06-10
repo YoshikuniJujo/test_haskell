@@ -25,7 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Graphics.Pipe.Draw
   other-modules:
       Paths_try_yaftee_cairo_image_seq
   autogen-modules:
