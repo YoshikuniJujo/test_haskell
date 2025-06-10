@@ -26,6 +26,7 @@ dependencies:
 - JuicyCairo
 - simple-cairo
 - cairo-image
+- union-color
 - typelevel-tools-yj
 - try-yaftee
 - try-yaftee-basic-monads
