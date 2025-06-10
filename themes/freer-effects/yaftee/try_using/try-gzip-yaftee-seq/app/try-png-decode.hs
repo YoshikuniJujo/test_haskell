@@ -3,12 +3,14 @@
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
+import GHC.TypeLits
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -27,6 +29,7 @@ import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Foldable
 import Data.Sequence qualified as Seq
+import Data.Sequence.ToolsYj qualified as Seq
 import Data.Sequence.Word8 qualified as Seq
 import Data.Word
 import Data.Char
@@ -34,6 +37,7 @@ import Data.ByteString qualified as BS
 import Data.Word.Adler32 qualified as Adler32
 import Data.Png
 import Data.Png.Header qualified as Header
+import Data.Png.Filters
 import Data.Zlib qualified as Zlib
 import System.IO
 import System.Environment
@@ -45,6 +49,7 @@ main = do
 	void . Eff.runM . Except.run @String . Fail.runExc id
 		. Deflate.run_ @"foobar"
 		. OnDemand.run_ @"foobar"
+		. flip (State.runN @"foobar") (Sequence Seq.empty)
 		. flip (State.runN @"foobar") Adler32.initial
 		. flip (State.runN @"foobar") Header.header0
 		. Chunk.chunkRun_ @"foobar" . Pipe.run
@@ -61,20 +66,19 @@ main = do
 						State.putN "foobar" $ OnDemand.RequestBytes 2
 						IO.print =<< zlibHeader =<< Except.getRight @String "bad" =<< Pipe.await
 						State.putN "foobar" $ OnDemand.RequestBuffer 500
+						rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
+						bpp <- Header.headerToBpp <$> State.getN "foobar"
+						rbs <- Header.headerToRowBytes <$> State.getN "foobar"
 						Deflate.decompress "foobar" Pipe.=$=
-							PipeT.convert (either Seq.singleton id) Pipe.=$=
-							PipeAdler32.adler32 "foobar" Pipe.=$= PipeIO.print
---						Deflate.decompress "foobar" Pipe.=$= PipeIO.print
+							format "foobar" rs Pipe.=$=
+--							PipeT.convert (either Seq.singleton id) Pipe.=$=
+							PipeAdler32.adler32 "foobar" Pipe.=$=
+							unfilterAll bpp (replicate rbs 0) Pipe.=$=
+							PipeIO.print
 						State.putN "foobar" $ OnDemand.RequestBytes 4
-						IO.print . snd =<< State.getN @(Int, Adler32.A) "foobar"
---						IO.print . Adler32.fromWord32 . Seq.toBitsBE =<< PipeT.skipLeft1
-						IO.print . Adler32.toWord32 . snd =<< State.getN @(Int, Adler32.A) "foobar"
-						IO.print @Word32 . Seq.toBitsBE =<< PipeT.skipLeft1
-						{-
-						forever do
-							IO.print =<< Pipe.await
-							IO.print @Chunk.Chunk =<< State.getN "foobar"
-							-}
+						adl1 <- Adler32.toWord32 . snd <$> State.getN @(Int, Adler32.A) "foobar"
+						adl0 <- Seq.toBitsBE <$> PipeT.skipLeft1
+						when (adl1 /= adl0) $ Except.throw @String "ADLER-32 error"
 
 bsToSeq :: BS.ByteString -> Seq.Seq Word8
 bsToSeq = Seq.fromList . BS.unpack
@@ -104,3 +108,43 @@ zlibHeader bs = do
 	[cmf, flg] <- pure $ toList bs
 	maybe (Except.throw @String "Zlib header check bits error")
 		pure (Zlib.readHeader cmf flg)
+
+newtype Sequence = Sequence { unSequence :: Seq.Seq Word8 } deriving Show
+
+format :: forall (nm :: Symbol) -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm Sequence) es,
+	U.Member Fail.F es ) =>
+	[Int] -> Eff.E es (Either Word8 (Seq.Seq Word8)) (Seq.Seq Word8) ()
+format nm = \case
+	[] -> do { Right Seq.Empty <- Pipe.await; pure () }
+	r : rs -> (Pipe.yield =<< getBytes nm r) >> format nm rs
+
+getBytes :: forall (nm :: Symbol) ->
+	(U.Member Pipe.P es, U.Member (State.Named nm Sequence) es) =>
+	Int -> Eff.E es (Either Word8 (Seq.Seq Word8)) o (Seq.Seq Word8)
+getBytes nm n = State.getsN nm (Seq.splitAt' n . unSequence) >>= \case
+	Nothing -> readMore nm >> getBytes nm n
+	Just (t, d) -> t <$ State.putN nm (Sequence d)
+
+readMore :: forall (nm :: Symbol) ->
+	(U.Member Pipe.P es, U.Member (State.Named nm Sequence) es) =>
+	Eff.E es (Either Word8 (Seq.Seq Word8)) o ()
+readMore nm = Pipe.await >>= \case
+	Left w -> State.modifyN nm $ Sequence . (Seq.:|> w) . unSequence
+	Right s -> State.modifyN nm $ Sequence . (Seq.>< s) . unSequence
+
+unfilterAll :: (
+	U.Member Pipe.P es,
+	U.Member (Except.E String) es
+	) =>
+	Int -> [Word8] -> Eff.E es (Seq.Seq Word8) [Word8] ()
+unfilterAll bpp prior = do
+	mbs <- Pipe.awaitMaybe
+	case mbs of
+		Nothing -> pure ()
+		Just Seq.Empty -> pure ()
+		Just bs -> do
+			bs' <- either Except.throw pure $ unfilter bpp prior bs
+			Pipe.yield bs'
+			unfilterAll bpp bs'

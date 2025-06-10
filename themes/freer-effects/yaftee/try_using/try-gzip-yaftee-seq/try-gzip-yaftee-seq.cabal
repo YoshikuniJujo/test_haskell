@@ -34,6 +34,7 @@ library
       Data.Gzip.Header
       Data.Huffman
       Data.Png
+      Data.Png.Filters
       Data.Png.Header
       Data.Zlib
       Lib

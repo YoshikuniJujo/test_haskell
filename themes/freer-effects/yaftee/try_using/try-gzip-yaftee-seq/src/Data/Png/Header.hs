@@ -18,9 +18,25 @@ data Header = Header {
 	headerInterlaceMethod :: InterlaceMethod }
 	deriving Show
 
-headerToRows :: Header -> [Int64]
+headerToRows :: Header -> [Int]
 headerToRows h@Header { headerInterlaceMethod = InterlaceMethodNon } =
 	replicate (fromIntegral $ headerHeight h) (headerToBpp h * fromIntegral (headerWidth h))
+headerToRows h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } = map (* headerToBpp h)
+	$ interlacePixelNums
+		(fromIntegral (headerWidth h))
+		(fromIntegral $ headerHeight h)
+
+interlacePixelNums :: Int -> Int -> [Int]
+interlacePixelNums w h =
+	replicate (h `div'` 8) (w `div'` 8) ++
+	replicate (h `div'` 8) (w `div'` 4 `div` 2) ++
+	replicate (h `div'` 4 `div` 2) (w `div'` 4) ++
+	replicate (h `div'` 4) (w `div'` 2 `div` 2) ++
+	replicate (h `div'` 2 `div` 2) (w `div'` 2) ++
+	replicate (h `div'` 2) (w `div` 2) ++
+	replicate (h `div` 2) w ++ [0]
+
+m `div'`n = (m - 1) `div` n + 1
 
 headerToBpp :: Integral n => Header -> n
 headerToBpp hdr =
