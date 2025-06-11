@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pipe.Draw (
-	writeDrawPipe, newImageArgb32Mut, drawColor ) where
+	writeDrawPipe, newImageArgb32Mut, drawColor, drawColor' ) where
 
 import Foreign.C.Types
 import Control.Arrow
@@ -62,6 +62,12 @@ drawColor img ys xss = void $
 	PipeT.convert ((\(RgbaWord8 r g b a) -> PixelArgb32Straight a r g b) <$>) Pipe.=$=
 	draw img (fromIntegral <$> ys) ((fromIntegral <$>) <$> xss)
 
+drawColor' :: (RealFrac d, U.Member Pipe.P es, U.Base IO.I es) =>
+	Argb32Mut RealWorld -> [Int] -> [[Int]] -> IO a -> Eff.E es [Rgba d] o ()
+drawColor' img ys xss act = void $
+	PipeT.convert ((\(RgbaWord8 r g b a) -> PixelArgb32Straight a r g b) <$>) Pipe.=$=
+	draw' img (fromIntegral <$> ys) ((fromIntegral <$>) <$> xss) act
+
 drawLine :: ImageMut im => im RealWorld -> CInt -> [CInt] -> [PixelMut im] -> IO ()
 drawLine img y xs ps = for_ (zip xs ps) \(x, p) -> putPixel img x y p
 
@@ -75,3 +81,15 @@ draw img (y : ys) (xs : xss) = do
 	draw img ys xss
 draw _ [] _ = error "no more y positions"
 draw _ _ [] = error "no more x positions"
+
+draw' :: (
+	U.Member Pipe.P es,
+	U.Base IO.I es
+	) =>
+	Argb32Mut RealWorld -> [CInt] -> [[CInt]] -> IO a -> Eff.E es [PixelArgb32] o r
+draw' img (y : ys) (xs : xss) act = do
+	Eff.effBase @IO . drawLine img y xs =<< Pipe.await
+	_ <- Eff.effBase act
+	draw' img ys xss act
+draw' _ [] _ _ = error "no more y positions"
+draw' _ _ [] _ = error "no more x positions"
