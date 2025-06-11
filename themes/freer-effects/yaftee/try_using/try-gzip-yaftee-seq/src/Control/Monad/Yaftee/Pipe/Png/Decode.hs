@@ -62,23 +62,23 @@ type States nm =
 	Chunk.ChunkStates nm `Append` '[
 	State.Named nm Header.Header ]
 
-decode :: (
-	RealFrac d, U.Member Pipe.P es, Members "foobar" es,
+decode :: forall nm -> (
+	RealFrac d, U.Member Pipe.P es, Members nm es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	(Header.Header -> Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Either [Rgb d] [Rgba d]) ()) ->
 	(Zlib.Header -> Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Seq.Seq Word8) r) ->
 	Eff.E es (Seq.Seq Word8) (Either [Rgb d] [Rgba d]) ()
-decode f g = void $ do
-		fhdr <- Chunk.readBytes "foobar" 8
+decode nm f g = void $ do
+		fhdr <- Chunk.readBytes nm 8
 		when (fhdr /= fileHeader) $ Except.throw "File header error"
-		Chunk.chunk "foobar" 500
+		Chunk.chunk nm 500
 	Pipe.=$= do
-		_ <- OnDemand.onDemand "foobar" Pipe.=$= Header.read "foobar" f
-		rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
-		bs <- untilIdat "foobar"
-		OnDemand.onDemandWithInitial "foobar" bs Pipe.=$=
-			Zlib.decompress "foobar" g rs Pipe.=$=
-			pngUnfilter "foobar" Pipe.=$= bytesToColor
+		_ <- OnDemand.onDemand nm Pipe.=$= Header.read nm f
+		rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN nm
+		bs <- untilIdat nm
+		OnDemand.onDemandWithInitial nm bs Pipe.=$=
+			Zlib.decompress nm g rs Pipe.=$=
+			pngUnfilter nm Pipe.=$= bytesToColor nm
 
 type Members nm es = (
 	Zlib.Members nm es,
@@ -86,26 +86,25 @@ type Members nm es = (
 	Chunk.ChunkMembers nm es,
 	U.Member (State.Named nm Header.Header) es )
 
-runHeader :: HFunctor.Loose (U.U es) =>
-	Eff.E (StatesHeader "foobar" `Append` es) i o r -> Eff.E es i o Header.Header
-runHeader = (snd <$>) . flip (State.runN @"foobar") Header.header0 . Chunk.chunkRun_ @"foobar"
-	. OnDemand.run_ @"foobar"
+runHeader :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (StatesHeader nm `Append` es) i o r -> Eff.E es i o Header.Header
+runHeader = (snd <$>) . flip (State.runN @nm) Header.header0 . Chunk.chunkRun_ @nm
+	. OnDemand.run_ @nm
 
 type StatesHeader nm =
 	OnDemand.States nm `Append`
 	Chunk.ChunkStates nm `Append` '[
 	State.Named nm Header.Header ]
 
-decodeHeader :: (
-	U.Member Pipe.P es, MembersHeader "foobar" es,
+decodeHeader :: forall nm -> (
+	U.Member Pipe.P es, MembersHeader nm es,
 	U.Member (Except.E String) es ) =>
-	(Header.Header -> Eff.E es (Either BitArray.B (Seq.Seq Word8)) (Either [Rgb d] [Rgba d]) ()) ->
-	Eff.E es (Seq.Seq Word8) (Either [Rgb d] [Rgba d]) ()
-decodeHeader f = void $ do
-		fhdr <- Chunk.readBytes "foobar" 8
+	Eff.E es (Seq.Seq Word8) o ()
+decodeHeader nm = void $ do
+		fhdr <- Chunk.readBytes nm 8
 		when (fhdr /= fileHeader) $ Except.throw "File header error"
-		Chunk.chunk "foobar" 500
-	Pipe.=$= OnDemand.onDemand "foobar" Pipe.=$= Header.read "foobar" f
+		Chunk.chunk nm 500
+	Pipe.=$= OnDemand.onDemand nm Pipe.=$= Header.read nm (const $ pure ())
 
 type MembersHeader nm es = (
 	OnDemand.Members nm es,
@@ -158,16 +157,16 @@ unfilterAll bpp prior = do
 			Pipe.yield bs'
 			unfilterAll bpp bs'
 
-bytesToColor :: (
+bytesToColor :: forall nm -> (
 	RealFrac d,
 	U.Member Pipe.P es,
-	U.Member (State.Named "foobar" Header.Header) es,
+	U.Member (State.Named nm Header.Header) es,
 	U.Member (Except.E String) es
 	) =>
 	Eff.E es [Word8] (Either [Rgb d] [Rgba d]) r
-bytesToColor = do
+bytesToColor nm = do
 	bs1 <- Pipe.await
-	(ct, bd) <- maybe (Except.throw @String "yet") pure . headerToColorTypeDepth =<< State.getN "foobar"
+	(ct, bd) <- maybe (Except.throw @String "yet") pure . headerToColorTypeDepth =<< State.getN nm
 	case ct of
 		Rgb -> do
 			Pipe.yield . Left $ pixelsRgb bd bs1

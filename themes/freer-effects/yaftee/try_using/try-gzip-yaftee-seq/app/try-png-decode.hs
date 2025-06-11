@@ -37,7 +37,7 @@ main = do
 		. (`Except.catch` IO.putStrLn) . void
 		$ PipeBS.hGet (32 * 32) h Pipe.=$=
 			PipeT.convert bsToSeq Pipe.=$=
-			Png.decode @Double IO.print IO.print Pipe.=$=
+			Png.decode @Double "foobar" IO.print IO.print Pipe.=$=
 			PipeT.convert (either ((`toRgba` AlphaWord8 255) <$>) id) Pipe.=$=
 			PipeIO.print
 
