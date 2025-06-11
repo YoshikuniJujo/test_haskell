@@ -57,19 +57,20 @@ writeArgb32Mut :: FilePath -> Argb32Mut RealWorld -> IO ()
 writeArgb32Mut fp = (writePng fp =<<) . cairoArgb32MutToJuicyRGBA8
 
 drawColor :: (RealFrac d, U.Member Pipe.P es, U.Base IO.I es) =>
-	Argb32Mut RealWorld -> Eff.E es [Rgba d] o ()
-drawColor img = void $
+	Argb32Mut RealWorld -> [[Int]] -> Eff.E es [Rgba d] o ()
+drawColor img xss = void $
 	PipeT.convert ((\(RgbaWord8 r g b a) -> PixelArgb32Straight a r g b) <$>) Pipe.=$=
-	draw img 0
+	draw img 0 ((fromIntegral <$>) <$> xss)
 
-drawLine :: ImageMut im => im RealWorld -> CInt -> [PixelMut im] -> IO ()
-drawLine img y ps = for_ (zip [0 ..] ps) \(x, p) -> putPixel img x y p
+drawLine :: ImageMut im => im RealWorld -> CInt -> [CInt] -> [PixelMut im] -> IO ()
+drawLine img y xs ps = for_ (zip xs ps) \(x, p) -> putPixel img x y p
 
 draw :: (
 	U.Member Pipe.P es,
 	U.Base IO.I es
 	) =>
-	Argb32Mut RealWorld -> CInt -> Eff.E es [PixelArgb32] o r
-draw img y = do
-	Eff.effBase @IO . drawLine img y =<< Pipe.await
-	draw img (y + 1)
+	Argb32Mut RealWorld -> CInt -> [[CInt]] -> Eff.E es [PixelArgb32] o r
+draw img y (xs : xss) = do
+	Eff.effBase @IO . drawLine img y xs =<< Pipe.await
+	draw img (y + 1) xss
+draw _ _ [] = error "no more x positions"
