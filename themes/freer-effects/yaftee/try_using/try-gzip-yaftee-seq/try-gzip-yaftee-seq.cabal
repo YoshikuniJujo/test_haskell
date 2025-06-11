@@ -39,7 +39,6 @@ library
       Data.Png.Filters
       Data.Png.Header
       Data.Zlib
-      Lib
       Pipe.Huffman
       Pipe.Runlength
   other-modules:
