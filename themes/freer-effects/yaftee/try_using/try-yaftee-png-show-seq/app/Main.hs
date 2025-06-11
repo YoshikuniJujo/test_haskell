@@ -24,6 +24,8 @@ import Graphics.Pipe.Draw
 import Data.Png.Header
 import Data.Color
 
+import Lib
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs
@@ -37,8 +39,9 @@ main = do
 	let	wdt = fromIntegral $ headerWidth hdr
 		hgt = fromIntegral $ headerHeight hdr
 		ilm = headerInterlaceMethod hdr
-		xss = case ilm of
-			InterlaceMethodNon -> repeat [0 ..]
+		(yss, xss) = case ilm of
+			InterlaceMethodNon -> ([0 ..], repeat [0 ..])
+			InterlaceMethodAdam7 -> (mkyss hgt ++ [0], mkxss wdt hgt ++ [[]])
 	img <- newImageArgb32Mut wdt hgt
 
 	h' <- openFile fp ReadMode
@@ -53,7 +56,7 @@ main = do
 				PipeT.convert (either
 					((`toRgba` AlphaWord8 255) <$>)
 					id) Pipe.=$=
-				drawColor img xss
+				drawColor img yss xss
 
 bsToSeq :: BS.ByteString -> Seq.Seq Word8
 bsToSeq = Seq.fromList . BS.unpack
