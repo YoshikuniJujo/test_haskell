@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE RankNTypes, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
@@ -63,13 +63,19 @@ drawColor img ys xss = void $
 	draw img (fromIntegral <$> ys) ((fromIntegral <$>) <$> xss)
 
 drawColor' :: (RealFrac d, U.Member Pipe.P es, U.Base IO.I es) =>
-	Argb32Mut RealWorld -> [Int] -> [[Int]] -> IO a -> Eff.E es [Rgba d] o ()
+	Argb32Mut RealWorld -> [(Int, (Int, Int))] -> [[Int]] -> IO a -> Eff.E es [Rgba d] o ()
 drawColor' img ys xss act = void $
 	PipeT.convert ((\(RgbaWord8 r g b a) -> PixelArgb32Straight a r g b) <$>) Pipe.=$=
-	draw' img (fromIntegral <$> ys) ((fromIntegral <$>) <$> xss) act
+	draw' img ((\(y, (w, h)) -> (fromIntegral y, (fromIntegral w, fromIntegral h))) <$> ys) ((fromIntegral <$>) <$> xss) act
 
 drawLine :: ImageMut im => im RealWorld -> CInt -> [CInt] -> [PixelMut im] -> IO ()
 drawLine img y xs ps = for_ (zip xs ps) \(x, p) -> putPixel img x y p
+
+drawLine' :: ImageMut im => im RealWorld -> CInt -> [CInt] -> (CInt, CInt) -> [PixelMut im] -> IO ()
+drawLine' img y xs (w, h) ps = for_ (zip xs ps) \(x, p) -> putBlock img x y w h p
+
+putBlock img x0 y0 w h p = for_ [y0 .. y0 + h - 1] \y ->
+	for_ [x0 .. x0 + w - 1] \x -> putPixel img x y p
 
 draw :: (
 	U.Member Pipe.P es,
@@ -86,9 +92,9 @@ draw' :: (
 	U.Member Pipe.P es,
 	U.Base IO.I es
 	) =>
-	Argb32Mut RealWorld -> [CInt] -> [[CInt]] -> IO a -> Eff.E es [PixelArgb32] o r
-draw' img (y : ys) (xs : xss) act = do
-	Eff.effBase @IO . drawLine img y xs =<< Pipe.await
+	Argb32Mut RealWorld -> [(CInt, (CInt, CInt))] -> [[CInt]] -> IO a -> Eff.E es [PixelArgb32] o r
+draw' img ((y, (w, h)) : ys) (xs : xss) act = do
+	Eff.effBase @IO . drawLine' img y xs (w, h) =<< Pipe.await
 	_ <- Eff.effBase act
 	draw' img ys xss act
 draw' _ [] _ _ = error "no more y positions"
