@@ -7,9 +7,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pipe.Draw (writeDrawPipe, drawColor) where
+module Graphics.Pipe.Draw (
+	writeDrawPipe, newImageArgb32Mut, drawColor ) where
 
 import Foreign.C.Types
+import Control.Arrow
 import Control.Monad
 import Control.Monad.ST
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -46,6 +48,10 @@ writeDrawPipe fp img wdt hgt act = do
 	cairoImageSurfaceGetCairoImageMut sfc0 >>= \case
 		CairoImageMutArgb32 i -> writeArgb32Mut fp i
 		_ -> error "bad"
+
+newImageArgb32Mut :: Int -> Int -> IO (Argb32Mut RealWorld)
+newImageArgb32Mut = curry
+	$ uncurry (newImageMut @Argb32Mut) . (fromIntegral *** fromIntegral)
 
 writeArgb32Mut :: FilePath -> Argb32Mut RealWorld -> IO ()
 writeArgb32Mut fp = (writePng fp =<<) . cairoArgb32MutToJuicyRGBA8

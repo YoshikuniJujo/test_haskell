@@ -24,7 +24,7 @@ import System.Environment
 main :: IO ()
 main = do
 	args <- getArgs
-	img <- newImageMut @Argb32Mut 16 16
+	img <- newImageArgb32Mut 16 16
 	writeDrawPipe "foobar.png" img 16 16 case args of
 		["blue"] -> examplePipe2
 		_ -> examplePipe
