@@ -102,14 +102,14 @@ readHeader nm f = void $ PipeCrc32.crc32 nm Pipe.=$= do
 	then do	State.putN nm $ OnDemand.RequestBytes 2
 		xlen <- Seq.toBits <$> Pipe.await
 		State.putN nm $ OnDemand.RequestBytes xlen
-		decodeExtraFields . seqToBs <$> Pipe.await
+		decodeExtraFields <$> Pipe.await
 	else pure []
 	State.putN nm OnDemand.RequestString
 	mnm <- if flagsRawName flgs
-	then Just . seqToBs <$> Pipe.await
+	then Just <$> Pipe.await
 	else pure Nothing
 	mcmmt <- if flagsRawComment flgs
-	then Just . seqToBs <$> Pipe.await
+	then Just <$> Pipe.await
 	else pure Nothing
 	when (flagsRawHcrc flgs) do
 		PipeCrc32.complement nm

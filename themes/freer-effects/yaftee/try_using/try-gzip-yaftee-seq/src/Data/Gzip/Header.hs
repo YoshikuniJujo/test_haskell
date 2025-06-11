@@ -27,16 +27,23 @@ module Data.Gzip.Header (
 
 import Foreign.C.Types
 import Control.Arrow
+import Data.Foldable
 import Data.Bits
 import Data.Maybe
+import Data.Sequence qualified as Seq
+import Data.Sequence.ToolsYj qualified as Seq
+import Data.Sequence.Word8 qualified as Seq
 import Data.Word
+import Data.Char
 import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
 
-import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as PipeCrc
+import Control.Monad.Yaftee.Pipe.Sequence.Crc32 qualified as PipeCrc32
 
-ids0 :: BS.ByteString
-ids0 = "\x1f\x8b"
+import Data.Word.Crc32 qualified as Crc32
+
+ids0 :: Seq.Seq Word8
+ids0 = Seq.fromList $ fromIntegral . ord <$> "\x1f\x8b"
 
 data GzipHeaderRaw = GzipHeaderRaw {
 	gzipHeaderRawCompressionMethod :: CompressionMethod,
@@ -45,8 +52,8 @@ data GzipHeaderRaw = GzipHeaderRaw {
 	gzipHeaderRawExtraFlags :: Word8,
 	gzipHeaderRawOperatingSystem :: OS,
 	gzipHeaderRawExtraField :: [ExtraField],
-	gzipHeaderRawFileName :: Maybe BS.ByteString,
-	gzipHeaderRawComment :: Maybe BS.ByteString
+	gzipHeaderRawFileName :: Maybe (Seq.Seq Word8),
+	gzipHeaderRawComment :: Maybe (Seq.Seq Word8)
 	}
 	deriving Show
 
@@ -57,8 +64,8 @@ data GzipHeader = GzipHeader {
 	gzipHeaderExtraFlags :: Word8,
 	gzipHeaderOperatingSystem :: OS,
 	gzipHeaderExtraField :: [ExtraField],
-	gzipHeaderFileName :: Maybe BS.ByteString,
-	gzipHeaderComment :: Maybe BS.ByteString }
+	gzipHeaderFileName :: Maybe (Seq.Seq Word8),
+	gzipHeaderComment :: Maybe (Seq.Seq Word8) }
 	deriving Show
 
 gzipHeaderToRaw :: GzipHeader -> GzipHeaderRaw
@@ -142,23 +149,23 @@ flagsToRaw fn cmmt eflds Flags {
 	flagsRawName = fn,
 	flagsRawComment = cmmt }
 
-encodeGzipHeader :: GzipHeader -> BS.ByteString
+encodeGzipHeader :: GzipHeader -> Seq.Seq Word8
 encodeGzipHeader hdr_ = let
-	rslt = ids0 `BS.append`
-		(unCompressionMethod (gzipHeaderRawCompressionMethod hdr) `BS.cons`
-			encodeFlags (gzipHeaderRawFlags hdr) `BS.cons`
-			BS.fromBits' (cTimeToWord32 $ gzipHeaderRawModificationTime hdr)) `BS.append`
-		(gzipHeaderRawExtraFlags hdr `BS.cons`
-			unOS (gzipHeaderRawOperatingSystem hdr) `BS.cons` "") `BS.append`
-			(if (null efs) then "" else (word16ToBs lnefs `BS.append` efsbs)) `BS.append`
-			maybe "" (`BS.snoc` 0) (gzipHeaderRawFileName hdr) `BS.append`
-			maybe "" (`BS.snoc` 0) (gzipHeaderRawComment hdr) in
-	rslt <> if (flagsRawHcrc $ gzipHeaderRawFlags hdr) then crc16 rslt else ""
+	rslt = ids0 Seq.><
+		((unCompressionMethod (gzipHeaderRawCompressionMethod hdr) `Seq.cons`
+			(encodeFlags (gzipHeaderRawFlags hdr) `Seq.cons`
+			Seq.fromBits' (cTimeToWord32 $ gzipHeaderRawModificationTime hdr))) Seq.><
+		(gzipHeaderRawExtraFlags hdr `Seq.cons`
+			(unOS (gzipHeaderRawOperatingSystem hdr) `Seq.cons` Seq.Empty)) Seq.><
+			(if (null efs) then Seq.Empty else (word16ToBs lnefs Seq.>< efsbs)) Seq.><
+			maybe Seq.Empty (`Seq.snoc` 0) (gzipHeaderRawFileName hdr) Seq.><
+			maybe Seq.Empty (`Seq.snoc` 0) (gzipHeaderRawComment hdr)) in
+	rslt <> if (flagsRawHcrc $ gzipHeaderRawFlags hdr) then crc16 rslt else Seq.Empty
 	where
 	hdr = gzipHeaderToRaw hdr_
 	efs = gzipHeaderRawExtraField hdr
 	efsbs = encodeExtraFields efs
-	lnefs = fromIntegral $ BS.length efsbs
+	lnefs = fromIntegral $ length efsbs
 
 sampleGzipHeader :: GzipHeader
 sampleGzipHeader = GzipHeader {
@@ -170,43 +177,43 @@ sampleGzipHeader = GzipHeader {
 	gzipHeaderExtraFlags = 0,
 	gzipHeaderOperatingSystem = OSUnix,
 	gzipHeaderExtraField = [],
-	gzipHeaderFileName = Just "abcd.txt",
+	gzipHeaderFileName = Just . Seq.fromList $ fromIntegral . ord <$> "abcd.txt",
 	gzipHeaderComment = Nothing }
 
-crc' :: BS.ByteString -> BS.ByteString
-crc' = BS.fromBits' . crc
+crc' :: Seq.Seq Word8 -> Seq.Seq Word8
+crc' = Seq.fromBits' . crc
 
-crc16 :: BS.ByteString -> BS.ByteString
-crc16 = BS.take 2 . crc'
+crc16 :: Seq.Seq Word8 -> Seq.Seq Word8
+crc16 = Seq.take 2 . crc'
 
 data ExtraField = ExtraField {
 	extraFieldSi1 :: Word8,
 	extraFieldSi2 :: Word8,
-	extraFieldData :: BS.ByteString }
+	extraFieldData :: Seq.Seq Word8 }
 	deriving Show
 
-encodeExtraFields :: [ExtraField] -> BS.ByteString
-encodeExtraFields = BS.concat . (encodeExtraField <$>)
+encodeExtraFields :: [ExtraField] -> Seq.Seq Word8
+encodeExtraFields = mconcat . (encodeExtraField <$>)
 
-encodeExtraField :: ExtraField -> BS.ByteString
+encodeExtraField :: ExtraField -> Seq.Seq Word8
 encodeExtraField ExtraField {
 	extraFieldSi1 = si1,
 	extraFieldSi2 = si2,
 	extraFieldData = dt } =
-		BS.pack [si1, si2] `BS.append`
-		word16ToBs (fromIntegral $ BS.length dt) `BS.append` dt
+		Seq.fromList [si1, si2] Seq.><
+		word16ToBs (fromIntegral $ length dt) Seq.>< dt
 
-decodeExtraFields :: BS.ByteString -> [ExtraField]
-decodeExtraFields "" = []
+decodeExtraFields :: Seq.Seq Word8 -> [ExtraField]
+decodeExtraFields Seq.Empty = []
 decodeExtraFields bs = let
 	(ef, bs') = decodeExtraField bs in
 	ef : decodeExtraFields bs'
 
-decodeExtraField :: BS.ByteString -> (ExtraField, BS.ByteString)
-decodeExtraField bs = case BS.unpack `first` BS.splitAt 2 bs of
+decodeExtraField :: Seq.Seq Word8 -> (ExtraField, Seq.Seq Word8)
+decodeExtraField bs = case toList `first` Seq.splitAt 2 bs of
 	([si1, si2], bs') -> let
-		(ln, bs'') = (fromIntegral . bsToWord16) `first` BS.splitAt 2 bs'
-		(dt, bs''') = BS.splitAt ln bs'' in (
+		(ln, bs'') = (fromIntegral . bsToWord16) `first` Seq.splitAt 2 bs'
+		(dt, bs''') = Seq.splitAt ln bs'' in (
 		ExtraField {
 			extraFieldSi1 = si1,
 			extraFieldSi2 = si2,
@@ -214,13 +221,13 @@ decodeExtraField bs = case BS.unpack `first` BS.splitAt 2 bs of
 		bs''' )
 	_ -> error "bad"
 
-word16ToBs :: Word16 -> BS.ByteString
-word16ToBs w = BS.pack $ fromIntegral <$> [w .&. 0xff, w `shiftR` 8]
+word16ToBs :: Word16 -> Seq.Seq Word8
+word16ToBs w = Seq.fromList $ fromIntegral <$> [w .&. 0xff, w `shiftR` 8]
 
-bsToWord16 :: BS.ByteString -> Word16
-bsToWord16 bs = case fromIntegral <$> BS.unpack bs of
+bsToWord16 :: Seq.Seq Word8 -> Word16
+bsToWord16 bs = case fromIntegral <$> toList bs of
 	[w0, w1] -> w0 .|. w1 `shiftL` 8
 	_ -> error "bad"
 
-crc :: BS.ByteString -> Word32
-crc = complement . PipeCrc.crc32StepBS 0xffffffff
+crc :: Seq.Seq Word8 -> Crc32.C
+crc = complement . PipeCrc32.step Crc32.initial

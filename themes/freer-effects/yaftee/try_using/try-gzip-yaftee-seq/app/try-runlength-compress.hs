@@ -17,11 +17,15 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.List qualified as PipeL
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
+import Control.Monad.Yaftee.Pipe.Sequence.Crc32 qualified as PipeCrc32
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.State qualified as State
+import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.Foldable
 import Data.Bits
 import Data.Sequence qualified as Seq
+import Data.Sequence.Word8 qualified as Seq
 import Data.Bool
 import Data.Word
 import Data.ByteString qualified as BS
@@ -29,26 +33,43 @@ import System.IO
 import System.Environment
 
 import Pipe.Runlength.Compress qualified as Runlength
+import Data.Gzip.Header
 import Data.Deflate.Block
+import Data.Word.Crc32 qualified as Crc32
 
 main :: IO ()
 main = do
-	fp : _ <- getArgs
+	fp : fpo : _ <- getArgs
 	h <- openFile fp ReadMode
+	ho <- openFile fpo WriteMode
 
-	Eff.runM . flip (State.runN @"foobar") (([], []) :: Queue) . Runlength.run_ @"foobar" . Pipe.run
+	_ <- Eff.runM
+		. PipeT.lengthRun @"foobar"
+		. flip (State.runN @"foobar") Crc32.initial
+		. flip (State.runN @"foobar") (([], []) :: Queue)
+		. Runlength.run_ @"foobar" . Pipe.run
 		$ PipeBS.hGet 32 h Pipe.=$=
-			PipeT.convert bsToSeq Pipe.=$=
-			Runlength.compress "foobar" Pipe.=$=
-			PipeL.bundle' 15 Pipe.=$=
-			PipeT.convert'' runLengthsToBits [] Pipe.=$=
-			toSequence' "foobar" Pipe.=$=
-			PipeIO.print
+			PipeT.convert' bsToSeq Pipe.=$= do
+				Pipe.yield $ encodeGzipHeader sampleGzipHeader
+				_ <- PipeCrc32.crc32' "foobar" Pipe.=$=
+					PipeT.length "foobar" Pipe.=$=
+					Runlength.compress "foobar" Pipe.=$=
+					PipeL.bundle' 15 Pipe.=$=
+					PipeT.convert'' runLengthsToBits [] Pipe.=$=
+					toSequence' "foobar"
+				PipeCrc32.complement "foobar"
+				Pipe.yield . Seq.fromBits' =<< State.getN @Crc32.C "foobar"
+				Pipe.yield . Seq.fromBits' @Word32 . fromIntegral =<< State.getN @PipeT.Length "foobar"
+			Pipe.=$= PipeT.convert seqToBs Pipe.=$= PipeBS.hPutStr ho
 
 	hClose h
+	hClose ho
 
 bsToSeq :: BS.ByteString -> Seq.Seq Word8
 bsToSeq = Seq.fromList . BS.unpack
+
+seqToBs :: Seq.Seq Word8 -> BS.ByteString
+seqToBs = BS.pack . toList
 
 type Bit = Bool
 
