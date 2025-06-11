@@ -48,6 +48,8 @@ main :: IO ()
 main = do
 	fpi : opts <- getArgs
 
+	let	blk = opts == ["--block"]
+
 	hh <- openFile fpi ReadMode
 	Right hdr <- Eff.runM
 		. Except.run @String . Png.runHeader @"foobar" . Pipe.run
@@ -60,8 +62,8 @@ main = do
 		hgt = fromIntegral $ headerHeight hdr
 		ilm = headerInterlaceMethod hdr
 		(yss, xss) = case ilm of
-			InterlaceMethodNon -> ([0 ..], repeat [0 ..])
-			InterlaceMethodAdam7 -> (mkyss hgt ++ [0], mkxss wdt hgt ++ [[]])
+			InterlaceMethodNon -> ([0 ..] `zip` repeat (1, 1), repeat [0 ..])
+			InterlaceMethodAdam7 -> (mkyss blk hgt ++ [(0, (1, 1))], mkxss wdt hgt ++ [[]])
 	img <- newImageArgb32Mut wdt hgt
 
 	join $ Gtk.init <$> getProgName <*> getArgs

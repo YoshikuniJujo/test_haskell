@@ -40,8 +40,8 @@ main = do
 		hgt = fromIntegral $ headerHeight hdr
 		ilm = headerInterlaceMethod hdr
 		(yss, xss) = case ilm of
-			InterlaceMethodNon -> ([0 ..], repeat [0 ..])
-			InterlaceMethodAdam7 -> (mkyss hgt ++ [0], mkxss wdt hgt ++ [[]])
+			InterlaceMethodNon -> ([0 ..] `zip` repeat (1, 1), repeat [0 ..])
+			InterlaceMethodAdam7 -> (mkyss False hgt ++ [(0, (1, 1))], mkxss wdt hgt ++ [[]])
 	img <- newImageArgb32Mut wdt hgt
 
 	h' <- openFile fp ReadMode
@@ -56,7 +56,7 @@ main = do
 				PipeT.convert (either
 					((`toRgba` AlphaWord8 255) <$>)
 					id) Pipe.=$=
-				drawColor img yss xss
+				drawColor img (fst <$> yss) xss
 
 bsToSeq :: BS.ByteString -> Seq.Seq Word8
 bsToSeq = Seq.fromList . BS.unpack
