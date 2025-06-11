@@ -41,6 +41,7 @@ library
       Data.Zlib
       Pipe.Huffman
       Pipe.Runlength
+      Pipe.Runlength.Triple
   other-modules:
       Paths_try_gzip_yaftee_seq
   autogen-modules:
