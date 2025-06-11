@@ -41,6 +41,7 @@ library
       Data.Zlib
       Pipe.Huffman
       Pipe.Runlength
+      Pipe.Runlength.Compress
       Pipe.Runlength.Triple
   other-modules:
       Paths_try_gzip_yaftee_seq
@@ -93,6 +94,28 @@ executable try-gzip-yaftee-seq-exe
 
 executable try-png-decode
   main-is: try-png-decode.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , containers
+    , tools-yj
+    , try-bitarray-seq
+    , try-gzip-yaftee-seq
+    , try-higher-order-open-union
+    , try-yaftee
+    , try-yaftee-basic-monads
+    , try-yaftee-conduit
+    , try-yaftee-conduit-bytestring
+    , try-yaftee-conduit-containers
+    , typelevel-tools-yj
+    , union-color
+  default-language: Haskell2010
+
+executable try-runlength-compress
+  main-is: try-runlength-compress.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
