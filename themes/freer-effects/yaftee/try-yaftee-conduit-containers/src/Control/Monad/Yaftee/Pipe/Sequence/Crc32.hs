@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE TypeOperators #-}
@@ -8,7 +8,7 @@
 
 module Control.Monad.Yaftee.Pipe.Sequence.Crc32 (
 
-	run, reset, complement, crc32,
+	run, reset, complement, crc32, crc32',
 
 	step
 
@@ -46,6 +46,21 @@ body nm = fix \go -> Pipe.await >>= \s -> do
 	State.modifyN nm (`step` s)
 	Pipe.yield s
 	go
+
+crc32' :: forall nm ->
+	(Foldable t, U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es) =>
+	Eff.E es (t Word8) (t Word8) ()
+crc32' nm = State.putN nm Crc32.initial >> body' nm
+
+body' :: forall nm ->
+	(Foldable t, U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es) =>
+	Eff.E es (t Word8) (t Word8) ()
+body' nm = fix \go -> Pipe.awaitMaybe >>= \case
+	Nothing -> pure ()
+	Just s -> do
+		State.modifyN nm (`step` s)
+		Pipe.yield s
+		go
 
 step :: Foldable t => Crc32.C -> t Word8 -> Crc32.C
 step = foldl Crc32.step
