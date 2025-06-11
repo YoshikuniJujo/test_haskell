@@ -32,11 +32,11 @@ main = do
 examplePipe, examplePipe2 :: Argb32Mut RealWorld -> IO ()
 examplePipe img =
 	void $ Eff.runM . Pipe.run
-		$ samplePipe @Double Pipe.=$= drawColor img (repeat [0 ..])
+		$ samplePipe @Double Pipe.=$= drawColor img [0 ..] (repeat [0 ..])
 
 examplePipe2 img =
 	void $ Eff.runM . Pipe.run
-		$ samplePipe2 @Double Pipe.=$= drawColor img (repeat [0 ..])
+		$ samplePipe2 @Double Pipe.=$= drawColor img [0 ..] (repeat [0 ..])
 
 samplePipe, samplePipe2 :: (
 	RealFrac d,
