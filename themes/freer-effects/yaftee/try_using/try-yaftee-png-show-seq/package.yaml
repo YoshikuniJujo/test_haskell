@@ -30,6 +30,9 @@ dependencies:
 - try-yaftee-conduit-bytestring
 - try-gzip-yaftee-seq
 - try-yaftee-cairo-image-seq
+- moffy-samples-gtk3-run
+- simple-cairo
+- cairo-image
 
 ghc-options:
 - -Wall
@@ -49,6 +52,16 @@ executables:
   try-yaftee-png-show-seq-exe:
     main:                Main.hs
     source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-yaftee-png-show-seq
+  try-with-window:
+    main:                try-with-window.hs
+    source-dirs:         app
+    other-modules:       []
     ghc-options:
     - -threaded
     - -rtsopts
