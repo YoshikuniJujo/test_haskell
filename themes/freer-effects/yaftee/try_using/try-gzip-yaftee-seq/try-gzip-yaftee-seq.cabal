@@ -31,10 +31,12 @@ library
       Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
       Control.Monad.Yaftee.Pipe.Png.Decode.Header
       Control.Monad.Yaftee.Pipe.Zlib.Decompress
+      Data.Deflate.Block
       Data.Gzip
       Data.Gzip.Calc
       Data.Gzip.Header
       Data.Huffman
+      Data.PackageMerge
       Data.Png
       Data.Png.Filters
       Data.Png.Header
