@@ -1,8 +1,9 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -16,13 +17,13 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.List qualified as PipeL
-import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.Sequence.Crc32 qualified as PipeCrc32
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.State qualified as State
-import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.TypeLevel.List
 import Data.Foldable
+import Data.HigherFunctor qualified as HFunctor
 import Data.Bits
 import Data.Sequence qualified as Seq
 import Data.Sequence.Word8 qualified as Seq
@@ -43,27 +44,49 @@ main = do
 	h <- openFile fp ReadMode
 	ho <- openFile fpo WriteMode
 
-	_ <- Eff.runM
-		. PipeT.lengthRun @"foobar"
-		. flip (State.runN @"foobar") Crc32.initial
-		. flip (State.runN @"foobar") (([], []) :: Queue)
-		. Runlength.run_ @"foobar" . Pipe.run
+	_ <- Eff.runM . gzipRun_ @"foobar" . Pipe.run
 		$ PipeBS.hGet 32 h Pipe.=$=
-			PipeT.convert' bsToSeq Pipe.=$= do
-				Pipe.yield $ encodeGzipHeader sampleGzipHeader
-				_ <- PipeCrc32.crc32' "foobar" Pipe.=$=
-					PipeT.length "foobar" Pipe.=$=
-					Runlength.compress "foobar" Pipe.=$=
-					PipeL.bundle' 15 Pipe.=$=
-					PipeT.convert'' runLengthsToBits [] Pipe.=$=
-					toSequence' "foobar"
-				PipeCrc32.complement "foobar"
-				Pipe.yield . Seq.fromBits' =<< State.getN @Crc32.C "foobar"
-				Pipe.yield . Seq.fromBits' @Word32 . fromIntegral =<< State.getN @PipeT.Length "foobar"
-			Pipe.=$= PipeT.convert seqToBs Pipe.=$= PipeBS.hPutStr ho
+			PipeT.convert' bsToSeq Pipe.=$=
+			gzipCompress "foobar" sampleGzipHeader Pipe.=$=
+			PipeT.convert seqToBs Pipe.=$= PipeBS.hPutStr ho
 
 	hClose h
 	hClose ho
+
+gzipRun_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()
+gzipRun_ = void
+	. PipeT.lengthRun @nm
+	. flip (State.runN @nm) Crc32.initial
+	. flip (State.runN @nm) (([], []) :: Queue)
+	. Runlength.run_ @nm
+
+type States nm = Runlength.States nm `Append` '[
+	State.Named nm Queue,
+	State.Named nm Crc32.C,
+	State.Named nm PipeT.Length ]
+
+gzipCompress :: forall nm -> (
+	U.Member Pipe.P es,
+	GzipMembers nm es ) =>
+	GzipHeader -> Eff.E es (Seq.Seq Word8) (Seq.Seq Word8) ()
+gzipCompress nm hdr = do
+	Pipe.yield $ encodeGzipHeader hdr
+	_ <- PipeCrc32.crc32' nm Pipe.=$=
+		PipeT.length nm Pipe.=$=
+		Runlength.compress nm Pipe.=$=
+		PipeL.bundle' 15 Pipe.=$=
+		PipeT.convert'' runLengthsToBits [] Pipe.=$=
+		toSequence' nm
+	PipeCrc32.complement nm
+	Pipe.yield . Seq.fromBits' =<< State.getN @Crc32.C nm
+	Pipe.yield . Seq.fromBits' @Word32 . fromIntegral =<< State.getN @PipeT.Length nm
+
+type GzipMembers nm es = (
+	Runlength.Members nm es,
+	U.Member (State.Named nm PipeT.Length) es,
+	U.Member (State.Named nm Crc32.C) es,
+	U.Member (State.Named nm Queue) es )
 
 bsToSeq :: BS.ByteString -> Seq.Seq Word8
 bsToSeq = Seq.fromList . BS.unpack
