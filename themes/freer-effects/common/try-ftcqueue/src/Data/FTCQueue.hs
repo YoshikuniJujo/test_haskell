@@ -3,7 +3,7 @@
 
 module Data.FTCQueue (Q, singleton, (|>), (><), viewl, ViewL(..)) where
 
-data Q t a b = Leaf (a -> t b) | forall x . Node (Q t a x) (Q t x b)
+data Q t a b = Leaf (a -> t b) | forall x . Node !(Q t a x) !(Q t x b)
 
 singleton :: (a -> t b) -> Q t a b
 singleton = Leaf
@@ -16,7 +16,7 @@ infixr 5 |>, ><, :|
 (><) :: Q t a b -> Q t b c -> Q t a c
 (><) = Node
 
-data ViewL t a b = One (a -> t b) | forall x . (a -> t x) :| Q t x b
+data ViewL t a b = One (a -> t b) | forall x . (a -> t x) :| !(Q t x b)
 
 viewl :: Q t a b -> ViewL t a b
 viewl (Leaf f) = One f
