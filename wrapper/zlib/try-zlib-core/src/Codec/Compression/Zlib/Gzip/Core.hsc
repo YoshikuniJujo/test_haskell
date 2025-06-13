@@ -11,22 +11,17 @@ import Foreign.C.String
 import Foreign.C.Enum
 import Data.Int
 
+import Codec.Compression.Zlib.Error.Core qualified as Error
+
 #include <zlib.h>
 
 data GzFileTag
 
 type GzFile = Ptr GzFileTag
 
-enum "ZError" ''#{type int} [''Show, ''Read, ''Eq] [
-	("ZOk", #{const Z_OK}),
-	("ZStreamError", #{const Z_STREAM_ERROR}),
-	("ZErrno", #{const Z_ERRNO}),
-	("ZMemError", #{const Z_MEM_ERROR}),
-	("ZBufError", #{const Z_BUF_ERROR}) ]
-
 foreign import ccall "gzopen" c_gzopen :: CString -> CString -> IO GzFile
 
 foreign import ccall "gzgets" c_gzgets ::
 	GzFile -> CString -> #{type int} -> IO CString
 
-foreign import ccall "gzclose" c_gzclose :: GzFile -> IO ZError
+foreign import ccall "gzclose" c_gzclose :: GzFile -> IO Error.E

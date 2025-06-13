@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- bytestring
 - c-enum
 - tools-yj
 
@@ -44,6 +45,16 @@ executables:
   try-zlib-core-exe:
     main:                Main.hs
     source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-zlib-core
+  try-utility:
+    main:                try-utility.hs
+    source-dirs:         app
+    other-modules:       []
     ghc-options:
     - -threaded
     - -rtsopts
