@@ -61,6 +61,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-zlib-core
+  try-compress-zlib:
+    main:                try-compress-zlib.hs
+    source-dirs:         app
+    other-modules:       []
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-zlib-core
 
 tests:
   try-zlib-core-test:
