@@ -6,12 +6,10 @@
 module Codec.Compression.Zlib.Gzip.Core where
 
 import Foreign.Ptr
-import Foreign.C.Types
 import Foreign.C.String
-import Foreign.C.Enum
 import Data.Int
 
-import Codec.Compression.Zlib.Error.Core qualified as Error
+import Codec.Compression.Zlib.Constant.Core
 
 #include <zlib.h>
 
@@ -24,4 +22,4 @@ foreign import ccall "gzopen" c_gzopen :: CString -> CString -> IO GzFile
 foreign import ccall "gzgets" c_gzgets ::
 	GzFile -> CString -> #{type int} -> IO CString
 
-foreign import ccall "gzclose" c_gzclose :: GzFile -> IO Error.E
+foreign import ccall "gzclose" c_gzclose :: GzFile -> IO ReturnCode
