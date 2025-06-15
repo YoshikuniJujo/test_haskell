@@ -5,6 +5,7 @@
 
 module Codec.Compression.Zlib.Constant.Core where
 
+import Foreign.Storable
 import Foreign.C.Enum
 import Data.Int
 
@@ -35,6 +36,12 @@ enum "CompressonLevel" ''#{type int} [''Show, ''Read, ''Eq] [
 	("BestSpeed", #{const Z_BEST_SPEED}),
 	("BestCompression", #{const Z_BEST_COMPRESSION}),
 	("DefaultCompression", #{const Z_DEFAULT_COMPRESSION}) ]
+
+enum "DataType" ''#{type int} [''Show, ''Read, ''Eq, ''Storable] [
+	("Binary", #{const Z_BINARY}),
+	("Text", #{const Z_TEXT}),
+	("Ascii", #{const Z_ASCII}),
+	("Unknown", #{const Z_UNKNOWN}) ]
 
 enum "CompressionMethod" ''#{type int} [''Show, ''Read, ''Eq] [
 	("Deflated", #{const Z_DEFLATED}) ]
