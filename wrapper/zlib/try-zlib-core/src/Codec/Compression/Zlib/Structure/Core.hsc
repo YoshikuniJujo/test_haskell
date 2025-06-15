@@ -10,7 +10,7 @@ module Codec.Compression.Zlib.Structure.Core (
 
 	-- ** IMMUTABLE
 
-	Stream,
+	Stream, streamInitial,
 	PAllocFunc, AllocFunc, PFreeFunc, FreeFunc, PtrBytef,
 
 	streamNextIn, streamAvailIn, streamNextOut, streamAvailOut,
@@ -19,7 +19,8 @@ module Codec.Compression.Zlib.Structure.Core (
 
 	-- ** MUTABLE
 
-	StreamIO, StreamST, StreamPrim, streamFreeze, streamThaw, streamCopy,
+	StreamIO, StreamST, StreamPrim,
+	withStreamPtr, streamFreeze, streamThaw, streamCopy,
 
 	-- * IN/OUT
 
@@ -103,6 +104,16 @@ struct "Stream" #{size z_stream} #{alignment z_stream}
 		]
 	[''Show, ''Eq, ''Storable]
 
+streamInitial :: Stream
+streamInitial = Stream {
+	streamNextIn = nullPtr,
+	streamAvailIn = 0,
+	streamNextOut = nullPtr,
+	streamAvailOut = 0,
+	streamAlloc = nullFunPtr,
+	streamFree = nullFunPtr,
+	streamOpaque = nullPtr }
+
 streamCopyPtr :: Ptr Stream -> IO (Ptr Stream)
 streamCopyPtr src = do
 	dst <- malloc
@@ -147,6 +158,11 @@ streamFreePtr :: Ptr Stream -> IO ()
 streamFreePtr = free
 
 structPrim "Stream" 'streamCopyPtr 'streamFreePtr [''Show]
+
+withStreamPtr ::
+	PrimBase m => StreamPrim (PrimState m) -> (Ptr Stream -> m a) -> m a
+withStreamPtr (StreamPrim s) f =
+	unsafeIOToPrim $ withForeignPtr s (unsafePrimToIO . f)
 
 availIn :: PrimMonad m => StreamPrim (PrimState m) -> m #{type uInt}
 availIn (StreamPrim s) = unsafeIOToPrim $ withForeignPtr s availInPtr
