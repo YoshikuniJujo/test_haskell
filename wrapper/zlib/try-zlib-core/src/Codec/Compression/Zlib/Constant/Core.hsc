@@ -31,7 +31,7 @@ enum "ReturnCode" ''#{type int} [''Show, ''Read, ''Eq] [
 	("BufError", #{const Z_BUF_ERROR}),
 	("VersionError", #{const Z_VERSION_ERROR}) ]
 
-enum "CompressonLevel" ''#{type int} [''Show, ''Read, ''Eq] [
+enum "CompressionLevel" ''#{type int} [''Show, ''Read, ''Eq] [
 	("NoCompression", #{const Z_NO_COMPRESSION}),
 	("BestSpeed", #{const Z_BEST_SPEED}),
 	("BestCompression", #{const Z_BEST_COMPRESSION}),
