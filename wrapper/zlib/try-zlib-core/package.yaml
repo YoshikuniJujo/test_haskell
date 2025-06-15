@@ -93,6 +93,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-zlib-core
+  try-basic-inflate-st:
+    main:                try-basic-inflate-st.hs
+    source-dirs:         app
+    other-modules:       []
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-zlib-core
 
 tests:
   try-zlib-core-test:
