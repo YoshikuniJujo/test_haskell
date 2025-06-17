@@ -20,19 +20,19 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	cnt <- BS.readFile fp
-	BS.putStr $ inflate cnt
+	BS.putStr $ inflateBS cnt
 
-inflate :: BS.ByteString -> BS.ByteString
-inflate cnt =
+inflateBS :: BS.ByteString -> BS.ByteString
+inflateBS cnt =
 	runST $ useAsCStringLen cnt \(p, ln) -> allocaBytesSt (64 * 64) \o -> do
 		strm <- streamThaw streamInitial {
 			streamNextIn = castPtr p,
 			streamAvailIn = fromIntegral ln,
 			streamNextOut = o,
 			streamAvailOut = 64 * 64 }
-		withStreamPtr strm $ unsafeIOToPrim . c_inflateInit
-		withStreamPtr strm $ unsafeIOToPrim . \s -> c_inflate s Finish
-		withStreamPtr strm $ unsafeIOToPrim . c_inflateEnd
+		_ <- inflateInit strm
+		_ <- inflate strm Finish
+		_ <- inflateEnd strm
 		ao <- availOut strm
 		packCStringLen (castPtr o, 64 * 64 - fromIntegral ao)
 

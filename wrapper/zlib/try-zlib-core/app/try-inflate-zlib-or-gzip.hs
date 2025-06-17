@@ -24,10 +24,9 @@ main = do
 			streamAvailIn = fromIntegral ln,
 			streamNextOut = o,
 			streamAvailOut = 64 * 64 }
-		print =<< withStreamPtr strm \s ->
-			c_inflateInit2 s $ WindowBitsZlibAndGzip 15
-		print =<< withStreamPtr strm \s -> c_inflate s Finish
-		print =<< withStreamPtr strm c_inflateEnd
+		print =<< inflateInit2 strm (WindowBitsZlibAndGzip 15)
+		print =<< inflate strm Finish
+		print =<< inflateEnd strm
 		ao <- availOut strm
 		BS.putStr =<< BS.packCStringLen
 			(castPtr o, 64 * 64 - fromIntegral ao)

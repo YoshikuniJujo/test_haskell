@@ -23,9 +23,9 @@ main = do
 			streamAvailIn = fromIntegral ln,
 			streamNextOut = o,
 			streamAvailOut = 64 * 64 }
-		print =<< withStreamPtr strm c_inflateInit
-		print =<< withStreamPtr strm \s -> c_inflate s Finish
-		print =<< withStreamPtr strm c_inflateEnd
+		print =<< inflateInit strm
+		print =<< inflate strm Finish
+		print =<< inflateEnd strm
 		strm' <- streamFreeze strm
 		print strm'
 		BS.putStr =<< BS.packCStringLen (castPtr o, 64 * 64)

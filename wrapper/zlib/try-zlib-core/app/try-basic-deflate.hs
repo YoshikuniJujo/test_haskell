@@ -23,9 +23,9 @@ main = do
 			streamAvailIn = fromIntegral ln,
 			streamNextOut = o,
 			streamAvailOut = 64 * 64 }
-		print =<< withStreamPtr strm \s -> c_deflateInit s DefaultCompression
-		print =<< withStreamPtr strm \s -> c_deflate s Finish
-		print =<< withStreamPtr strm c_deflateEnd
+		print =<< deflateInit strm DefaultCompression
+		print =<< deflate strm Finish
+		print =<< deflateEnd strm
 		strm' <- streamFreeze strm
 		print strm'
 		BS.writeFile fpo =<< BS.packCStringLen (

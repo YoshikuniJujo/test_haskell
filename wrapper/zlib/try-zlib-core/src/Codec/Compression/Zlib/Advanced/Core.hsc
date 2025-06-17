@@ -2,9 +2,19 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Compression.Zlib.Advanced.Core where
+module Codec.Compression.Zlib.Advanced.Core (
+
+	inflateInit2,
+
+	WindowBits,
+	pattern WindowBits, pattern WindowBitsZlibHeader,
+	pattern WindowBitsRaw,
+	pattern WindowBitsGzip, pattern WindowBitsZlibAndGzip,
+
+	) where
 
 import Foreign.Ptr
+import Control.Monad.Primitive
 import Data.Int
 
 import Codec.Compression.Zlib.Structure.Core
@@ -26,6 +36,11 @@ pattern WindowBitsGzip bs <- WindowBits (subtract 16 -> bs) where
 pattern WindowBitsZlibAndGzip :: #{type int} -> WindowBits
 pattern WindowBitsZlibAndGzip bs <- WindowBits (subtract 32 -> bs) where
 	WindowBitsZlibAndGzip bs = WindowBits $ bs + 32
+
+inflateInit2 :: PrimBase m =>
+	StreamPrim (PrimState m) -> WindowBits -> m ReturnCode
+inflateInit2 strm wbs =
+	withStreamPtr strm $ unsafeIOToPrim . (`c_inflateInit2` wbs)
 
 foreign import capi "zlib.h inflateInit2" c_inflateInit2 ::
 	Ptr Stream -> WindowBits -> IO ReturnCode
