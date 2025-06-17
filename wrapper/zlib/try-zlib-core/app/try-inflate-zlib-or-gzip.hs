@@ -6,6 +6,9 @@ module Main where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
+import Control.Monad
+import Control.Monad.ToolsYj
+import Control.Exception
 import Data.ByteString qualified as BS
 import System.Environment
 
@@ -25,8 +28,18 @@ main = do
 			streamNextOut = o,
 			streamAvailOut = 64 * 64 }
 		print =<< inflateInit2 strm (WindowBitsZlibAndGzip 15)
-		print =<< inflate strm Finish
+
+		doWhile_ do
+			rc <- inflate strm NoFlush
+			ao <- availOut strm
+			BS.putStr =<< BS.packCStringLen
+				(castPtr o, 64 * 64 - fromIntegral ao)
+			nextOut strm o (64 * 64)
+			when (rc `notElem` [Ok, StreamEnd]) $ throw rc
+			pure $ rc /= StreamEnd
+
 		print =<< inflateEnd strm
-		ao <- availOut strm
-		BS.putStr =<< BS.packCStringLen
-			(castPtr o, 64 * 64 - fromIntegral ao)
+
+		strm' <- streamFreeze strm
+		putStrLn ""
+		print strm'

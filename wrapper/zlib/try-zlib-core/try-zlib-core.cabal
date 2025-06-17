@@ -46,6 +46,7 @@ library
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , primitive
     , tools-yj
   default-language: Haskell2010
@@ -60,6 +61,7 @@ executable try-basic-deflate
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , primitive
     , tools-yj
     , try-zlib-core
@@ -75,6 +77,7 @@ executable try-basic-inflate
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , primitive
     , tools-yj
     , try-zlib-core
@@ -90,6 +93,7 @@ executable try-basic-inflate-st
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , primitive
     , tools-yj
     , try-zlib-core
@@ -105,6 +109,7 @@ executable try-compress-zlib
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , primitive
     , tools-yj
     , try-zlib-core
@@ -120,6 +125,7 @@ executable try-inflate-zlib-or-gzip
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , primitive
     , tools-yj
     , try-zlib-core
@@ -135,6 +141,7 @@ executable try-others
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , primitive
     , tools-yj
     , try-zlib-core
@@ -150,6 +157,7 @@ executable try-utility
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , primitive
     , tools-yj
     , try-zlib-core
@@ -169,6 +177,7 @@ executable try-zlib-core-exe
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , primitive
     , tools-yj
     , try-zlib-core
@@ -189,6 +198,7 @@ test-suite try-zlib-core-test
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , primitive
     , tools-yj
     , try-zlib-core

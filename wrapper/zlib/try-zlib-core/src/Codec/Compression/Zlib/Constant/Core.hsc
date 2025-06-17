@@ -7,6 +7,7 @@ module Codec.Compression.Zlib.Constant.Core where
 
 import Foreign.Storable
 import Foreign.C.Enum
+import Control.Exception.Hierarchy
 import Data.Int
 
 #include <zlib.h>
@@ -30,6 +31,8 @@ enum "ReturnCode" ''#{type int} [''Show, ''Read, ''Eq] [
 	("MemError", #{const Z_MEM_ERROR}),
 	("BufError", #{const Z_BUF_ERROR}),
 	("VersionError", #{const Z_VERSION_ERROR}) ]
+
+exceptionHierarchy Nothing (ExType ''ReturnCode)
 
 enum "CompressionLevel" ''#{type int} [''Show, ''Read, ''Eq] [
 	("NoCompression", #{const Z_NO_COMPRESSION}),

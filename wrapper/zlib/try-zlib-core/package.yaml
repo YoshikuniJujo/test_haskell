@@ -26,6 +26,7 @@ dependencies:
 - c-enum
 - c-struct
 - tools-yj
+- exception-hierarchy
 
 ghc-options:
 - -Wall
