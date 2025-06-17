@@ -1,0 +1,74 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.38.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-bytestring-seq
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-bytestring-seq#readme>
+homepage:       https://github.com/YoshikuniJujo/try-bytestring-seq#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-bytestring-seq/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      (c) 2025 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-bytestring-seq
+
+library
+  exposed-modules:
+      Data.ByteString.Sequence
+      Lib
+  other-modules:
+      Paths_try_bytestring_seq
+  autogen-modules:
+      Paths_try_bytestring_seq
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , containers
+  default-language: Haskell2010
+
+executable try-bytestring-seq-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_bytestring_seq
+  autogen-modules:
+      Paths_try_bytestring_seq
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , containers
+    , try-bytestring-seq
+  default-language: Haskell2010
+
+test-suite try-bytestring-seq-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_bytestring_seq
+  autogen-modules:
+      Paths_try_bytestring_seq
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , containers
+    , try-bytestring-seq
+  default-language: Haskell2010
