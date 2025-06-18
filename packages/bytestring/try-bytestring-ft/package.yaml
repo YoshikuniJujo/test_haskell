@@ -37,17 +37,6 @@ ghc-options:
 library:
   source-dirs: src
 
-executables:
-  try-bytestring-ft-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-bytestring-ft
-
 tests:
   try-bytestring-ft-test:
     main:                Spec.hs
