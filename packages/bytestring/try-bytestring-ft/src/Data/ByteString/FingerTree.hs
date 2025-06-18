@@ -170,15 +170,15 @@ pattern Empty = ByteString EmptyT
 
 {-# COMPLETE (:<|), Empty #-}
 
-pattern (:<|) :: Word8 -> ByteString -> ByteString
-pattern b :<| bs <- (uncons -> Just (b, bs)) where
-	b :<| bs = b `cons` bs
+pattern (:<|) :: BS.ByteString -> ByteString -> ByteString
+pattern b :<| bs <- (unByteString -> b :<|| (ByteString -> bs)) where
+	b :<| bs = ByteString $ b :<|| unByteString bs
 
 {-# COMPLETE (:|>), Empty #-}
 
-pattern (:|>) :: ByteString -> Word8 -> ByteString
-pattern bs :|> b <- (unsnoc -> Just (bs, b)) where
-	bs :|> b = bs `snoc` b
+pattern (:|>) :: ByteString -> BS.ByteString -> ByteString
+pattern bs :|> b <- (unByteString -> (ByteString -> bs) :||> b) where
+	bs :|> b = ByteString $ unByteString bs :||> b
 
 {-# COMPLETE (:<||), EmptyT #-}
 
