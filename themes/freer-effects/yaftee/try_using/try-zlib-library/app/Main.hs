@@ -29,6 +29,8 @@ import Codec.Compression.Zlib.Constant.Core
 import Codec.Compression.Zlib.Basic.Core
 import Codec.Compression.Zlib.Advanced.Core
 
+import Data.ByteString.FingerTree as BSF
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs

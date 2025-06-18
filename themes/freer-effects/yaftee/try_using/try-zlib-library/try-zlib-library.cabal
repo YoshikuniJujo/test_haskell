@@ -38,6 +38,7 @@ library
     , bytestring
     , primitive
     , tools-yj
+    , try-bytestring-ft
     , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
@@ -60,6 +61,7 @@ executable try-zlib-library-exe
     , bytestring
     , primitive
     , tools-yj
+    , try-bytestring-ft
     , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
@@ -84,6 +86,7 @@ test-suite try-zlib-library-test
     , bytestring
     , primitive
     , tools-yj
+    , try-bytestring-ft
     , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads

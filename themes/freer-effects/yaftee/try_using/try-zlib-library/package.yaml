@@ -29,6 +29,7 @@ dependencies:
 - try-yaftee-conduit
 - try-yaftee-conduit-bytestring
 - try-higher-order-open-union
+- try-bytestring-ft
 - try-zlib-core
 
 ghc-options:
