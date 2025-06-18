@@ -27,6 +27,7 @@ library
   exposed-modules:
       Data.ByteString.FingerTree
       Data.ByteString.FingerTree.Char8
+      Data.ByteString.FingerTree.CString
       Data.ByteString.FingerTree.Internal
   other-modules:
       Paths_try_bytestring_ft
