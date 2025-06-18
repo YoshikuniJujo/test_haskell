@@ -34,3 +34,6 @@ poke c@(p, n) bsf
 			(csl', "") <- pokeByteString csl bs
 			go csl' bss
 	n' = BSF.length bsf
+
+peek :: CStringLen -> IO BSF.ByteString
+peek csl = (BSF.:<| BSF.Empty) <$> BS.packCStringLen csl
