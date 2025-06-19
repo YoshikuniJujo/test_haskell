@@ -30,30 +30,38 @@ import Codec.Compression.Zlib.Advanced.Core
 import Data.ByteString.FingerTree as BSF
 import Data.ByteString.FingerTree.CString as BSF
 
+inputBufSize, outputBufSize :: Int
+inputBufSize = 64 * 4
+outputBufSize = 64
+
+readBufSize :: Int
+readBufSize = 64 * 5
+
 main :: IO ()
 main = do
 	fpi : fpo : _ <- getArgs
-	hi <- openFile fpi ReadMode
-	ho <- openFile fpo WriteMode
-	i <- mallocBytes (64 * 4)
-	o <- mallocBytes 64
-	void . Eff.runM . (`State.run` (Nothing :: Maybe BSF.ByteString)) . Pipe.run
-		$ PipeBS.hGet (64 * 5) hi Pipe.=$=
+	(hi, ho) <- (,) <$> openFile fpi ReadMode <*> openFile fpo WriteMode
+	(i, o) <- (,) <$> mallocBytes inputBufSize <*> mallocBytes outputBufSize
+
+	void . Eff.runM . (`State.run` (Nothing :: Maybe BSF.ByteString))
+		. Pipe.run $ PipeBS.hGet readBufSize hi Pipe.=$=
 			PipeT.convert BSF.fromStrict Pipe.=$=
-			inflatePipe IO (i, 64 * 4) (o, 64) Pipe.=$=
+			inflatePipe IO
+				(i, inputBufSize) (o, outputBufSize) Pipe.=$=
 			PipeT.convert BSF.toStrict Pipe.=$=
 			PipeBS.hPutStr ho
-	free i
-	free o
-	hClose ho
-	hClose hi
+
+	free i; free o
+	hClose ho; hClose hi
+
+type CByteArray = (Ptr Word8, Int)
 
 inflatePipe :: forall m -> (
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Member (State.S (Maybe BSF.ByteString)) es,
 	U.Base (U.FromFirst m) es ) =>
-	(Ptr a, Int) -> (Ptr Word8, Int) ->
+	CByteArray -> (Ptr Word8, Int) ->
 	Eff.E es BSF.ByteString BSF.ByteString ()
 inflatePipe m (i, ni) (o, no) = do
 	bs <- Pipe.await
