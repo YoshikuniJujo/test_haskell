@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.ByteString.FingerTree.CString where
+module Data.ByteString.FingerTree.CString (peek, poke) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Utils
@@ -21,12 +21,13 @@ pokeByteString (p, n) bs
 	where
 	n' = BS.length bs
 
-poke :: CStringLen -> BSF.ByteString -> IO (CStringLen, BSF.ByteString)
+poke :: CStringLen -> BSF.ByteString ->
+	IO (CStringLen, Either CStringLen BSF.ByteString)
 poke c@(p, n) bsf
-	| n >= n' = ((plusPtr p n', n - n'), "") <$ go c bsf
+	| n >= n' = ((p, n'), Left (plusPtr p n', n - n')) <$ go c bsf
 	| otherwise = case BSF.splitAt' n bsf of
 		Nothing -> error "never occur"
-		Just (t, d) -> ((plusPtr p n, 0), d) <$ go c t
+		Just (t, d) -> (c, Right d) <$ go c t
 	where
 	go csl = \case
 		Empty -> pure ()
