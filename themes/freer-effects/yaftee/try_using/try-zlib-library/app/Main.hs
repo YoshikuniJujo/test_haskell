@@ -15,6 +15,7 @@ import Control.Monad.ToolsYj
 import Control.Monad.Primitive
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
+import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.IO qualified as IO
@@ -30,6 +31,7 @@ import Codec.Compression.Zlib.Basic.Core
 import Codec.Compression.Zlib.Advanced.Core
 
 import Data.ByteString.FingerTree as BSF
+import Data.ByteString.FingerTree.CString as BSF
 
 main :: IO ()
 main = do
@@ -37,19 +39,21 @@ main = do
 	h <- openFile fp ReadMode
 	void . Eff.runM . Pipe.run
 		$ PipeBS.hGet (64 * 4) h Pipe.=$=
+			PipeT.convert BSF.fromStrict Pipe.=$=
 			inflatePipe IO Pipe.=$=
+			PipeT.convert BSF.toStrict Pipe.=$=
 			PipeBS.putStr
 
 inflatePipe :: forall m -> (
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Base (U.FromFirst m) es ) =>
-	Eff.E es BS.ByteString BS.ByteString ()
+	Eff.E es BSF.ByteString BSF.ByteString ()
 inflatePipe m = do
 	i <- Eff.effBase . unsafeIOToPrim @m $ mallocBytes (64 * 4)
 	o <- Eff.effBase . unsafeIOToPrim @m $  mallocBytes 64
 	bs <- Pipe.await
-	Eff.effBase . unsafeIOToPrim @m $ pokeArray i (BS.unpack bs)
+	Eff.effBase . unsafeIOToPrim @m $ BSF.poke (castPtr i, 64 * 4) bs
 	strm <- Eff.effBase $ streamThaw @m streamInitial {
 		streamNextIn = castPtr i,
 		streamAvailIn = 64 * 4,
@@ -64,11 +68,11 @@ inflatePipe m = do
 		ao <- Eff.effBase @m $ availOut strm
 --		trace (show ai ++ " " ++ show ao) (pure ())
 		Pipe.yield =<< Eff.effBase (unsafeIOToPrim @m
-			$ BS.packCStringLen (castPtr o, 64 - fromIntegral ao))
+			$ BSF.peek (castPtr o, 64 - fromIntegral ao))
 		when (rc /= StreamEnd && ai == 0) do
 			bs <- Pipe.await
-			Eff.effBase . unsafeIOToPrim @m $ pokeArray i (BS.unpack bs)
-			Eff.effBase $ nextIn @m strm i (fromIntegral $ BS.length bs)
+			Eff.effBase . unsafeIOToPrim @m $ BSF.poke (castPtr i, 64 * 4) bs
+			Eff.effBase $ nextIn @m strm i (fromIntegral $ BSF.length bs)
 		Eff.effBase $ nextOut @m strm o 64
 		pure $ rc /= StreamEnd
 
