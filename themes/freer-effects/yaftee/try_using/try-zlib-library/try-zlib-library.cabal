@@ -25,7 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Control.Monad.Yaftee.Pipe.Zlib
   other-modules:
       Paths_try_zlib_library
   autogen-modules:
