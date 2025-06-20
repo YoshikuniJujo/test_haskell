@@ -5,6 +5,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -33,8 +34,6 @@ import Codec.Compression.Zlib.Advanced.Core
 
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.CString qualified as BSF
-
-import Debug.Trace
 
 inputBufSize, outputBufSize :: Int
 inputBufSize = 64 * 4
@@ -70,33 +69,33 @@ inflateRun = (`State.runN` (Nothing :: Maybe BSF.ByteString))
 inflatePipe :: forall nm m -> (
 	PrimBase m,
 	U.Member Pipe.P es, U.Member (State.Named nm (Maybe BSF.ByteString)) es,
-	U.Member (Except.E ReturnCode) es,
-	U.Base (U.FromFirst m) es ) =>
+	U.Member (Except.E ReturnCode) es, U.Base (U.FromFirst m) es ) =>
 	WindowBits -> CByteArray.B -> CByteArray.B ->
 	Eff.E es BSF.ByteString BSF.ByteString ()
 inflatePipe nm m wbs (i, ni) (o, no) = do
-	bs <- Pipe.await
-	((i', n), ebs) <- Eff.effBase . unsafeIOToPrim @m $ BSF.poke (castPtr i, ni) bs
-	either  (const $ pure ()) (putInput nm) ebs
+	bs0 <- Pipe.await
+	((castPtr -> i0, n0), ebs0) <-
+		Eff.effBase . unsafeIOToPrim @m $ BSF.poke (castPtr i, ni) bs0
+	either (const $ pure ()) (putInput nm) ebs0
 	strm <- Eff.effBase $ streamThaw @m streamInitial {
-		streamNextIn = castPtr i', streamAvailIn = fromIntegral n,
+		streamNextIn = i0, streamAvailIn = fromIntegral n0,
 		streamNextOut = o, streamAvailOut = fromIntegral no }
-	rc <- Eff.effBase (inflateInit2 @m strm wbs)
-	when (rc /= Ok) $ Except.throw rc
+	rc0 <- Eff.effBase (inflateInit2 @m strm wbs)
+	when (rc0 /= Ok) $ Except.throw rc0
 
 	doWhile_ do
-		rc <- Eff.effBase (inflate @m strm NoFlush)
+		rc <- Eff.effBase $ inflate @m strm NoFlush
 		ai <- Eff.effBase @m $ availIn strm
-		ao <- Eff.effBase @m $ availOut strm
-		Pipe.yield =<< Eff.effBase (unsafeIOToPrim @m
-			$ BSF.peek (castPtr o, no - fromIntegral ao))
+		(fromIntegral -> ao) <- Eff.effBase @m $ availOut strm
 		when (rc `notElem` [Ok, StreamEnd]) $ Except.throw rc
-		when (rc /= StreamEnd && ai == 0) do
-			bs' <- getInput nm
-			((i'', n'), ebs') <- Eff.effBase . unsafeIOToPrim @m $ BSF.poke (castPtr i, ni) bs'
-			either (const $ pure ()) (putInput nm) ebs'
-			Eff.effBase $ nextIn @m strm (castPtr i'') (fromIntegral n')
+		Pipe.yield =<< Eff.effBase
+			(unsafeIOToPrim @m $ BSF.peek (castPtr o, no - ao))
 		Eff.effBase . nextOut @m strm o $ fromIntegral no
+		when (rc /= StreamEnd && ai == 0) do
+			((i', n), ebs) <- Eff.effBase . unsafeIOToPrim @m
+				. BSF.poke (castPtr i, ni) =<< getInput nm
+			either (const $ pure ()) (putInput nm) ebs
+			Eff.effBase $ nextIn @m strm (castPtr i') (fromIntegral n)
 		pure $ rc /= StreamEnd
 
 	rc <- Eff.effBase (inflateEnd @m strm)
