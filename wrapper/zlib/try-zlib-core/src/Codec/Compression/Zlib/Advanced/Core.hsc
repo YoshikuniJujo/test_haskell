@@ -7,14 +7,15 @@ module Codec.Compression.Zlib.Advanced.Core (
 	inflateInit2,
 
 	WindowBits,
-	pattern WindowBits, pattern WindowBitsZlibHeader,
-	pattern WindowBitsRaw,
+	pattern WindowBitsZlibHeader,
+	pattern WindowBitsZlib, pattern WindowBitsRaw,
 	pattern WindowBitsGzip, pattern WindowBitsZlibAndGzip,
 
 	) where
 
 import Foreign.Ptr
 import Control.Monad.Primitive
+import Data.Word.ToolsYj
 import Data.Int
 
 import Codec.Compression.Zlib.Structure.Core
@@ -25,17 +26,21 @@ newtype WindowBits = WindowBits #{type int} deriving Show
 pattern WindowBitsZlibHeader :: WindowBits
 pattern WindowBitsZlibHeader = WindowBits 0
 
-pattern WindowBitsRaw :: #{type int} -> WindowBits
-pattern WindowBitsRaw bs <- WindowBits (negate -> bs) where
-	WindowBitsRaw bs = WindowBits $ negate bs
+pattern WindowBitsZlib :: Word4 -> WindowBits
+pattern WindowBitsZlib bs <- WindowBits (fromIntegral -> bs) where
+	WindowBitsZlib bs = WindowBits $ fromIntegral bs
 
-pattern WindowBitsGzip :: #{type int} -> WindowBits
-pattern WindowBitsGzip bs <- WindowBits (subtract 16 -> bs) where
-	WindowBitsGzip bs = WindowBits $ bs + 16
+pattern WindowBitsRaw :: Word4 -> WindowBits
+pattern WindowBitsRaw bs <- WindowBits (fromIntegral . negate -> bs) where
+	WindowBitsRaw bs = WindowBits . negate $ fromIntegral bs
 
-pattern WindowBitsZlibAndGzip :: #{type int} -> WindowBits
-pattern WindowBitsZlibAndGzip bs <- WindowBits (subtract 32 -> bs) where
-	WindowBitsZlibAndGzip bs = WindowBits $ bs + 32
+pattern WindowBitsGzip :: Word4 -> WindowBits
+pattern WindowBitsGzip bs <- WindowBits (fromIntegral . subtract 16 -> bs) where
+	WindowBitsGzip bs = WindowBits $ fromIntegral bs + 16
+
+pattern WindowBitsZlibAndGzip :: Word4 -> WindowBits
+pattern WindowBitsZlibAndGzip bs <- WindowBits (fromIntegral . subtract 32 -> bs) where
+	WindowBitsZlibAndGzip bs = WindowBits $ fromIntegral bs + 32
 
 inflateInit2 :: PrimBase m =>
 	StreamPrim (PrimState m) -> WindowBits -> m ReturnCode
