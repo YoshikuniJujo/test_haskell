@@ -8,7 +8,7 @@
 module Main (main) where
 
 import Foreign.Ptr
-import Foreign.Marshal.Alloc
+import Foreign.C.ByteArray qualified as CByteArray
 import Control.Monad
 import Control.Monad.ToolsYj
 import Control.Monad.Primitive
@@ -18,7 +18,6 @@ import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.State qualified as State
 import Control.HigherOpenUnion qualified as U
-import Data.Word
 import System.IO
 import System.Environment
 
@@ -41,27 +40,26 @@ main :: IO ()
 main = do
 	fpi : fpo : _ <- getArgs
 	(hi, ho) <- (,) <$> openFile fpi ReadMode <*> openFile fpo WriteMode
-	(i, o) <- (,) <$> mallocBytes inputBufSize <*> mallocBytes outputBufSize
+	i <- CByteArray.malloc inputBufSize
+	o <- CByteArray.malloc outputBufSize
 
 	void . Eff.runM . (`State.run` (Nothing :: Maybe BSF.ByteString))
 		. Pipe.run $ PipeBS.hGet readBufSize hi Pipe.=$=
 			PipeT.convert BSF.fromStrict Pipe.=$=
-			inflatePipe IO
-				(i, inputBufSize) (o, outputBufSize) Pipe.=$=
+			inflatePipe IO i o Pipe.=$=
 			PipeT.convert BSF.toStrict Pipe.=$=
 			PipeBS.hPutStr ho
 
-	free i; free o
+	CByteArray.free i
+	CByteArray.free o
 	hClose ho; hClose hi
-
-type CByteArray = (Ptr Word8, Int)
 
 inflatePipe :: forall m -> (
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Member (State.S (Maybe BSF.ByteString)) es,
 	U.Base (U.FromFirst m) es ) =>
-	CByteArray -> (Ptr Word8, Int) ->
+	CByteArray.B -> CByteArray.B ->
 	Eff.E es BSF.ByteString BSF.ByteString ()
 inflatePipe m (i, ni) (o, no) = do
 	bs <- Pipe.await

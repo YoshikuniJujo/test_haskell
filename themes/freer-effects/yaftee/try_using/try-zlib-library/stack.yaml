@@ -57,6 +57,7 @@ extra-deps:
       - themes/freer-effects/common/try-freer-base-classes
       - packages/bytestring/try-bytestring-ft
       - wrapper/zlib/try-zlib-core
+  - tools-yj-0.1.0.42
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

@@ -173,6 +173,13 @@ packages:
     commit: dd0283df1dd2fce906b2a71f7e073b19c6e4ea6f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: wrapper/zlib/try-zlib-core
+- completed:
+    hackage: tools-yj-0.1.0.42@sha256:99c404d7f5c13f61308c7ce032497f38c505ca61ab996f1299367ee18c7da1e9,2499
+    pantry-tree:
+      sha256: 75749655bd155762789919c0ccd7204fba3116cfabbb40a6447fa08d693291d5
+      size: 1707
+  original:
+    hackage: tools-yj-0.1.0.42
 snapshots:
 - completed:
     sha256: 53d74d0ba05207bf70f1e5dc4b673f5dd6fd69220817d30d756d207b9ae8d742
