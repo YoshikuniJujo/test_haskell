@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- typelevel-tools-yj
 - try-yaftee
 - try-yaftee-basic-monads
 - try-yaftee-conduit
@@ -40,17 +41,6 @@ ghc-options:
 
 library:
   source-dirs: src
-
-executables:
-  try-yaftee-conduit-bytestring-ft-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-yaftee-conduit-bytestring-ft
 
 tests:
   try-yaftee-conduit-bytestring-ft-test:

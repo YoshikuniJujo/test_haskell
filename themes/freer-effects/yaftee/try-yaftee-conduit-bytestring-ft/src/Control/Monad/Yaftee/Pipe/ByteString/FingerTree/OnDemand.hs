@@ -1,13 +1,24 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE ExplicitForAll #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
-{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand where
+module Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand (
+
+	-- * RUN
+
+	run, States,
+
+	-- * ON DEMAND
+
+	onDemand, onDemandWithInitial, Members, Request(..), ByteString
+
+	) where
 
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -15,19 +26,39 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
+import Data.TypeLevel.List
+import Data.HigherFunctor qualified as HFunctor
 import Data.Bool
 import Data.ByteString.FingerTree qualified as BSF
+
+run :: forall nm es i o a . HFunctor.Loose (U.U es) =>
+	Eff.E (States nm `Append` es) i o a ->
+	Eff.E es i o ((a, Request), ByteString)
+run = (flip (State.runN @nm) $ ByteString BSF.Empty)
+	. (flip (State.runN @nm) $ RequestBuffer 100)
+
+type States nm = '[State.Named nm Request, State.Named nm ByteString]
 
 onDemand :: forall nm -> (
 	U.Member Pipe.P es,
 	Members nm es, U.Member (Except.E String) es ) =>
 	Eff.E es BSF.ByteString BSF.ByteString r
-onDemand nm = fix \go -> State.getN nm >>= \case
-	RequestBytes ln -> takeBytes nm ln >>=
-		maybe (Except.throw errne) ((>> go) . Pipe.yield)
+onDemand nm = fix \go -> State.getN nm >>=
+	(>>= maybe (Except.throw errne) ((>> go) . Pipe.yield)) . \case
+		RequestBytes ln -> takeBytes nm ln
+		RequestBuffer ln -> takeBuffer nm ln
+		RequestString -> takeString nm
 	where
 	errne :: String
 	errne = "Not enough ByteString"
+
+onDemandWithInitial :: forall nm -> (
+	U.Member Pipe.P es,
+	Members nm es, U.Member (Except.E String) es ) =>
+	BSF.ByteString -> Eff.E es BSF.ByteString BSF.ByteString r
+onDemandWithInitial nm ib = do
+	State.putN nm $ ByteString ib
+	onDemand nm
 
 type Members nm es = (
 	U.Member (State.Named nm Request) es,
