@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee
     pantry-tree:
@@ -14,11 +14,11 @@ packages:
     subdir: themes/freer-effects/yaftee/try-yaftee
     version: 0.1.0.0
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee-conduit
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit
     version: 0.1.0.0
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee-conduit-containers
     pantry-tree:
@@ -40,11 +40,11 @@ packages:
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-containers
     version: 0.1.0.0
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-containers
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee-conduit-bytestring
     pantry-tree:
@@ -53,11 +53,11 @@ packages:
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-bytestring
     version: 0.1.0.9
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-bytestring
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee-basic-monads
     pantry-tree:
@@ -66,11 +66,11 @@ packages:
     subdir: themes/freer-effects/yaftee/try-yaftee-basic-monads
     version: 0.1.0.6
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee-basic-monads
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-higher-order-freer-monad
     pantry-tree:
@@ -79,11 +79,11 @@ packages:
     subdir: themes/freer-effects/yaftee/try-higher-order-freer-monad
     version: 0.1.0.0
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-higher-order-freer-monad
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-higher-order-open-union
     pantry-tree:
@@ -92,11 +92,11 @@ packages:
     subdir: themes/freer-effects/yaftee/try-higher-order-open-union
     version: 0.1.0.0
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-higher-order-open-union
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-bitarray-seq
     pantry-tree:
@@ -105,11 +105,11 @@ packages:
     subdir: themes/freer-effects/yaftee/try-bitarray-seq
     version: 0.1.0.0
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-bitarray-seq
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-bitarray-bs
     pantry-tree:
@@ -118,11 +118,11 @@ packages:
     subdir: themes/freer-effects/yaftee/try-bitarray-bs
     version: 0.1.0.1
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-bitarray-bs
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-ftcqueue
     pantry-tree:
@@ -131,11 +131,11 @@ packages:
     subdir: themes/freer-effects/common/try-ftcqueue
     version: 0.1.0.0
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/common/try-ftcqueue
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-freer-base-classes
     pantry-tree:
@@ -144,20 +144,20 @@ packages:
     subdir: themes/freer-effects/common/try-freer-base-classes
     version: 0.1.0.0
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/common/try-freer-base-classes
 - completed:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-bytestring-ft
     pantry-tree:
-      sha256: 5cec9fee8d2e7f62903536c8ea40cdd646e9dd4de57bce0d67510f5966fa8ad3
+      sha256: 9baec2c26ad7601899b3bc82e726eecc9898d8fb8bc3b94315a239668b10945b
       size: 889
     subdir: packages/bytestring/try-bytestring-ft
     version: 0.1.0.0
   original:
-    commit: 3928143a2faa00f3b3c8915e2dcea84c4866acd5
+    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: packages/bytestring/try-bytestring-ft
 - completed:
