@@ -42,12 +42,13 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 6be20eef6d6c3bcf93353df01ae2d6a6bca28e4f
+    commit: 2d7435effabc89b785783326021161df9e8fecce
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee
       - themes/freer-effects/yaftee/try-yaftee-conduit
       - themes/freer-effects/yaftee/try-yaftee-conduit-containers
       - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring
+      - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
       - themes/freer-effects/yaftee/try-yaftee-basic-monads
       - themes/freer-effects/yaftee/try-higher-order-freer-monad
       - themes/freer-effects/yaftee/try-higher-order-open-union
