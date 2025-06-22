@@ -9,7 +9,8 @@ module Data.ByteString.FingerTree (
 
 	-- * BYTE STRING
 
-	ByteString, pattern Empty, pattern (:<|), pattern (:|>),
+	ByteString,
+	pattern Empty, pattern (:<), pattern (:>), pattern (:<|), pattern (:|>),
 
 	-- * INTRODUCING AND ELIMINATING
 

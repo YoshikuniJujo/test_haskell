@@ -9,7 +9,9 @@ module Data.ByteString.FingerTree.Internal (
 
 	-- * BYTE STRING
 
-	ByteString(..), pattern Empty, pattern (:<|), pattern (:|>),
+	ByteString(..), pattern Empty,
+	pattern (:<), pattern (:>),
+	pattern (:<|), pattern (:|>),
 
 	-- * INTRODUCING AND ELIMINATING
 
@@ -184,16 +186,28 @@ pattern (:|>) :: ByteString -> BS.ByteString -> ByteString
 pattern bs :|> b <- (unByteString -> (ByteString -> bs) :||> b) where
 	bs :|> b = ByteString $ unByteString bs :||> b
 
+{-# COMPLETE (:<), Empty #-}
+
+pattern (:<) :: Word8 -> ByteString -> ByteString
+pattern b :< bs <- (uncons -> Just (b, bs)) where
+	b :< bs = cons b bs
+
+{-# COMPLETE (:>), Empty #-}
+
+pattern (:>) :: ByteString -> Word8 -> ByteString
+pattern bs :> b <- (unsnoc -> Just (bs, b)) where
+	bs :> b = snoc bs b
+
 {-# COMPLETE (:<||), EmptyT #-}
 
 pattern (:<||) :: Sized a => a -> FingerTree a -> FingerTree a
-pattern x :<|| xs <- (viewl -> x :< xs) where 
+pattern x :<|| xs <- (viewl -> x :<. xs) where 
 	x :<|| xs = x `consTree` xs
 
 {-# COMPLETE (:||>), EmptyT #-}
 
 pattern (:||>) :: Sized a => FingerTree a -> a -> FingerTree a
-pattern xs :||> x <- (viewr -> xs :> x) where
+pattern xs :||> x <- (viewr -> xs :>. x) where
 	xs :||> x = xs `snocTree` x
 
 (><) :: ByteString -> ByteString -> ByteString
@@ -459,15 +473,15 @@ deepL (Just pr) m sf = deep pr m sf
 rotL :: Sized a => FingerTree (Node a) -> Digit a -> FingerTree a
 rotL m sf = case viewl m of
 	EmptyL -> digitToTree sf
-	a :< m' -> Deep (size m + size sf) (nodeToDigit a) m' sf
+	a :<. m' -> Deep (size m + size sf) (nodeToDigit a) m' sf
 
-data ViewL s a = EmptyL | a :< s a deriving (Eq, Ord, Show, Read, Generic)
+data ViewL s a = EmptyL | a :<. s a deriving (Eq, Ord, Show, Read, Generic)
 
 viewl :: Sized a => FingerTree a -> ViewL FingerTree a
 viewl EmptyT = EmptyL
-viewl (Single x) = x :< EmptyT
-viewl (Deep _ (One x) m sf) = x :< rotL m sf
-viewl (Deep _ pr m sf) = lheadDigit pr :< deep (ltailDigit pr) m sf
+viewl (Single x) = x :<. EmptyT
+viewl (Deep _ (One x) m sf) = x :<. rotL m sf
+viewl (Deep _ pr m sf) = lheadDigit pr :<. deep (ltailDigit pr) m sf
 
 lheadDigit :: Digit a -> a
 lheadDigit (One a) = a
@@ -489,15 +503,15 @@ deepR pr m (Just sf) = deep pr m sf
 rotR :: Sized a => Digit a -> FingerTree (Node a) -> FingerTree a
 rotR pr m = case viewr m of
 	EmptyR -> digitToTree pr
-	m' :> a -> Deep (size pr + size m) pr m' (nodeToDigit a)
+	m' :>. a -> Deep (size pr + size m) pr m' (nodeToDigit a)
 
-data ViewR s a = EmptyR | s a :> a deriving (Eq, Ord, Show, Read, Generic)
+data ViewR s a = EmptyR | s a :>. a deriving (Eq, Ord, Show, Read, Generic)
 
 viewr :: Sized a => FingerTree a -> ViewR FingerTree a
 viewr EmptyT = EmptyR
-viewr (Single x) = EmptyT :> x
-viewr (Deep _ pr m (One x)) = rotR pr m :> x
-viewr (Deep _ pr m sf) = deep pr m (rtailDigit sf) :> rheadDigit sf
+viewr (Single x) = EmptyT :>. x
+viewr (Deep _ pr m (One x)) = rotR pr m :>. x
+viewr (Deep _ pr m sf) = deep pr m (rtailDigit sf) :>. rheadDigit sf
 
 rheadDigit :: Digit a -> a
 rheadDigit (One a) = a
