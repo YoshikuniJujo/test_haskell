@@ -26,9 +26,16 @@ module Data.ByteString.FingerTree (
 
 	-- * BREAKING
 
-	splitAt'
+	splitAt', span
 
 ) where
 
-import Prelude hiding (concat, null, length, replicate)
+import Prelude hiding (concat, null, length, replicate, span)
+import Control.Arrow
+import Data.Word
 import Data.ByteString.FingerTree.Internal
+
+span :: (Word8 -> Bool) -> ByteString -> (ByteString, ByteString)
+span p ba@(b :< bs)
+	| p b = (b :<) `first` span p bs
+	| otherwise = (Empty, ba)
