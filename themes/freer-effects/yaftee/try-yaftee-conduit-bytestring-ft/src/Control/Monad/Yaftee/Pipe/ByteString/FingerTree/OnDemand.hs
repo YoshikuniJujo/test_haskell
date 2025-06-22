@@ -31,6 +31,19 @@ takeBytes nm ln = State.getsN nm unByteString >>= \bs ->
 		Nothing -> readMore nm >>= bool (pure Nothing) (takeBytes nm ln)
 		Just (t, d) -> Just t <$ State.putN nm (ByteString d)
 
+takeBuffer :: forall nm -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm ByteString) es ) =>
+	Int -> Eff.E es BSF.ByteString o (Maybe BSF.ByteString)
+takeBuffer nm ln = State.getsN nm unByteString >>= \bs ->
+	case BSF.splitAt' ln bs of
+		Nothing -> readMore nm >>= bool
+			(bool	(Just bs
+					<$ State.putN nm (ByteString BSF.Empty))
+				(pure Nothing) (BSF.null bs))
+			(takeBuffer nm ln)
+		Just (t, d) -> Just t <$ State.putN nm (ByteString d)
+
 readMore :: forall nm -> (
 	U.Member Pipe.P es,
 	U.Member (State.Named nm ByteString) es ) =>
