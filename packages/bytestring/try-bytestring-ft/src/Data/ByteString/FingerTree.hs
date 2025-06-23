@@ -20,6 +20,10 @@ module Data.ByteString.FingerTree (
 
 	cons, snoc, append, uncons, unsnoc, null, length,
 
+	-- * REDUCING BYTESTRINGS (FOLDS)
+
+	foldl',
+
 	-- * GENERATING
 
 	replicate,
@@ -30,12 +34,17 @@ module Data.ByteString.FingerTree (
 
 ) where
 
-import Prelude hiding (concat, null, length, replicate, span)
+import Prelude hiding (concat, null, length, replicate, span, foldl')
 import Control.Arrow
 import Data.Word
+import Data.ByteString qualified as BS
 import Data.ByteString.FingerTree.Internal
 
 span :: (Word8 -> Bool) -> ByteString -> (ByteString, ByteString)
+span _ Empty = (Empty, Empty)
 span p ba@(b :< bs)
 	| p b = (b :<) `first` span p bs
 	| otherwise = (Empty, ba)
+
+foldl' :: (a -> Word8 -> a) -> a -> ByteString -> a
+foldl' f !v = \case Empty -> v; bs :<| bss -> foldl' f (BS.foldl' f v bs) bss
