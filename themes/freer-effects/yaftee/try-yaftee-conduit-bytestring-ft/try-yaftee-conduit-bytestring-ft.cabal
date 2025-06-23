@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Monad.Yaftee.Pipe.ByteString.FingerTree.Crc32
       Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand
   other-modules:
       Paths_try_yaftee_conduit_bytestring_ft
@@ -35,6 +36,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , tools-yj
     , try-bytestring-ft
     , try-higher-order-open-union
     , try-yaftee
@@ -55,6 +57,7 @@ test-suite try-yaftee-conduit-bytestring-ft-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , tools-yj
     , try-bytestring-ft
     , try-higher-order-open-union
     , try-yaftee
