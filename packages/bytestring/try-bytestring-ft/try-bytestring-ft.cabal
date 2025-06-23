@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Data.ByteString.FingerTree
+      Data.ByteString.FingerTree.Bits
       Data.ByteString.FingerTree.Char8
       Data.ByteString.FingerTree.CString
       Data.ByteString.FingerTree.Internal
