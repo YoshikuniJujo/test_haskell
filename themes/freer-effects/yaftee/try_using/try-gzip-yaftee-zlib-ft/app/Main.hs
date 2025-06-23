@@ -27,7 +27,7 @@ import System.IO
 import System.Environment
 
 import Data.Word.Crc32 qualified as Crc32
-import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as PipeCrc32
+import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.Crc32 qualified as PipeCrc32
 
 import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
@@ -53,16 +53,16 @@ readHeader :: forall nm -> (
 readHeader nm f = void $ PipeCrc32.crc32 nm Pipe.=$= do
 	State.putN nm $ OnDemand.RequestBytes 2
 	ids <- Pipe.await
-	when (ids /= BS.pack [31, 139])
+	when (ids /= BSF.pack [31, 139])
 		$ Except.throw @String "Bad magic"
 	State.putN nm $ OnDemand.RequestBytes 1
-	cm <- CompressionMethod . fst . fromJust . BSF.uncons 1 <$> Pipe.await
-	Just flgs <- readFlags <$> (head =<< Pipe.await)
+	cm <- CompressionMethod . fst . fromJust . BSF.uncons <$> Pipe.await
+	Just flgs <- readFlags <$> (fst . fromJust . BSF.uncons <$> Pipe.await)
 	State.putN nm $ OnDemand.RequestBytes 4
 	mtm <- CTime . BS.toBits . BSF.toStrict <$> Pipe.await
 	State.putN nm $ OnDemand.RequestBytes 1
-	ef <-  head =<< Pipe.await
-	os <- OS <$> (head =<< Pipe.await)
+	ef <-  fst . fromJust . BSF.uncons <$> Pipe.await
+	os <- OS <$> (fst . fromJust . BSF.uncons <$> Pipe.await)
 	mexflds <- if (flagsRawExtra flgs)
 	then do	State.putN nm $ OnDemand.RequestBytes 2
 		xlen <- BS.toBits <$> Pipe.await
@@ -77,7 +77,7 @@ readHeader nm f = void $ PipeCrc32.crc32 nm Pipe.=$= do
 	then Just <$> Pipe.await
 	else pure Nothing
 	when (flagsRawHcrc flgs) do
-		PipeCrc32.compCrc32 nm
+		PipeCrc32.complement nm
 		crc <- (.&. 0xffff) . Crc32.toWord <$> State.getN nm
 		State.putN nm $ OnDemand.RequestBytes 2
 		m <- BS.toBits <$> Pipe.await
