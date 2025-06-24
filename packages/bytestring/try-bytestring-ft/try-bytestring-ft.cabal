@@ -40,6 +40,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , mono-traversable
   default-language: Haskell2010
 
 test-suite try-bytestring-ft-test
@@ -55,5 +56,6 @@ test-suite try-bytestring-ft-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , mono-traversable
     , try-bytestring-ft
   default-language: Haskell2010

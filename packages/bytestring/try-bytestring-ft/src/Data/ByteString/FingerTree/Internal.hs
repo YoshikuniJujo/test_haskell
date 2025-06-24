@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ViewPatterns, BangPatterns #-}
@@ -45,6 +46,8 @@ import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 
 import GHC.Generics
+
+import Data.MonoTraversable
 
 infixr 5 `consTree`
 infixl 5 `snocTree`
@@ -776,3 +779,33 @@ addDigits4 m1 (Four a b c d) e f g h (Three i j k) m2 =
     appendTree4 m1 (node3 a b c) (node3 d e f) (node3 g h i) (node2 j k) m2
 addDigits4 m1 (Four a b c d) e f g h (Four i j k l) m2 =
     appendTree4 m1 (node3 a b c) (node3 d e f) (node3 g h i) (node3 j k l) m2
+
+type instance Element ByteString = Word8
+
+instance MonoFunctor ByteString where
+	omap f = \case
+		Empty -> Empty
+		bs :<| bss -> (f `BS.map` bs) :<| (f `omap` bss)
+
+instance MonoFoldable ByteString where
+	ofoldMap c = \case
+		Empty -> mempty
+		b :< bs -> c b `mappend` (c `ofoldMap` bs)
+	ofoldr op v = \case
+		Empty -> v
+		b :< bs -> b `op` ofoldr op v bs
+	ofoldl' op !v = \case
+		Empty -> v
+		b :< bs -> ofoldl' op (v `op` b) bs
+	ofoldr1Ex op = \case
+		Empty -> error "bad"
+		b :< Empty -> b
+		b :< bs -> b `op` ofoldr1Ex op bs
+	ofoldl1Ex' op = \case
+		Empty -> error "bad"
+		b :< bs -> ofoldl' op b bs
+
+instance MonoTraversable ByteString where
+	otraverse f = \case
+		Empty -> pure Empty
+		b :< bs -> (:<) <$> f b <*> f `otraverse` bs
