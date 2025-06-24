@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
@@ -27,6 +27,7 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Basic.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
+import Data.ByteString qualified as BS
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.CString qualified as BSF
 
@@ -42,7 +43,7 @@ inflate :: forall nm m -> (
 	U.Member Pipe.P es, U.Member (State.Named nm (Maybe ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Base (U.FromFirst m) es ) =>
 	Zlib.WindowBits -> CByteArray.B -> CByteArray.B ->
-	Eff.E es BSF.ByteString BSF.ByteString () -- BSF.ByteString
+	Eff.E es BSF.ByteString BSF.ByteString BSF.ByteString
 inflate nm m wbs
 	(castPtr -> i, ni) (o@(castPtr -> o'), no@(fromIntegral -> no')) = do
 	bs0 <- Pipe.await
@@ -74,8 +75,11 @@ inflate nm m wbs
 	rc <- Eff.effBase $ Zlib.inflateEnd @m strm
 	when (rc /= Zlib.Ok) $ Except.throw rc
 
---	ai <- Eff.effBase @m $ Zlib.availIn strm
---	rbs <- BS.fromCStringLen (
+	(castPtr -> i') <- Eff.effBase @m $ Zlib.nextIn strm
+	(fromIntegral -> ai) <- Eff.effBase @m $ Zlib.availIn strm
+	rbs <- Eff.effBase @m . unsafeIOToPrim $ BS.packCStringLen (i', ai)
+	ByteString bs' <- maybe (ByteString "") id <$> State.getN nm
+	pure $ rbs BSF.:<| bs'
 
 getInput :: forall es i' i o . forall nm ->
 	(U.Member Pipe.P es, U.Member (State.Named nm (Maybe i')) es) =>
