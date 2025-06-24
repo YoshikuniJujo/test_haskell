@@ -59,11 +59,13 @@ main = do
 				"" <- Pipe.await
 				State.putN "foobar" $ OnDemand.RequestBytes 4
 				PipeCrc32.complement "foobar"
-				IO.print . Crc32.toWord =<< State.getN "foobar"
-				IO.print @Word32 . Word8.toBits =<< Pipe.await
-				IO.print .PipeMT.lengthToInt64 =<< State.getN "foobar"
-				IO.print @Int64 . Word8.toBits =<< Pipe.await
-			Pipe.=$= PipeIO.print
+				crc1 <- Crc32.toWord <$> State.getN "foobar"
+				crc0 <- Word8.toBits <$> Pipe.await
+				when (crc1 /= crc0) $ Except.throw @String "CRC-32 error"
+				ln1 <- PipeMT.lengthToInt64 <$> State.getN "foobar"
+				ln0 <- Word8.toBits <$> Pipe.await
+				when (ln1 /= ln0) $ Except.throw @String "Length error"
+			Pipe.=$= PipeT.convert BSF.toStrict Pipe.=$= PipeBS.putStr 
 
 readHeader :: forall nm -> (
 	U.Member Pipe.P es,
