@@ -15,6 +15,7 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
+import Control.Monad.Yaftee.Pipe.MonoTraversable qualified as PipeMT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
@@ -26,6 +27,7 @@ import Control.HigherOpenUnion qualified as U
 import Data.Bits
 import Data.Maybe
 import Data.Word.Word8 qualified as Word8
+import Data.Int
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Gzip.Header
 import System.IO
@@ -43,17 +45,19 @@ main = do
 	ib <- CByteArray.malloc 64
 	ob <- CByteArray.malloc 64
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode . Fail.runExc id
+		. PipeMT.lengthRun @"foobar"
 		. PipeZ.inflateRun @"foobar" . PipeCrc32.run @"foobar" . OnDemand.run @"foobar" . Pipe.run
 		. (`Except.catch` IO.putStrLn) . (`Except.catch` IO.print @Zlib.ReturnCode) . void $ PipeBS.hGet 32 h Pipe.=$=
 			PipeT.convert BSF.fromStrict Pipe.=$= OnDemand.onDemand "foobar" Pipe.=$= do
 				readHeader "foobar" IO.print
 				State.putN "foobar" $ OnDemand.RequestBuffer 25
 				do {	rbs <- PipeZ.inflate "foobar" IO (Zlib.WindowBitsRaw 15) ib ob;
-					State.putN "foobar" $ OnDemand.RequestPushBack rbs }
+					State.putN "foobar" $ OnDemand.RequestPushBack rbs } Pipe.=$= PipeMT.length "foobar"
 				"" <- Pipe.await
 				State.putN "foobar" $ OnDemand.RequestBytes 4
 				IO.print =<< Pipe.await
-				IO.print =<< Pipe.await
+				IO.print .PipeMT.lengthToInt64 =<< State.getN "foobar"
+				IO.print @Int64 . Word8.toBits =<< Pipe.await
 			Pipe.=$= PipeIO.print
 
 readHeader :: forall nm -> (

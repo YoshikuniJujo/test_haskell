@@ -26,6 +26,7 @@ dependencies:
 - try-yaftee
 - try-yaftee-basic-monads
 - try-yaftee-conduit
+- try-yaftee-conduit-mono-traversable
 - try-yaftee-conduit-bytestring
 - try-yaftee-conduit-bytestring-ft
 - try-higher-order-open-union
