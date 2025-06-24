@@ -42,7 +42,7 @@ inflate :: forall nm m -> (
 	U.Member Pipe.P es, U.Member (State.Named nm (Maybe ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Base (U.FromFirst m) es ) =>
 	Zlib.WindowBits -> CByteArray.B -> CByteArray.B ->
-	Eff.E es BSF.ByteString BSF.ByteString ()
+	Eff.E es BSF.ByteString BSF.ByteString () -- BSF.ByteString
 inflate nm m wbs
 	(castPtr -> i, ni) (o@(castPtr -> o'), no@(fromIntegral -> no')) = do
 	bs0 <- Pipe.await
@@ -62,17 +62,20 @@ inflate nm m wbs
 		when (rc `notElem` [Zlib.Ok, Zlib.StreamEnd]) $ Except.throw rc
 		Pipe.yield =<< Eff.effBase
 			(unsafeIOToPrim @m $ BSF.peek (o', no - ao))
-		Eff.effBase $ Zlib.nextOut @m strm o no'
+		Eff.effBase $ Zlib.setNextOut @m strm o no'
 		when (rc /= Zlib.StreamEnd && ai == 0) do
 			((castPtr -> i', fromIntegral -> n), ebs) <- Eff.effBase
 				. unsafeIOToPrim @m
 				. BSF.poke (i, ni) =<< getInput nm unByteString
 			either (const $ pure ()) (putInput nm ByteString) ebs
-			Eff.effBase $ Zlib.nextIn @m strm i' n
+			Eff.effBase $ Zlib.setNextIn @m strm i' n
 		pure $ rc /= Zlib.StreamEnd
 
 	rc <- Eff.effBase $ Zlib.inflateEnd @m strm
 	when (rc /= Zlib.Ok) $ Except.throw rc
+
+--	ai <- Eff.effBase @m $ Zlib.availIn strm
+--	rbs <- BS.fromCStringLen (
 
 getInput :: forall es i' i o . forall nm ->
 	(U.Member Pipe.P es, U.Member (State.Named nm (Maybe i')) es) =>
