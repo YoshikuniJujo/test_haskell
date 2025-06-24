@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Control.Monad.Yaftee.Pipe.MonoTraversable
+      Control.Monad.Yaftee.Pipe.MonoTraversable.Crc32
   other-modules:
       Paths_try_yaftee_conduit_mono_traversable
   autogen-modules:
@@ -36,6 +37,7 @@ library
   build-depends:
       base >=4.7 && <5
     , mono-traversable
+    , tools-yj
     , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
@@ -55,6 +57,7 @@ test-suite try-yaftee-conduit-mono-traversable-test
   build-depends:
       base >=4.7 && <5
     , mono-traversable
+    , tools-yj
     , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
