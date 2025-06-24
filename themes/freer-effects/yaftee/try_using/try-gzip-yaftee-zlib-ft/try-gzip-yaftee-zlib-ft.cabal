@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
       Control.Monad.Yaftee.Pipe.Png.Decode.Header
       Data.Gzip.Header
       Data.Png
@@ -51,6 +52,7 @@ library
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
     , try-zlib-library
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 executable try-gzip-yaftee-zlib-ft-exe
@@ -77,6 +79,7 @@ executable try-gzip-yaftee-zlib-ft-exe
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
     , try-zlib-library
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 executable try-png-decode
@@ -99,6 +102,7 @@ executable try-png-decode
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
     , try-zlib-library
+    , typelevel-tools-yj
   default-language: Haskell2010
 
 test-suite try-gzip-yaftee-zlib-ft-test
@@ -126,4 +130,5 @@ test-suite try-gzip-yaftee-zlib-ft-test
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
     , try-zlib-library
+    , typelevel-tools-yj
   default-language: Haskell2010

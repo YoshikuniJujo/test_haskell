@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - bytestring
 - tools-yj
+- typelevel-tools-yj
 - try-yaftee
 - try-yaftee-basic-monads
 - try-yaftee-conduit
