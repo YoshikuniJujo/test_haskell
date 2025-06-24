@@ -136,6 +136,7 @@ concat :: [ByteString] -> ByteString
 concat = foldr append Empty
 
 replicate :: Int -> Word8 -> ByteString
+replicate 0 = const $ Empty
 replicate n = ByteString . Single . BS.replicate n
 
 splitAt' :: Int -> ByteString -> Maybe (ByteString, ByteString)
@@ -181,13 +182,13 @@ pattern Empty = ByteString EmptyT
 
 pattern (:<|) :: BS.ByteString -> ByteString -> ByteString
 pattern b :<| bs <- (unByteString -> b :<|| (ByteString -> bs)) where
-	b :<| bs = ByteString $ b :<|| unByteString bs
+	b :<| bs = ByteString $ bool (b :<|| unByteString bs) EmptyT (BS.null b)
 
 {-# COMPLETE (:|>), Empty #-}
 
 pattern (:|>) :: ByteString -> BS.ByteString -> ByteString
 pattern bs :|> b <- (unByteString -> (ByteString -> bs) :||> b) where
-	bs :|> b = ByteString $ unByteString bs :||> b
+	bs :|> b = ByteString $ bool (unByteString bs :||> b) EmptyT (BS.null b)
 
 {-# COMPLETE (:<), Empty #-}
 
