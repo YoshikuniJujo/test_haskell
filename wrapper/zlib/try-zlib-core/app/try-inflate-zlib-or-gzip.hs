@@ -34,7 +34,7 @@ main = do
 			ao <- availOut strm
 			BS.putStr =<< BS.packCStringLen
 				(castPtr o, 64 * 64 - fromIntegral ao)
-			nextOut strm o (64 * 64)
+			setNextOut strm o (64 * 64)
 			when (rc `notElem` [Ok, StreamEnd]) $ throw rc
 			pure $ rc /= StreamEnd
 
