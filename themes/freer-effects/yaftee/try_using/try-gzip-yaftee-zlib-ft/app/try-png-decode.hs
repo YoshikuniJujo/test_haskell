@@ -1,10 +1,14 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Prelude hiding (Monoid)
 import Foreign.C.ByteArray qualified as CByteArray
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -18,6 +22,7 @@ import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
+import Control.HigherOpenUnion qualified as U
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png
 import Data.Png.Header qualified as Header
@@ -46,9 +51,40 @@ main = do
 				fhdr <- Chunk.readBytes "foobar" 8
 				IO.print fhdr
 				Chunk.chunk "foobar" 500
+			Pipe.=$= forever do
+				x <- Pipe.await
+				c <- State.getN "foobar"
+				when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT") $ Pipe.yield x
 			Pipe.=$= do
 				OnDemand.onDemand "foobar" Pipe.=$= Header.read "foobar" IO.print
 				PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ib ob
-			Pipe.=$= PipeIO.print
+			Pipe.=$= do
+				IO.print =<< Pipe.await
+				rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
+				IO.print rs
+				PipeIO.print
 	CByteArray.free ib
 	CByteArray.free ob
+
+{-
+format :: [Int] -> EFF.E es mono mono ()
+format = do
+	-}
+
+getInput :: forall nm -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm (Monoid BSF.ByteString)) es
+	) =>
+	Int -> Eff.E es BSF.ByteString o BSF.ByteString
+getInput nm n = State.getN nm >>= \(Monoid bs) -> case BSF.splitAt' n bs of
+	Nothing -> readMore nm >> getInput nm n
+	Just (t, d) -> t <$ State.putN nm (Monoid d)
+
+readMore :: forall nm -> (
+	Semigroup mono, U.Member Pipe.P es,
+	U.Member (State.Named nm (Monoid mono)) es ) =>
+	Eff.E es mono o ()
+readMore nm =
+	Pipe.await >>= \xs -> State.modifyN nm (Monoid . (<> xs) . unMonoid)
+
+newtype Monoid m = Monoid { unMonoid :: m } deriving Show

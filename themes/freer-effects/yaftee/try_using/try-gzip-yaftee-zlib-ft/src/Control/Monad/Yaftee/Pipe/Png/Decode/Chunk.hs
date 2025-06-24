@@ -131,7 +131,7 @@ newtype Crc32 = Crc32 { unCrc32 :: Crc32.C } deriving Show
 appendSequence :: Sequence -> BSF.ByteString -> Sequence
 appendSequence (Sequence bs1) bs2 = Sequence $ bs1 `BSF.append` bs2
 
-newtype Chunk = Chunk BSF.ByteString
+newtype Chunk = Chunk BSF.ByteString deriving Eq
 
 instance Show Chunk where
 	show (Chunk s) = "(Chunk " ++ (chr . fromIntegral <$> BSF.unpack s) ++ ")"
