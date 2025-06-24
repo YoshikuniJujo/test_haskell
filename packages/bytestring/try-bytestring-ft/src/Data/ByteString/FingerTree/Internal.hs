@@ -95,7 +95,7 @@ unpackTree EmptyT = []
 unpackTree (bs :<|| t) = BS.unpack bs ++ unpackTree t
 
 fromStrict :: BS.ByteString -> ByteString
-fromStrict = ByteString . Single
+fromStrict bs = bool (ByteString $ Single bs) Empty (BS.null bs)
 
 toStrict :: ByteString -> BS.ByteString
 toStrict (ByteString t) = toStrictTree t
