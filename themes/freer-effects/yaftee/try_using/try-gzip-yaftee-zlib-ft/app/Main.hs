@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
@@ -48,10 +48,12 @@ main = do
 			PipeT.convert BSF.fromStrict Pipe.=$= OnDemand.onDemand "foobar" Pipe.=$= do
 				readHeader "foobar" IO.print
 				State.putN "foobar" $ OnDemand.RequestBuffer 25
-				PipeZ.inflate "foobar" IO (Zlib.WindowBitsRaw 15) ib ob
+				do {	rbs <- PipeZ.inflate "foobar" IO (Zlib.WindowBitsRaw 15) ib ob;
+					State.putN "foobar" $ OnDemand.RequestPushBack rbs }
+				"" <- Pipe.await
 				State.putN "foobar" $ OnDemand.RequestBytes 4
 				IO.print =<< Pipe.await
---				forever $ Pipe.yield =<< Pipe.await
+				IO.print =<< Pipe.await
 			Pipe.=$= PipeIO.print
 
 readHeader :: forall nm -> (
