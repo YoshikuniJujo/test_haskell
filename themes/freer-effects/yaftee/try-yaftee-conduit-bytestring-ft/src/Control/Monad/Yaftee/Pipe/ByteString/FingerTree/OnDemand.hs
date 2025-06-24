@@ -43,11 +43,16 @@ onDemand :: forall nm -> (
 	U.Member Pipe.P es,
 	Members nm es, U.Member (Except.E String) es ) =>
 	Eff.E es BSF.ByteString BSF.ByteString r
-onDemand nm = fix \go -> State.getN nm >>=
-	(>>= maybe (Except.throw errne) ((>> go) . Pipe.yield)) . \case
-		RequestBytes ln -> takeBytes nm ln
-		RequestBuffer ln -> takeBuffer nm ln
-		RequestString -> takeString nm
+onDemand nm = fix \go -> State.getN nm >>= \case
+	RequestBytes ln -> takeBytes nm ln
+		>>= maybe (Except.throw errne) ((>> go) . Pipe.yield)
+	RequestBuffer ln -> takeBuffer nm ln
+		>>= maybe (Except.throw errne) ((>> go) . Pipe.yield)
+	RequestString -> takeString nm
+		>>= maybe (Except.throw errne) ((>> go) . Pipe.yield)
+	RequestPushBack bs ->
+		State.modifyN nm (ByteString . (bs `BSF.append`) . unByteString) >>
+		Pipe.yield "" >> go
 	where
 	errne :: String
 	errne = "Not enough ByteString"
@@ -68,6 +73,7 @@ data Request
 	= RequestBytes Int
 	| RequestBuffer Int
 	| RequestString
+	| RequestPushBack BSF.ByteString
 	deriving Show
 
 newtype ByteString = ByteString { unByteString :: BSF.ByteString } deriving Show
