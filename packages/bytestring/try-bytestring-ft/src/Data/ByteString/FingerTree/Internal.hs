@@ -117,14 +117,22 @@ uncons (ByteString t) = case t of
 	EmptyT -> Nothing
 	bs :<|| t' -> case BS.uncons bs of
 		Nothing -> error "unnormalized ByteString"
-		Just (b, bs') -> Just (b, ByteString $ bs' :<|| t')
+		Just (b, bs') -> Just (
+			b,
+			bool	(ByteString $ bs' :<|| t')
+				(ByteString t')
+				(BS.null bs') )
 
 unsnoc :: ByteString -> Maybe (ByteString, Word8)
 unsnoc (ByteString t) = case t of
 	EmptyT -> Nothing
 	t' :||> bs -> case BS.unsnoc bs of
 		Nothing -> error "unnormalized ByteString"
-		Just (bs', b) -> Just (ByteString $ t' :||> bs', b)
+		Just (bs', b) -> Just (
+			bool	(ByteString $ t' :||> bs')
+				(ByteString t')
+				(BS.null bs'),
+			b )
 
 null :: ByteString -> Bool
 null = (<= 0) . size . unByteString
