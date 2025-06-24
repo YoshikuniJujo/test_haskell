@@ -30,6 +30,8 @@ dependencies:
 - try-yaftee-conduit-bytestring-ft
 - try-higher-order-open-union
 - try-bytestring-ft
+- try-zlib-library
+- try-zlib-core
 
 ghc-options:
 - -Wall
