@@ -16,6 +16,7 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.MonoTraversable qualified as PipeMT
+import Control.Monad.Yaftee.Pipe.MonoTraversable.Crc32 qualified as PipeCrc32
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
@@ -26,6 +27,7 @@ import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Bits
 import Data.Maybe
+import Data.Word
 import Data.Word.Word8 qualified as Word8
 import Data.Int
 import Data.ByteString.FingerTree qualified as BSF
@@ -34,7 +36,7 @@ import System.IO
 import System.Environment
 
 import Data.Word.Crc32 qualified as Crc32
-import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.Crc32 qualified as PipeCrc32
+-- import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.Crc32 qualified as PipeCrc32
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
@@ -52,10 +54,13 @@ main = do
 				readHeader "foobar" IO.print
 				State.putN "foobar" $ OnDemand.RequestBuffer 25
 				do {	rbs <- PipeZ.inflate "foobar" IO (Zlib.WindowBitsRaw 15) ib ob;
-					State.putN "foobar" $ OnDemand.RequestPushBack rbs } Pipe.=$= PipeMT.length "foobar"
+					State.putN "foobar" $ OnDemand.RequestPushBack rbs } Pipe.=$=
+						PipeMT.length "foobar" Pipe.=$= PipeCrc32.crc32 "foobar"
 				"" <- Pipe.await
 				State.putN "foobar" $ OnDemand.RequestBytes 4
-				IO.print =<< Pipe.await
+				PipeCrc32.complement "foobar"
+				IO.print . Crc32.toWord =<< State.getN "foobar"
+				IO.print @Word32 . Word8.toBits =<< Pipe.await
 				IO.print .PipeMT.lengthToInt64 =<< State.getN "foobar"
 				IO.print @Int64 . Word8.toBits =<< Pipe.await
 			Pipe.=$= PipeIO.print
