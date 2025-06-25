@@ -29,6 +29,7 @@ library
       Control.Monad.Yaftee.Pipe.Png.Decode.Header
       Data.Gzip.Header
       Data.Png
+      Data.Png.Filters
       Data.Png.Header
       Lib
   other-modules:
@@ -41,6 +42,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , mono-traversable
     , tools-yj
     , try-bytestring-ft
     , try-higher-order-open-union
@@ -53,6 +55,7 @@ library
     , try-zlib-core
     , try-zlib-library
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010
 
 executable try-gzip-yaftee-zlib-ft-exe
@@ -67,6 +70,7 @@ executable try-gzip-yaftee-zlib-ft-exe
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , mono-traversable
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
@@ -80,6 +84,7 @@ executable try-gzip-yaftee-zlib-ft-exe
     , try-zlib-core
     , try-zlib-library
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010
 
 executable try-png-decode
@@ -90,6 +95,7 @@ executable try-png-decode
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , mono-traversable
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
@@ -103,6 +109,7 @@ executable try-png-decode
     , try-zlib-core
     , try-zlib-library
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010
 
 test-suite try-gzip-yaftee-zlib-ft-test
@@ -118,6 +125,7 @@ test-suite try-gzip-yaftee-zlib-ft-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , mono-traversable
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
@@ -131,4 +139,5 @@ test-suite try-gzip-yaftee-zlib-ft-test
     , try-zlib-core
     , try-zlib-library
     , typelevel-tools-yj
+    , union-color
   default-language: Haskell2010
