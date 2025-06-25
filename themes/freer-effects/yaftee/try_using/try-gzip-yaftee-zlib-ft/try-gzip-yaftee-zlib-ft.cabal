@@ -32,7 +32,6 @@ library
       Data.Png
       Data.Png.Filters
       Data.Png.Header
-      Lib
   other-modules:
       Paths_try_gzip_yaftee_zlib_ft
   autogen-modules:
