@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
@@ -11,6 +11,7 @@ module Main where
 import Prelude hiding (Monoid)
 import Foreign.C.ByteArray qualified as CByteArray
 import Control.Monad
+import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
@@ -41,6 +42,7 @@ main = do
 	ib <- CByteArray.malloc 64
 	ob <- CByteArray.malloc 64
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. flip (State.runN @"foobar") (Monoid ("" :: BSF.ByteString))
 		. PipeZ.inflateRun @"foobar"
 		. Chunk.chunkRun_ @"foobar"
 		. OnDemand.run @"foobar"
@@ -59,22 +61,29 @@ main = do
 				OnDemand.onDemand "foobar" Pipe.=$= Header.read "foobar" IO.print
 				PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ib ob
 			Pipe.=$= do
-				IO.print =<< Pipe.await
+				bs0 <- Pipe.await
 				rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
 				IO.print rs
-				PipeIO.print
+				format "foobar" bs0 rs
+			Pipe.=$= PipeIO.print
 	CByteArray.free ib
 	CByteArray.free ob
 
-{-
-format :: [Int] -> EFF.E es mono mono ()
-format = do
-	-}
+format :: forall nm -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm (Monoid BSF.ByteString)) es ) =>
+	BSF.ByteString -> [Int] -> Eff.E es BSF.ByteString BSF.ByteString ()
+format nm bs0 ns0 = do
+	State.putN nm $ Monoid bs0
+	($ ns0) $ fix \go -> \case
+		[] -> pure ()
+		n : ns -> do
+			Pipe.yield =<< getInput nm n
+			go ns
 
 getInput :: forall nm -> (
 	U.Member Pipe.P es,
-	U.Member (State.Named nm (Monoid BSF.ByteString)) es
-	) =>
+	U.Member (State.Named nm (Monoid BSF.ByteString)) es ) =>
 	Int -> Eff.E es BSF.ByteString o BSF.ByteString
 getInput nm n = State.getN nm >>= \(Monoid bs) -> case BSF.splitAt' n bs of
 	Nothing -> readMore nm >> getInput nm n
