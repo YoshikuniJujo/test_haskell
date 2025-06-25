@@ -10,7 +10,6 @@
 
 module Main (main) where
 
-import Foreign.C.ByteArray qualified as CByteArray
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -40,8 +39,8 @@ main = do
 	fpi : fpo : _ <- getArgs
 	(hi, ho) <- (,) <$> openFile fpi ReadMode <*> openFile fpo WriteMode
 	(i, o) <- (,)
-		<$> CByteArray.malloc inputBufSize
-		<*> CByteArray.malloc outputBufSize
+		<$> Zlib.cByteArrayMalloc inputBufSize
+		<*> Zlib.cByteArrayMalloc outputBufSize
 
 	void . Eff.runM . Except.run @ReturnCode . Zlib.inflateRun @"foobar" . Pipe.run
 		. (`Except.catch` IO.print @ReturnCode) . void
@@ -51,5 +50,5 @@ main = do
 			PipeT.convert BSF.toStrict Pipe.=$=
 			PipeBS.hPutStr ho
 
-	CByteArray.free i; CByteArray.free o
+	Zlib.cByteArrayFree i; Zlib.cByteArrayFree o
 	hClose ho; hClose hi

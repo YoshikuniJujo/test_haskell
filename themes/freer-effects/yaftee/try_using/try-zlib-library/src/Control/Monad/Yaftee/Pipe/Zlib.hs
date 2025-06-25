@@ -8,7 +8,13 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Zlib (inflateRun, inflate) where
+module Control.Monad.Yaftee.Pipe.Zlib (
+
+	inflateRun, inflate,
+
+	CByteArray, cByteArrayMalloc, cByteArrayFree
+
+	) where
 
 import Foreign.Ptr
 import Foreign.C.ByteArray qualified as CByteArray
@@ -38,14 +44,23 @@ inflateRun = (`State.runN` (Nothing :: Maybe ByteString))
 
 newtype ByteString = ByteString { unByteString :: BSF.ByteString } deriving Show
 
+newtype CByteArray s = CByteArray { unCByteArray :: CByteArray.B } deriving Show
+
+cByteArrayMalloc :: PrimMonad m => Int -> m (CByteArray (PrimState m))
+cByteArrayMalloc n = unsafeIOToPrim $ CByteArray <$> CByteArray.malloc n
+
+cByteArrayFree :: PrimMonad m => CByteArray (PrimState m) -> m ()
+cByteArrayFree (CByteArray ba) = unsafeIOToPrim $ CByteArray.free ba
+
 inflate :: forall nm m -> (
 	PrimBase m,
 	U.Member Pipe.P es, U.Member (State.Named nm (Maybe ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Base (U.FromFirst m) es ) =>
-	Zlib.WindowBits -> CByteArray.B -> CByteArray.B ->
+	Zlib.WindowBits -> CByteArray (PrimState m) -> CByteArray (PrimState m) ->
 	Eff.E es BSF.ByteString BSF.ByteString BSF.ByteString
 inflate nm m wbs
-	(castPtr -> i, ni) (o@(castPtr -> o'), no@(fromIntegral -> no')) = do
+	(CByteArray (castPtr -> i, ni))
+	(CByteArray (o@(castPtr -> o'), no@(fromIntegral -> no'))) = do
 	bs0 <- Pipe.await
 	((castPtr -> i0, fromIntegral -> n0), ebs0) <-
 		Eff.effBase . unsafeIOToPrim @m $ BSF.poke (i, ni) bs0
