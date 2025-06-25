@@ -17,6 +17,7 @@ module Control.Monad.Yaftee.Pipe.Zlib (
 	) where
 
 import Foreign.Ptr
+import Foreign.C.String
 import Foreign.C.ByteArray qualified as CByteArray
 import Control.Monad
 import Control.Monad.ToolsYj
@@ -36,6 +37,8 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 import Data.ByteString qualified as BS
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.CString qualified as BSF
+
+import Debug.Trace
 
 inflateRun :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (State.Named nm (Maybe ByteString) ': es) i o r ->
@@ -75,7 +78,11 @@ inflate nm m wbs
 		rc <- Eff.effBase $ Zlib.inflate @m strm Zlib.NoFlush
 		ai <- Eff.effBase @m $ Zlib.availIn strm
 		(fromIntegral -> ao) <- Eff.effBase @m $ Zlib.availOut strm
-		when (rc `notElem` [Zlib.Ok, Zlib.StreamEnd]) $ Except.throw rc
+		when (rc `notElem` [Zlib.Ok, Zlib.StreamEnd]) do
+			cmsg <- Eff.effBase $ Zlib.msg @m strm
+			msg <- Eff.effBase . unsafeIOToPrim @m $ peekCString cmsg
+			trace msg $ pure ()
+			Except.throw rc
 		Pipe.yield =<< Eff.effBase
 			(unsafeIOToPrim @m $ BSF.peek (o', no - ao))
 		Eff.effBase $ Zlib.setNextOut @m strm o no'
