@@ -10,7 +10,9 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Decode (
 
-	run_, States, decode, Members
+	run_, States, decode, Members,
+
+	runHeader_, StatesHeader, decodeHeader, MembersHeader
 
 	) where
 
@@ -209,3 +211,35 @@ colorsRgba rgba = \case
 	[] -> []
 	r : g : b : a : ss -> rgba r g b a : colorsRgba rgba ss
 	_ -> error "bad"
+
+runHeader_ :: HFunctor.Loose (U.U es) =>
+	Eff.E (StatesHeader "foobar" `Append` es) i o r -> Eff.E es i o ()
+runHeader_ = void
+	. flip (State.runN @"foobar") Header.header0
+	. OnDemand.run @"foobar"
+	. Chunk.chunkRun_ @"foobar"
+
+type StatesHeader nm =
+	Chunk.ChunkStates nm `Append`
+	OnDemand.States nm `Append` '[State.Named nm Header.Header]
+
+decodeHeader :: forall nm m -> (
+	U.Member Pipe.P es,
+	MembersHeader nm es,
+	U.Member (Except.E String) es ) =>
+	Eff.E es BSF.ByteString o ()
+decodeHeader nm = void $
+	do	fhdr <- Chunk.readBytes nm 8
+		when (fhdr /= fileHeader)
+			$ Except.throw @String "File header error"
+		Chunk.chunk nm 500
+	Pipe.=$= forever do
+		x <- Pipe.await
+		c <- State.getN nm
+		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
+			$ Pipe.yield x
+	Pipe.=$= OnDemand.onDemand nm Pipe.=$= Header.read nm (const $ pure ())
+
+type MembersHeader nm es = (
+	Chunk.ChunkMembers nm es, OnDemand.Members nm es,
+	U.Member (State.Named nm Header.Header) es )
