@@ -81,6 +81,7 @@ inflate nm m wbs
 		Pipe.yield =<< Eff.effBase
 			(unsafeIOToPrim @m $ BSF.peek (o', no - ao))
 		trace ("no: " ++ show no ++ ", ao: " ++ show ao) (pure ())
+		trace ("ai: " ++ show ai) (pure ())
 		Eff.effBase $ Zlib.setNextOut @m strm o no'
 		when (rc /= Zlib.StreamEnd && ai == 0) do
 			((castPtr -> i', fromIntegral -> n), ebs) <- Eff.effBase
