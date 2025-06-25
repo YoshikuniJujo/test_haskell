@@ -79,9 +79,11 @@ decode nm m ib ob = void $
 		Chunk.chunk nm 500
 	Pipe.=$= forever do
 		x <- Pipe.await
-		c <- State.getN nm
+		Chunk.Chunk c <- State.getN nm
 		trace (show c) $ pure ()
-		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
+--		trace (show $ c == Chunk.Chunk "IDAT") $ pure ()
+		when (BSF.toStrict c == "IHDR" || BSF.toStrict c == "IDAT")
+--		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
 			$ Pipe.yield x
 	Pipe.=$= do
 		_ <- OnDemand.onDemand nm Pipe.=$=
