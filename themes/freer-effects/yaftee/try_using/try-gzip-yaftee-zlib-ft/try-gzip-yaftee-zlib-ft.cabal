@@ -43,6 +43,7 @@ library
       base >=4.7 && <5
     , bytestring
     , mono-traversable
+    , primitive
     , tools-yj
     , try-bytestring-ft
     , try-higher-order-open-union
@@ -71,6 +72,7 @@ executable try-gzip-yaftee-zlib-ft-exe
       base >=4.7 && <5
     , bytestring
     , mono-traversable
+    , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
@@ -96,6 +98,7 @@ executable try-png-decode
       base >=4.7 && <5
     , bytestring
     , mono-traversable
+    , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
@@ -126,6 +129,7 @@ test-suite try-gzip-yaftee-zlib-ft-test
       base >=4.7 && <5
     , bytestring
     , mono-traversable
+    , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft

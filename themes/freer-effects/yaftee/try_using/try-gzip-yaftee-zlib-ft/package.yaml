@@ -21,8 +21,9 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
-- bytestring
+- primitive
 - mono-traversable
+- bytestring
 - union-color
 - tools-yj
 - typelevel-tools-yj

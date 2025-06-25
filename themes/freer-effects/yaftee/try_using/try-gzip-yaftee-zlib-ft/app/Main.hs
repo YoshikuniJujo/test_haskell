@@ -44,8 +44,8 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
-	ib <- CByteArray.malloc 64
-	ob <- CByteArray.malloc 64
+	ib <- PipeZ.cByteArrayMalloc 64
+	ob <- PipeZ.cByteArrayMalloc 64
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode . Fail.runExc id
 		. PipeMT.lengthRun @"foobar"
 		. PipeZ.inflateRun @"foobar" . PipeCrc32.run @"foobar" . OnDemand.run @"foobar" . Pipe.run

@@ -7,11 +7,11 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import Prelude hiding (Monoid)
-import Foreign.C.ByteArray qualified as CByteArray
 import Control.Monad
+import Control.Monad.Primitive
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -23,7 +23,6 @@ import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
-import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Bits
 import Data.Word
@@ -45,8 +44,9 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
-	ib <- CByteArray.malloc 64
-	ob <- CByteArray.malloc 64
+	ib <- PipeZ.cByteArrayMalloc 64
+	ob <- PipeZ.cByteArrayMalloc 64
+
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. flip (State.runN @"foobar") (Monoid ("" :: BSF.ByteString))
 		. PipeZ.inflateRun @"foobar"
@@ -55,27 +55,42 @@ main = do
 		. flip (State.runN @"foobar") Header.header0
 		. Pipe.run
 		$ PipeBS.hGet 64 h Pipe.=$=
-			PipeT.convert BSF.fromStrict Pipe.=$= do
-				fhdr <- Chunk.readBytes "foobar" 8
-				IO.print fhdr
-				Chunk.chunk "foobar" 500
-			Pipe.=$= forever do
-				x <- Pipe.await
-				c <- State.getN "foobar"
-				when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT") $ Pipe.yield x
-			Pipe.=$= do
-				OnDemand.onDemand "foobar" Pipe.=$= Header.read "foobar" IO.print
-				PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ib ob
-			Pipe.=$= do
-				bs0 <- Pipe.await
-				rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
-				IO.print rs
-				format "foobar" bs0 rs
-			Pipe.=$= pngUnfilter "foobar"
-			Pipe.=$= bytesToColor "foobar"
-			Pipe.=$= PipeIO.print
-	CByteArray.free ib
-	CByteArray.free ob
+			PipeT.convert BSF.fromStrict Pipe.=$=
+			decode @Double "foobar" IO ib ob Pipe.=$= PipeIO.print
+
+	PipeZ.cByteArrayFree ib
+	PipeZ.cByteArrayFree ob
+
+decode :: forall nm m -> (
+	PrimBase m, RealFrac d, U.Member Pipe.P es,
+	Chunk.ChunkMembers nm es, OnDemand.Members nm es,
+	U.Member (State.Named nm Header.Header) es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Monoid BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member (Except.E String) es,
+	U.Base (U.FromFirst m) es ) =>
+	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	Eff.E es BSF.ByteString (Either [Rgb d] [Rgba d]) ()
+decode nm m ib ob = void $
+	do	fhdr <- Chunk.readBytes nm 8
+		when (fhdr /= fileHeader)
+			$ Except.throw @String "File header error"
+		Chunk.chunk nm 500
+	Pipe.=$= forever do
+		x <- Pipe.await
+		c <- State.getN nm
+		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
+			$ Pipe.yield x
+	Pipe.=$= do
+		_ <- OnDemand.onDemand nm Pipe.=$=
+			Header.read nm (const $ pure ())
+		PipeZ.inflate nm m (Zlib.WindowBitsZlib 15) ib ob
+	Pipe.=$= do
+		bs0 <- Pipe.await
+		rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN nm
+		format nm bs0 rs
+	Pipe.=$= pngUnfilter nm Pipe.=$= bytesToColor nm
 
 format :: forall nm -> (
 	U.Member Pipe.P es,
