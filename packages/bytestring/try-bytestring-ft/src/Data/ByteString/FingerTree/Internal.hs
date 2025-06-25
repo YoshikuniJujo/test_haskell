@@ -148,7 +148,7 @@ replicate 0 = const $ Empty
 replicate n = ByteString . Single . BS.replicate n
 
 splitAt' :: Int -> ByteString -> Maybe (ByteString, ByteString)
-splitAt' n (ByteString t) = case search (\l _ -> l >= n) t of
+splitAt' n (ByteString t) = case search (\l _ -> l > n) t of
 	Position l x r -> let (xl, xr) = BS.splitAt (n - size l) x in
 		Just (	ByteString $ bool (`snocTree` xl) id (BS.null xl) l,
 			ByteString $ bool (xr `consTree`) id (BS.null xr) r )
