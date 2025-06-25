@@ -24,7 +24,7 @@ module Codec.Compression.Zlib.Structure.Core (
 
 	-- * IN/OUT
 
-	nextIn, availIn, nextOut, availOut,
+	nextIn, availIn, nextOut, availOut, msg,
 	setNextIn, setNextOut,
 
 	) where
@@ -188,6 +188,12 @@ nextOutPtr = #{peek z_stream, next_out}
 
 availOutPtr :: Ptr Stream -> IO #{type uInt}
 availOutPtr = #{peek z_stream, avail_out}
+
+msg :: PrimMonad m => StreamPrim (PrimState m) -> m CString
+msg (StreamPrim s) = unsafeIOToPrim $ withForeignPtr s msgPtr
+
+msgPtr :: Ptr Stream -> IO CString
+msgPtr = #{peek z_stream, msg}
 
 setNextIn :: PrimMonad m =>
 	StreamPrim (PrimState m) -> PtrBytef -> #{type uInt} -> m ()
