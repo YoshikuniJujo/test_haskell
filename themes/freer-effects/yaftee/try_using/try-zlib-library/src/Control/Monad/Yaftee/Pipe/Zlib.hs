@@ -37,6 +37,8 @@ import Data.ByteString qualified as BS
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.CString qualified as BSF
 
+import Debug.Trace
+
 inflateRun :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (State.Named nm (Maybe ByteString) ': es) i o r ->
 	Eff.E es i o (r, Maybe ByteString)
@@ -78,6 +80,7 @@ inflate nm m wbs
 		when (rc `notElem` [Zlib.Ok, Zlib.StreamEnd]) $ Except.throw rc
 		Pipe.yield =<< Eff.effBase
 			(unsafeIOToPrim @m $ BSF.peek (o', no - ao))
+		trace ("no: " ++ show no ++ ", ao: " ++ show ao) (pure ())
 		Eff.effBase $ Zlib.setNextOut @m strm o no'
 		when (rc /= Zlib.StreamEnd && ai == 0) do
 			((castPtr -> i', fromIntegral -> n), ebs) <- Eff.effBase
