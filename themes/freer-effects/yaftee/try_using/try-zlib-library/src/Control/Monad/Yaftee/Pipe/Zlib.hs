@@ -12,7 +12,7 @@ module Control.Monad.Yaftee.Pipe.Zlib (
 
 	inflateRun, inflate,
 
-	CByteArray, cByteArrayMalloc, cByteArrayFree
+	ByteString, CByteArray, cByteArrayMalloc, cByteArrayFree
 
 	) where
 
