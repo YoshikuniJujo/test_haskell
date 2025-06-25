@@ -81,6 +81,7 @@ chunk1 nm m = do
 --	Pipe.yield . Left $ ChunkBegin cn
 --	for_ (split m n) \n' -> Pipe.yield =<< Right <$> readBytes nm n'
 	for_ (split m n) \n' -> Pipe.yield =<< readBytes nm n'
+--	Pipe.yield =<< readBytes nm n
 	compCrc32 nm
 	Crc32 crc1 <- State.getN nm
 	crc0 <- Crc32.fromWord . Seq.toBitsBE <$> readBytes nm 4

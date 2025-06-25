@@ -29,8 +29,8 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 
-main :: IO ()
-main = do
+main_ :: IO ()
+main_ = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
 	ib <- PipeZ.cByteArrayMalloc 64
@@ -40,10 +40,32 @@ main = do
 		. Png.run_ @"foobar" . Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. (`Except.catch` IO.print @Zlib.ReturnCode) . void
---		$ PipeBS.hGet 64 h Pipe.=$=
-		$ PipeBS.hGet 32 h Pipe.=$=
+		$ PipeBS.hGet 83 h Pipe.=$=
 			PipeT.convert BSF.fromStrict Pipe.=$=
-			Png.decode @Double "foobar" IO ib ob Pipe.=$= PipeIO.print
+			Png.forDebug2 @Double "foobar" IO ib ob Pipe.=$= PipeIO.print
 
 	PipeZ.cByteArrayFree ib
 	PipeZ.cByteArrayFree ob
+
+main :: IO ()
+main = do
+	fp : fpo : _ <- getArgs
+	h <- openFile fp ReadMode
+	ho <- openFile fpo WriteMode
+	ib <- PipeZ.cByteArrayMalloc 64
+	ob <- PipeZ.cByteArrayMalloc 64
+
+	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. Png.run_ @"foobar" . Pipe.run
+		. (`Except.catch` IO.putStrLn)
+		. (`Except.catch` IO.print @Zlib.ReturnCode) . void
+		$ PipeBS.hGet 84 h Pipe.=$=
+			PipeT.convert BSF.fromStrict Pipe.=$=
+			Png.forDebug4 @IO "foobar" Pipe.=$=
+				PipeT.convert BSF.toStrict Pipe.=$=
+				PipeBS.hPutStr ho
+
+	PipeZ.cByteArrayFree ib
+	PipeZ.cByteArrayFree ob
+	hClose h
+	hClose ho
