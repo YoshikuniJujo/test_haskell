@@ -1,0 +1,72 @@
+name:                try-yaftee-png-show-zlib-ft
+version:             0.1.0.0
+github:              "YoshikuniJujo/try-yaftee-png-show-zlib-ft"
+license:             BSD-3-Clause
+author:              "Yoshikuni Jujo"
+maintainer:          "yoshikuni.jujo@gmail.com"
+copyright:           "(c) 2025 Yoshikuni Jujo"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-yaftee-png-show-zlib-ft#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- bytestring
+- union-color
+- try-yaftee
+- try-yaftee-basic-monads
+- try-yaftee-conduit
+- try-yaftee-conduit-bytestring
+- try-yaftee-conduit-bytestring-ft
+- try-gzip-yaftee-zlib-ft
+- try-yaftee-cairo-image-seq
+- try-bytestring-ft
+- moffy-samples-gtk3-run
+- simple-cairo
+- cairo-image
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+
+executables:
+  try-yaftee-png-show-zlib-ft-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-yaftee-png-show-zlib-ft
+
+tests:
+  try-yaftee-png-show-zlib-ft-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-yaftee-png-show-zlib-ft
