@@ -31,6 +31,8 @@ dependencies:
 - try-gzip-yaftee-zlib-ft
 - try-yaftee-cairo-image-seq
 - try-bytestring-ft
+- try-zlib-library
+- try-zlib-core
 - moffy-samples-gtk3-run
 - simple-cairo
 - cairo-image
