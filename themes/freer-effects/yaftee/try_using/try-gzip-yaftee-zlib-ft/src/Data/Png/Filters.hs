@@ -21,7 +21,7 @@ unfilter bpp prior (BSF.uncons -> filtered) = case filtered of
 		2 -> Right $ unfilterUp prior fs
 		3 -> Right $ unfilterAverage prior (BSF.replicate bpp 0) fs
 		4 -> Right $ unfilterPaeth (BSF.replicate bpp 0) (otoList prior) (BSF.replicate bpp 0) (otoList fs)
-		_ -> Left "unknown filter type"
+		_ -> Left $ "unknown filter type: " ++ show ft
 
 unfilterSub :: BSF.ByteString -> [Word8] -> [Word8]
 unfilterSub (BSF.uncons -> raw) (L.uncons -> sub) = case (raw, sub) of
