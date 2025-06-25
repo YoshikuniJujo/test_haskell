@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -12,7 +12,7 @@ module Control.Monad.Yaftee.Pipe.Png.Decode (
 
 	run_, States, decode, Members,
 
-	runHeader_, StatesHeader, decodeHeader, MembersHeader
+	runHeader, StatesHeader, decodeHeader, MembersHeader
 
 	) where
 
@@ -45,14 +45,14 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
 import Data.Color
 
-run_ :: HFunctor.Loose (U.U es) =>
-	Eff.E (States "foobar" `Append` es) i o r -> Eff.E es i o ()
+run_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()
 run_ = void
-	. flip (State.runN @"foobar") (Monoid ("" :: BSF.ByteString))
-	. PipeZ.inflateRun @"foobar"
-	. flip (State.runN @"foobar") Header.header0
-	. OnDemand.run @"foobar"
-	. Chunk.chunkRun_ @"foobar"
+	. flip (State.runN @nm) (Monoid ("" :: BSF.ByteString))
+	. PipeZ.inflateRun @nm
+	. flip (State.runN @nm) Header.header0
+	. OnDemand.run @nm
+	. Chunk.chunkRun_ @nm
 
 type States nm =
 	Chunk.ChunkStates nm `Append`
@@ -212,18 +212,18 @@ colorsRgba rgba = \case
 	r : g : b : a : ss -> rgba r g b a : colorsRgba rgba ss
 	_ -> error "bad"
 
-runHeader_ :: HFunctor.Loose (U.U es) =>
-	Eff.E (StatesHeader "foobar" `Append` es) i o r -> Eff.E es i o ()
-runHeader_ = void
-	. flip (State.runN @"foobar") Header.header0
-	. OnDemand.run @"foobar"
-	. Chunk.chunkRun_ @"foobar"
+runHeader :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+	Eff.E (StatesHeader nm `Append` es) i o r -> Eff.E es i o Header.Header
+runHeader = (snd <$>)
+	. flip (State.runN @nm) Header.header0
+	. OnDemand.run @nm
+	. Chunk.chunkRun_ @nm
 
 type StatesHeader nm =
 	Chunk.ChunkStates nm `Append`
 	OnDemand.States nm `Append` '[State.Named nm Header.Header]
 
-decodeHeader :: forall nm m -> (
+decodeHeader :: forall nm -> (
 	U.Member Pipe.P es,
 	MembersHeader nm es,
 	U.Member (Except.E String) es ) =>

@@ -37,7 +37,7 @@ main = do
 	ob <- PipeZ.cByteArrayMalloc 64
 
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
-		. Png.run_ . Pipe.run
+		. Png.run_ @"foobar" . Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. (`Except.catch` IO.print @Zlib.ReturnCode) . void
 		$ PipeBS.hGet 64 h Pipe.=$=
