@@ -47,8 +47,6 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
 import Data.Color
 
-import Debug.Trace
-
 run_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()
 run_ = void
@@ -80,8 +78,6 @@ decode nm m ib ob = void $
 	Pipe.=$= forever do
 		x <- Pipe.await
 		Chunk.Chunk c <- State.getN nm
-		trace (show c) $ pure ()
---		trace (show $ c == Chunk.Chunk "IDAT") $ pure ()
 		when (BSF.toStrict c == "IHDR" || BSF.toStrict c == "IDAT")
 --		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
 			$ Pipe.yield x
@@ -92,7 +88,6 @@ decode nm m ib ob = void $
 	Pipe.=$= do
 		bs0 <- Pipe.await
 		rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN nm
-		trace (show rs) $ pure ()
 		format nm bs0 rs
 	Pipe.=$= pngUnfilter nm Pipe.=$= bytesToColor nm
 
@@ -111,7 +106,6 @@ format nm bs0 ns0 = do
 	($ ns0) $ fix \go -> \case
 		[] -> pure ()
 		n : ns -> do
-			trace (show n) $ pure ()
 			Pipe.yield =<< getInput nm n
 			go ns
 
@@ -140,7 +134,6 @@ pngUnfilter :: forall nm -> (
 	Eff.E es BSF.ByteString [Word8] ()
 pngUnfilter nm = void do
 	bs <- Pipe.await
-	trace (show bs) $ pure ()
 	h <- State.getN nm
 	let	bpp = Header.headerToBpp h
 		rbs = Header.headerToRowBytes h
@@ -157,7 +150,6 @@ unfilterAll bpp prior = Pipe.awaitMaybe >>= \case
 	Nothing -> pure ()
 	Just BSF.Empty -> pure ()
 	Just bs -> do
-		trace (show bs) $ pure ()
 		bs' <- either Except.throw pure $ unfilter bpp prior bs
 		Pipe.yield bs'
 		unfilterAll bpp bs'
@@ -279,7 +271,6 @@ forDebug nm m ib ob = void $
 	Pipe.=$= do
 		bs0 <- Pipe.await
 		rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN nm
-		trace (show rs) $ pure ()
 		format nm bs0 rs
 
 forDebug2 :: forall nm m -> (
