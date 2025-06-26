@@ -55,6 +55,14 @@ cByteArrayMalloc n = unsafeIOToPrim $ CByteArray <$> CByteArray.malloc n
 cByteArrayFree :: PrimMonad m => CByteArray (PrimState m) -> m ()
 cByteArrayFree (CByteArray ba) = unsafeIOToPrim $ CByteArray.free ba
 
+data DeflateOptions = DeflateOptions {
+	deflateOptionsCompressionLevel :: Zlib.CompressionLevel,
+	deflateOptionsCompressionMethod :: Zlib.CompressionMethod,
+	deflateOptionsWindowBits :: Zlib.WindowBits,
+	deflateOptionsMemLevel :: Zlib.MemLevel,
+	deflateOptionsCompressionStrategy :: Zlib.CompressionStrategy }
+	deriving Show
+
 inflate :: forall nm m -> (
 	PrimBase m,
 	U.Member Pipe.P es, U.Member (State.Named nm (Maybe ByteString)) es,
