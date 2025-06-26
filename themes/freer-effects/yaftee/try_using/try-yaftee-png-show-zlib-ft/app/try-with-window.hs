@@ -54,7 +54,7 @@ main = do
 	Right hdr <- Eff.runM
 		. Except.run @String
 		. Png.runHeader @"foobar" . Pipe.run
-		$ PipeBS.hGet 32 hh Pipe.=$=
+		$ PipeBS.hGet (32 * 64) hh Pipe.=$=
 			PipeT.convert BSF.fromStrict Pipe.=$=
 			Png.decodeHeader "foobar"
 	hClose hh
@@ -82,14 +82,14 @@ main = do
 
 	forkIO do
 		h <- openFile fpi ReadMode
-		ib <- PipeZ.cByteArrayMalloc 64
-		ob <- PipeZ.cByteArrayMalloc 64
+		ib <- PipeZ.cByteArrayMalloc (64 * 64)
+		ob <- PipeZ.cByteArrayMalloc (64 * 64)
 
 		Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 			. Fail.runExc id . Png.run_ @"foobar" . Pipe.run
 			. (`Except.catch` IO.print @String)
 			. (`Except.catch` IO.print @Zlib.ReturnCode)
-			. void $ PipeBS.hGet 32 h Pipe.=$=
+			. void $ PipeBS.hGet (32 * 64) h Pipe.=$=
 				PipeT.convert BSF.fromStrict Pipe.=$=
 				Png.decode @Double "foobar" IO ib ob Pipe.=$=
 --					(\_ -> pure ()) (\_ -> pure ()) Pipe.=$=
