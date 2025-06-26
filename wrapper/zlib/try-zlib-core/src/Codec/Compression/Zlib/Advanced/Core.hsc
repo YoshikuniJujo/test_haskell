@@ -4,6 +4,7 @@
 
 module Codec.Compression.Zlib.Advanced.Core (
 
+	deflateInit2,
 	inflateInit2,
 
 	WindowBits,
@@ -41,6 +42,16 @@ pattern WindowBitsGzip bs <- WindowBits (fromIntegral . subtract 16 -> bs) where
 pattern WindowBitsZlibAndGzip :: Word4 -> WindowBits
 pattern WindowBitsZlibAndGzip bs <- WindowBits (fromIntegral . subtract 32 -> bs) where
 	WindowBitsZlibAndGzip bs = WindowBits $ fromIntegral bs + 32
+
+deflateInit2 :: PrimBase m =>
+	StreamPrim (PrimState m) -> CompressionLevel -> CompressionMethod ->
+	WindowBits -> MemLevel -> CompressionStrategy -> m ReturnCode
+deflateInit2 strm lvl mtd wbs ml str = withStreamPtr strm
+	$ unsafeIOToPrim . (\pstrm -> c_deflateInit2 pstrm lvl mtd wbs ml str)
+
+foreign import capi "zlib.h deflateInit2" c_deflateInit2 ::
+	Ptr Stream -> CompressionLevel -> CompressionMethod -> WindowBits ->
+	MemLevel -> CompressionStrategy -> IO ReturnCode
 
 inflateInit2 :: PrimBase m =>
 	StreamPrim (PrimState m) -> WindowBits -> m ReturnCode

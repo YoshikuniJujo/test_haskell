@@ -40,6 +40,13 @@ enum "CompressionLevel" ''#{type int} [''Show, ''Read, ''Eq] [
 	("BestCompression", #{const Z_BEST_COMPRESSION}),
 	("DefaultCompression", #{const Z_DEFAULT_COMPRESSION}) ]
 
+enum "CompressionStrategy" ''#{type int} [''Show, ''Read, ''Eq] [
+	("Filtered", #{const Z_FILTERED}),
+	("HuffmanOnly", #{const Z_HUFFMAN_ONLY}),
+	("Rle", #{const Z_RLE}),
+	("Fixed", #{const Z_FIXED}),
+	("DefaultStrategy", #{const Z_DEFAULT_STRATEGY}) ]
+
 enum "DataType" ''#{type int} [''Show, ''Read, ''Eq, ''Storable] [
 	("Binary", #{const Z_BINARY}),
 	("Text", #{const Z_TEXT}),
@@ -48,3 +55,6 @@ enum "DataType" ''#{type int} [''Show, ''Read, ''Eq, ''Storable] [
 
 enum "CompressionMethod" ''#{type int} [''Show, ''Read, ''Eq] [
 	("Deflated", #{const Z_DEFLATED}) ]
+
+enum "MemLevel" ''#{type int} [''Show, ''Read, ''Eq] [
+	]

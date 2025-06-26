@@ -124,6 +124,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-zlib-core
+  try-gzip-deflate:
+    main:                try-gzip-deflate.hs
+    source-dirs:         app
+    other-modules:       []
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-zlib-core
 
 tests:
   try-zlib-core-test:
