@@ -26,6 +26,7 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
+import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.HigherFunctor qualified as HFunctor
 
@@ -162,10 +163,14 @@ body nm m f
 			minp <- getInput nm unByteString
 			case minp of
 				Nothing -> do
-					rc <- Eff.effBase $ f @m strm Zlib.Finish
-					(fromIntegral -> ao') <- Eff.effBase @m $ Zlib.availOut strm
-					Pipe.yield =<< Eff.effBase
-						(unsafeIOToPrim @m $ BSF.peek (o', no - ao'))
+					doWhile_ do
+						rc <- Eff.effBase $ f @m strm Zlib.Finish
+						(fromIntegral -> ao') <- Eff.effBase @m $ Zlib.availOut strm
+						Pipe.yield =<< Eff.effBase
+							(unsafeIOToPrim @m $ BSF.peek (o', no - ao'))
+						trace (show rc) $ pure ()
+						Eff.effBase $ Zlib.setNextOut @m strm o no'
+						pure $ rc /= Zlib.StreamEnd
 					pure False
 				Just inp -> do
 					((castPtr -> i', fromIntegral -> n), ebs) <- Eff.effBase
