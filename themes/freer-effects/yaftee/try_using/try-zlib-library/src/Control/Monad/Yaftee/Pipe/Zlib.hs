@@ -10,7 +10,7 @@
 
 module Control.Monad.Yaftee.Pipe.Zlib (
 
-	run, deflate, DeflateOptions, inflate,
+	run, deflate, DeflateOptions(..), inflate,
 
 	ByteString, CByteArray, cByteArrayMalloc, cByteArrayFree
 
