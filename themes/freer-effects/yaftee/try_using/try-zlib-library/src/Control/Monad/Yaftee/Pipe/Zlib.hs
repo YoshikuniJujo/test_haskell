@@ -119,12 +119,18 @@ initialize nm m f a
 	pure strm
 
 finalize :: forall m -> (
+	PrimMonad m,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Base (U.FromFirst m) es ) =>
 	(Zlib.StreamPrim (PrimState m) -> m Zlib.ReturnCode) ->
 	Zlib.StreamPrim (PrimState m) -> Eff.E es i o ()
 finalize m f strm = do
 	rc <- Eff.effBase $ f strm
-	when (rc /= Zlib.Ok) $ Except.throw rc
+	trace "FINALIZE" $ pure ()
+	when (rc /= Zlib.Ok) do
+--		cmsg <- Eff.effBase $ Zlib.msg @m strm
+--		msg <- Eff.effBase . unsafeIOToPrim @m $ peekCString cmsg
+--		trace msg $ pure ()
+		Except.throw rc
 
 body :: forall nm m -> (
 	PrimBase m,
@@ -152,13 +158,22 @@ body nm m f
 		Pipe.yield =<< Eff.effBase
 			(unsafeIOToPrim @m $ BSF.peek (o', no - ao))
 		Eff.effBase $ Zlib.setNextOut @m strm o no'
-		when (rc /= Zlib.StreamEnd && ai == 0) do
-			((castPtr -> i', fromIntegral -> n), ebs) <- Eff.effBase
-				. unsafeIOToPrim @m
-				. BSF.poke (i, ni) =<< getInput nm unByteString
-			either (const $ pure ()) (putInput nm ByteString) ebs
-			Eff.effBase $ Zlib.setNextIn @m strm i' n
-		pure $ rc /= Zlib.StreamEnd
+		whenDef (rc /= Zlib.StreamEnd) (rc /= Zlib.StreamEnd && ai == 0) do
+			minp <- getInput nm unByteString
+			case minp of
+				Nothing -> do
+					rc <- Eff.effBase $ f @m strm Zlib.Finish
+					(fromIntegral -> ao') <- Eff.effBase @m $ Zlib.availOut strm
+					Pipe.yield =<< Eff.effBase
+						(unsafeIOToPrim @m $ BSF.peek (o', no - ao'))
+					pure False
+				Just inp -> do
+					((castPtr -> i', fromIntegral -> n), ebs) <- Eff.effBase
+						. unsafeIOToPrim @m
+						$ BSF.poke (i, ni) inp
+					either (const $ pure ()) (putInput nm ByteString) ebs
+					Eff.effBase $ Zlib.setNextIn @m strm i' n
+					pure $ rc /= Zlib.StreamEnd
 
 restOfInput :: forall nm m -> (
 	PrimBase m,
@@ -175,9 +190,9 @@ restOfInput nm m strm = do
 
 getInput :: forall es i' i o . forall nm ->
 	(U.Member Pipe.P es, U.Member (State.Named nm (Maybe i')) es) =>
-	(i' -> i) -> Eff.E es i o i
+	(i' -> i) -> Eff.E es i o (Maybe i)
 getInput nm un = State.getN nm
-	>>= maybe Pipe.await ((<$ State.putN @(Maybe i') nm Nothing) . un)
+	>>= maybe Pipe.awaitMaybe ((<$ State.putN @(Maybe i') nm Nothing) . Just . un)
 
 putInput :: forall nm -> (U.Member (State.Named nm (Maybe i')) es) =>
 	(i -> i') -> i -> Eff.E es i o ()
