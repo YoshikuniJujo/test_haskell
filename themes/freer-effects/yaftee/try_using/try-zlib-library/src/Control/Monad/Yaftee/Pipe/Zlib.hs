@@ -141,6 +141,7 @@ body nm m f
 	(CByteArray (o@(castPtr -> o'), no@(fromIntegral -> no')))
 	strm = do
 		rc <- Eff.effBase $ f @m strm Zlib.NoFlush
+--		rc <- Eff.effBase $ f @m strm Zlib.FullFlush
 		ai <- Eff.effBase @m $ Zlib.availIn strm
 		(fromIntegral -> ao) <- Eff.effBase @m $ Zlib.availOut strm
 		when (rc `notElem` [Zlib.Ok, Zlib.StreamEnd]) do
