@@ -51,7 +51,7 @@ run_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()
 run_ = void
 	. flip (State.runN @nm) (Monoid ("" :: BSF.ByteString))
-	. PipeZ.inflateRun @nm
+	. PipeZ.run @nm
 	. flip (State.runN @nm) Header.header0
 	. OnDemand.run @nm
 	. Chunk.chunkRun_ @nm
