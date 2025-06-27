@@ -42,7 +42,7 @@ main = do
 		<$> Zlib.cByteArrayMalloc inputBufSize
 		<*> Zlib.cByteArrayMalloc outputBufSize
 
-	void . Eff.runM . Except.run @ReturnCode . Zlib.inflateRun @"foobar" . Pipe.run
+	void . Eff.runM . Except.run @ReturnCode . Zlib.run @"foobar" . Pipe.run
 		. (`Except.catch` IO.print @ReturnCode) . void
 		$ PipeBS.hGet readBufSize hi Pipe.=$=
 			PipeT.convert BSF.fromStrict Pipe.=$=

@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -10,7 +10,7 @@
 
 module Control.Monad.Yaftee.Pipe.Zlib (
 
-	inflateRun, inflate,
+	run, deflate, inflate,
 
 	ByteString, CByteArray, cByteArrayMalloc, cByteArrayFree
 
@@ -40,10 +40,10 @@ import Data.ByteString.FingerTree.CString qualified as BSF
 
 import Debug.Trace
 
-inflateRun :: forall nm es i o r . HFunctor.Loose (U.U es) =>
+run :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (State.Named nm (Maybe ByteString) ': es) i o r ->
 	Eff.E es i o (r, Maybe ByteString)
-inflateRun = (`State.runN` (Nothing :: Maybe ByteString))
+run = (`State.runN` (Nothing :: Maybe ByteString))
 
 newtype ByteString = ByteString { unByteString :: BSF.ByteString } deriving Show
 
@@ -63,15 +63,50 @@ data DeflateOptions = DeflateOptions {
 	deflateOptionsCompressionStrategy :: Zlib.CompressionStrategy }
 	deriving Show
 
+deflate :: forall nm m -> (
+	PrimBase m,
+	U.Member Pipe.P es, U.Member (State.Named nm (Maybe ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es, U.Base (U.FromFirst m) es ) =>
+	DeflateOptions ->
+	CByteArray (PrimState m) -> CByteArray (PrimState m) ->
+	Eff.E es BSF.ByteString BSF.ByteString BSF.ByteString
+deflate nm m dos bai bao = do
+	strm <- initialize nm m
+		(\s os -> Zlib.deflateInit2 s
+			(deflateOptionsCompressionLevel os)
+			(deflateOptionsCompressionMethod os)
+			(deflateOptionsWindowBits os)
+			(deflateOptionsMemLevel os)
+			(deflateOptionsCompressionStrategy os))
+		dos bai bao
+	doWhile_ $ body nm m Zlib.deflate bai bao strm
+	finalize m Zlib.deflateEnd strm
+	restOfInput nm m strm
+
 inflate :: forall nm m -> (
 	PrimBase m,
 	U.Member Pipe.P es, U.Member (State.Named nm (Maybe ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Base (U.FromFirst m) es ) =>
-	Zlib.WindowBits -> CByteArray (PrimState m) -> CByteArray (PrimState m) ->
+	Zlib.WindowBits ->
+	CByteArray (PrimState m) -> CByteArray (PrimState m) ->
 	Eff.E es BSF.ByteString BSF.ByteString BSF.ByteString
-inflate nm m wbs
+inflate nm m wbs bai bao = do
+	strm <- initialize nm m Zlib.inflateInit2 wbs bai bao
+	doWhile_ $ body nm m Zlib.inflate bai bao strm
+	finalize m Zlib.inflateEnd strm
+	restOfInput nm m strm
+
+initialize :: forall nm m -> (
+	PrimBase m,
+	U.Member Pipe.P es, U.Member (State.Named nm (Maybe ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es, U.Base (U.FromFirst m) es ) =>
+	(forall m' . PrimBase m' =>
+		Zlib.StreamPrim (PrimState m') -> arg -> m' Zlib.ReturnCode) ->
+	arg -> CByteArray (PrimState m) -> CByteArray (PrimState m) ->
+	Eff.E es BSF.ByteString BSF.ByteString (Zlib.StreamPrim (PrimState m))
+initialize nm m f a
 	(CByteArray (castPtr -> i, ni))
-	(CByteArray (o@(castPtr -> o'), no@(fromIntegral -> no'))) = do
+	(CByteArray (o, (fromIntegral -> no'))) = do
 	bs0 <- Pipe.await
 	((castPtr -> i0, fromIntegral -> n0), ebs0) <-
 		Eff.effBase . unsafeIOToPrim @m $ BSF.poke (i, ni) bs0
@@ -79,11 +114,33 @@ inflate nm m wbs
 	strm <- Eff.effBase $ Zlib.streamThaw @m Zlib.streamInitial {
 		Zlib.streamNextIn = i0, Zlib.streamAvailIn = n0,
 		Zlib.streamNextOut = o, Zlib.streamAvailOut = no' }
-	rc0 <- Eff.effBase $ Zlib.inflateInit2 @m strm wbs
+	rc0 <- Eff.effBase $ f @m strm a
 	when (rc0 /= Zlib.Ok) $ Except.throw rc0
+	pure strm
 
-	doWhile_ do
-		rc <- Eff.effBase $ Zlib.inflate @m strm Zlib.NoFlush
+finalize :: forall m -> (
+	U.Member (Except.E Zlib.ReturnCode) es, U.Base (U.FromFirst m) es ) =>
+	(Zlib.StreamPrim (PrimState m) -> m Zlib.ReturnCode) ->
+	Zlib.StreamPrim (PrimState m) -> Eff.E es i o ()
+finalize m f strm = do
+	rc <- Eff.effBase $ f strm
+	when (rc /= Zlib.Ok) $ Except.throw rc
+
+body :: forall nm m -> (
+	PrimBase m,
+	U.Member Pipe.P es,
+	U.Member (State.Named nm (Maybe ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es,
+	U.Base (U.FromFirst m) es ) =>
+	(forall m' . PrimBase m' => Zlib.StreamPrim (PrimState m') -> Zlib.Flush -> m' Zlib.ReturnCode) ->
+	CByteArray (PrimState m) -> CByteArray (PrimState m) ->
+	Zlib.StreamPrim (PrimState m) ->
+	Eff.E es BSF.ByteString BSF.ByteString Bool
+body nm m f
+	(CByteArray (castPtr -> i, ni))
+	(CByteArray (o@(castPtr -> o'), no@(fromIntegral -> no')))
+	strm = do
+		rc <- Eff.effBase $ f @m strm Zlib.NoFlush
 		ai <- Eff.effBase @m $ Zlib.availIn strm
 		(fromIntegral -> ao) <- Eff.effBase @m $ Zlib.availOut strm
 		when (rc `notElem` [Zlib.Ok, Zlib.StreamEnd]) do
@@ -102,9 +159,13 @@ inflate nm m wbs
 			Eff.effBase $ Zlib.setNextIn @m strm i' n
 		pure $ rc /= Zlib.StreamEnd
 
-	rc <- Eff.effBase $ Zlib.inflateEnd @m strm
-	when (rc /= Zlib.Ok) $ Except.throw rc
-
+restOfInput :: forall nm m -> (
+	PrimBase m,
+	U.Member (State.Named nm (Maybe ByteString)) es,
+	U.Base (U.FromFirst m) es ) =>
+	Zlib.StreamPrim (PrimState m) ->
+	Eff.E es i o BSF.ByteString
+restOfInput nm m strm = do
 	(castPtr -> i') <- Eff.effBase @m $ Zlib.nextIn strm
 	(fromIntegral -> ai) <- Eff.effBase @m $ Zlib.availIn strm
 	rbs <- Eff.effBase @m . unsafeIOToPrim $ BS.packCStringLen (i', ai)
