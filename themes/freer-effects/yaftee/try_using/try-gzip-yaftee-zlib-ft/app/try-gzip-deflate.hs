@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -10,7 +11,9 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
+import Control.Monad.Yaftee.Pipe.MonoTraversable qualified as PipeMT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
+import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
 import Data.ByteString.FingerTree qualified as BSF
@@ -30,16 +33,21 @@ main = do
 	ob <- PipeZ.cByteArrayMalloc 64
 	void . Eff.runM . Except.run @Zlib.ReturnCode
 		. PipeZ.run @"foobar"
+		. PipeMT.lengthRun @"foobar"
 		. Pipe.run
 		. (`Except.catch` IO.print @Zlib.ReturnCode)
 		. void $ PipeBS.hGet 32 h Pipe.=$=
-			PipeT.convert BSF.fromStrict Pipe.=$= do
---				Pipe.yield . BSF.fromStrict
---					$ encodeGzipHeader sampleGzipHeader
-				PipeZ.deflate "foobar" IO sampleOptions ib ob
+			PipeT.convert' BSF.fromStrict Pipe.=$= do
+				Pipe.yield . BSF.fromStrict
+					$ encodeGzipHeader sampleGzipHeader
+				PipeMT.length' "foobar" Pipe.=$=
+					PipeZ.deflate "foobar" IO sampleOptions ib ob
+				ln <- State.getN @PipeMT.Length "foobar"
+				IO.print ln
+				Pipe.yield ""
 --				forever $ Pipe.yield =<< Pipe.await
-			Pipe.=$=
-				PipeIO.print
+			Pipe.=$= do
+				PipeIO.print'
 
 sampleOptions :: PipeZ.DeflateOptions
 sampleOptions = PipeZ.DeflateOptions {
