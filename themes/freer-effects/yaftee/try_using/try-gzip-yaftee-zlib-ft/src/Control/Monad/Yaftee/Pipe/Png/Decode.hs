@@ -14,8 +14,6 @@ module Control.Monad.Yaftee.Pipe.Png.Decode (
 
 	runHeader, StatesHeader, decodeHeader, MembersHeader,
 
-	forDebug, forDebug2, forDebug3, forDebug4
-
 	) where
 
 import Prelude hiding (Monoid)
@@ -246,80 +244,3 @@ decodeHeader nm = void $
 type MembersHeader nm es = (
 	Chunk.ChunkMembers nm es, OnDemand.Members nm es,
 	U.Member (State.Named nm Header.Header) es )
-
-forDebug :: forall nm m -> (
-	PrimBase m, RealFrac d, U.Member Pipe.P es,
-	Members nm es,
-	U.Member (Except.E Zlib.ReturnCode) es,
-	U.Member (Except.E String) es, U.Base (U.FromFirst m) es ) =>
-	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
-	Eff.E es BSF.ByteString BSF.ByteString ()
-forDebug nm m ib ob = void $
-	do	fhdr <- Chunk.readBytes nm 8
-		when (fhdr /= fileHeader)
-			$ Except.throw @String "File header error"
-		Chunk.chunk nm 500
-	Pipe.=$= forever do
-		x <- Pipe.await
-		c <- State.getN nm
-		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
-			$ Pipe.yield x
-	Pipe.=$= do
-		_ <- OnDemand.onDemand nm Pipe.=$=
-			Header.read nm (const $ pure ())
-		PipeZ.inflate nm m (Zlib.WindowBitsZlib 15) ib ob
-	Pipe.=$= do
-		bs0 <- Pipe.await
-		rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN nm
-		format nm bs0 rs
-
-forDebug2 :: forall nm m -> (
-	PrimBase m, RealFrac d, U.Member Pipe.P es,
-	Members nm es,
-	U.Member (Except.E Zlib.ReturnCode) es,
-	U.Member (Except.E String) es, U.Base (U.FromFirst m) es ) =>
-	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
-	Eff.E es BSF.ByteString BSF.ByteString ()
-forDebug2 nm m ib ob = void $
-	do	fhdr <- Chunk.readBytes nm 8
-		when (fhdr /= fileHeader)
-			$ Except.throw @String "File header error"
-		Chunk.chunk nm 500
-	Pipe.=$= forever do
-		x <- Pipe.await
-		c <- State.getN nm
-		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
-			$ Pipe.yield x
-	Pipe.=$= do
-		_ <- OnDemand.onDemand nm Pipe.=$=
-			Header.read nm (const $ pure ())
-		PipeZ.inflate nm m (Zlib.WindowBitsZlib 15) ib ob
-
-forDebug3 :: forall nm -> (
-	PrimBase m, RealFrac d, U.Member Pipe.P es,
-	Members nm es,
-	U.Member (Except.E Zlib.ReturnCode) es,
-	U.Member (Except.E String) es, U.Base (U.FromFirst m) es ) =>
-	Eff.E es BSF.ByteString BSF.ByteString ()
-forDebug3 nm = void $
-	do	fhdr <- Chunk.readBytes nm 8
-		when (fhdr /= fileHeader)
-			$ Except.throw @String "File header error"
-		Chunk.chunk nm 500
-	Pipe.=$= forever do
-		x <- Pipe.await
-		c <- State.getN nm
-		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
-			$ Pipe.yield x
-
-forDebug4 :: forall nm -> (
-	PrimBase m, RealFrac d, U.Member Pipe.P es,
-	Members nm es,
-	U.Member (Except.E Zlib.ReturnCode) es,
-	U.Member (Except.E String) es, U.Base (U.FromFirst m) es ) =>
-	Eff.E es BSF.ByteString BSF.ByteString ()
-forDebug4 nm = void $
-	do	fhdr <- Chunk.readBytes nm 8
-		when (fhdr /= fileHeader)
-			$ Except.throw @String "File header error"
-		Chunk.chunk nm 500
