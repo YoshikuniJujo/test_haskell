@@ -27,6 +27,15 @@ print' :: forall es i o .
 print' = fix \go ->
 	Pipe.isMore >>= bool (pure ()) (Pipe.await >>= (>> go) . IO.print)
 
+debugPrint :: forall es x r .
+	(Show x, U.Member Pipe.P es, U.Base IO.I es) => Eff.E es x x r
+debugPrint = fix \go -> Pipe.await >>= \x -> IO.print x >> Pipe.yield x >> go
+
+debugPrint' :: forall es x .
+	(Show x, U.Member Pipe.P es, U.Base IO.I es) => Eff.E es x x ()
+debugPrint' = fix \go -> Pipe.awaitMaybe >>=
+	maybe (pure ()) (\x -> IO.print x >> Pipe.yield x >> go)
+
 hPutStorable :: forall es a o r .
 	(Storable a, U.Member Pipe.P es, U.Base IO.I es) =>
 	Handle -> Ptr a -> Eff.E es a o r
