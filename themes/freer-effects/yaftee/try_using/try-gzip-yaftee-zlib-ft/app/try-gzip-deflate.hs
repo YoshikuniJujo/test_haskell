@@ -43,8 +43,10 @@ main = do
 		. PipeMT.lengthRun @"foobar"
 		. Pipe.run
 		. (`Except.catch` IO.print @Zlib.ReturnCode)
-		. void $ PipeBS.hGet 32 h Pipe.=$=
-			PipeT.convert' BSF.fromStrict Pipe.=$= do
+		. void $ PipeBS.hGet 32 h Pipe.=$= do
+				PipeT.convert' BSF.fromStrict
+				IO.putStrLn "INPUT END"
+			Pipe.=$= do
 				Pipe.yield . BSF.fromStrict
 					$ encodeGzipHeader sampleGzipHeader
 				PipeMT.length' "foobar" Pipe.=$= PipeCrc32.crc32 "foobar" Pipe.=$=
@@ -60,6 +62,7 @@ main = do
 				Pipe.yield ln
 --				forever $ Pipe.yield =<< Pipe.await
 			Pipe.=$= PipeT.convert BSF.toStrict
+			Pipe.=$= PipeIO.debugPrint
 			Pipe.=$= do
 				PipeBS.hPutStr ho
 --				PipeIO.print'
@@ -70,5 +73,6 @@ sampleOptions = PipeZ.DeflateOptions {
 	PipeZ.deflateOptionsCompressionLevel = Zlib.DefaultCompression,
 	PipeZ.deflateOptionsCompressionMethod = Zlib.Deflated,
 	PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsRaw 15,
-	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 8,
+--	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 8,
+	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
 	PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
