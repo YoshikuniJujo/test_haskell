@@ -24,7 +24,7 @@ module Data.ByteString.FingerTree.Internal (
 
 	-- * GENERATING
 
-	replicate,
+	replicate, unfoldr,
 
 	-- * BREAKING
 
@@ -146,6 +146,13 @@ concat = foldr append Empty
 replicate :: Int -> Word8 -> ByteString
 replicate 0 = const $ Empty
 replicate n = ByteString . Single . BS.replicate n
+
+unfoldr :: (a -> Maybe (Word8, a)) -> a -> ByteString
+unfoldr f = concat . (fromStrict <$>) . unfoldChunk 32 64
+	where unfoldChunk n  n' x =
+		case BS.unfoldrN n f x of
+			(s, Nothing) -> [s]
+			(s, Just x') -> s : unfoldChunk n' (n + n') x'
 
 splitAt' :: Int -> ByteString -> Maybe (ByteString, ByteString)
 splitAt' n (ByteString t) = case search (\l _ -> l >= n) t of
