@@ -21,6 +21,17 @@ fromBits' b0 = go (finiteBitSize b0 `div` 8) b0
 	go 0 _ = ""
 	go n b = bitsToBits 8 b `cons` go (n - 1) (b `shiftR` 8)
 
+fromBitsBE :: Bits b => b -> ByteString
+fromBitsBE b
+	| b == zeroBits = ""
+	| otherwise = fromBitsBE (b `shiftR` 8) `snoc` bitsToBits 8 b
+
+fromBitsBE' :: FiniteBits b => b -> ByteString
+fromBitsBE' b0 = go (finiteBitSize b0 `div` 8) b0
+	where
+	go 0 _ = ""
+	go n b = go (n - 1) (b `shiftR` 8) `snoc` bitsToBits 8 b
+
 bitsToBits :: (Bits a, Bits b) => Int -> a -> b
 bitsToBits n b = foldl setBit zeroBits
 	. map fst . filter snd $ map (id &&& testBit b) [0 .. n - 1]
