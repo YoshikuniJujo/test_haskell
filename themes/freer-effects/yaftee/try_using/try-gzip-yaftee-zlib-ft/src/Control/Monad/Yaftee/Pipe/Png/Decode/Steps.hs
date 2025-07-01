@@ -8,7 +8,7 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Decode.Steps (
 	module Control.Monad.Yaftee.Pipe.Png.Decode.Steps,
-	Chunk.Chunk
+	Chunk.Chunk(..)
 	) where
 
 import Control.Monad
