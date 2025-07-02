@@ -87,6 +87,7 @@ chunk1 nm m = do
 	crc0 <- Crc32.fromWord . Seq.toBitsBE <$> readBytes nm 4
 	when (crc1 /= crc0) $ Except.throw @String "chunk1: CRC32 error"
 --	Pipe.yield . Left $ ChunkEnd cn
+	Pipe.yield ""
 	pure $ cn /= seqFromString "IEND"
 	where
 	split n = fix \go -> \case

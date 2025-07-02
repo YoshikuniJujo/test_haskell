@@ -14,6 +14,7 @@ import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
+import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
@@ -30,14 +31,19 @@ main :: IO ()
 main = do
 	fp : fpo : _ <- getArgs
 	h <- openFile fp ReadMode
+	ibd <- PipeZ.cByteArrayMalloc 64
+	obd <- PipeZ.cByteArrayMalloc 64
 	ho <- openFile fpo WriteMode
+	ibe <- PipeZ.cByteArrayMalloc 64
+	obe <- PipeZ.cByteArrayMalloc 64
 	void . Eff.runM . Except.run @String
 		. Steps.chunkRun_ @"foobar" . Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 h
-			Pipe.=$= PipeIO.debugPrint
+--			Pipe.=$= PipeIO.debugPrint
 			Pipe.=$= PipeT.convert BSF.fromStrict Pipe.=$=
-			Steps.chunk "foobar" Pipe.=$= (fix \go -> Pipe.awaitMaybe >>= \case
+				Steps.chunk "foobar"
+			Pipe.=$= (fix \go -> Pipe.awaitMaybe >>= \case
 				Nothing -> Pipe.yield $ Chunk {
 					chunkName = "IEND",
 					chunkBody = "" }
@@ -52,7 +58,7 @@ main = do
 				Pipe.yield Png.fileHeader
 				PipeT.convert chunkToByteString
 			Pipe.=$= PipeT.convert BSF.toStrict
-			Pipe.=$= PipeIO.debugPrint
+--			Pipe.=$= PipeIO.debugPrint
 			Pipe.=$= PipeBS.hPutStr ho
 	hClose h; hClose ho
 
