@@ -108,7 +108,7 @@ initialize :: forall nm m -> (
 initialize nm m f a
 	(CByteArray (castPtr -> i, ni))
 	(CByteArray (o, (fromIntegral -> no'))) = do
-	bs0 <- Pipe.await
+	bs0 <- awaitInput
 	((castPtr -> i0, fromIntegral -> n0), ebs0) <-
 		Eff.effBase . unsafeIOToPrim @m $ BSF.poke (i, ni) bs0
 	either (const $ pure ()) (putInput nm ByteString) ebs0
@@ -118,6 +118,16 @@ initialize nm m f a
 	rc0 <- Eff.effBase $ f @m strm a
 	when (rc0 /= Zlib.Ok) $ Except.throw rc0
 	pure strm
+
+awaitInput :: U.Member Pipe.P es => Eff.E es BSF.ByteString o BSF.ByteString
+awaitInput = do
+	bs <- Pipe.await
+	if BSF.null bs then awaitInput else pure bs
+
+awaitInputMaybe :: U.Member Pipe.P es => (i -> Bool) -> Eff.E es i o (Maybe i)
+awaitInputMaybe p = Pipe.awaitMaybe >>= \case
+	Nothing -> pure Nothing
+	Just bs -> if p bs then awaitInputMaybe p else pure $ Just bs
 
 finalize :: forall m -> (
 	PrimMonad m,
@@ -160,7 +170,7 @@ body nm m f
 			(unsafeIOToPrim @m $ BSF.peek (o', no - ao))
 		Eff.effBase $ Zlib.setNextOut @m strm o no'
 		whenDef (rc /= Zlib.StreamEnd) (rc /= Zlib.StreamEnd && ai == 0) do
-			minp <- getInput nm unByteString
+			minp <- getInput nm BSF.null unByteString
 			case minp of
 				Nothing -> do
 					doWhile_ do
@@ -195,9 +205,9 @@ restOfInput nm m strm = do
 
 getInput :: forall es i' i o . forall nm ->
 	(U.Member Pipe.P es, U.Member (State.Named nm (Maybe i')) es) =>
-	(i' -> i) -> Eff.E es i o (Maybe i)
-getInput nm un = State.getN nm
-	>>= maybe Pipe.awaitMaybe ((<$ State.putN @(Maybe i') nm Nothing) . Just . un)
+	(i -> Bool) -> (i' -> i) -> Eff.E es i o (Maybe i)
+getInput nm p un = State.getN nm
+	>>= maybe (awaitInputMaybe p) ((<$ State.putN @(Maybe i') nm Nothing) . Just . un)
 
 putInput :: forall nm -> (U.Member (State.Named nm (Maybe i')) es) =>
 	(i -> i') -> i -> Eff.E es i o ()
