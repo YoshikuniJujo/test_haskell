@@ -78,6 +78,7 @@ chunk1 nm m = do
 	resetCrc32 nm
 	cn <- readBytes nm 4
 	State.putN nm $ Chunk cn
+	Pipe.yield ""
 --	Pipe.yield . Left $ ChunkBegin cn
 --	for_ (split m n) \n' -> Pipe.yield =<< Right <$> readBytes nm n'
 	for_ (split m n) \n' -> Pipe.yield =<< readBytes nm n'
@@ -87,7 +88,6 @@ chunk1 nm m = do
 	crc0 <- Crc32.fromWord . Seq.toBitsBE <$> readBytes nm 4
 	when (crc1 /= crc0) $ Except.throw @String "chunk1: CRC32 error"
 --	Pipe.yield . Left $ ChunkEnd cn
-	Pipe.yield ""
 	pure $ cn /= seqFromString "IEND"
 	where
 	split n = fix \go -> \case

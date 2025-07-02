@@ -44,15 +44,16 @@ main = do
 			Pipe.=$= PipeT.convert BSF.fromStrict Pipe.=$=
 				Steps.chunk "foobar"
 			Pipe.=$= (fix \go -> Pipe.awaitMaybe >>= \case
-				Nothing -> Pipe.yield $ Chunk {
+				Nothing -> pure () {- Pipe.yield $ Chunk {
 					chunkName = "IEND",
-					chunkBody = "" }
+					chunkBody = "" } -}
 				Just bd -> do
+					bd' <- if BSF.null bd then Pipe.await else pure bd
 					Steps.Chunk nm <-
 						State.getN @Steps.Chunk "foobar"
 					Pipe.yield $ Chunk {
 						chunkName = nm,
-						chunkBody = bd }
+						chunkBody = bd' }
 					void go)
 			Pipe.=$= do
 				Pipe.yield Png.fileHeader
