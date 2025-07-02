@@ -44,9 +44,7 @@ main = do
 			Pipe.=$= PipeT.convert BSF.fromStrict Pipe.=$=
 				Steps.chunk "foobar"
 			Pipe.=$= (fix \go -> Pipe.awaitMaybe >>= \case
-				Nothing -> pure () {- Pipe.yield $ Chunk {
-					chunkName = "IEND",
-					chunkBody = "" } -}
+				Nothing -> pure ()
 				Just bd -> do
 					bd' <- if BSF.null bd then Pipe.await else pure bd
 					Steps.Chunk nm <-
