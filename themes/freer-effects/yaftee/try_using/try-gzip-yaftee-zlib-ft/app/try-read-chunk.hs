@@ -31,6 +31,9 @@ import Data.Png.Header qualified as Header
 import System.IO
 import System.Environment
 
+import Codec.Compression.Zlib.Constant.Core qualified as Zlib
+import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
+
 main :: IO ()
 main = do
 	fp : fpo : _ <- getArgs
@@ -40,12 +43,16 @@ main = do
 	ho <- openFile fpo WriteMode
 	ibe <- PipeZ.cByteArrayMalloc 64
 	obe <- PipeZ.cByteArrayMalloc 64
-	void . Eff.runM . Except.run @String . Fail.runExc id
+	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. PipeZ.run @"foobar"
+		. PipeZ.run @"barbaz"
+		. Fail.runExc id
 		. Steps.chunkRun_ @"foobar"
 		. OnDemand.run @"foobar"
 		. flip (State.runN @"foobar") Header.header0
 		. Pipe.run
 		. (`Except.catch` IO.putStrLn)
+		. (`Except.catch` IO.print @Zlib.ReturnCode)
 		. void $ PipeBS.hGet 32 h
 --			Pipe.=$= PipeIO.debugPrint
 			Pipe.=$= PipeT.convert BSF.fromStrict Pipe.=$=
@@ -57,20 +64,22 @@ main = do
 					Steps.Chunk nm <-
 						State.getN @Steps.Chunk "foobar"
 					if nm == "IHDR"
-					then void do
-						Pipe.yield bd'
-							Pipe.=$= OnDemand.onDemand "foobar"
-							Pipe.=$= Header.read "foobar" (const $ pure ())
-						bd'' <- Header.encodeHeader <$> State.getN "foobar"
-						Pipe.yield ""
+					then void $ Pipe.yield bd'
+						Pipe.=$= OnDemand.onDemand "foobar"
+						Pipe.=$= Header.read "foobar" (const $ pure ())
 					else when (nm == "IDAT") $ Pipe.yield bd'
 					void go)
+			Pipe.=$= PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
+			Pipe.=$= PipeZ.deflate "barbaz" IO sampleOptions ibe obe
 			Pipe.=$= do
-				"" <- Pipe.await
+				bd <- Pipe.await
 				bd'' <- Header.encodeHeader <$> State.getN "foobar"
 				Pipe.yield $ Chunk {
 					chunkName = "IHDR",
 					chunkBody = BSF.fromStrict bd'' }
+				Pipe.yield $ Chunk {
+					chunkName = "IDAT",
+					chunkBody = bd }
 				fix \go -> Pipe.awaitMaybe >>= \case
 					Nothing -> pure ()
 					Just bd -> do
@@ -100,3 +109,11 @@ chunkToByteString Chunk { chunkName = nm, chunkBody = bd } =
 	ln = fromIntegral @_ @Word32 $ BSF.length bd
 	nmbd = nm <> bd
 	crc = Crc32.complement $ BSF.foldl' Crc32.step Crc32.initial nmbd
+
+sampleOptions :: PipeZ.DeflateOptions
+sampleOptions = PipeZ.DeflateOptions {
+	PipeZ.deflateOptionsCompressionLevel = Zlib.DefaultCompression,
+	PipeZ.deflateOptionsCompressionMethod = Zlib.Deflated,
+	PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
+	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
+	PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
