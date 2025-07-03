@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -6,6 +7,8 @@ module Data.Png.Header where
 
 import Data.Bits
 import Data.Word
+import Data.ByteString qualified as BS
+import Data.ByteString.ToolsYj qualified as BS
 
 data Header = Header {
 	headerWidth :: Word32,
@@ -16,6 +19,15 @@ data Header = Header {
 	headerFilterMethod :: FilterMethod,
 	headerInterlaceMethod :: InterlaceMethod }
 	deriving Show
+
+encodeHeader :: Header -> BS.ByteString
+encodeHeader Header {
+	headerWidth = wdt, headerHeight = hgt,
+	headerBitDepth = bd, headerColorType = ColorType ct,
+	headerCompressionMethod = CompressionMethod cm,
+	headerFilterMethod = FilterMethod fm,
+	headerInterlaceMethod = InterlaceMethod im } =
+	BS.fromBitsBE' wdt <> BS.fromBitsBE' hgt <> BS.pack [bd, ct, cm, fm, im]
 
 headerToRows :: Header -> [Int]
 headerToRows h@Header { headerInterlaceMethod = InterlaceMethodNon } =
