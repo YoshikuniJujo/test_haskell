@@ -165,7 +165,7 @@ eq :: ByteString -> ByteString -> Bool
 eq Empty Empty = True
 eq Empty _ = False
 eq _ Empty = False
-eq aa@(a :<| as) ba@(b :<| bs)
+eq aa@(a :< as) ba@(b :< bs)
 	| length aa /= length ba = False
 	| otherwise = a == b && as `eq` bs
 
@@ -173,7 +173,7 @@ compareBytes :: ByteString -> ByteString -> Ordering
 compareBytes Empty Empty = EQ
 compareBytes Empty _ = LT
 compareBytes _ Empty = GT
-compareBytes (a :<| as) (b :<| bs)
+compareBytes (a :< as) (b :< bs)
 	| a < b = LT
 	| a > b = GT
 	| otherwise = compareBytes as bs
