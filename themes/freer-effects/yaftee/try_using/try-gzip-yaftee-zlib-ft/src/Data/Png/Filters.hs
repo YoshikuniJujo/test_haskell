@@ -83,6 +83,20 @@ unfilterPaeth (BSF.uncons -> priorRaw)
 			r' = a + paethPredictor r p pr
 		_ -> error "never occur"
 
+filterPaeth :: BSF.ByteString -> [Word8] -> BSF.ByteString -> [Word8] -> [Word8]
+filterPaeth (BSF.uncons -> uplft)
+	(L.uncons -> up) (BSF.uncons -> lft) (L.uncons -> cr) =
+	case (uplft, up, lft, cr) of
+		(Nothing, _, _, _) -> error "never occur"
+		(_, _, Nothing, _) -> error "never occur"
+		(_, Nothing, _, Nothing) -> []
+		(Just (ul, uls), Just (u, us), Just (l, ls), Just (c, cs)) ->
+			r : filterPaeth
+				(uls BSF.:> u) us (ls BSF.:> c) cs
+			where
+			r = c - paethPredictor l u ul
+		_ -> error "never occur"
+
 paethPredictor :: Word8 -> Word8 -> Word8 -> Word8
 paethPredictor (id &&& fromIntegral -> (a, a'))
 	(id &&& fromIntegral -> (b, b')) (id &&& fromIntegral -> (c, c'))
