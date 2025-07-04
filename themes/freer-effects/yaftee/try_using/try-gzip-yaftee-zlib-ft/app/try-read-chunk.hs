@@ -12,6 +12,7 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
+import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
@@ -44,6 +45,7 @@ main = do
 	ibe <- PipeZ.cByteArrayMalloc 64
 	obe <- PipeZ.cByteArrayMalloc 64
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. Buffer.run @"foobar" @BSF.ByteString
 		. PipeZ.run @"foobar"
 		. PipeZ.run @"barbaz"
 		. Fail.runExc id
@@ -71,8 +73,9 @@ main = do
 					void go)
 			Pipe.=$= PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
 			Pipe.=$= do
-				hdr <- State.getN @Header.Header "foobar"
-				forever $ Pipe.yield =<< Pipe.await
+				bs0 <- Pipe.await
+				rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
+				Buffer.format "foobar" BSF.splitAt' bs0 rs
 			Pipe.=$= PipeZ.deflate "barbaz" IO sampleOptions ibe obe
 			Pipe.=$= do
 				bd <- Pipe.await
