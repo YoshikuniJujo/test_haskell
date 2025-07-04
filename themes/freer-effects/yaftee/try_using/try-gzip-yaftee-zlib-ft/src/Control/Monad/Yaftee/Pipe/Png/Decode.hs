@@ -19,7 +19,6 @@ module Control.Monad.Yaftee.Pipe.Png.Decode (
 import Prelude hiding (Monoid)
 import Control.Monad
 import Control.Monad.Primitive
-import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
@@ -86,7 +85,7 @@ decode nm m ib ob = void $
 	Pipe.=$= do
 		bs0 <- Pipe.await
 		rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN nm
-		format nm bs0 rs
+		Buffer.format nm BSF.splitAt' bs0 rs
 	Pipe.=$= pngUnfilter nm Pipe.=$= bytesToColor nm
 
 type Members nm es = (
@@ -94,18 +93,6 @@ type Members nm es = (
 	U.Member (State.Named nm Header.Header) es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
 	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es )
-
-format :: forall nm -> (
-	U.Member Pipe.P es,
-	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es ) =>
-	BSF.ByteString -> [Int] -> Eff.E es BSF.ByteString BSF.ByteString ()
-format nm bs0 ns0 = do
-	State.putN nm $ Buffer.Monoid bs0
-	($ ns0) $ fix \go -> \case
-		[] -> pure ()
-		n : ns -> do
-			Pipe.yield =<< Buffer.getInput nm n
-			go ns
 
 pngUnfilter :: forall nm -> (
 	U.Member Pipe.P es,
