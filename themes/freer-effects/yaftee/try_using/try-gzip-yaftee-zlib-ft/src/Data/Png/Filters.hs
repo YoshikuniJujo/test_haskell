@@ -31,8 +31,19 @@ unfilterSub (BSF.uncons -> raw) (L.uncons -> sub) = case (raw, sub) of
 		r' : unfilterSub (rs `BSF.snoc` r') ss
 		where r' = r + s
 
+filterSub :: BSF.ByteString -> [Word8] -> [Word8]
+filterSub (BSF.uncons -> pr) (L.uncons -> cr) = case (pr, cr) of
+	(Nothing, _) -> error "never occur"
+	(_, Nothing) -> []
+	(Just (r, rs), Just (s, ss)) ->
+		r' : filterSub (rs `BSF.snoc` s) ss
+		where r' = s - r
+
 unfilterUp :: [Word8] -> BSF.ByteString -> [Word8]
 unfilterUp = curry $ uncurry (zipWith (+)) . (id *** otoList)
+
+filterUp :: [Word8] -> BSF.ByteString -> [Word8]
+filterUp = curry $ uncurry (zipWith subtract) . (id *** otoList)
 
 unfilterAverage ::
 	[Word8] -> BSF.ByteString -> BSF.ByteString -> [Word8]
