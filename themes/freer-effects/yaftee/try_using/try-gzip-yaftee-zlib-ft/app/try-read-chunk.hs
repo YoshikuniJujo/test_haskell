@@ -70,6 +70,9 @@ main = do
 					else when (nm == "IDAT") $ Pipe.yield bd'
 					void go)
 			Pipe.=$= PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
+			Pipe.=$= do
+				hdr <- State.getN @Header.Header "foobar"
+				forever $ Pipe.yield =<< Pipe.await
 			Pipe.=$= PipeZ.deflate "barbaz" IO sampleOptions ibe obe
 			Pipe.=$= do
 				bd <- Pipe.await

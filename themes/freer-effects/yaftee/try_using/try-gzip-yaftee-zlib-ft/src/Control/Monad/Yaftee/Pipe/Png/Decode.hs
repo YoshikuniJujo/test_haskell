@@ -23,6 +23,7 @@ import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
+import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
@@ -48,7 +49,7 @@ import Data.Color
 run_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()
 run_ = void
-	. flip (State.runN @nm) (Monoid ("" :: BSF.ByteString))
+	. Buffer.run @nm
 	. PipeZ.run @nm
 	. flip (State.runN @nm) Header.header0
 	. OnDemand.run @nm
@@ -59,7 +60,7 @@ type States nm =
 	OnDemand.States nm `Append` '[
 		State.Named nm Header.Header,
 		State.Named nm (Maybe PipeZ.ByteString),
-		State.Named nm (Monoid BSF.ByteString) ]
+		State.Named nm (Buffer.Monoid BSF.ByteString) ]
 
 decode :: forall nm m -> (
 	PrimBase m, RealFrac d, U.Member Pipe.P es,
@@ -77,7 +78,6 @@ decode nm m ib ob = void $
 		x <- Pipe.await
 		Chunk.Chunk c <- State.getN nm
 		when (BSF.toStrict c == "IHDR" || BSF.toStrict c == "IDAT")
---		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
 			$ Pipe.yield x
 	Pipe.=$= do
 		_ <- OnDemand.onDemand nm Pipe.=$=
@@ -93,36 +93,19 @@ type Members nm es = (
 	Chunk.ChunkMembers nm es, OnDemand.Members nm es,
 	U.Member (State.Named nm Header.Header) es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
-	U.Member (State.Named nm (Monoid BSF.ByteString)) es )
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es )
 
 format :: forall nm -> (
 	U.Member Pipe.P es,
-	U.Member (State.Named nm (Monoid BSF.ByteString)) es ) =>
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es ) =>
 	BSF.ByteString -> [Int] -> Eff.E es BSF.ByteString BSF.ByteString ()
 format nm bs0 ns0 = do
-	State.putN nm $ Monoid bs0
+	State.putN nm $ Buffer.Monoid bs0
 	($ ns0) $ fix \go -> \case
 		[] -> pure ()
 		n : ns -> do
-			Pipe.yield =<< getInput nm n
+			Pipe.yield =<< Buffer.getInput nm n
 			go ns
-
-getInput :: forall nm -> (
-	U.Member Pipe.P es,
-	U.Member (State.Named nm (Monoid BSF.ByteString)) es ) =>
-	Int -> Eff.E es BSF.ByteString o BSF.ByteString
-getInput nm n = State.getN nm >>= \(Monoid bs) -> case BSF.splitAt' n bs of
-	Nothing -> readMore nm >> getInput nm n
-	Just (t, d) -> t <$ State.putN nm (Monoid d)
-
-readMore :: forall nm -> (
-	Semigroup mono, U.Member Pipe.P es,
-	U.Member (State.Named nm (Monoid mono)) es ) =>
-	Eff.E es mono o ()
-readMore nm =
-	Pipe.await >>= \xs -> State.modifyN nm (Monoid . (<> xs) . unMonoid)
-
-newtype Monoid m = Monoid { unMonoid :: m } deriving Show
 
 pngUnfilter :: forall nm -> (
 	U.Member Pipe.P es,
