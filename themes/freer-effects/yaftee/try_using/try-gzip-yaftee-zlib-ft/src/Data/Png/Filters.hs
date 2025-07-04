@@ -57,6 +57,18 @@ unfilterAverage (L.uncons -> prior) (BSF.uncons -> raw) (BSF.uncons -> average) 
 			r' = fromIntegral ((fromIntegral p + fromIntegral r) `div` 2 :: Int) + a
 		_ -> error "never occur"
 
+filterAverage ::
+	[Word8] -> BSF.ByteString -> BSF.ByteString -> [Word8]
+filterAverage (L.uncons -> up) (BSF.uncons -> lft) (BSF.uncons -> cr) =
+	case (up, lft, cr) of
+		(_, Nothing, _) -> error "never occur"
+		(Nothing, _, Nothing) -> []
+		(Just (u, us), Just (l, ls), Just (c, cs)) ->
+			r : filterAverage us (ls `BSF.snoc` c) cs
+			where
+			r = c - fromIntegral ((fromIntegral u + fromIntegral l) `div` 2 :: Int)
+		_ -> error "never occur"
+
 unfilterPaeth :: BSF.ByteString -> [Word8] -> BSF.ByteString -> [Word8] -> [Word8]
 unfilterPaeth (BSF.uncons -> priorRaw)
 	(L.uncons -> prior) (BSF.uncons -> raw) (L.uncons -> paeth) =

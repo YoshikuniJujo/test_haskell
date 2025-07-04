@@ -26,6 +26,7 @@ import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
+import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
@@ -36,7 +37,6 @@ import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png
 import Data.Png.Header qualified as Header
-import Data.Png.Filters
 
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 
@@ -86,41 +86,13 @@ decode nm m ib ob = void $
 		bs0 <- Pipe.await
 		rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN nm
 		Buffer.format nm BSF.splitAt' bs0 rs
-	Pipe.=$= pngUnfilter nm Pipe.=$= bytesToColor nm
+	Pipe.=$= Unfilter.pngUnfilter nm Pipe.=$= bytesToColor nm
 
 type Members nm es = (
 	Chunk.ChunkMembers nm es, OnDemand.Members nm es,
 	U.Member (State.Named nm Header.Header) es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
 	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es )
-
-pngUnfilter :: forall nm -> (
-	U.Member Pipe.P es,
-	U.Member (State.Named nm Header.Header) es,
-	U.Member (Except.E String) es
-	) =>
-	Eff.E es BSF.ByteString [Word8] ()
-pngUnfilter nm = void do
-	bs <- Pipe.await
-	h <- State.getN nm
-	let	bpp = Header.headerToBpp h
-		rbs = Header.headerToRowBytes h
-	bs' <- either Except.throw pure
-		$ unfilter bpp (replicate rbs 0) bs
-	Pipe.yield bs'
-	unfilterAll bpp bs'
-
-unfilterAll :: (
-	U.Member Pipe.P es,
-	U.Member (Except.E String) es ) =>
-	Int -> [Word8] -> Eff.E es BSF.ByteString [Word8] ()
-unfilterAll bpp prior = Pipe.awaitMaybe >>= \case
-	Nothing -> pure ()
-	Just BSF.Empty -> pure ()
-	Just bs -> do
-		bs' <- either Except.throw pure $ unfilter bpp prior bs
-		Pipe.yield bs'
-		unfilterAll bpp bs'
 
 bytesToColor :: forall nm -> (
 	RealFrac d,

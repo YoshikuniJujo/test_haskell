@@ -16,6 +16,7 @@ import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
+import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
@@ -56,7 +57,9 @@ main = do
 		. (`Except.catch` IO.putStrLn)
 		. (`Except.catch` IO.print @Zlib.ReturnCode)
 		. void $ PipeBS.hGet 32 h
---			Pipe.=$= PipeIO.debugPrint
+
+-- DECODE
+
 			Pipe.=$= PipeT.convert BSF.fromStrict Pipe.=$=
 				Steps.chunk "foobar"
 			Pipe.=$= (fix \go -> Pipe.awaitMaybe >>= \case
@@ -76,6 +79,12 @@ main = do
 				bs0 <- Pipe.await
 				rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
 				Buffer.format "foobar" BSF.splitAt' bs0 rs
+			Pipe.=$= Unfilter.pngUnfilter "foobar"
+
+-- ENCODE
+
+			Pipe.=$= forever (Pipe.yield . (0 :) =<< Pipe.await)
+			Pipe.=$= PipeT.convert BSF.pack
 			Pipe.=$= PipeZ.deflate "barbaz" IO sampleOptions ibe obe
 			Pipe.=$= do
 				bd <- Pipe.await
@@ -99,7 +108,9 @@ main = do
 				Pipe.yield Png.fileHeader
 				PipeT.convert chunkToByteString
 			Pipe.=$= PipeT.convert BSF.toStrict
---			Pipe.=$= PipeIO.debugPrint
+
+-- ENCODE END
+
 			Pipe.=$= PipeBS.hPutStr ho
 	hClose h; hClose ho
 
