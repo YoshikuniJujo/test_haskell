@@ -46,6 +46,7 @@ main = do
 	ibe <- PipeZ.cByteArrayMalloc 64
 	obe <- PipeZ.cByteArrayMalloc 64
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. Buffer.run @"barbaz" @BSF.ByteString
 		. Buffer.run @"foobar" @BSF.ByteString
 		. PipeZ.run @"foobar"
 		. PipeZ.run @"barbaz"
@@ -86,6 +87,7 @@ main = do
 			Pipe.=$= forever (Pipe.yield . (0 :) =<< Pipe.await)
 			Pipe.=$= PipeT.convert BSF.pack
 			Pipe.=$= PipeZ.deflate "barbaz" IO sampleOptions ibe obe
+			Pipe.=$= Buffer.format' "barbaz" BSF.splitAt' "" 1000
 			Pipe.=$= do
 				bd <- Pipe.await
 				bd'' <- Header.encodeHeader <$> State.getN "foobar"
