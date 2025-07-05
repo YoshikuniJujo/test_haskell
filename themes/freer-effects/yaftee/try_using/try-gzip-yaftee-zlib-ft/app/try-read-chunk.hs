@@ -88,7 +88,9 @@ main = do
 			Pipe.=$= do
 				bs0 <- Pipe.await
 				hdr <- State.getN "foobar"
-				Unfilter.pngFilter "foobar" hdr bs0
+				IO.print hdr
+				IO.print $ Header.headerToSizes hdr
+				Unfilter.pngFilter "foobar" hdr bs0 $ Header.headerToSizes hdr
 --			Pipe.=$= forever (Pipe.yield . (0 :) =<< Pipe.await)
 			Pipe.=$= PipeT.convert BSF.pack
 			Pipe.=$= PipeZ.deflate "barbaz" IO sampleOptions ibe obe

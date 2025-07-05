@@ -57,22 +57,28 @@ pngFilter :: forall nm -> (
 	U.Member Pipe.P es,
 	U.Member (State.Named nm Header.Header) es,
 	U.Member (Except.E String) es ) =>
-	Header.Header -> BSF.ByteString -> Eff.E es BSF.ByteString [Word8] ()
-pngFilter nm hdr bs0 = void do
+	Header.Header ->
+	BSF.ByteString -> [(Int, Int)] -> Eff.E es BSF.ByteString [Word8] ()
+pngFilter _ _ _ [] = pure ()
+pngFilter nm hdr bs0 ((w, h) : ss) = void do
 	let	bpp = Header.headerToBpp hdr
 		rbs = Header.headerToRowBytes hdr
-		bs0' = filter bpp (replicate rbs 0) bs0
+		bs0' = filter bpp (replicate (w * bpp) 0) bs0
 	Pipe.yield bs0'
 	trace (show bs0) $ pure ()
 	trace (show bs0') $ pure ()
-	filterAll bpp (BSF.unpack bs0)
+	filterAll bpp (BSF.unpack bs0) (h - 1)
+	when (not $ null ss) do
+		bs0' <- Pipe.await
+		pngFilter nm hdr bs0' ss
 
 filterAll :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
-	Int -> [Word8] -> Eff.E es BSF.ByteString [Word8] ()
-filterAll bpp prior = Pipe.awaitMaybe >>= \case
+	Int -> [Word8] -> Int -> Eff.E es BSF.ByteString [Word8] ()
+filterAll bpp prior 0 = pure ()
+filterAll bpp prior n = Pipe.awaitMaybe >>= \case
 	Nothing -> pure ()
 	Just BSF.Empty -> pure ()
 	Just bs -> do
 		let	bs' = filter bpp prior bs
 		Pipe.yield bs'
-		filterAll bpp (BSF.unpack bs)
+		filterAll bpp (BSF.unpack bs) (n - 1)

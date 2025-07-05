@@ -37,6 +37,35 @@ headerToRows h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } = map (* 
 		(fromIntegral (headerWidth h))
 		(fromIntegral $ headerHeight h)
 
+headerToHeights :: Header -> [Int]
+headerToHeights h@Header { headerInterlaceMethod = InterlaceMethodNon } =
+	[fromIntegral $ headerHeight h]
+headerToHeights h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
+	adam7heights . fromIntegral $ headerHeight h
+
+headerToSizes :: Header -> [(Int, Int)]
+headerToSizes h@Header { headerInterlaceMethod = InterlaceMethodNon } =
+	[(fromIntegral $ headerWidth h, fromIntegral $ headerHeight h)]
+headerToSizes h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
+	adam7Sizes	(fromIntegral $ headerWidth h)
+			(fromIntegral $ headerHeight h)
+
+adam7heights :: Int -> [Int]
+adam7heights h = [
+	h `div'` 8, h `div'` 8,
+	h `div'` 4 `div` 2, h `div'` 4,
+	h `div'` 2 `div` 2, h `div'` 2,
+	h `div` 2 ]
+
+adam7Sizes :: Int -> Int -> [(Int, Int)]
+adam7Sizes w h = [
+	(w `div'` 8, h `div'` 8),
+	(w `div'` 4 `div` 2, h `div'` 8),
+	(w `div'` 4, h `div'` 4 `div` 2),
+	(w `div'` 2 `div` 2, h `div'` 4),
+	(w `div'` 2, h `div'` 2 `div` 2),
+	(w `div` 2, h `div'` 2), (w, h `div` 2) ]
+
 interlacePixelNums :: Int -> Int -> [Int]
 interlacePixelNums w h =
 	replicate (h `div'` 8) (w `div'` 8) ++
