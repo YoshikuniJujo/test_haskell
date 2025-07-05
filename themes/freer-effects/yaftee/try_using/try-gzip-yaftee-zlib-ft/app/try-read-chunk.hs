@@ -84,10 +84,15 @@ main = do
 
 -- ENCODE
 
-			Pipe.=$= forever (Pipe.yield . (0 :) =<< Pipe.await)
+			Pipe.=$= PipeT.convert BSF.pack
+			Pipe.=$= do
+				bs0 <- Pipe.await
+				hdr <- State.getN "foobar"
+				Unfilter.pngFilter "foobar" hdr bs0
+--			Pipe.=$= forever (Pipe.yield . (0 :) =<< Pipe.await)
 			Pipe.=$= PipeT.convert BSF.pack
 			Pipe.=$= PipeZ.deflate "barbaz" IO sampleOptions ibe obe
-			Pipe.=$= Buffer.format' "barbaz" BSF.splitAt' "" 1000
+			Pipe.=$= Buffer.format' "barbaz" BSF.splitAt' "" 5000
 			Pipe.=$= do
 				bd <- Pipe.await
 				bd'' <- Header.encodeHeader <$> State.getN "foobar"

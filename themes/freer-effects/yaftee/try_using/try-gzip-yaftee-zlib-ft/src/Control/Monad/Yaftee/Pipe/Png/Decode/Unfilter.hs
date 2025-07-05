@@ -5,8 +5,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter (pngUnfilter) where
+module Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter (
 
+	pngFilter, pngUnfilter
+
+	) where
+
+import Prelude hiding (filter)
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -18,6 +23,8 @@ import Data.ByteString.FingerTree qualified as BSF
 
 import Data.Png.Header qualified as Header
 import Data.Png.Filters
+
+import Debug.Trace
 
 pngUnfilter :: forall nm -> (
 	U.Member Pipe.P es,
@@ -45,3 +52,27 @@ unfilterAll bpp prior = Pipe.awaitMaybe >>= \case
 		bs' <- either Except.throw pure $ unfilter bpp prior bs
 		Pipe.yield bs'
 		unfilterAll bpp bs'
+
+pngFilter :: forall nm -> (
+	U.Member Pipe.P es,
+	U.Member (State.Named nm Header.Header) es,
+	U.Member (Except.E String) es ) =>
+	Header.Header -> BSF.ByteString -> Eff.E es BSF.ByteString [Word8] ()
+pngFilter nm hdr bs0 = void do
+	let	bpp = Header.headerToBpp hdr
+		rbs = Header.headerToRowBytes hdr
+		bs0' = filter bpp (replicate rbs 0) bs0
+	Pipe.yield bs0'
+	trace (show bs0) $ pure ()
+	trace (show bs0') $ pure ()
+	filterAll bpp (BSF.unpack bs0)
+
+filterAll :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
+	Int -> [Word8] -> Eff.E es BSF.ByteString [Word8] ()
+filterAll bpp prior = Pipe.awaitMaybe >>= \case
+	Nothing -> pure ()
+	Just BSF.Empty -> pure ()
+	Just bs -> do
+		let	bs' = filter bpp prior bs
+		Pipe.yield bs'
+		filterAll bpp (BSF.unpack bs)
