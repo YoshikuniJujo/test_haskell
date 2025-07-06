@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -32,6 +32,7 @@ library
       Control.Monad.Yaftee.Pipe.Png.Decode.Steps
       Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter
       Data.Gzip.Header
+      Data.Image.Simple
       Data.Png
       Data.Png.Filters
       Data.Png.Header
@@ -60,6 +61,7 @@ library
     , try-zlib-library
     , typelevel-tools-yj
     , union-color
+    , vector
   default-language: Haskell2010
 
 executable try-gzip-deflate
@@ -86,6 +88,7 @@ executable try-gzip-deflate
     , try-zlib-library
     , typelevel-tools-yj
     , union-color
+    , vector
   default-language: Haskell2010
 
 executable try-gzip-yaftee-zlib-ft-exe
@@ -116,6 +119,7 @@ executable try-gzip-yaftee-zlib-ft-exe
     , try-zlib-library
     , typelevel-tools-yj
     , union-color
+    , vector
   default-language: Haskell2010
 
 executable try-png-decode
@@ -142,6 +146,7 @@ executable try-png-decode
     , try-zlib-library
     , typelevel-tools-yj
     , union-color
+    , vector
   default-language: Haskell2010
 
 executable try-read-chunk
@@ -168,6 +173,7 @@ executable try-read-chunk
     , try-zlib-library
     , typelevel-tools-yj
     , union-color
+    , vector
   default-language: Haskell2010
 
 executable try-zlib-deflate
@@ -194,6 +200,7 @@ executable try-zlib-deflate
     , try-zlib-library
     , typelevel-tools-yj
     , union-color
+    , vector
   default-language: Haskell2010
 
 test-suite try-gzip-yaftee-zlib-ft-test
@@ -225,4 +232,5 @@ test-suite try-gzip-yaftee-zlib-ft-test
     , try-zlib-library
     , typelevel-tools-yj
     , union-color
+    , vector
   default-language: Haskell2010
