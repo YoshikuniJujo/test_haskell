@@ -15,6 +15,7 @@ import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
+import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
@@ -36,9 +37,24 @@ import System.Environment
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
+import Data.Image.Simple qualified as Image
+
 main :: IO ()
 main = do
 	fp : fpo : _ <- getArgs
+	hh <- openFile fp ReadMode
+	Right hdr <- Eff.runM . Except.run @String . Png.runHeader @"foobar" . Pipe.run
+		. (`Except.catch` IO.putStrLn)
+		. void $ PipeBS.hGet 32 hh
+			Pipe.=$= PipeT.convert BSF.fromStrict Pipe.=$= do
+				Png.decodeHeader "foobar"
+	hClose hh
+
+	print hdr
+	img <- Image.new
+		(fromIntegral $ Header.headerWidth hdr)
+		(fromIntegral $ Header.headerHeight hdr)
+
 	h <- openFile fp ReadMode
 	ibd <- PipeZ.cByteArrayMalloc 64
 	obd <- PipeZ.cByteArrayMalloc 64
