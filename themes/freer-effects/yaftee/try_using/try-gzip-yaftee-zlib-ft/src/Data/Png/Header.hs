@@ -12,6 +12,7 @@ import Data.Word
 import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
 import Data.Color
+import Data.Adam7 qualified as Adam7
 
 data Header = Header {
 	headerWidth :: Word32,
@@ -206,3 +207,11 @@ rgbaToWord8List Header { headerBitDepth = bd, headerColorType = ct } =
 			fromIntegral $ b `shiftR` 8, fromIntegral b,
 			fromIntegral $ a `shiftR` 8, fromIntegral a ]
 		_ -> error "yet"
+
+headerToPoss :: Header -> [(Int, Int)]
+headerToPoss hdr@Header { headerInterlaceMethod = InterlaceMethodNon } =
+	[ (fromIntegral x, fromIntegral y) |
+		y <- [0 .. headerHeight hdr], x <- [0 .. headerWidth hdr] ]
+headerToPoss hdr@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
+	concat $ Adam7.poss
+		(fromIntegral $ headerWidth hdr) (fromIntegral $ headerHeight hdr)

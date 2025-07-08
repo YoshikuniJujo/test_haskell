@@ -12,7 +12,7 @@ import Data.Color
 data I s = I { width :: Int, height :: Int, body :: MVector s Word8 }
 
 new :: PrimMonad m => Int -> Int -> m (I (PrimState m))
-new w h = I w h <$> V.new (w * h)
+new w h = I w h <$> V.new (w * h * 4)
 
 write :: (PrimMonad m, RealFrac d) =>
 	I (PrimState m) -> Int -> Int -> Rgba d -> m ()

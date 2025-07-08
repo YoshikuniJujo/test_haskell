@@ -2,10 +2,12 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Control.Arrow
 import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -24,6 +26,7 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
+import Control.HigherOpenUnion qualified as U
 import Data.Word
 import Data.Word.Word8 qualified as Word8
 import Data.Word.Crc32 qualified as Crc32
@@ -101,6 +104,12 @@ main = do
 			Pipe.=$= Unfilter.pngUnfilter "foobar"
 			Pipe.=$= PipeT.convert (Header.word8ListToRgbaList hdr)
 
+			Pipe.=$= pipeZip (Header.headerToPoss hdr)
+			Pipe.=$= forever do
+				clrs <- Pipe.await
+				(\(clr, (x, y)) -> Eff.effBase $ Image.write @IO img x y clr) `mapM` clrs
+				Pipe.yield (fst <$> clrs)
+
 -- ENCODE
 
 			Pipe.=$= PipeT.convert (Header.rgbaListToWord8List hdr)
@@ -164,3 +173,17 @@ sampleOptions = PipeZ.DeflateOptions {
 	PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
 	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
 	PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
+
+pipeZip :: U.Member Pipe.P es => [b] -> Eff.E es [a] [(a, b)] ()
+pipeZip = \case
+	[] -> pure ()
+	ys -> do
+		xs <- Pipe.await
+		let	(xys, (_xs', ys')) = xs `zip'` ys
+		Pipe.yield xys
+		pipeZip ys'
+
+zip' :: [a] -> [b] -> ([(a, b)], ([a], [b]))
+zip' xs [] = ([], (xs, []))
+zip' [] ys = ([], ([], ys))
+zip' (x : xs) (y : ys) = ((x, y) :) `first` zip' xs ys
