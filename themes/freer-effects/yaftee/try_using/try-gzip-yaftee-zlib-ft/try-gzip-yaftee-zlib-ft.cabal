@@ -31,6 +31,7 @@ library
       Control.Monad.Yaftee.Pipe.Png.Decode.Header
       Control.Monad.Yaftee.Pipe.Png.Decode.Steps
       Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter
+      Data.Adam7
       Data.Gzip.Header
       Data.Image.Simple
       Data.Png

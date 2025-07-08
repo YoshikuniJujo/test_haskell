@@ -54,6 +54,8 @@ main = do
 	img <- Image.new
 		(fromIntegral $ Header.headerWidth hdr)
 		(fromIntegral $ Header.headerHeight hdr)
+	print $ Header.headerColorType hdr
+	print $ Header.headerBitDepth hdr
 
 	h <- openFile fp ReadMode
 	ibd <- PipeZ.cByteArrayMalloc 64
@@ -97,8 +99,11 @@ main = do
 				rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
 				Buffer.format "foobar" BSF.splitAt' bs0 rs
 			Pipe.=$= Unfilter.pngUnfilter "foobar"
+			Pipe.=$= PipeT.convert (Header.word8ListToRgbaList hdr)
 
 -- ENCODE
+
+			Pipe.=$= PipeT.convert (Header.rgbaListToWord8List hdr)
 
 			Pipe.=$= PipeT.convert BSF.pack
 			Pipe.=$= do

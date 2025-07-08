@@ -24,8 +24,6 @@ import Data.ByteString.FingerTree qualified as BSF
 import Data.Png.Header qualified as Header
 import Data.Png.Filters
 
-import Debug.Trace
-
 pngUnfilter :: forall nm -> (
 	U.Member Pipe.P es,
 	U.Member (State.Named nm Header.Header) es,
@@ -65,8 +63,6 @@ pngFilter nm hdr bs0 ((w, h) : ss) = void do
 		rbs = Header.headerToRowBytes hdr
 		bs0' = filter bpp (replicate (w * bpp) 0) bs0
 	Pipe.yield bs0'
-	trace (show bs0) $ pure ()
-	trace (show bs0') $ pure ()
 	filterAll bpp (BSF.unpack bs0) (h - 1)
 	when (not $ null ss) do
 		bs0' <- Pipe.await
