@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, TupleSections #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -211,7 +211,14 @@ rgbaToWord8List Header { headerBitDepth = bd, headerColorType = ct } =
 headerToPoss :: Header -> [(Int, Int)]
 headerToPoss hdr@Header { headerInterlaceMethod = InterlaceMethodNon } =
 	[ (fromIntegral x, fromIntegral y) |
-		y <- [0 .. headerHeight hdr], x <- [0 .. headerWidth hdr] ]
+		y <- [0 .. headerHeight hdr - 1], x <- [0 .. headerWidth hdr - 1] ]
 headerToPoss hdr@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
 	concat $ Adam7.poss
+		(fromIntegral $ headerWidth hdr) (fromIntegral $ headerHeight hdr)
+
+headerToPoss' :: Header -> [[(Int, Int)]]
+headerToPoss' hdr@Header { headerInterlaceMethod = InterlaceMethodNon } =
+	(\y -> (, y) <$> [0 .. fromIntegral $ headerWidth hdr - 1]) <$> [0 .. fromIntegral $ headerHeight hdr - 1]
+headerToPoss' hdr@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
+	Adam7.poss
 		(fromIntegral $ headerWidth hdr) (fromIntegral $ headerHeight hdr)

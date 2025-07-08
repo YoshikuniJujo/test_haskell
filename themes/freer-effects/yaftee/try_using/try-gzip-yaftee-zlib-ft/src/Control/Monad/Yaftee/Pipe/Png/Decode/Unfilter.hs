@@ -51,14 +51,13 @@ unfilterAll bpp prior = Pipe.awaitMaybe >>= \case
 		Pipe.yield bs'
 		unfilterAll bpp bs'
 
-pngFilter :: forall nm -> (
+pngFilter :: (
 	U.Member Pipe.P es,
-	U.Member (State.Named nm Header.Header) es,
 	U.Member (Except.E String) es ) =>
 	Header.Header ->
 	BSF.ByteString -> [(Int, Int)] -> Eff.E es BSF.ByteString [Word8] ()
-pngFilter _ _ _ [] = pure ()
-pngFilter nm hdr bs0 ((w, h) : ss) = void do
+pngFilter _ _ [] = pure ()
+pngFilter hdr bs0 ((w, h) : ss) = void do
 	let	bpp = Header.headerToBpp hdr
 		rbs = Header.headerToRowBytes hdr
 		bs0' = filter bpp (replicate (w * bpp) 0) bs0
@@ -66,7 +65,7 @@ pngFilter nm hdr bs0 ((w, h) : ss) = void do
 	filterAll bpp (BSF.unpack bs0) (h - 1)
 	when (not $ null ss) do
 		bs0' <- Pipe.await
-		pngFilter nm hdr bs0' ss
+		pngFilter hdr bs0' ss
 
 filterAll :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 	Int -> [Word8] -> Int -> Eff.E es BSF.ByteString [Word8] ()

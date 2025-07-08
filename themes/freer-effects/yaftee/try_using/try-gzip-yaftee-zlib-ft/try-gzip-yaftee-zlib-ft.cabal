@@ -47,6 +47,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , filepath
     , mono-traversable
     , primitive
     , tools-yj
@@ -73,6 +74,7 @@ executable try-gzip-deflate
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , filepath
     , mono-traversable
     , primitive
     , tools-yj
@@ -104,6 +106,7 @@ executable try-gzip-yaftee-zlib-ft-exe
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , filepath
     , mono-traversable
     , primitive
     , tools-yj
@@ -131,6 +134,7 @@ executable try-png-decode
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , filepath
     , mono-traversable
     , primitive
     , tools-yj
@@ -158,6 +162,7 @@ executable try-read-chunk
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , filepath
     , mono-traversable
     , primitive
     , tools-yj
@@ -185,6 +190,7 @@ executable try-zlib-deflate
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , filepath
     , mono-traversable
     , primitive
     , tools-yj
@@ -217,6 +223,7 @@ test-suite try-gzip-yaftee-zlib-ft-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , filepath
     , mono-traversable
     , primitive
     , tools-yj

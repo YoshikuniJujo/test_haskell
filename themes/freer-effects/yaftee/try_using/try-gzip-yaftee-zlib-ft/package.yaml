@@ -25,6 +25,7 @@ dependencies:
 - mono-traversable
 - vector
 - bytestring
+- filepath
 - union-color
 - tools-yj
 - typelevel-tools-yj

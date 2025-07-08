@@ -1,19 +1,20 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import Control.Arrow
 import Control.Monad
 import Control.Monad.Fix
+import Control.Monad.Primitive
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
-import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
@@ -28,14 +29,15 @@ import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Word
-import Data.Word.Word8 qualified as Word8
 import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
+import Data.Color
 import Data.Png qualified as Png
 import Data.Png.Header qualified as Header
 import System.IO
 import System.Environment
+import System.FilePath
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
@@ -102,56 +104,95 @@ main = do
 				rs <- ((+ 1) <$>) . Header.headerToRows <$> State.getN "foobar"
 				Buffer.format "foobar" BSF.splitAt' bs0 rs
 			Pipe.=$= Unfilter.pngUnfilter "foobar"
-			Pipe.=$= PipeT.convert (Header.word8ListToRgbaList hdr)
+			Pipe.=$= PipeT.convert (Header.word8ListToRgbaList @Double hdr)
 
 			Pipe.=$= pipeZip (Header.headerToPoss hdr)
 			Pipe.=$= forever do
 				clrs <- Pipe.await
-				(\(clr, (x, y)) -> Eff.effBase $ Image.write @IO img x y clr) `mapM` clrs
+				(\(clr, (x, y)) -> Eff.effBase $ Image.write @IO img x y clr) `mapM_` clrs
 				Pipe.yield (fst <$> clrs)
 
--- ENCODE
+			Pipe.=$= encode "barbaz" IO hdr ibe obe
 
-			Pipe.=$= PipeT.convert (Header.rgbaListToWord8List hdr)
-
-			Pipe.=$= PipeT.convert BSF.pack
-			Pipe.=$= do
-				bs0 <- Pipe.await
-				hdr <- State.getN "foobar"
-				IO.print hdr
-				IO.print $ Header.headerToSizes hdr
-				Unfilter.pngFilter "foobar" hdr bs0 $ Header.headerToSizes hdr
---			Pipe.=$= forever (Pipe.yield . (0 :) =<< Pipe.await)
-			Pipe.=$= PipeT.convert BSF.pack
-			Pipe.=$= PipeZ.deflate "barbaz" IO sampleOptions ibe obe
-			Pipe.=$= Buffer.format' "barbaz" BSF.splitAt' "" 5000
-			Pipe.=$= do
-				bd <- Pipe.await
-				bd'' <- Header.encodeHeader <$> State.getN "foobar"
-				Pipe.yield $ Chunk {
-					chunkName = "IHDR",
-					chunkBody = BSF.fromStrict bd'' }
-				Pipe.yield $ Chunk {
-					chunkName = "IDAT",
-					chunkBody = bd }
-				fix \go -> Pipe.awaitMaybe >>= \case
-					Nothing -> pure ()
-					Just bd -> do
-						Pipe.yield Chunk {
-							chunkName = "IDAT",
-							chunkBody = bd }
-						go
-				Pipe.yield Chunk {
-					chunkName = "IEND", chunkBody = "" }
-			Pipe.=$= do
-				Pipe.yield Png.fileHeader
-				PipeT.convert chunkToByteString
 			Pipe.=$= PipeT.convert BSF.toStrict
-
--- ENCODE END
-
 			Pipe.=$= PipeBS.hPutStr ho
 	hClose h; hClose ho
+
+	let	(fpbd, fpex) = splitExtension fpo
+		fpo' = fpbd ++ "-img" <.> fpex
+	ho' <- openFile fpo' WriteMode
+
+	Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. Buffer.run @"barbaz" @BSF.ByteString
+		. PipeZ.run @"barbaz"
+		. Pipe.run
+		. (`Except.catch` IO.putStrLn)
+		. void $ fromImage IO img (Header.headerToPoss' hdr)
+			Pipe.=$= encode "barbaz" IO hdr ibe obe
+			Pipe.=$= PipeT.convert BSF.toStrict
+			Pipe.=$= PipeBS.hPutStr ho'
+
+	hClose ho'
+
+separate :: Int -> [a] -> [[a]]
+separate n = \case
+	[] -> []
+	xs -> let (t, d) = splitAt n xs in t : separate n d
+
+format :: [Int] -> [a] -> [[a]]
+format [] [] = []
+format (n : ns) xs = let (t, d) = splitAt n xs in t : format ns d
+format _ _ = error "bad"
+	
+fromImage :: forall m -> (
+	PrimMonad m, RealFrac d,
+	U.Member Pipe.P es,
+	U.Base (U.FromFirst m) es
+	) =>
+	Image.I (PrimState m) -> [[(Int, Int)]] ->
+	Eff.E es i [Rgba d] ()
+fromImage m img = \case
+	[] -> pure ()
+	ps : pss -> do
+		Pipe.yield =<< (\(x, y) -> Eff.effBase $ Image.read @m img x y) `mapM` ps
+		fromImage m img pss
+
+encode :: forall nm m -> (
+	PrimBase m, RealFrac d, U.Member Pipe.P es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member (Except.E String) es,
+	U.Base (U.FromFirst m) es ) =>
+	Header.Header ->
+	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	Eff.E es [Rgba d] BSF.ByteString ()
+encode nm m hdr ibe obe = void $ PipeT.convert (Header.rgbaListToWord8List hdr)
+	Pipe.=$= PipeT.convert BSF.pack
+	Pipe.=$= do
+		bs0 <- Pipe.await
+		Unfilter.pngFilter hdr bs0 $ Header.headerToSizes hdr
+	Pipe.=$= PipeT.convert BSF.pack
+	Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
+	Pipe.=$= Buffer.format' nm BSF.splitAt' "" 5000
+	Pipe.=$= do
+		let	bd'' = Header.encodeHeader hdr
+		Pipe.yield $ Chunk {
+			chunkName = "IHDR",
+			chunkBody = BSF.fromStrict bd'' }
+		bd0 <- Pipe.await
+		Pipe.yield $ Chunk {
+			chunkName = "IDAT",
+			chunkBody = bd0 }
+		fix \go -> Pipe.awaitMaybe >>= \case
+			Nothing -> pure ()
+			Just bd -> (>> go) $ Pipe.yield Chunk {
+				chunkName = "IDAT", chunkBody = bd }
+		Pipe.yield Chunk {
+			chunkName = "IEND", chunkBody = "" }
+	Pipe.=$= do
+		Pipe.yield Png.fileHeader
+		PipeT.convert chunkToByteString
 
 data Chunk = Chunk {
 	chunkName :: BSF.ByteString,

@@ -20,3 +20,12 @@ write I { width = w, height = _h, body = bd } x y (RgbaWord8 r g b a) = do
 	V.write bd i0 r; V.write bd (i0 + 1) g;
 	V.write bd (i0 + 2) b; V.write bd (i0 + 3) a
 	where i0 = 4 * (w * y + x)
+
+read :: (PrimMonad m, RealFrac d) =>
+	I (PrimState m) -> Int -> Int -> m (Rgba d)
+read I {width = w, height = _h, body = bd } x y = RgbaWord8
+	<$> V.read bd i0
+	<*> V.read bd (i0 + 1)
+	<*> V.read bd (i0 + 2)
+	<*> V.read bd (i0 + 3)
+	where i0 = 4 * (w * y + x)
