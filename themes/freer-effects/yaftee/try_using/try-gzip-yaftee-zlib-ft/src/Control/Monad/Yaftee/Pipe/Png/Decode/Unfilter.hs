@@ -7,7 +7,7 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter (
 
-	pngFilter, pngUnfilter
+	pngFilter, pngUnfilter, pngUnfilter'
 
 	) where
 
@@ -34,6 +34,19 @@ pngUnfilter nm = void do
 	h <- State.getN nm
 	let	bpp = Header.headerToBpp h
 		rbs = Header.headerToRowBytes h
+	bs' <- either Except.throw pure
+		$ unfilter bpp (replicate rbs 0) bs
+	Pipe.yield bs'
+	unfilterAll bpp bs'
+
+pngUnfilter' :: (
+	U.Member Pipe.P es,
+	U.Member (Except.E String) es ) =>
+	Header.Header -> Eff.E es BSF.ByteString [Word8] ()
+pngUnfilter' hdr = void do
+	bs <- Pipe.await
+	let	bpp = Header.headerToBpp hdr
+		rbs = Header.headerToRowBytes hdr
 	bs' <- either Except.throw pure
 		$ unfilter bpp (replicate rbs 0) bs
 	Pipe.yield bs'

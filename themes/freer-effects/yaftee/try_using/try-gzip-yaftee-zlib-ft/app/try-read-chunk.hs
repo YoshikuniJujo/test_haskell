@@ -28,12 +28,8 @@ import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
-import Data.Word
-import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree qualified as BSF
-import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Color
-import Data.Png qualified as Png
 import Data.Png.Header qualified as Header
 import System.IO
 import System.Environment
@@ -43,6 +39,8 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 import Data.Image.Simple qualified as Image
+
+import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
 
 main :: IO ()
 main = do
@@ -82,8 +80,6 @@ main = do
 		. (`Except.catch` IO.print @Zlib.ReturnCode)
 		. void $ PipeBS.hGet 32 h
 
--- DECODE
-
 			Pipe.=$= PipeT.convert BSF.fromStrict Pipe.=$=
 				Steps.chunk "foobar"
 			Pipe.=$= (fix \go -> Pipe.awaitMaybe >>= \case
@@ -112,7 +108,7 @@ main = do
 				(\(clr, (x, y)) -> Eff.effBase $ Image.write @IO img x y clr) `mapM_` clrs
 				Pipe.yield (fst <$> clrs)
 
-			Pipe.=$= encode "barbaz" IO hdr ibe obe
+			Pipe.=$= Encode.encodeRgba "barbaz" IO hdr ibe obe
 
 			Pipe.=$= PipeT.convert BSF.toStrict
 			Pipe.=$= PipeBS.hPutStr ho
@@ -122,28 +118,18 @@ main = do
 		fpo' = fpbd ++ "-img" <.> fpex
 	ho' <- openFile fpo' WriteMode
 
-	Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Buffer.run @"barbaz" @BSF.ByteString
 		. PipeZ.run @"barbaz"
 		. Pipe.run
 		. (`Except.catch` IO.putStrLn)
-		. void $ fromImage IO img (Header.headerToPoss' hdr)
-			Pipe.=$= encode "barbaz" IO hdr ibe obe
+		. void $ fromImage @Double IO img (Header.headerToPoss' hdr)
+			Pipe.=$= Encode.encodeRgba "barbaz" IO hdr ibe obe
 			Pipe.=$= PipeT.convert BSF.toStrict
 			Pipe.=$= PipeBS.hPutStr ho'
 
 	hClose ho'
 
-separate :: Int -> [a] -> [[a]]
-separate n = \case
-	[] -> []
-	xs -> let (t, d) = splitAt n xs in t : separate n d
-
-format :: [Int] -> [a] -> [[a]]
-format [] [] = []
-format (n : ns) xs = let (t, d) = splitAt n xs in t : format ns d
-format _ _ = error "bad"
-	
 fromImage :: forall m -> (
 	PrimMonad m, RealFrac d,
 	U.Member Pipe.P es,
@@ -157,63 +143,10 @@ fromImage m img = \case
 		Pipe.yield =<< (\(x, y) -> Eff.effBase $ Image.read @m img x y) `mapM` ps
 		fromImage m img pss
 
-encode :: forall nm m -> (
-	PrimBase m, RealFrac d, U.Member Pipe.P es,
-	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
-	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
-	U.Member (Except.E Zlib.ReturnCode) es,
-	U.Member (Except.E String) es,
-	U.Base (U.FromFirst m) es ) =>
-	Header.Header ->
-	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
-	Eff.E es [Rgba d] BSF.ByteString ()
-encode nm m hdr ibe obe = void $ PipeT.convert (Header.rgbaListToWord8List hdr)
-	Pipe.=$= PipeT.convert BSF.pack
-	Pipe.=$= do
-		bs0 <- Pipe.await
-		Unfilter.pngFilter hdr bs0 $ Header.headerToSizes hdr
-	Pipe.=$= PipeT.convert BSF.pack
-	Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
-	Pipe.=$= Buffer.format' nm BSF.splitAt' "" 5000
-	Pipe.=$= do
-		let	bd'' = Header.encodeHeader hdr
-		Pipe.yield $ Chunk {
-			chunkName = "IHDR",
-			chunkBody = BSF.fromStrict bd'' }
-		bd0 <- Pipe.await
-		Pipe.yield $ Chunk {
-			chunkName = "IDAT",
-			chunkBody = bd0 }
-		fix \go -> Pipe.awaitMaybe >>= \case
-			Nothing -> pure ()
-			Just bd -> (>> go) $ Pipe.yield Chunk {
-				chunkName = "IDAT", chunkBody = bd }
-		Pipe.yield Chunk {
-			chunkName = "IEND", chunkBody = "" }
-	Pipe.=$= do
-		Pipe.yield Png.fileHeader
-		PipeT.convert chunkToByteString
-
 data Chunk = Chunk {
 	chunkName :: BSF.ByteString,
 	chunkBody :: BSF.ByteString }
 	deriving Show
-
-chunkToByteString :: Chunk -> BSF.ByteString
-chunkToByteString Chunk { chunkName = nm, chunkBody = bd } =
-	BSF.fromBitsBE' ln <> nmbd <> BSF.fromBitsBE' (Crc32.toWord crc)
-	where
-	ln = fromIntegral @_ @Word32 $ BSF.length bd
-	nmbd = nm <> bd
-	crc = Crc32.complement $ BSF.foldl' Crc32.step Crc32.initial nmbd
-
-sampleOptions :: PipeZ.DeflateOptions
-sampleOptions = PipeZ.DeflateOptions {
-	PipeZ.deflateOptionsCompressionLevel = Zlib.DefaultCompression,
-	PipeZ.deflateOptionsCompressionMethod = Zlib.Deflated,
-	PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
-	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
-	PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
 
 pipeZip :: U.Member Pipe.P es => [b] -> Eff.E es [a] [(a, b)] ()
 pipeZip = \case
