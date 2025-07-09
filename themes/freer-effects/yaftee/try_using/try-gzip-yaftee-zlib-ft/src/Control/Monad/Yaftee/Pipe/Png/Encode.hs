@@ -6,7 +6,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.Encode (encodeRgba) where
+module Control.Monad.Yaftee.Pipe.Png.Encode (
+
+	encodeRgba, encodeGray8
+
+	) where
 
 import Control.Monad
 import Control.Monad.Fix
@@ -42,15 +46,41 @@ encodeRgba :: forall nm m -> (
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
 	Eff.E es [Rgba d] BSF.ByteString ()
 encodeRgba nm m hdr ibe obe =
-
--- CONVERT RGBA TO BYTE STRING (FINGER TREE)
-
 	void $ PipeT.convert (Header.rgbaListToWord8List hdr)
 		Pipe.=$= PipeT.convert BSF.pack
 
+		Pipe.=$= encodeRaw nm m hdr ibe obe
+
+encodeGray8 :: forall nm m -> (
+	PrimBase m, RealFrac d, U.Member Pipe.P es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member (Except.E String) es,
+	U.Base (U.FromFirst m) es ) =>
+	Header.Header ->
+	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	Eff.E es [Gray d] BSF.ByteString ()
+encodeGray8 nm m hdr ibe obe =
+	void $ PipeT.convert ((\(GrayWord8 w) -> w) <$>)
+		Pipe.=$= PipeT.convert BSF.pack
+		Pipe.=$= encodeRaw nm m hdr ibe obe
+
+encodeRaw :: forall nm m -> (
+	PrimBase m,
+	U.Member Pipe.P es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
+	U.Base (U.FromFirst m) es
+	) =>
+	Header.Header ->
+	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	Eff.E es BSF.ByteString BSF.ByteString ()
+encodeRaw nm m hdr ibe obe = void $
 -- MAKE IDAT
 
-		Pipe.=$= do
+		do
 			bs0 <- Pipe.await
 			Unfilter.pngFilter hdr bs0 $ Header.headerToSizes hdr
 		Pipe.=$= PipeT.convert BSF.pack

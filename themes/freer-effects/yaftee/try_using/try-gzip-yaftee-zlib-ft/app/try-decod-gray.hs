@@ -29,9 +29,11 @@ import System.Environment
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
+import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
+
 main :: IO ()
 main = do
-	fp : _ <- getArgs
+	fp : fpo : _ <- getArgs
 
 	hh <- openFile fp ReadMode
 	Right hdr <- Eff.runM . Except.run @String
@@ -49,10 +51,17 @@ main = do
 	h <- openFile fp ReadMode
 	ibd <- PipeZ.cByteArrayMalloc 64
 	obd <- PipeZ.cByteArrayMalloc 64
+
+	ho <- openFile fpo WriteMode
+	ibe <- PipeZ.cByteArrayMalloc 64
+	obe <- PipeZ.cByteArrayMalloc 64
+
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Buffer.run @"foobar" @BSF.ByteString
 		. PipeZ.run @"foobar"
 		. Steps.chunkRun_ @"foobar"
+		. Buffer.run @"barbaz" @BSF.ByteString
+		. PipeZ.run @"barbaz"
 		. Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. (`Except.catch` IO.print @Zlib.ReturnCode)
@@ -73,8 +82,11 @@ main = do
 
 -- ENCODE
 
-			Pipe.=$= PipeT.convert ((\(GrayWord8 w) -> w) <$>)
+			Pipe.=$= Encode.encodeGray8 "barbaz" IO hdr ibe obe
+			Pipe.=$= PipeT.convert BSF.toStrict
+			Pipe.=$= PipeBS.hPutStr ho
 
-			Pipe.=$= forever do
-				IO.print =<< Pipe.await
+--			Pipe.=$= PipeT.convert ((\(GrayWord8 w) -> w) <$>)
+--			Pipe.=$= forever do IO.print =<< Pipe.await
 	hClose h
+	hClose ho
