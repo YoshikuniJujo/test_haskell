@@ -22,6 +22,7 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
 import Data.Bits
+import Data.Maybe
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Color
@@ -81,6 +82,7 @@ main = do
 				when (cnk == Steps.Chunk "IDAT") $ Pipe.yield bs
 			Pipe.=$= PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
 			Pipe.=$= Buffer.format "foobar" BSF.splitAt' "" rs
+			Pipe.=$= PipeIO.debugPrint
 			Pipe.=$= Unfilter.pngUnfilter' hdr
 			Pipe.=$= PipeT.convert (wordsToGrays hdr)
 
@@ -94,6 +96,7 @@ main = do
 
 wordsToGrays :: RealFrac d => Header.Header -> [Word8] -> [Gray d]
 wordsToGrays = \case
+	Header.Header { Header.headerBitDepth = 4 } -> wordsToGrays4
 	Header.Header { Header.headerBitDepth = 8 } -> (GrayWord8 <$>)
 	Header.Header { Header.headerBitDepth = 16 } -> wordsToGrays16
 
@@ -101,3 +104,9 @@ wordsToGrays16 :: RealFrac d => [Word8] -> [Gray d]
 wordsToGrays16 [] = []
 wordsToGrays16 ((fromIntegral -> x) : (fromIntegral -> y) : ws) =
 	GrayWord16 (x `shiftL` 8 .|. y) : wordsToGrays16 ws
+
+wordsToGrays4 :: RealFrac d => [Word8] -> [Gray d]
+wordsToGrays4 [] = []
+wordsToGrays4 (x : ws) =
+	fromJust (grayWord4 $ x `shiftR` 4) :
+	fromJust (grayWord4 $ x .&. 0xf) : wordsToGrays4 ws

@@ -73,7 +73,8 @@ pngFilter _ _ [] = pure ()
 pngFilter hdr bs0 ((w, h) : ss) = void do
 	let	bpp = Header.headerToBpp hdr
 		rbs = Header.headerToRowBytes hdr
-		bs0' = filter bpp (replicate (w * bpp) 0) bs0
+		bd = fromIntegral $ Header.headerBitDepth hdr
+		bs0' = filter bpp (replicate (w * bd `div` 8) 0) bs0
 	Pipe.yield bs0'
 	filterAll bpp (BSF.unpack bs0) (h - 1)
 	when (not $ null ss) do
