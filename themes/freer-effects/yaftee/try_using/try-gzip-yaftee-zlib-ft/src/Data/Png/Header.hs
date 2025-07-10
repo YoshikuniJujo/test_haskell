@@ -38,10 +38,12 @@ headerToRows h@Header { headerInterlaceMethod = InterlaceMethodNon } =
 	replicate (fromIntegral $ headerHeight h)
 		((fromIntegral (headerWidth h) * fromIntegral (headerBitDepth h)) `div'` 8 * sampleNum' h)
 		-- (headerToBpp h * fromIntegral (headerWidth h))
-headerToRows h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } = map (* headerToBpp h)
-	$ interlacePixelNums
-		(fromIntegral (headerWidth h))
-		(fromIntegral $ headerHeight h)
+headerToRows h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
+	map ((* sampleNum' h) . (`div'` 8) . (* fromIntegral (headerBitDepth h)))
+--	map (* headerToBpp h)
+		$ interlacePixelNums
+			(fromIntegral (headerWidth h))
+			(fromIntegral $ headerHeight h)
 
 headerToHeights :: Header -> [Int]
 headerToHeights h@Header { headerInterlaceMethod = InterlaceMethodNon } =

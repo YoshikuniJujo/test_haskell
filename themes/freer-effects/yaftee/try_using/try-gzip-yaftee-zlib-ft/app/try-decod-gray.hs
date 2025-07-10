@@ -88,6 +88,7 @@ main = do
 
 -- ENCODE
 
+--			Pipe.=$= PipeIO.debugPrint
 			Pipe.=$= Encode.encodeGray8 "barbaz" IO hdr ibe obe
 			Pipe.=$= PipeT.convert BSF.toStrict
 			Pipe.=$= PipeBS.hPutStr ho
