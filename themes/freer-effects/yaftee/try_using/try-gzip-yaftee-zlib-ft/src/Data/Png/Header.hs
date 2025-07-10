@@ -36,7 +36,7 @@ encodeHeader Header {
 headerToRows :: Header -> [Int]
 headerToRows h@Header { headerInterlaceMethod = InterlaceMethodNon } =
 	replicate (fromIntegral $ headerHeight h)
-		(fromIntegral (headerWidth h) * fromIntegral (headerBitDepth h) `div` 8)
+		(fromIntegral (headerWidth h) * fromIntegral (headerBitDepth h) `div` 8 * sampleNum' h)
 		-- (headerToBpp h * fromIntegral (headerWidth h))
 headerToRows h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } = map (* headerToBpp h)
 	$ interlacePixelNums
@@ -116,6 +116,8 @@ pattern ColorTypeColor = ColorType 2
 pattern ColorTypePallete = ColorType 3
 pattern ColorTypeAlpha = ColorType 4
 pattern ColorTypeColorAlpha = ColorType 6
+
+sampleNum' = sampleNum . headerColorType
 
 sampleNum :: Num n => ColorType -> n
 sampleNum ColorTypeGrayscale = 1
