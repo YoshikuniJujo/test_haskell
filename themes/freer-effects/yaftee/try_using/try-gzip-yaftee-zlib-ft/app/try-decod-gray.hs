@@ -96,6 +96,7 @@ main = do
 
 wordsToGrays :: RealFrac d => Header.Header -> [Word8] -> [Gray d]
 wordsToGrays = \case
+	Header.Header { Header.headerBitDepth = 1 } -> wordsToGrays1
 	Header.Header { Header.headerBitDepth = 2 } -> wordsToGrays2
 	Header.Header { Header.headerBitDepth = 4 } -> wordsToGrays4
 	Header.Header { Header.headerBitDepth = 8 } -> (GrayWord8 <$>)
@@ -119,3 +120,15 @@ wordsToGrays2 (x : ws) =
 	fromJust (grayWord2 $ x `shiftR` 4 .&. 0x3) :
 	fromJust (grayWord2 $ x `shiftR` 2 .&. 0x3) :
 	fromJust (grayWord2 $ x `shiftR` 0 .&. 0x3) : wordsToGrays2 ws
+
+wordsToGrays1 :: RealFrac d => [Word8] -> [Gray d]
+wordsToGrays1 [] = []
+wordsToGrays1 (x : ws) =
+	fromJust (grayWord1 $ x `shiftR` 7 .&. 0x1) :
+	fromJust (grayWord1 $ x `shiftR` 6 .&. 0x1) :
+	fromJust (grayWord1 $ x `shiftR` 5 .&. 0x1) :
+	fromJust (grayWord1 $ x `shiftR` 4 .&. 0x1) :
+	fromJust (grayWord1 $ x `shiftR` 3 .&. 0x1) :
+	fromJust (grayWord1 $ x `shiftR` 2 .&. 0x1) :
+	fromJust (grayWord1 $ x `shiftR` 1 .&. 0x1) :
+	fromJust (grayWord1 $ x `shiftR` 0 .&. 0x1) : wordsToGrays1 ws

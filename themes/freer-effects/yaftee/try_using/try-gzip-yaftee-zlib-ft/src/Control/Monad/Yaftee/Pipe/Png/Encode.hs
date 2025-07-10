@@ -69,6 +69,7 @@ encodeGray8 nm m hdr ibe obe =
 
 graysToWords :: RealFrac d => Header.Header -> [Gray d] -> [Word8]
 graysToWords = \case
+	Header.Header { Header.headerBitDepth = 1 } -> graysToWords1
 	Header.Header { Header.headerBitDepth = 2 } -> graysToWords2
 	Header.Header { Header.headerBitDepth = 4 } -> graysToWords4
 	Header.Header { Header.headerBitDepth = 8 } ->
@@ -77,6 +78,34 @@ graysToWords = \case
 		. ((\(GrayWord16 w) ->
 			[fromIntegral (w `shiftR` 8), fromIntegral w]) <$>)
 	_ -> error "yet"
+
+graysToWords1 :: RealFrac d => [Gray d] -> [Word8]
+graysToWords1 [] = []
+graysToWords1 [GrayWord1 x] = [x `shiftL` 7]
+graysToWords1 [GrayWord1 x, GrayWord1 y] = [x `shiftL` 7 .|. y `shiftL` 6]
+graysToWords1 [GrayWord1 x, GrayWord1 y, GrayWord1 z] =
+	[x `shiftL` 7 .|. y `shiftL` 6 .|. z `shiftL` 5]
+graysToWords1 [GrayWord1 x, GrayWord1 y, GrayWord1 z, GrayWord1 w] =
+	[x `shiftL` 7 .|. y `shiftL` 6 .|. z `shiftL` 5 .|. w `shiftL` 4]
+graysToWords1 [
+	GrayWord1 x, GrayWord1 y, GrayWord1 z, GrayWord1 w, GrayWord1 v ] = [
+	x `shiftL` 7 .|. y `shiftL` 6 .|. z `shiftL` 5 .|. w `shiftL` 4 .|.
+	v `shiftL` 3 ]
+graysToWords1 [
+	GrayWord1 x, GrayWord1 y, GrayWord1 z, GrayWord1 w,
+	GrayWord1 v, GrayWord1 u ] = [
+	x `shiftL` 7 .|. y `shiftL` 6 .|. z `shiftL` 5 .|. w `shiftL` 4 .|.
+	v `shiftL` 3 .|. u `shiftL` 2 ]
+graysToWords1 [
+	GrayWord1 x, GrayWord1 y, GrayWord1 z, GrayWord1 w,
+	GrayWord1 v, GrayWord1 u, GrayWord1 t ] = [
+	x `shiftL` 7 .|. y `shiftL` 6 .|. z `shiftL` 5 .|. w `shiftL` 4 .|.
+	v `shiftL` 3 .|. u `shiftL` 2 .|. t `shiftL` 1 ]
+graysToWords1 (
+	GrayWord1 x : GrayWord1 y : GrayWord1 z : GrayWord1 w :
+	GrayWord1 v : GrayWord1 u : GrayWord1 t : GrayWord1 s : gs ) = (
+	x `shiftL` 7 .|. y `shiftL` 6 .|. z `shiftL` 5 .|. w `shiftL` 4 .|.
+	v `shiftL` 3 .|. u `shiftL` 2 .|. t `shiftL` 1 .|. s ) : graysToWords1 gs
 
 graysToWords2 :: RealFrac d => [Gray d] -> [Word8]
 graysToWords2 [] = []
