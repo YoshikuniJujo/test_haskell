@@ -82,7 +82,7 @@ main = do
 				when (cnk == Steps.Chunk "IDAT") $ Pipe.yield bs
 			Pipe.=$= PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
 			Pipe.=$= Buffer.format "foobar" BSF.splitAt' "" rs
---			Pipe.=$= PipeIO.debugPrint
+			Pipe.=$= PipeIO.debugPrint
 			Pipe.=$= Unfilter.pngUnfilter' hdr
 			Pipe.=$= PipeT.convert (wordsToGrays hdr)
 
@@ -96,6 +96,7 @@ main = do
 
 wordsToGrays :: RealFrac d => Header.Header -> [Word8] -> [Gray d]
 wordsToGrays = \case
+	Header.Header { Header.headerBitDepth = 2 } -> wordsToGrays2
 	Header.Header { Header.headerBitDepth = 4 } -> wordsToGrays4
 	Header.Header { Header.headerBitDepth = 8 } -> (GrayWord8 <$>)
 	Header.Header { Header.headerBitDepth = 16 } -> wordsToGrays16
@@ -110,3 +111,11 @@ wordsToGrays4 [] = []
 wordsToGrays4 (x : ws) =
 	fromJust (grayWord4 $ x `shiftR` 4) :
 	fromJust (grayWord4 $ x .&. 0xf) : wordsToGrays4 ws
+
+wordsToGrays2 :: RealFrac d => [Word8] -> [Gray d]
+wordsToGrays2 [] = []
+wordsToGrays2 (x : ws) =
+	fromJust (grayWord2 $ x `shiftR` 6 .&. 0x3) :
+	fromJust (grayWord2 $ x `shiftR` 4 .&. 0x3) :
+	fromJust (grayWord2 $ x `shiftR` 2 .&. 0x3) :
+	fromJust (grayWord2 $ x `shiftR` 0 .&. 0x3) : wordsToGrays2 ws

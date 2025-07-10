@@ -69,6 +69,7 @@ encodeGray8 nm m hdr ibe obe =
 
 graysToWords :: RealFrac d => Header.Header -> [Gray d] -> [Word8]
 graysToWords = \case
+	Header.Header { Header.headerBitDepth = 2 } -> graysToWords2
 	Header.Header { Header.headerBitDepth = 4 } -> graysToWords4
 	Header.Header { Header.headerBitDepth = 8 } ->
 		((\(GrayWord8 w) -> w) <$>)
@@ -76,6 +77,16 @@ graysToWords = \case
 		. ((\(GrayWord16 w) ->
 			[fromIntegral (w `shiftR` 8), fromIntegral w]) <$>)
 	_ -> error "yet"
+
+graysToWords2 :: RealFrac d => [Gray d] -> [Word8]
+graysToWords2 [] = []
+graysToWords2 [GrayWord2 x] = [x `shiftL` 6]
+graysToWords2 [GrayWord2 x, GrayWord2 y] = [x `shiftL` 6 .|. y `shiftL` 4]
+graysToWords2 [GrayWord2 x, GrayWord2 y, GrayWord2 z] =
+	[x `shiftL` 6 .|. y `shiftL` 4 .|. z `shiftL` 2]
+graysToWords2 (GrayWord2 x : GrayWord2 y : GrayWord2 z : GrayWord2 w : gs) =
+	(x `shiftL` 6 .|. y `shiftL` 4 .|. z `shiftL` 2 .|. w) :
+	graysToWords2 gs
 
 graysToWords4 :: RealFrac d => [Gray d] -> [Word8]
 graysToWords4 [] = []
