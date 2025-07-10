@@ -1,7 +1,8 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -20,6 +21,8 @@ import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
+import Data.Bits
+import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Color
 import Data.Png.Header qualified as Header
@@ -45,6 +48,7 @@ main = do
 	hClose hh
 
 	print hdr
+	print $ Header.headerToBpp hdr
 
 	let	rs = (+ 1) <$> Header.headerToRows hdr
 
@@ -78,7 +82,7 @@ main = do
 			Pipe.=$= PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
 			Pipe.=$= Buffer.format "foobar" BSF.splitAt' "" rs
 			Pipe.=$= Unfilter.pngUnfilter' hdr
-			Pipe.=$= PipeT.convert (GrayWord8 <$>)
+			Pipe.=$= PipeT.convert (wordsToGrays hdr)
 
 -- ENCODE
 
@@ -86,7 +90,14 @@ main = do
 			Pipe.=$= PipeT.convert BSF.toStrict
 			Pipe.=$= PipeBS.hPutStr ho
 
---			Pipe.=$= PipeT.convert ((\(GrayWord8 w) -> w) <$>)
---			Pipe.=$= forever do IO.print =<< Pipe.await
-	hClose h
-	hClose ho
+	hClose h; hClose ho
+
+wordsToGrays :: RealFrac d => Header.Header -> [Word8] -> [Gray d]
+wordsToGrays = \case
+	Header.Header { Header.headerBitDepth = 8 } -> (GrayWord8 <$>)
+	Header.Header { Header.headerBitDepth = 16 } -> wordsToGrays16
+
+wordsToGrays16 :: RealFrac d => [Word8] -> [Gray d]
+wordsToGrays16 [] = []
+wordsToGrays16 ((fromIntegral -> x) : (fromIntegral -> y) : ws) =
+	GrayWord16 (x `shiftL` 8 .|. y) : wordsToGrays16 ws

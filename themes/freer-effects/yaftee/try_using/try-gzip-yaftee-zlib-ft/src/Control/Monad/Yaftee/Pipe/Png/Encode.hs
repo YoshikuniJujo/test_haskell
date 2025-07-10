@@ -24,6 +24,7 @@ import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
+import Data.Bits
 import Data.Word
 import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree qualified as BSF
@@ -62,9 +63,18 @@ encodeGray8 :: forall nm m -> (
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
 	Eff.E es [Gray d] BSF.ByteString ()
 encodeGray8 nm m hdr ibe obe =
-	void $ PipeT.convert ((\(GrayWord8 w) -> w) <$>)
+	void $ PipeT.convert (graysToWords hdr)
 		Pipe.=$= PipeT.convert BSF.pack
 		Pipe.=$= encodeRaw nm m hdr ibe obe
+
+graysToWords :: RealFrac d => Header.Header -> [Gray d] -> [Word8]
+graysToWords = \case
+	Header.Header { Header.headerBitDepth = 8 } ->
+		((\(GrayWord8 w) -> w) <$>)
+	Header.Header { Header.headerBitDepth = 16 } -> concat
+		. ((\(GrayWord16 w) ->
+			[fromIntegral (w `shiftR` 8), fromIntegral w]) <$>)
+	_ -> error "yet"
 
 encodeRaw :: forall nm m -> (
 	PrimBase m,
