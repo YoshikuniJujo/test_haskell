@@ -82,7 +82,7 @@ main = do
 				when (cnk == Steps.Chunk "IDAT") $ Pipe.yield bs
 			Pipe.=$= PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
 			Pipe.=$= Buffer.format "foobar" BSF.splitAt' "" rs
-			Pipe.=$= PipeIO.debugPrint
+--			Pipe.=$= PipeIO.debugPrint
 			Pipe.=$= Unfilter.pngUnfilter' hdr
 			Pipe.=$= PipeT.convert (wordsToGrays hdr)
 
