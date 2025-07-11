@@ -97,6 +97,7 @@ graysToWords = \case
 grayAlphaToWords :: RealFrac d => Header.Header -> [GrayAlpha d] -> [Word8]
 grayAlphaToWords = \case
 	Header.Header { Header.headerBitDepth = 8 } -> grayAlphasToWords8
+	Header.Header { Header.headerBitDepth = 16 } -> grayAlphasToWords16
 
 graysToWords1 :: RealFrac d => [Gray d] -> [Word8]
 graysToWords1 [] = []
@@ -145,6 +146,12 @@ graysToWords4 (GrayWord4 x : GrayWord4 y : gs) =
 grayAlphasToWords8 :: RealFrac d => [GrayAlpha d] -> [Word8]
 grayAlphasToWords8 [] = []
 grayAlphasToWords8 (GrayAlphaWord8 x a : gas) = x : a : grayAlphasToWords8 gas
+
+grayAlphasToWords16 :: RealFrac d => [GrayAlpha d] -> [Word8]
+grayAlphasToWords16 [] = []
+grayAlphasToWords16 (GrayAlphaWord16 x a : gas) =
+	fromIntegral (x `shiftR` 8) : fromIntegral x :
+	fromIntegral (a `shiftR` 8) : fromIntegral a : grayAlphasToWords16 gas
 
 encodeRaw :: forall nm m -> (
 	PrimBase m,
