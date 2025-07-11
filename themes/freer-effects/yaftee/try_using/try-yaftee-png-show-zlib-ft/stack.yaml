@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-07-07
+snapshot: nightly-2025-07-11
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 75d1afa32a25ee96ff86533e5bc3fb6b9442c2f6
+    commit: dffe2004eccb32758e6de2ca89508630f4cebcc7
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee
       - themes/freer-effects/yaftee/try-yaftee-conduit
@@ -60,7 +60,6 @@ extra-deps:
       - themes/freer-effects/common/try-freer-base-classes
       - packages/bytestring/try-bytestring-ft
       - wrapper/zlib/try-zlib-core
-  - tools-yj-0.1.0.45
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
