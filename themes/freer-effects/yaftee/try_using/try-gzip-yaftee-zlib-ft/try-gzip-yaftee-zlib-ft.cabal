@@ -95,6 +95,34 @@ executable try-decod-gray
     , vector
   default-language: Haskell2010
 
+executable try-gray-alpha
+  main-is: try-gray-alpha.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , filepath
+    , mono-traversable
+    , primitive
+    , tools-yj
+    , try-bytestring-ft
+    , try-gzip-yaftee-zlib-ft
+    , try-higher-order-open-union
+    , try-yaftee
+    , try-yaftee-basic-monads
+    , try-yaftee-conduit
+    , try-yaftee-conduit-bytestring
+    , try-yaftee-conduit-bytestring-ft
+    , try-yaftee-conduit-mono-traversable
+    , try-zlib-core
+    , try-zlib-library
+    , typelevel-tools-yj
+    , union-color
+    , vector
+  default-language: Haskell2010
+
 executable try-gzip-deflate
   main-is: try-gzip-deflate.hs
   hs-source-dirs:

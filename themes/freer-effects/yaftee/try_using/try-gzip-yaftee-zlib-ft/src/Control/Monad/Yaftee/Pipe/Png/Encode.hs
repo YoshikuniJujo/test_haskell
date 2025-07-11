@@ -8,7 +8,7 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Encode (
 
-	encodeRgba, encodeGray8
+	encodeRgba, encodeGray8, encodeGrayAlpha
 
 	) where
 
@@ -67,6 +67,21 @@ encodeGray8 nm m hdr ibe obe =
 		Pipe.=$= PipeT.convert BSF.pack
 		Pipe.=$= encodeRaw nm m hdr ibe obe
 
+encodeGrayAlpha :: forall nm m -> (
+	PrimBase m, RealFrac d, U.Member Pipe.P es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member (Except.E String) es,
+	U.Base (U.FromFirst m) es ) =>
+	Header.Header ->
+	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	Eff.E es [GrayAlpha d] BSF.ByteString ()
+encodeGrayAlpha nm m hdr ibe obe =
+	void $ PipeT.convert (grayAlphaToWords hdr)
+		Pipe.=$= PipeT.convert BSF.pack
+		Pipe.=$= encodeRaw nm m hdr ibe obe
+
 graysToWords :: RealFrac d => Header.Header -> [Gray d] -> [Word8]
 graysToWords = \case
 	Header.Header { Header.headerBitDepth = 1 } -> graysToWords1
@@ -78,6 +93,10 @@ graysToWords = \case
 		. ((\(GrayWord16 w) ->
 			[fromIntegral (w `shiftR` 8), fromIntegral w]) <$>)
 	_ -> error "yet"
+
+grayAlphaToWords :: RealFrac d => Header.Header -> [GrayAlpha d] -> [Word8]
+grayAlphaToWords = \case
+	Header.Header { Header.headerBitDepth = 8 } -> grayAlphasToWords8
 
 graysToWords1 :: RealFrac d => [Gray d] -> [Word8]
 graysToWords1 [] = []
@@ -122,6 +141,10 @@ graysToWords4 [] = []
 graysToWords4 [GrayWord4 g] = [g `shiftL` 4]
 graysToWords4 (GrayWord4 x : GrayWord4 y : gs) =
 	(x `shiftL` 4 .|. y) : graysToWords4 gs
+
+grayAlphasToWords8 :: RealFrac d => [GrayAlpha d] -> [Word8]
+grayAlphasToWords8 [] = []
+grayAlphasToWords8 (GrayAlphaWord8 x a : gas) = x : a : grayAlphasToWords8 gas
 
 encodeRaw :: forall nm m -> (
 	PrimBase m,

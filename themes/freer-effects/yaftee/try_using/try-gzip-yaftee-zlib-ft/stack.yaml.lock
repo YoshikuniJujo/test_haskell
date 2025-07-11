@@ -213,12 +213,12 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: wrapper/zlib/try-zlib-core
 - completed:
-    hackage: union-color-0.1.3.0@sha256:77e40c9313401f28df4728d24fee9596a5c3a602dacba0d0ad2cad8121a59ed6,1362
+    hackage: union-color-0.1.4.0@sha256:fff0a64a791bed0c4df60eb17828b6521e8c3ab25573924b3a89d6d078792067,1362
     pantry-tree:
-      sha256: 4a90938d5501899a249962a4c76d9e62dddb8123bfed2cd9adbfe2abeb6b8d77
-      size: 507
+      sha256: 690c699f7bd5de4d91c2e79ad0d45396f0b21d8c7ef4b8156cd83f919b6d9744
+      size: 508
   original:
-    hackage: union-color-0.1.3.0
+    hackage: union-color-0.1.4.0
 snapshots:
 - completed:
     sha256: 193b933e68724f1cd2b266649318f8c102f6f6d7a52415a8eee8dc604fb5d6b2
