@@ -11,10 +11,6 @@ module Control.Monad.Yaftee.Pipe.Png.Encode (
 
 	encodeRgba, encodeGray8, encodeGrayAlpha,
 
-	Palette, palette0,
-	readPalette, encodePalette, 
-	lookupPalette, elemIndexPalette
-
 	) where
 
 import Control.Monad
@@ -25,6 +21,7 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
+import Control.Monad.Yaftee.Pipe.Png.Palette
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
@@ -222,32 +219,3 @@ sampleOptions = PipeZ.DeflateOptions {
 	PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
 	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
 	PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
-
-data Palette = Palette (V.Vector (Word8, Word8, Word8)) deriving Show
-
-palette0 :: Palette
-palette0 = Palette $ V.empty
-
-readPalette :: BSF.ByteString -> Palette
-readPalette = Palette . V.unfoldr \bs -> case BSF.splitAt' 3 bs of
-	Nothing -> Nothing
-	Just (otoList -> [r, g, b], bs') -> Just ((r, g, b), bs')
-	_ -> error "bad"
-
--- readingPalette :: BSF.ByteString -> (Palette, BSF.ByteString)
--- readingPalette
-
-splitAt' :: Int -> V.Vector a -> Maybe (V.Vector a, V.Vector a)
-splitAt' n v
-	| n <= V.length v = Just $ V.splitAt n v
-	| otherwise = Nothing
-
-encodePalette :: Palette -> BSF.ByteString
-encodePalette (Palette v) = foldl' (\bs (r, g, b) -> bs <> BSF.pack [r, g, b]) BSF.empty v
-
-lookupPalette :: (RealFrac d, Integral i) => Palette -> i -> Rgb d
-lookupPalette (Palette v) i = let (r, g, b) = v V.! fromIntegral i in RgbWord8 r g b
-
-elemIndexPalette :: (RealFrac d, Num i) => Palette -> Rgb d -> Maybe i
-elemIndexPalette (Palette v) (RgbWord8 r g b) =
-	fromIntegral <$> V.elemIndex (r, g, b) v

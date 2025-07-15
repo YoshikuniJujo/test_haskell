@@ -17,7 +17,8 @@ import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
-import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
+-- import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
+import Control.Monad.Yaftee.Pipe.Png.Palette qualified as Encode
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
