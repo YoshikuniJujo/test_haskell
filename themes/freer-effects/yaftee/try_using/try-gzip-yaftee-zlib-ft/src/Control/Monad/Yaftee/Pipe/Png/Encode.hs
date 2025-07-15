@@ -237,6 +237,11 @@ readPalette = Palette . V.unfoldr \bs -> case BSF.splitAt' 3 bs of
 -- readingPalette :: BSF.ByteString -> (Palette, BSF.ByteString)
 -- readingPalette
 
+splitAt' :: Int -> V.Vector a -> Maybe (V.Vector a, V.Vector a)
+splitAt' n v
+	| n <= V.length v = Just $ V.splitAt n v
+	| otherwise = Nothing
+
 encodePalette :: Palette -> BSF.ByteString
 encodePalette (Palette v) = foldl' (\bs (r, g, b) -> bs <> BSF.pack [r, g, b]) BSF.empty v
 
