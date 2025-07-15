@@ -24,6 +24,7 @@ import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
 import Data.MonoTraversable
 import Data.Vector qualified as V
+import Data.Maybe
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Color
@@ -85,6 +86,12 @@ main = do
 				Pipe.yield $ (lookupPalette plt) <$> r
 				forever $
 					Pipe.yield . (lookupPalette plt <$>) =<< Pipe.await
+			Pipe.=$= do
+				p <- Pipe.await
+				plt <- State.getN "foobar"
+				Pipe.yield $ fromJust . elemIndexPalette plt <$> p
+				forever $
+					Pipe.yield . ((fromJust . elemIndexPalette plt) <$>) =<< Pipe.await
 			Pipe.=$= PipeIO.print
 
 data Palette = Palette (V.Vector (Word8, Word8, Word8)) deriving Show
@@ -98,3 +105,7 @@ readPalette = Palette . V.unfoldr \bs -> case BSF.splitAt' 3 bs of
 
 lookupPalette :: (RealFrac d, Integral i) => Palette -> i -> Rgb d
 lookupPalette (Palette v) i = let (r, g, b) = v V.! fromIntegral i in RgbWord8 r g b
+
+elemIndexPalette :: (RealFrac d, Num i) => Palette -> Rgb d -> Maybe i
+elemIndexPalette (Palette v) (RgbWord8 r g b) =
+	fromIntegral <$> V.elemIndex (r, g, b) v
