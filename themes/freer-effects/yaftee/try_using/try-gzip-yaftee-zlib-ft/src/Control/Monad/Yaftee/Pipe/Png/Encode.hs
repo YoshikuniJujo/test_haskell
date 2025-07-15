@@ -4,11 +4,16 @@
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.Png.Encode (
 
-	encodeRgba, encodeGray8, encodeGrayAlpha
+	encodeRgba, encodeGray8, encodeGrayAlpha,
+
+	Palette, palette0,
+	readPalette, encodePalette, 
+	lookupPalette, elemIndexPalette
 
 	) where
 
@@ -25,6 +30,8 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
 import Data.Bits
+import Data.MonoTraversable
+import Data.Vector qualified as V
 import Data.Word
 import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree qualified as BSF
@@ -215,3 +222,24 @@ sampleOptions = PipeZ.DeflateOptions {
 	PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
 	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
 	PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
+
+data Palette = Palette (V.Vector (Word8, Word8, Word8)) deriving Show
+
+palette0 :: Palette
+palette0 = Palette $ V.empty
+
+readPalette :: BSF.ByteString -> Palette
+readPalette = Palette . V.unfoldr \bs -> case BSF.splitAt' 3 bs of
+	Nothing -> Nothing
+	Just (otoList -> [r, g, b], bs') -> Just ((r, g, b), bs')
+	_ -> error "bad"
+
+encodePalette :: Palette -> BSF.ByteString
+encodePalette (Palette v) = foldl' (\bs (r, g, b) -> bs <> BSF.pack [r, g, b]) BSF.empty v
+
+lookupPalette :: (RealFrac d, Integral i) => Palette -> i -> Rgb d
+lookupPalette (Palette v) i = let (r, g, b) = v V.! fromIntegral i in RgbWord8 r g b
+
+elemIndexPalette :: (RealFrac d, Num i) => Palette -> Rgb d -> Maybe i
+elemIndexPalette (Palette v) (RgbWord8 r g b) =
+	fromIntegral <$> V.elemIndex (r, g, b) v
