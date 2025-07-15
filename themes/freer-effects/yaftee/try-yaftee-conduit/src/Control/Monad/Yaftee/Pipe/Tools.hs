@@ -19,11 +19,15 @@ module Control.Monad.Yaftee.Pipe.Tools (
 
 	-- * LENGTH
 
-	lengthRun, length, Length
+	lengthRun, length, Length,
+
+	-- * SCAN
+
+	scanl
 
 	) where
 
-import Prelude hiding (length)
+import Prelude hiding (length, scanl)
 import Prelude qualified as P
 import Control.Monad
 import Control.Monad.Fix
@@ -74,3 +78,7 @@ length nm = forever $ Pipe.await >>= \s ->
 
 newtype Length = Length { unLength :: Int }
 	deriving (Show, Eq, Bits, FiniteBits, Ord, Enum, Num, Real, Integral)
+
+scanl :: U.Member Pipe.P es => (b -> a -> b) -> b -> Eff.E es a b r
+scanl op =
+	fix \go v -> (v `op`) <$>  Pipe.await >>= \v' -> Pipe.yield v' >> go v'
