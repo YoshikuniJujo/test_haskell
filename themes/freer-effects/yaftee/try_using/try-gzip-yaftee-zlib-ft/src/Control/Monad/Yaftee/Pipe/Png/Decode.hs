@@ -183,6 +183,23 @@ decodeHeader nm = void $
 			$ Pipe.yield x
 	Pipe.=$= OnDemand.onDemand nm Pipe.=$= Header.read nm (const $ pure ())
 
+decodePalette :: forall nm -> (
+	U.Member Pipe.P es,
+	MembersHeader nm es,
+	U.Member (Except.E String) es ) =>
+	Eff.E es BSF.ByteString o ()
+decodePalette nm = void $
+	do	fhdr <- Chunk.readBytes nm 8
+		when (fhdr /= fileHeader)
+			$ Except.throw @String "File header error"
+		Chunk.chunk nm 500
+	Pipe.=$= forever do
+		x <- Pipe.await
+		c <- State.getN nm
+		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
+			$ Pipe.yield x
+	Pipe.=$= OnDemand.onDemand nm Pipe.=$= Header.read nm (const $ pure ())
+
 type MembersHeader nm es = (
 	Chunk.ChunkMembers nm es, OnDemand.Members nm es,
 	U.Member (State.Named nm Header.Header) es )

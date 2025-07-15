@@ -234,6 +234,9 @@ readPalette = Palette . V.unfoldr \bs -> case BSF.splitAt' 3 bs of
 	Just (otoList -> [r, g, b], bs') -> Just ((r, g, b), bs')
 	_ -> error "bad"
 
+-- readingPalette :: BSF.ByteString -> (Palette, BSF.ByteString)
+-- readingPalette
+
 encodePalette :: Palette -> BSF.ByteString
 encodePalette (Palette v) = foldl' (\bs (r, g, b) -> bs <> BSF.pack [r, g, b]) BSF.empty v
 
