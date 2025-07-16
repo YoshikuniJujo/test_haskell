@@ -25,6 +25,9 @@ readPalette = Palette . V.unfoldr \bs -> case BSF.splitAt' 3 bs of
 -- readingPalette :: BSF.ByteString -> (Palette, BSF.ByteString)
 -- readingPalette
 
+-- readByte1 :: (Palette, [Word8]) -> Word8 -> (Palette, [Word8])
+-- readByte1
+
 splitAt' :: Int -> V.Vector a -> Maybe (V.Vector a, V.Vector a)
 splitAt' n v
 	| n <= V.length v = Just $ V.splitAt n v
