@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-05-27
+snapshot: nightly-2025-07-25
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,18 +42,18 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 6d28b89ea7fe0d2dbb240f3a522dc16d3f4a4c02
+    commit: 9efba3592751301efe2ad6aee4d70e0ddabb8491
     subdirs:
     - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
     - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
     - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
-    # - gpu-vulkan-0.1.0.170
-    # - gpu-vulkan-middle-0.1.0.75
-    # - gpu-vulkan-core-0.1.0.21
+#  - gpu-vulkan-0.1.0.170
+#  - gpu-vulkan-middle-0.1.0.76
+  # - gpu-vulkan-core-0.1.0.21
   - git: https://github.com/YoshikuniJujo/gpu-vulkan
-    commit: 32affd6638d38728720b8f6654ea92950d9c46dc
+    commit: 554e632c8238b5f5cfa85f82472023041c357b3e
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle
-    commit: b849dcd6c4ae8307a285e4395de5dd39da096653
+    commit: fc8d4454eb349fb7cc90a40d2cc5c10feced1fc9
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-core
     commit: d97d935fbe567b86d2caff28e19c3dc1544f4467
   - git: https://github.com/YoshikuniJujo/gpu-vulkan-khr-swapchain
@@ -77,6 +77,8 @@ extra-deps:
   - language-spir-v-0.1.0.3
   - glfw-group-0.1.0.6
   - tools-yj-0.1.0.23
+  - ranged-list-0.1.2.3
+  - typecheck-plugin-nat-simple-0.1.0.12
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
