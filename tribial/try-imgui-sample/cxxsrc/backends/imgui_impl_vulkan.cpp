@@ -1419,8 +1419,11 @@ uint32_t ImGui_ImplVulkanH_SelectQueueFamilyIndex(VkPhysicalDevice physical_devi
     return (uint32_t)-1;
 }
 
-void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator)
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator, ImGui_ImplVulkanH_Frame** fds)
 {
+
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames begin ***\n");
+
     IM_ASSERT(physical_device != VK_NULL_HANDLE && device != VK_NULL_HANDLE);
     IM_UNUSED(physical_device);
 
@@ -1428,7 +1431,7 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_devi
     VkResult err;
     for (uint32_t i = 0; i < wd->ImageCount; i++)
     {
-        ImGui_ImplVulkanH_Frame* fd = &wd->Frames[i];
+        ImGui_ImplVulkanH_Frame* fd = fds[i];
         {
             VkCommandPoolCreateInfo info = {};
             info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -1467,6 +1470,20 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_devi
             check_vk_result(err);
         }
     }
+}
+
+void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator)
+{
+
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffers begin ***\n");
+
+	ImGui_ImplVulkanH_Frame* fds[wd->ImageCount];
+
+	for (uint32_t i = 0; i < wd->ImageCount; i++)
+		fds[i] = &wd->Frames[i];
+
+    ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
+		physical_device, device, wd, queue_family, allocator, fds );
 }
 
 int ImGui_ImplVulkanH_GetMinImageCountFromPresentMode(VkPresentModeKHR present_mode)
