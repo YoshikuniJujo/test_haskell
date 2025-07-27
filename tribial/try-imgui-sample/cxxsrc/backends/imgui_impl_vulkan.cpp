@@ -1419,7 +1419,28 @@ uint32_t ImGui_ImplVulkanH_SelectQueueFamilyIndex(VkPhysicalDevice physical_devi
     return (uint32_t)-1;
 }
 
-void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator,
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(VkDevice device, ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator)
+{
+
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores begin ***\n");
+
+    VkResult err;
+
+    for (uint32_t i = 0; i < wd->SemaphoreCount; i++)
+    {
+        ImGui_ImplVulkanH_FrameSemaphores* fsd = &wd->FrameSemaphores[i];
+        {
+            VkSemaphoreCreateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            err = vkCreateSemaphore(device, &info, allocator, &fsd->ImageAcquiredSemaphore);
+            check_vk_result(err);
+            err = vkCreateSemaphore(device, &info, allocator, &fsd->RenderCompleteSemaphore);
+            check_vk_result(err);
+        }
+    }
+}
+
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(VkPhysicalDevice physical_device, VkDevice device, uint32_t queue_family, const VkAllocationCallbacks* allocator,
 	uint32_t ic,
 	ImGui_ImplVulkanH_Frame** fds)
 {
@@ -1459,19 +1480,6 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(VkPhysicalDevice physica
             check_vk_result(err);
         }
     }
-
-    for (uint32_t i = 0; i < wd->SemaphoreCount; i++)
-    {
-        ImGui_ImplVulkanH_FrameSemaphores* fsd = &wd->FrameSemaphores[i];
-        {
-            VkSemaphoreCreateInfo info = {};
-            info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            err = vkCreateSemaphore(device, &info, allocator, &fsd->ImageAcquiredSemaphore);
-            check_vk_result(err);
-            err = vkCreateSemaphore(device, &info, allocator, &fsd->RenderCompleteSemaphore);
-            check_vk_result(err);
-        }
-    }
 }
 
 void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator)
@@ -1487,8 +1495,9 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_devi
 		fds[i] = &wd->Frames[i];
 
     ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
-		physical_device, device, wd, queue_family, allocator,
+		physical_device, device, queue_family, allocator,
 		ic, fds );
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(device, wd, allocator);
 }
 
 int ImGui_ImplVulkanH_GetMinImageCountFromPresentMode(VkPresentModeKHR present_mode)
