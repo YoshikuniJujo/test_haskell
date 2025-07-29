@@ -159,37 +159,9 @@ packages:
       size: 650
   original:
     hackage: language-spir-v-0.1.0.3
-- completed:
-    hackage: glfw-group-0.1.0.6@sha256:f759b9f92cd469d4268d79aed9560d124cc7f8eca85da37d8a2ec440cb9983c3,2073
-    pantry-tree:
-      sha256: b15efcfe5770d8cd40e154079e75ccd1b92151885ae3396f6d02a59998b70fde
-      size: 800
-  original:
-    hackage: glfw-group-0.1.0.6
-- completed:
-    hackage: tools-yj-0.1.0.23@sha256:a199390c0f029c97f319aa373c203286ac426b93720802800642af87551fbd42,2210
-    pantry-tree:
-      sha256: b8f9d2977d276bd33df6a685372d8c43daabe657578ed5ab6ec43fd068369cfc
-      size: 1163
-  original:
-    hackage: tools-yj-0.1.0.23
-- completed:
-    hackage: ranged-list-0.1.2.3@sha256:003aae13aee986a50e3cf34f448c0d106c51f063d92d0fcd5d10043b77ff1c01,2220
-    pantry-tree:
-      sha256: 75dc8c74bdf8ac9a36ed3c093e43bac33d0c7b35ccd99750bc0a6ca30c95c1ae
-      size: 1339
-  original:
-    hackage: ranged-list-0.1.2.3
-- completed:
-    hackage: typecheck-plugin-nat-simple-0.1.0.12@sha256:bf2467eadba64ab51a7baa9ac5d5fd4a5b82790e377e97bd3e5388eede2d1b99,3118
-    pantry-tree:
-      sha256: 055f61503c4c5910de08ff4f35f375e52f9ac490d995d26ab50b95942a777934
-      size: 1743
-  original:
-    hackage: typecheck-plugin-nat-simple-0.1.0.12
 snapshots:
 - completed:
-    sha256: 92ad48278d85d4c86e6459206dc24cfa806dfc121733f6f1396909090b9aed3c
-    size: 669892
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/7/25.yaml
-  original: nightly-2025-07-25
+    sha256: e94b7304e77cc90934fbde69c5efbdf408bc7b1856dc459e24e5cded4892e782
+    size: 671434
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/7/29.yaml
+  original: nightly-2025-07-29

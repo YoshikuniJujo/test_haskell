@@ -2,7 +2,9 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -41,6 +43,7 @@ import Text.Show.ToolsYj
 import System.IO
 
 import Gpu.Vulkan qualified as Vk
+import Gpu.Vulkan.AllocationCallbacks qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
 import Gpu.Vulkan.Instance.Internal qualified as Vk.Ist
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
@@ -59,6 +62,8 @@ import Gpu.Vulkan.Sample qualified as Vk.Smpl
 import Gpu.Vulkan.Subpass qualified as Vk.Sbpss
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
+
+import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
 
 import Gpu.Vulkan.Khr.Swapchain qualified as Vk.Swpch
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
@@ -315,7 +320,9 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 
 	Vk.RndrPss.create dvc rndrpssInfo nil \rp ->
 	createImageViews dvc imgvwInfo scis \scvs ->
-	Vk.ImGui.H.createWindowFramebufferRaw dvc nil False rp wdt' hgt' scvs >>= \fbs ->
+	Vk.Frmbffr.group dvc nil \fbg ->
+	let	fbinfos = mkFramebufferInfoList rp scvs (fromIntegral wdt') (fromIntegral hgt') in
+	createFramebufferList fbg [0 ..] fbinfos >>= \fbs ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
@@ -386,6 +393,40 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 								cxx_FramePresent wdcxx gq pscr
 	cxx_cleanup ist dvc wdcxx
 	cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
+
+data FramebufferInfos sr nm fmt sis where
+	FramebufferInfosNil :: FramebufferInfos sr nm fmt '[]
+	FramebufferInfos ::
+		Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(nm, fmt, si)] ->
+		FramebufferInfos sr nm fmt sis ->
+		FramebufferInfos sr nm fmt ( si ': nmfmtsis)
+
+mkFramebufferInfoList ::
+	Vk.RndrPss.R sr -> HPList.PL (Vk.ImgVw.I nm fmt) sis -> Word32 -> Word32 ->
+	FramebufferInfos sr nm fmt sis
+mkFramebufferInfoList _ HPList.Nil _ _ = FramebufferInfosNil
+mkFramebufferInfoList rp (iv :** ivs) wdt hgt = FramebufferInfos
+	(mkFramebufferInfo rp iv wdt hgt) (mkFramebufferInfoList rp ivs wdt hgt)
+
+mkFramebufferInfo ::
+	Vk.RndrPss.R sr -> Vk.ImgVw.I nm fmt si -> Word32 -> Word32 ->
+	Vk.Frmbffr.CreateInfo 'Nothing sr '[ '(nm, fmt, si)]
+mkFramebufferInfo rp iv wdt hgt = Vk.Frmbffr.CreateInfo {
+	Vk.Frmbffr.createInfoNext = TMaybe.N,
+	Vk.Frmbffr.createInfoFlags = zeroBits,
+	Vk.Frmbffr.createInfoRenderPass = rp,
+	Vk.Frmbffr.createInfoAttachments = HPList.Singleton $ U3 iv,
+	Vk.Frmbffr.createInfoWidth = wdt,
+	Vk.Frmbffr.createInfoHeight = hgt,
+	Vk.Frmbffr.createInfoLayers = 1 }
+
+createFramebufferList :: (Ord k, Vk.AllocCallbacks.ToMiddle ma) =>
+	Vk.Frmbffr.Group sd ma sf k -> [k] -> FramebufferInfos sr nm fmt sis ->
+	IO [Vk.Frmbffr.F sf]
+createFramebufferList _ _ FramebufferInfosNil = pure []
+createFramebufferList grp (k : ks) (FramebufferInfos info infos) = (:) . (\(Right r) -> r)
+	<$> Vk.Frmbffr.create' grp k info
+	<*> createFramebufferList grp ks infos
 
 untilClose :: GlfwG.Win.W sw -> IO a -> IO ()
 untilClose w a = bool (a >> untilClose w a) (pure ())
