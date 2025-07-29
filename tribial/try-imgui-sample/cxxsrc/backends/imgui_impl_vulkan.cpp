@@ -1440,18 +1440,17 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(VkDevice device, ImG
     }
 }
 
-void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(VkPhysicalDevice physical_device, VkDevice device, uint32_t queue_family, const VkAllocationCallbacks* allocator,
-	uint32_t ic,
-	ImGui_ImplVulkanH_Frame** fds)
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersCommandPool(
+	VkDevice device,
+	uint32_t queue_family, const VkAllocationCallbacks* allocator,
+	uint32_t ic, ImGui_ImplVulkanH_Frame** fds)
 {
 
-	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames begin ***\n");
-
-    IM_ASSERT(physical_device != VK_NULL_HANDLE && device != VK_NULL_HANDLE);
-    IM_UNUSED(physical_device);
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersCommandPool begin ***\n");
 
     // Create Command Buffers
     VkResult err;
+
     for (uint32_t i = 0; i < ic; i++)
     {
         ImGui_ImplVulkanH_Frame* fd = fds[i];
@@ -1463,6 +1462,26 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(VkPhysicalDevice physica
             err = vkCreateCommandPool(device, &info, allocator, &fd->CommandPool);
             check_vk_result(err);
         }
+    }
+}
+
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
+	VkDevice device,
+	uint32_t queue_family, const VkAllocationCallbacks* allocator,
+	uint32_t ic, ImGui_ImplVulkanH_Frame** fds)
+{
+
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames begin ***\n");
+
+    // Create Command Buffers
+    VkResult err;
+
+    ImGui_ImplVulkanH_CreateWindowCommandBuffersCommandPool(
+	device, queue_family, allocator, ic, fds);
+
+    for (uint32_t i = 0; i < ic; i++)
+    {
+        ImGui_ImplVulkanH_Frame* fd = fds[i];
         {
             VkCommandBufferAllocateInfo info = {};
             info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1472,6 +1491,11 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(VkPhysicalDevice physica
             err = vkAllocateCommandBuffers(device, &info, &fd->CommandBuffer);
             check_vk_result(err);
         }
+    }
+
+    for (uint32_t i = 0; i < ic; i++)
+    {
+        ImGui_ImplVulkanH_Frame* fd = fds[i];
         {
             VkFenceCreateInfo info = {};
             info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -1495,7 +1519,7 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_devi
 		fds[i] = &wd->Frames[i];
 
     ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
-		physical_device, device, queue_family, allocator,
+		device, queue_family, allocator,
 		ic, fds );
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(device, wd, allocator);
 }
