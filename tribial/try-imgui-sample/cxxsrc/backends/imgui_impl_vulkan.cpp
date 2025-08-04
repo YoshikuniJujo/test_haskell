@@ -1548,11 +1548,6 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_devi
 
 	uint32_t ic = wd->ImageCount;
 
-	ImGui_ImplVulkanH_Frame* fds[ic];
-
-	for (uint32_t i = 0; i < ic; i++)
-		fds[i] = &wd->Frames[i];
-
     VkCommandPool *cps;
 
     cps = ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(

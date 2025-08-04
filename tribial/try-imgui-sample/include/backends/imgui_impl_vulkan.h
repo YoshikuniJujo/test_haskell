@@ -241,6 +241,12 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(
 	ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator,
 	int w, int h, uint32_t min_image_count, VkSwapchainKHR);
 void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator);
+VkCommandPool *ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
+	VkDevice device,
+	uint32_t queue_family, const VkAllocationCallbacks* allocator, uint32_t ic );
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	uint32_t queue_family, const VkAllocationCallbacks* allocator, VkCommandPool *cps );
 
 // Helper structure to hold the data needed by one rendering frame
 // (Used by example's main.cpp. Used by multi-viewport features. Probably NOT used by your own engine/app.)
