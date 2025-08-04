@@ -34,6 +34,7 @@ import Data.Int
 import Gpu.Vulkan.AllocationCallbacks.Core qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.PhysicalDevice.Core qualified as Vk.Phd
 import Gpu.Vulkan.Device.Core qualified as Vk.Dvc
+import Gpu.Vulkan.CommandPool.Core qualified as Vk.CmdPl
 import Gpu.Vulkan.Image.Core qualified as Vk.Img
 import Gpu.Vulkan.ImageView.Core qualified as Vk.ImgVw
 import Gpu.Vulkan.RenderPass.Core qualified as Vk.RndrPss
@@ -93,13 +94,21 @@ foreign import ccall "im_gui_impl_vulkan_h_destroy_before_create_swap_chain"
 createWindowCommandBuffers ::
 	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
 	Ptr Vk.AllocCallbacks.A -> #{type uint32_t} -> IO ()
-createWindowCommandBuffers =
-	cxx_im_gui_impl_vulkan_h_create_window_command_buffers
+createWindowCommandBuffers _phd dvc wd qf ac ic = do
+	cps <- cxx_im_gui_impl_vulkan_h_create_window_command_buffers_create_command_pool
+		dvc qf ac ic
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool
+		dvc wd qf ac cps
 
-foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers"
-	cxx_im_gui_impl_vulkan_h_create_window_command_buffers ::
-	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
-	Ptr Vk.AllocCallbacks.A -> #{type uint32_t} -> IO ()
+foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_create_command_pool"
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_create_command_pool ::
+	Vk.Dvc.D -> #{type uint32_t} ->
+	Ptr Vk.AllocCallbacks.A -> #{type uint32_t} -> IO (Ptr Vk.CmdPl.C)
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool"
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
+	Ptr Vk.AllocCallbacks.A -> Ptr Vk.CmdPl.C -> IO ()
 
 createSwapChain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} -> IO ()
