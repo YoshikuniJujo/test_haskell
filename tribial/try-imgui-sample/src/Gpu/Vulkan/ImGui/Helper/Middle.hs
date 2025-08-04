@@ -96,11 +96,11 @@ destroyBeforeCreateSwapChain (Vk.Dvc.D dvc) wd macs =
 
 createWindowCommandBuffers ::
 	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M Vk.AllocCallbacks.A mud -> IO ()
+	TPMaybe.M Vk.AllocCallbacks.A mud -> Word32 -> IO ()
 createWindowCommandBuffers
-	(Vk.Phd.P phd) (Vk.Dvc.D dvc) wd (Vk.QFam.Index qfi) macs =
+	(Vk.Phd.P phd) (Vk.Dvc.D dvc) wd (Vk.QFam.Index qfi) macs ic =
 	Vk.AllocCallbacks.mToCore macs \pacs ->
-	C.createWindowCommandBuffers phd dvc wd qfi pacs
+	C.createWindowCommandBuffers phd dvc wd qfi pacs ic
 
 createSwapChain :: Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Word32 -> IO ()
 createSwapChain (Vk.Dvc.D dvc) wd mic = C.createSwapChain dvc wd mic

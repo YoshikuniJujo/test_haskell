@@ -240,7 +240,7 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator,
 	int w, int h, uint32_t min_image_count, VkSwapchainKHR);
-void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator);
+void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator, uint32_t ic);
 VkCommandPool *ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
 	VkDevice device,
 	uint32_t queue_family, const VkAllocationCallbacks* allocator, uint32_t ic );

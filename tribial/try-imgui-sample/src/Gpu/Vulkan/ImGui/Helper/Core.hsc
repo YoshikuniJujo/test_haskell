@@ -92,14 +92,14 @@ foreign import ccall "im_gui_impl_vulkan_h_destroy_before_create_swap_chain"
 
 createWindowCommandBuffers ::
 	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
-	Ptr Vk.AllocCallbacks.A -> IO ()
+	Ptr Vk.AllocCallbacks.A -> #{type uint32_t} -> IO ()
 createWindowCommandBuffers =
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers
 
 foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers"
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers ::
 	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
-	Ptr Vk.AllocCallbacks.A -> IO ()
+	Ptr Vk.AllocCallbacks.A -> #{type uint32_t} -> IO ()
 
 createSwapChain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} -> IO ()

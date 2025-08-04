@@ -10,7 +10,7 @@ extern "C" void im_gui_impl_vulkan_h_create_window_swap_chain(
 extern "C" void im_gui_impl_vulkan_h_create_window_command_buffers(
 	VkPhysicalDevice physical_device, VkDevice device,
 	ImGui_ImplVulkanH_Window* wd, uint32_t queue_family,
-	const VkAllocationCallbacks* allocator );
+	const VkAllocationCallbacks* allocator, uint32_t ic );
 extern "C" VkCommandPool *
 	im_gui_impl_vulkan_h_create_window_command_buffers_create_command_pool(
 	VkDevice device, uint32_t queue_family,
@@ -89,10 +89,10 @@ void
 im_gui_impl_vulkan_h_create_window_command_buffers(
 	VkPhysicalDevice physical_device, VkDevice device,
 	ImGui_ImplVulkanH_Window* wd, uint32_t queue_family,
-	const VkAllocationCallbacks* allocator)
+	const VkAllocationCallbacks* allocator, uint32_t ic )
 {
 	ImGui_ImplVulkanH_CreateWindowCommandBuffers(
-		physical_device, device, wd, queue_family, allocator );
+		physical_device, device, wd, queue_family, allocator, ic );
 }
 
 VkCommandPool *

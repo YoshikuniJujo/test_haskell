@@ -112,7 +112,7 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator,
 	int w, int h, uint32_t min_image_count, VkSwapchainKHR);
-void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator);
+void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator, uint32_t ic);
 
 // Vulkan prototypes for use with custom loaders
 // (see description of IMGUI_IMPL_VULKAN_NO_PROTOTYPES in imgui_impl_vulkan.h
@@ -1541,12 +1541,12 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool(VkDevice device
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(device, wd, allocator);
 }
 
-void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator)
+void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator, uint32_t ic)
 {
 
 	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffers begin ***\n");
 
-	uint32_t ic = wd->ImageCount;
+//	uint32_t ic = wd->ImageCount;
 
     VkCommandPool *cps;
 
@@ -1974,7 +1974,7 @@ void ImGui_ImplVulkanH_CreateOrResizeWindow(
     ImGui_ImplVulkanH_CreateWindowSwapChain(
 		device, wd, allocator,
 		width, height, min_image_count, old_swapchain);
-    ImGui_ImplVulkanH_CreateWindowCommandBuffers(physical_device, device, wd, queue_family, allocator);
+    ImGui_ImplVulkanH_CreateWindowCommandBuffers(physical_device, device, wd, queue_family, allocator, wd->ImageCount);
 }
 
 void ImGui_ImplVulkanH_DestroyWindow(VkInstance instance, VkDevice device, ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator)
