@@ -10,7 +10,10 @@ module Gpu.Vulkan.ImGui.Helper (
 
 	selectSurfaceFormat,
 	selectPresentMode,
-	createWindowSwapChain, createWindowCommandBuffers,
+	createWindowSwapChain,
+	createWindowCommandBuffers,
+	createWindowCommandBuffersCreateCommandPool,
+	createWindowCommandBuffersFromCommandPool,
 
 	destroyBeforeCreateSwapChain,
 	createSwapChain, onlyCreateSwapChain,
@@ -41,6 +44,8 @@ import Gpu.Vulkan.AllocationCallbacks.Internal qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Device.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
+import Gpu.Vulkan.CommandPool.Type qualified as Vk.CmdPl
 import Gpu.Vulkan.Image.Internal qualified as Vk.Img
 import Gpu.Vulkan.ImageView.Type qualified as Vk.ImgVw
 import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
@@ -87,9 +92,30 @@ destroyBeforeCreateSwapChain (Vk.Dvc.D dvc) wd mac =
 createWindowCommandBuffers :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Word32 -> IO ()
-createWindowCommandBuffers phd (Vk.Dvc.D dvc) wd qfi mac ic =
-	M.createWindowCommandBuffers
-		phd dvc wd qfi (Vk.AllocCallbacks.toMiddle mac) ic
+createWindowCommandBuffers _phd dvc wd qfi mac ic =
+	createWindowCommandBuffersCreateCommandPool dvc qfi mac ic $
+	createWindowCommandBuffersFromCommandPool dvc wd qfi mac
+
+createWindowCommandBuffersCreateCommandPool :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Dvc.D sd -> Vk.QFam.Index ->
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Word32 ->
+	(forall scpls . HPList.PL Vk.CmdPl.C scpls -> IO a) -> IO a
+createWindowCommandBuffersCreateCommandPool (Vk.Dvc.D dvc) qfi mac ic f = do
+	cps <- M.createWindowCommandBuffersCreateCommandPool
+		dvc qfi (Vk.AllocCallbacks.toMiddle mac) ic
+	fromList Vk.CmdPl.C cps f
+	
+
+fromList :: (a -> t s) -> [a] -> (forall ss . HPList.PL t ss -> b) -> b
+fromList _ [] f = f HPList.Nil
+fromList k (x : xs) f = fromList k xs \ys -> f $ k x HPList.:** ys
+
+createWindowCommandBuffersFromCommandPool :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> HPList.PL Vk.CmdPl.C scpls -> IO ()
+createWindowCommandBuffersFromCommandPool (Vk.Dvc.D dvc) wd qfi mac cps =
+	M.createWindowCommandBuffersFromCommandPool
+		dvc wd qfi (Vk.AllocCallbacks.toMiddle mac) (HPList.toList (\(Vk.CmdPl.C cp) -> cp) cps)
 
 createSwapChain :: Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Word32 -> IO ()
 createSwapChain (Vk.Dvc.D dvc) wd mic = M.createSwapChain dvc wd mic
