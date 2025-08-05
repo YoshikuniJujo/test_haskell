@@ -8,7 +8,10 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 
 	selectSurfaceFormat,
 	selectPresentMode,
-	createWindowSwapChain, createWindowCommandBuffers,
+	createWindowSwapChain,
+	createWindowCommandBuffers,
+	createWindowCommandBuffersCreateCommandPool,
+	createWindowCommandBuffersFromCommandPool,
 
 	destroyBeforeCreateSwapChain,
 	createSwapChain, onlyCreateSwapChain,
@@ -30,6 +33,7 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Marshal.Utils
 import Foreign.Storable
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.List qualified as L
@@ -44,6 +48,7 @@ import Gpu.Vulkan.AllocationCallbacks.Middle.Internal qualified as Vk.AllocCallb
 import Gpu.Vulkan.PhysicalDevice.Middle.Internal qualified as Vk.Phd
 import Gpu.Vulkan.Device.Middle.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam
+import Gpu.Vulkan.CommandPool.Middle.Internal qualified as Vk.CmdPl
 
 import Gpu.Vulkan.Image.Middle.Internal qualified as Vk.Img
 import Gpu.Vulkan.ImageView.Middle.Internal qualified as Vk.ImgVw
@@ -97,10 +102,28 @@ destroyBeforeCreateSwapChain (Vk.Dvc.D dvc) wd macs =
 createWindowCommandBuffers ::
 	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
 	TPMaybe.M Vk.AllocCallbacks.A mud -> Word32 -> IO ()
-createWindowCommandBuffers
-	(Vk.Phd.P phd) (Vk.Dvc.D dvc) wd (Vk.QFam.Index qfi) macs ic =
-	Vk.AllocCallbacks.mToCore macs \pacs ->
-	C.createWindowCommandBuffers phd dvc wd qfi pacs ic
+createWindowCommandBuffers _phd dvc wd qfi macs ic = do
+	cps <- createWindowCommandBuffersCreateCommandPool dvc qfi macs ic
+	createWindowCommandBuffersFromCommandPool dvc wd qfi macs cps
+
+createWindowCommandBuffersCreateCommandPool ::
+	Vk.Dvc.D -> Vk.QFam.Index ->
+	TPMaybe.M Vk.AllocCallbacks.A mud -> Word32 -> IO [Vk.CmdPl.C]
+createWindowCommandBuffersCreateCommandPool
+	(Vk.Dvc.D dvc) (Vk.QFam.Index qfi) macs ic = allocaArray (fromIntegral ic) \pcps -> do
+	Vk.AllocCallbacks.mToCore macs \pacs -> do
+		pcps' <- C.createWindowCommandBuffersCreateCommandPool dvc qfi pacs ic
+		copyBytes pcps pcps' (fromIntegral ic * sizeOf (undefined :: Ptr ()))
+	(Vk.CmdPl.C <$>) <$> peekArray (fromIntegral ic) pcps
+
+createWindowCommandBuffersFromCommandPool ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
+	TPMaybe.M Vk.AllocCallbacks.A mud -> [Vk.CmdPl.C] -> IO ()
+createWindowCommandBuffersFromCommandPool
+	(Vk.Dvc.D dvc) wd (Vk.QFam.Index qfi) macs cps = allocaArray (length cps) \pcps ->
+	Vk.AllocCallbacks.mToCore macs \pacs -> do
+	pokeArray pcps $ (\(Vk.CmdPl.C cp) -> cp) <$> cps
+	C.createWindowCommandBuffersFromCommandPool dvc wd qfi pacs pcps
 
 createSwapChain :: Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Word32 -> IO ()
 createSwapChain (Vk.Dvc.D dvc) wd mic = C.createSwapChain dvc wd mic

@@ -6,7 +6,10 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 
 	selectSurfaceFormat,
 	selectPresentMode,
-	createWindowSwapChain, createWindowCommandBuffers,
+	createWindowSwapChain,
+	createWindowCommandBuffers,
+	createWindowCommandBuffersCreateCommandPool,
+	createWindowCommandBuffersFromCommandPool,
 
 	destroyBeforeCreateSwapChain,
 
@@ -100,10 +103,22 @@ createWindowCommandBuffers _phd dvc wd qf ac ic = do
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool
 		dvc wd qf ac cps
 
+createWindowCommandBuffersCreateCommandPool ::
+	Vk.Dvc.D -> #{type uint32_t} ->
+	Ptr Vk.AllocCallbacks.A -> #{type uint32_t} -> IO (Ptr Vk.CmdPl.C)
+createWindowCommandBuffersCreateCommandPool =
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_create_command_pool
+
 foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_create_command_pool"
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_create_command_pool ::
 	Vk.Dvc.D -> #{type uint32_t} ->
 	Ptr Vk.AllocCallbacks.A -> #{type uint32_t} -> IO (Ptr Vk.CmdPl.C)
+
+createWindowCommandBuffersFromCommandPool ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
+	Ptr Vk.AllocCallbacks.A -> Ptr Vk.CmdPl.C -> IO ()
+createWindowCommandBuffersFromCommandPool =
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool
 
 foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool"
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool ::
