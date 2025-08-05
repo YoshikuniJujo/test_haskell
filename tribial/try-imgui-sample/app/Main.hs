@@ -323,6 +323,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.Frmbffr.group dvc nil \fbg ->
 	let	fbinfos = mkFramebufferInfoList rp scvs (fromIntegral wdt') (fromIntegral hgt') in
 	createFramebufferList fbg [0 ..] fbinfos >>= \fbs ->
+	Vk.ImGui.H.createWindowCommandBuffersCreateCommandPool dvc qfi nil (L.genericLength scis) \cps ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
@@ -333,7 +334,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.H.copyImageViewsToWd' wdcxx scvs >>
 	Vk.ImGui.H.copyFramebufferToWd False wdcxx fbs >>
 
-	Vk.ImGui.H.createWindowCommandBuffers phd dvc wdcxx qfi nil (L.genericLength scis) >>
+	Vk.ImGui.H.createWindowCommandBuffersFromCommandPool dvc wdcxx qfi nil cps >>
 
 	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo -> do
 	cxx_initialize_ImGui_ImplVulkan_InitInfo
