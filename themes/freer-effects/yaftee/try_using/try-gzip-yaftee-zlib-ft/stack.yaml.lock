@@ -212,16 +212,9 @@ packages:
     commit: 047b0ad3c97a8075f5149e040de850ab0177b3f4
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: wrapper/zlib/try-zlib-core
-- completed:
-    hackage: union-color-0.1.4.0@sha256:fff0a64a791bed0c4df60eb17828b6521e8c3ab25573924b3a89d6d078792067,1362
-    pantry-tree:
-      sha256: 690c699f7bd5de4d91c2e79ad0d45396f0b21d8c7ef4b8156cd83f919b6d9744
-      size: 508
-  original:
-    hackage: union-color-0.1.4.0
 snapshots:
 - completed:
-    sha256: 6ab04790fe1d2dd963616b09570e2ccab42d0b798576f7e2e89aa8f2a7ab4d8e
-    size: 724084
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/7/11.yaml
-  original: nightly-2025-07-11
+    sha256: 780998386325c0b45f8d16f71de206b538207b3569b164c65de3e46cdf85c76d
+    size: 673573
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/8/6.yaml
+  original: nightly-2025-08-06
