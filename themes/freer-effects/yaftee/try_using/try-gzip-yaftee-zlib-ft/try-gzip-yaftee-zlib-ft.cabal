@@ -49,6 +49,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , filepath
     , mono-traversable
     , primitive
@@ -76,6 +77,7 @@ executable try-decod-gray
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , filepath
     , mono-traversable
     , primitive
@@ -104,6 +106,7 @@ executable try-gray-alpha
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , filepath
     , mono-traversable
     , primitive
@@ -132,6 +135,7 @@ executable try-gzip-deflate
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , filepath
     , mono-traversable
     , primitive
@@ -164,6 +168,7 @@ executable try-gzip-yaftee-zlib-ft-exe
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , filepath
     , mono-traversable
     , primitive
@@ -192,6 +197,7 @@ executable try-palette
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , filepath
     , mono-traversable
     , primitive
@@ -220,6 +226,7 @@ executable try-png-decode
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , filepath
     , mono-traversable
     , primitive
@@ -248,6 +255,7 @@ executable try-read-chunk
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , filepath
     , mono-traversable
     , primitive
@@ -276,6 +284,7 @@ executable try-zlib-deflate
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , filepath
     , mono-traversable
     , primitive
@@ -309,6 +318,7 @@ test-suite try-gzip-yaftee-zlib-ft-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , filepath
     , mono-traversable
     , primitive

@@ -11,10 +11,20 @@ import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Color
 
+import Data.Sequence qualified as Seq
+
 data Palette = Palette (V.Vector (Word8, Word8, Word8)) deriving Show
 
+data Palette2 = Palette2 (Seq.Seq (Word8, Word8, Word8)) deriving Show
+
+snoc :: Palette2 -> Word8 -> Word8 -> Word8 -> Palette2
+snoc (Palette2 p) r g b = Palette2 $ p Seq.:|> (r, g, b)
+
 palette0 :: Palette
-palette0 = Palette $ V.empty
+palette0 = Palette V.empty
+
+palette0' :: Palette2
+palette0' = Palette2 Seq.empty
 
 readPalette :: BSF.ByteString -> Palette
 readPalette = Palette . V.unfoldr \bs -> case BSF.splitAt' 3 bs of
@@ -22,11 +32,14 @@ readPalette = Palette . V.unfoldr \bs -> case BSF.splitAt' 3 bs of
 	Just (otoList -> [r, g, b], bs') -> Just ((r, g, b), bs')
 	_ -> error "bad"
 
--- readingPalette :: BSF.ByteString -> (Palette, BSF.ByteString)
--- readingPalette
+readPalette2 :: (Palette2, [Word8]) -> BSF.ByteString -> (Palette2, [Word8])
+readPalette2 = BSF.foldl' readByte1
 
--- readByte1 :: (Palette, [Word8]) -> Word8 -> (Palette, [Word8])
--- readByte1
+readByte1 :: (Palette2, [Word8]) -> Word8 -> (Palette2, [Word8])
+readByte1 (p, []) r = (p, [r])
+readByte1 (p, [r]) g = (p, [r, g])
+readByte1 (p, [r, g]) b = (snoc p r g b, [])
+readByte1 _ _ = error "bad"
 
 splitAt' :: Int -> V.Vector a -> Maybe (V.Vector a, V.Vector a)
 splitAt' n v

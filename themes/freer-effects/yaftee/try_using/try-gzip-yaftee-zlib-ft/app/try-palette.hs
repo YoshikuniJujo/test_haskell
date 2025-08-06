@@ -24,6 +24,7 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
 import Data.Maybe
+import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png.Header qualified as Header
 import System.IO
@@ -55,6 +56,7 @@ main = do
 		. Buffer.run @"foobar" @BSF.ByteString
 		. PipeZ.run @"foobar"
 		. flip (State.runN @"foobar") Encode.palette0
+		. flip (State.runN @"foobar") (Encode.palette0', [] :: [Word8])
 		. Steps.chunkRun_ @"foobar"
 		. Pipe.run
 		. (`Except.catch` IO.print @Zlib.ReturnCode)
@@ -67,7 +69,10 @@ main = do
 				cnk <- State.getN @Steps.Chunk "foobar"
 				if (cnk == Steps.Chunk "PLTE")
 				then do
-					IO.print $ Encode.readPalette bs
+					pllt <- State.getN "foobar"
+--					IO.print $ Encode.readPalette bs
+					IO.print $ Encode.readPalette2 pllt bs
+					State.putN "foobar" $ Encode.readPalette2 pllt bs
 					State.putN "foobar" $ Encode.readPalette bs
 				else if (cnk == Steps.Chunk "IDAT")
 				then Pipe.yield bs
