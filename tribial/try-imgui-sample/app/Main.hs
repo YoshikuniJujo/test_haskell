@@ -50,6 +50,7 @@ import Gpu.Vulkan.PhysicalDevice qualified as Vk.Phd
 import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Device.Internal qualified as Vk.Dvc
+import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
 import Gpu.Vulkan.DescriptorPool.Type qualified as Vk.DscPl
@@ -323,7 +324,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.Frmbffr.group dvc nil \fbg ->
 	let	fbinfos = mkFramebufferInfoList rp scvs (fromIntegral wdt') (fromIntegral hgt') in
 	createFramebufferList fbg [0 ..] fbinfos >>= \fbs ->
-	Vk.ImGui.H.createWindowCommandBuffersCreateCommandPool dvc qfi nil (L.genericLength scis) \cps ->
+	HPList.replicateM (length scis) (createCommandPool dvc qfi) \cps ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
@@ -590,3 +591,11 @@ createImageViews _ _ [] f = f HPList.Nil
 createImageViews dvc info (i : is) f =
 	Vk.ImgVw.create dvc (info i) nil \iv ->
 	createImageViews dvc info is \ivs -> f $ iv :** ivs
+
+createCommandPool :: Vk.Dvc.D sd -> Vk.QFam.Index -> (forall scpl . Vk.CmdPl.C scpl -> IO a) -> IO a
+createCommandPool dvc qfi = Vk.CmdPl.create dvc info TPMaybe.N
+	where
+	info = Vk.CmdPl.CreateInfo {
+		Vk.CmdPl.createInfoNext = TMaybe.N,
+		Vk.CmdPl.createInfoFlags = zeroBits,
+		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
