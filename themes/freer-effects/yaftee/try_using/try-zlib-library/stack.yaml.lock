@@ -173,16 +173,9 @@ packages:
     commit: 978522910a4a2a7a3bf8f9ec49ff8f286364fae0
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: wrapper/zlib/try-zlib-core
-- completed:
-    hackage: tools-yj-0.1.0.45@sha256:e342ee6fde63d5a3dc05405c7cca61e36eea2315cba1706cbd2bc8c65995db88,2545
-    pantry-tree:
-      sha256: 2ab6e9e8288431766b0b2bddddbda28290dbb94535fe135e0cb3b72cde74945f
-      size: 1835
-  original:
-    hackage: tools-yj-0.1.0.45
 snapshots:
 - completed:
-    sha256: 611f01a66ae8377a840613ef2b43e8e4dd31990da0d03e3a972032be0c1fbdba
-    size: 720043
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/7/1.yaml
-  original: nightly-2025-07-01
+    sha256: 780998386325c0b45f8d16f71de206b538207b3569b164c65de3e46cdf85c76d
+    size: 673573
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/8/6.yaml
+  original: nightly-2025-08-06
