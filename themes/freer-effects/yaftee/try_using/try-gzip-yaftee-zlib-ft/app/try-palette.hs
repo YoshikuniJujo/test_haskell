@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -84,14 +84,19 @@ main = do
 			Pipe.=$= Unfilter.pngUnfilter' hdr
 			Pipe.=$= do
 				r <- Pipe.await
-				plt <- State.getN "foobar"
+				(Encode.palette2ToPalette -> plt, _ :: [Word8]) <- State.getN "foobar"
 				Pipe.yield $ (Encode.lookupPalette @Double plt) <$> r
 				forever $
 					Pipe.yield . (Encode.lookupPalette plt <$>) =<< Pipe.await
 			Pipe.=$= do
 				p <- Pipe.await
-				plt <- State.getN "foobar"
+				(Encode.palette2ToPalette -> plt, _ :: [Word8]) <- State.getN "foobar"
 				Pipe.yield $ fromJust . Encode.elemIndexPalette @_ @Int plt <$> p
 				forever $
 					Pipe.yield . ((fromJust . Encode.elemIndexPalette plt) <$>) =<< Pipe.await
-			Pipe.=$= PipeIO.print
+			Pipe.=$= do
+				p <- Pipe.await
+				(Encode.palette2ToPalette -> plt, _ :: [Word8]) <- State.getN "foobar"
+				IO.print plt
+				IO.print p
+				PipeIO.print

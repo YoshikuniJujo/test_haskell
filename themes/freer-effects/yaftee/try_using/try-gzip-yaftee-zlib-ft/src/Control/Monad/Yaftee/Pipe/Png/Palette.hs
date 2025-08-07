@@ -5,6 +5,7 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Palette where
 
+import Data.Foldable
 import Data.MonoTraversable
 import Data.Array qualified as A
 import Data.Vector qualified as V
@@ -56,3 +57,15 @@ lookupPalette (Palette v) i = let (r, g, b) = v V.! fromIntegral i in RgbWord8 r
 elemIndexPalette :: (RealFrac d, Num i) => Palette -> Rgb d -> Maybe i
 elemIndexPalette (Palette v) (RgbWord8 r g b) =
 	fromIntegral <$> V.elemIndex (r, g, b) v
+
+seqToArray :: Seq.Seq a -> A.Array Int a
+seqToArray s = A.listArray (0, Seq.length s - 1) $ toList s
+
+palette2ToArray :: Palette2 -> A.Array Int (Word8, Word8, Word8)
+palette2ToArray (Palette2 p) = seqToArray p
+
+seqToVector :: Seq.Seq a -> V.Vector a
+seqToVector = V.fromList . toList
+
+palette2ToPalette :: Palette2 -> Palette
+palette2ToPalette (Palette2 p) = Palette $ seqToVector p
