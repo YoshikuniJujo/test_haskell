@@ -24,6 +24,7 @@ dependencies:
 - primitive
 - mono-traversable
 - containers
+- array
 - vector
 - bytestring
 - filepath

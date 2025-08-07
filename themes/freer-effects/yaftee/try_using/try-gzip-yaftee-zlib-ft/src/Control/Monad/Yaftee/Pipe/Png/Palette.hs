@@ -6,6 +6,7 @@
 module Control.Monad.Yaftee.Pipe.Png.Palette where
 
 import Data.MonoTraversable
+import Data.Array qualified as A
 import Data.Vector qualified as V
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
