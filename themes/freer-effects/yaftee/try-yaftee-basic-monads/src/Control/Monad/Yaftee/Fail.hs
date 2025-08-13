@@ -47,3 +47,9 @@ runExcN nm err = \case
 			Q.singleton (runExcN nm err . (q F.$) . runIdentity)
 		Right (U.Fail m) -> Except.throwN nm $ err m
 		Right (_ `U.FailCatch` _) -> error "bad" -- Except.catchN nm (runExcN nm err m) (runExcN nm err . h)
+
+instance HFunctor.Tight U.Fail where
+	mapT _ _ (U.Fail e) = U.Fail e
+	mapT f _ (m `U.FailCatch` h) = (f m) `U.FailCatch` \e -> f $ h e
+
+instance HFunctor.Loose U.Fail
