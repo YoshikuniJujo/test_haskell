@@ -46,9 +46,10 @@ main = do
 	h <- openFile fp ReadMode
 	ib <- PipeZ.cByteArrayMalloc 64
 	ob <- PipeZ.cByteArrayMalloc 64
-	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode . Fail.runExc id
+	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode . Fail.run
 		. PipeMT.lengthRun @"foobar"
 		. PipeZ.run @"foobar" . PipeCrc32.run @"foobar" . OnDemand.run @"foobar" . Pipe.run
+		. (`Fail.catch` IO.putStrLn)
 		. (`Except.catch` IO.putStrLn) . (`Except.catch` IO.print @Zlib.ReturnCode) . void $ PipeBS.hGet 32 h Pipe.=$=
 			PipeT.convert BSF.fromStrict Pipe.=$= OnDemand.onDemand "foobar" Pipe.=$= do
 				readHeader "foobar" IO.print

@@ -38,16 +38,16 @@ main = do
 
 	h <- openFile fp ReadMode
 
-
 	void . Eff.runM . Except.run @String
 		. Steps.chunkRun_ @"foobar"
 		. Fail.run
 		. Pipe.run
+		. (`Fail.catch` IO.putStrLn)
 		. (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 h
 			Pipe.=$= PipeT.convert BSF.fromStrict
 			Pipe.=$= Steps.chunk "foobar"
 			Pipe.=$= forever do
-		--		"" <- Pipe.await
+				"" <- Pipe.await
 				bs <- Pipe.await
 				IO.print bs
