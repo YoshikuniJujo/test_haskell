@@ -9,7 +9,7 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Encode (
 
-	encodeRgba, encodeGray8, encodeGrayAlpha,
+	encodeRgba, encodeGray8, encodeGrayAlpha, encodePalette,
 
 	encodeRaw
 
@@ -23,7 +23,7 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
-import Control.Monad.Yaftee.Pipe.Png.Palette
+import Control.Monad.Yaftee.Pipe.Png.Palette qualified as Palette
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
@@ -87,6 +87,20 @@ encodeGrayAlpha nm m hdr ibe obe =
 	void $ PipeT.convert (grayAlphaToWords hdr)
 		Pipe.=$= PipeT.convert BSF.pack
 		Pipe.=$= encodeRaw nm m hdr Nothing ibe obe
+
+encodePalette :: forall nm m -> (
+	PrimBase m, RealFrac d, U.Member Pipe.P es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member (Except.E String) es,
+	U.Base (U.FromFirst m) es ) =>
+	Header.Header -> Palette.Palette ->
+	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	Eff.E es [Int] BSF.ByteString ()
+encodePalette nm m hdr plt ibe obe =
+	void $ PipeT.convert (BSF.pack . (fromIntegral <$>))
+		Pipe.=$= encodeRaw nm m hdr (Just plt) ibe obe
 
 graysToWords :: RealFrac d => Header.Header -> [Gray d] -> [Word8]
 graysToWords = \case
@@ -167,7 +181,7 @@ encodeRaw :: forall nm m -> (
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
 	U.Base (U.FromFirst m) es
 	) =>
-	Header.Header -> Maybe Palette ->
+	Header.Header -> Maybe Palette.Palette ->
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
 	Eff.E es BSF.ByteString BSF.ByteString ()
 encodeRaw nm m hdr mplt ibe obe = void $
@@ -192,7 +206,7 @@ encodeRaw nm m hdr mplt ibe obe = void $
 				Nothing -> pure ()
 				Just plt -> Pipe.yield $ Chunk {
 					chunkName = "PLTE",
-					chunkBody = encodePalette plt }
+					chunkBody = Palette.encodePalette plt }
 
 			bd0 <- Pipe.await
 			Pipe.yield $ Chunk {

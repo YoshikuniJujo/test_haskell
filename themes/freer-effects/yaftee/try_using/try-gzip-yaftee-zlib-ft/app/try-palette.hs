@@ -103,13 +103,13 @@ main = do
 				Pipe.yield $ fromJust . Encode.elemIndexPalette @_ @Int plt <$> p
 				forever $
 					Pipe.yield . ((fromJust . Encode.elemIndexPalette plt) <$>) =<< Pipe.await
-			Pipe.=$= PipeT.convert intsToBsf
+--			Pipe.=$= PipeT.convert intsToBsf
 			Pipe.=$= do
 				p <- Pipe.await
 				(Encode.palette2ToPalette -> plt, _ :: [Word8]) <- State.getN "foobar"
 				IO.print plt
 				IO.print p
-				encodeRaw "barbaz" IO hdr (Just plt) ibe obe
+				encodePalette "barbaz" IO hdr plt ibe obe
 --				PipeIO.print
 			Pipe.=$= PipeT.convert BSF.toStrict
 			Pipe.=$= PipeIO.debugPrint
