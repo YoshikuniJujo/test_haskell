@@ -6,7 +6,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Fail (F, run, runExc, runExcN) where
+module Control.Monad.Yaftee.Fail (
+	F, run, catch, runExc, runExcN) where
 
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Except qualified as Except
@@ -28,6 +29,10 @@ run = \case
 		Right (U.Fail m) -> F.Pure $ Left m
 		Right (m `U.FailCatch` h) -> either (F.Pure . Left) (run F.. q)
 			=<< either (run . h) (F.Pure . Right) =<< run m
+
+catch :: U.Member F effs =>
+	Eff.E effs i o a -> (String -> Eff.E effs i o a) -> Eff.E effs i o a
+catch = (Eff.effh .) . U.FailCatch
 
 {-# DEPRECATED runExc, runExcN "Don't use these" #-}
 
