@@ -33,9 +33,11 @@ import System.Environment
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
+import Control.Monad.Yaftee.Pipe.Png.Encode
+
 main :: IO ()
 main = do
-	fp : _ <- getArgs
+	fp : fpo : _ <- getArgs
 
 	hh <- openFile fp ReadMode
 	Right hdr <- Eff.runM . Except.run @String
@@ -52,9 +54,15 @@ main = do
 	ibd <- PipeZ.cByteArrayMalloc 64
 	obd <- PipeZ.cByteArrayMalloc 64
 
+	ho <- openFile fpo WriteMode
+	ibe <- PipeZ.cByteArrayMalloc 64
+	obe <- PipeZ.cByteArrayMalloc 64
+
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Buffer.run @"foobar" @BSF.ByteString
+		. Buffer.run @"barbaz" @BSF.ByteString
 		. PipeZ.run @"foobar"
+		. PipeZ.run @"barbaz"
 		. flip (State.runN @"foobar") Encode.palette0
 		. flip (State.runN @"foobar") (Encode.palette0', [] :: [Word8])
 		. Steps.chunkRun_ @"foobar"
@@ -91,12 +99,22 @@ main = do
 			Pipe.=$= do
 				p <- Pipe.await
 				(Encode.palette2ToPalette -> plt, _ :: [Word8]) <- State.getN "foobar"
+				Pipe.yield []
 				Pipe.yield $ fromJust . Encode.elemIndexPalette @_ @Int plt <$> p
 				forever $
 					Pipe.yield . ((fromJust . Encode.elemIndexPalette plt) <$>) =<< Pipe.await
+			Pipe.=$= PipeT.convert intsToBsf
 			Pipe.=$= do
 				p <- Pipe.await
 				(Encode.palette2ToPalette -> plt, _ :: [Word8]) <- State.getN "foobar"
 				IO.print plt
 				IO.print p
-				PipeIO.print
+				encodeRaw "barbaz" IO hdr (Just plt) ibe obe
+--				PipeIO.print
+			Pipe.=$= PipeT.convert BSF.toStrict
+			Pipe.=$= PipeIO.debugPrint
+			Pipe.=$= PipeBS.hPutStr ho
+	hClose h; hClose ho
+
+intsToBsf :: [Int] -> BSF.ByteString
+intsToBsf = BSF.pack . (fromIntegral <$>)

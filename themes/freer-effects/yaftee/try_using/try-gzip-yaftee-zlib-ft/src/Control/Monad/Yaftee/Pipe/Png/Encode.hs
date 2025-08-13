@@ -11,6 +11,8 @@ module Control.Monad.Yaftee.Pipe.Png.Encode (
 
 	encodeRgba, encodeGray8, encodeGrayAlpha,
 
+	encodeRaw
+
 	) where
 
 import Control.Monad
@@ -54,7 +56,7 @@ encodeRgba nm m hdr ibe obe =
 	void $ PipeT.convert (Header.rgbaListToWord8List hdr)
 		Pipe.=$= PipeT.convert BSF.pack
 
-		Pipe.=$= encodeRaw nm m hdr ibe obe
+		Pipe.=$= encodeRaw nm m hdr Nothing ibe obe
 
 encodeGray8 :: forall nm m -> (
 	PrimBase m, RealFrac d, U.Member Pipe.P es,
@@ -69,7 +71,7 @@ encodeGray8 :: forall nm m -> (
 encodeGray8 nm m hdr ibe obe =
 	void $ PipeT.convert (graysToWords hdr)
 		Pipe.=$= PipeT.convert BSF.pack
-		Pipe.=$= encodeRaw nm m hdr ibe obe
+		Pipe.=$= encodeRaw nm m hdr Nothing ibe obe
 
 encodeGrayAlpha :: forall nm m -> (
 	PrimBase m, RealFrac d, U.Member Pipe.P es,
@@ -84,7 +86,7 @@ encodeGrayAlpha :: forall nm m -> (
 encodeGrayAlpha nm m hdr ibe obe =
 	void $ PipeT.convert (grayAlphaToWords hdr)
 		Pipe.=$= PipeT.convert BSF.pack
-		Pipe.=$= encodeRaw nm m hdr ibe obe
+		Pipe.=$= encodeRaw nm m hdr Nothing ibe obe
 
 graysToWords :: RealFrac d => Header.Header -> [Gray d] -> [Word8]
 graysToWords = \case
@@ -165,10 +167,10 @@ encodeRaw :: forall nm m -> (
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
 	U.Base (U.FromFirst m) es
 	) =>
-	Header.Header ->
+	Header.Header -> Maybe Palette ->
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
 	Eff.E es BSF.ByteString BSF.ByteString ()
-encodeRaw nm m hdr ibe obe = void $
+encodeRaw nm m hdr mplt ibe obe = void $
 -- MAKE IDAT
 
 		do
@@ -185,6 +187,13 @@ encodeRaw nm m hdr ibe obe = void $
 			Pipe.yield $ Chunk {
 				chunkName = "IHDR",
 				chunkBody = BSF.fromStrict bd'' }
+
+			case mplt of
+				Nothing -> pure ()
+				Just plt -> Pipe.yield $ Chunk {
+					chunkName = "PLTE",
+					chunkBody = encodePalette plt }
+
 			bd0 <- Pipe.await
 			Pipe.yield $ Chunk {
 				chunkName = "IDAT",
