@@ -93,7 +93,10 @@ deriving instance Show (NonDet a)
 
 instance NonDetable.N NonDet where mz = MZero; mp = MPlus
 
-instance Member (FromFirst Fail) effs => Failable.F (U effs f i o) where
-	fail = inj . Fail
+instance Member Fail effs => Failable.F (U effs f i o) where
+	fail = injh . Fail
 
-data Fail a = Fail String deriving Show
+data Fail (f :: Type -> Type -> Type -> Type) i o a where
+	Fail :: forall f a i o . String -> Fail f i o a
+	FailCatch :: forall f a i o .
+		f i o a -> (String -> f i o a) -> Fail f i o a
