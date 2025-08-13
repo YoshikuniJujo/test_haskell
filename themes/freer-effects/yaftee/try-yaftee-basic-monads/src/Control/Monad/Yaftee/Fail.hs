@@ -16,7 +16,7 @@ import Data.Functor.Identity
 import Data.HigherFunctor qualified as HFunctor
 import Data.FTCQueue qualified as Q
 
-type F = U.FromFirst U.Fail
+type F = U.Fail
 
 run :: HFunctor.Loose (U.U effs) =>
 	Eff.E (F ': effs) i o a -> Eff.E effs i o (Either String a)
@@ -25,7 +25,11 @@ run = \case
 	u F.:>>= q -> case U.decomp u of
 		Left u' -> HFunctor.map run Right u' F.:>>=
 			Q.singleton (either (F.Pure . Left) (run F.. q))
-		Right (U.FromFirst (U.Fail m) _) -> F.Pure $ Left m
+		Right (U.Fail m) -> F.Pure $ Left m
+		Right (m `U.FailCatch` h) -> either (F.Pure . Left) (run F.. q)
+			=<< either (run . h) (F.Pure . Right) =<< run m
+
+{-# DEPRECATED runExc, runExcN "Don't use these" #-}
 
 runExc :: (HFunctor.Loose (U.U effs), U.Member (Except.E e) effs) =>
 	(String -> e) -> Eff.E (F ': effs) i o a -> Eff.E effs i o a
@@ -41,4 +45,5 @@ runExcN nm err = \case
 		Left u' -> HFunctor.map ((Identity <$>) . runExcN nm err)
 				Identity u' F.:>>=
 			Q.singleton (runExcN nm err . (q F.$) . runIdentity)
-		Right (U.FromFirst (U.Fail m) _) -> Except.throwN nm $ err m
+		Right (U.Fail m) -> Except.throwN nm $ err m
+		Right (_ `U.FailCatch` _) -> error "bad" -- Except.catchN nm (runExcN nm err m) (runExcN nm err . h)
