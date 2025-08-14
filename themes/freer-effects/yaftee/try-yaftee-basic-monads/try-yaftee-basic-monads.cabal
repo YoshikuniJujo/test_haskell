@@ -1,11 +1,11 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
 name:           try-yaftee-basic-monads
-version:        0.1.0.6
+version:        0.1.0.7
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-yaftee-basic-monads#readme>
 homepage:       https://github.com/YoshikuniJujo/try-yaftee-basic-monads#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-yaftee-basic-monads/issues

@@ -34,24 +34,24 @@ catch :: U.Member F effs =>
 	Eff.E effs i o a -> (String -> Eff.E effs i o a) -> Eff.E effs i o a
 catch = (Eff.effh .) . U.FailCatch
 
-{-# DEPRECATED runExc, runExcN "Don't use these" #-}
-
 runExc :: (HFunctor.Loose (U.U effs), U.Member (Except.E e) effs) =>
-	(String -> e) -> Eff.E (F ': effs) i o a -> Eff.E effs i o a
+	(String -> e) -> (e -> String) -> Eff.E (F ': effs) i o a -> Eff.E effs i o a
 runExc = runExcN ""
 
 runExcN :: forall e effs i o a . forall nm -> (
 	HFunctor.Loose (U.U effs),
 	U.Member (Except.Named nm e) effs ) =>
-	(String -> e) -> Eff.E (F ': effs) i o a -> Eff.E effs i o a
-runExcN nm err = \case
+	(String -> e) -> (e -> String) -> Eff.E (F ': effs) i o a -> Eff.E effs i o a
+runExcN nm err err' = \case
 	F.Pure x -> F.Pure x
 	u F.:>>= q -> case U.decomp u of
-		Left u' -> HFunctor.map ((Identity <$>) . runExcN nm err)
+		Left u' -> HFunctor.map ((Identity <$>) . runExcN nm err err')
 				Identity u' F.:>>=
-			Q.singleton (runExcN nm err . (q F.$) . runIdentity)
+			Q.singleton (runExcN nm err err' . (q F.$) . runIdentity)
 		Right (U.Fail m) -> Except.throwN nm $ err m
-		Right (_ `U.FailCatch` _) -> error "bad" -- Except.catchN nm (runExcN nm err m) (runExcN nm err . h)
+		Right (m `U.FailCatch` h) ->
+			runExcN nm err err' F.. q =<< Except.catchN nm
+				(runExcN nm err err' m) (runExcN nm err err' . h . err')
 
 instance HFunctor.Tight U.Fail where
 	mapT _ _ (U.Fail e) = U.Fail e
