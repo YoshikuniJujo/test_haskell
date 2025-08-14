@@ -71,7 +71,7 @@ main = do
 		. Buffer.run @"foobar" @BSF.ByteString
 		. PipeZ.run @"foobar"
 		. PipeZ.run @"barbaz"
-		. Fail.runExc id
+		. Fail.runExc id id
 		. Steps.chunkRun_ @"foobar"
 		. OnDemand.run @"foobar"
 		. flip (State.runN @"foobar") Header.header0
