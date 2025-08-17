@@ -86,7 +86,7 @@ main = do
 				Nothing -> pure ()
 				Just bd -> do
 					bd' <- if BSF.null bd then Pipe.await else pure bd
-					Steps.Chunk nm <-
+					Steps.Chunk { Steps.chunkName = nm } <-
 						State.getN @Steps.Chunk "foobar"
 					if nm == "IHDR"
 					then void $ Pipe.yield bd'

@@ -17,7 +17,9 @@ module Control.Monad.Yaftee.Pipe.Png.Decode.Chunk (
 
 	Chunk(..),
 
-	readBytes, Sequence, Crc32
+	readBytes, Sequence, Crc32,
+
+	isChunkName
 
 	) where
 
@@ -47,7 +49,7 @@ chunkRun_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 chunkRun_ = void
 	. (`State.runN` Crc32 Crc32.initial)
 	. (`State.runN` Sequence BSF.empty)
-	. (`State.runN` Chunk (seqFromString "IHDR"))
+	. (`State.runN` Chunk False (seqFromString "IHDR"))
 
 type ChunkStates nm =
 	'[State.Named nm Chunk, State.Named nm Sequence, State.Named nm Crc32]
@@ -77,8 +79,9 @@ chunk1 nm m = do
 	n <- Seq.toBitsBE <$> readBytes nm 4
 	resetCrc32 nm
 	cn <- readBytes nm 4
-	State.putN nm $ Chunk cn
+	State.putN nm $ Chunk True cn
 	Pipe.yield ""
+	State.putN nm $ Chunk False cn
 --	Pipe.yield . Left $ ChunkBegin cn
 --	for_ (split m n) \n' -> Pipe.yield =<< Right <$> readBytes nm n'
 	for_ (split m n) \n' -> Pipe.yield =<< readBytes nm n'
@@ -133,7 +136,11 @@ newtype Crc32 = Crc32 { unCrc32 :: Crc32.C } deriving Show
 appendSequence :: Sequence -> BSF.ByteString -> Sequence
 appendSequence (Sequence bs1) bs2 = Sequence $ bs1 `BSF.append` bs2
 
-newtype Chunk = Chunk BSF.ByteString deriving Eq
+data Chunk = Chunk {
+	chunkBegin :: Bool,
+	chunkName :: BSF.ByteString
+	}
+	deriving (Show, Eq)
 
-instance Show Chunk where
-	show (Chunk s) = "(Chunk " ++ (chr . fromIntegral <$> BSF.unpack s) ++ ")"
+isChunkName :: BSF.ByteString -> Chunk -> Bool
+isChunkName nm0 cn = chunkName cn == nm0

@@ -17,6 +17,7 @@ import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
+import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
@@ -79,7 +80,7 @@ main = do
 			Pipe.=$= forever do
 				bs <- Pipe.await
 				cnk <- State.getN @Steps.Chunk "foobar"
-				when (cnk == Steps.Chunk "IDAT") $ Pipe.yield bs
+				when ("IDAT" `Chunk.isChunkName` cnk) $ Pipe.yield bs
 			Pipe.=$= PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
 			Pipe.=$= Buffer.format "foobar" BSF.splitAt' "" rs
 --			Pipe.=$= PipeIO.debugPrint

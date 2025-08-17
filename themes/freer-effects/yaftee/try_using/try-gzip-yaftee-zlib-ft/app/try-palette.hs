@@ -17,6 +17,7 @@ import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
+import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 -- import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
 import Control.Monad.Yaftee.Pipe.Png.Palette qualified as Encode
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
@@ -75,14 +76,14 @@ main = do
 			Pipe.=$= forever do
 				bs <- Pipe.await
 				cnk <- State.getN @Steps.Chunk "foobar"
-				if (cnk == Steps.Chunk "PLTE")
+				if ("PLTE" `Chunk.isChunkName` cnk)
 				then do
 					pllt <- State.getN "foobar"
 --					IO.print $ Encode.readPalette bs
 					IO.print $ Encode.readPalette2 pllt bs
 					State.putN "foobar" $ Encode.readPalette2 pllt bs
 					State.putN "foobar" $ Encode.readPalette bs
-				else if (cnk == Steps.Chunk "IDAT")
+				else if ("IDAT" `Chunk.isChunkName` cnk)
 				then Pipe.yield bs
 				else do
 					IO.print bs

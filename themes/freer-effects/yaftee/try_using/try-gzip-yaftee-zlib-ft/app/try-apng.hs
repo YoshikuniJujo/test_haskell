@@ -47,7 +47,7 @@ main = do
 
 	void . Eff.runM . Except.run @String
 		. Steps.chunkRun_ @"foobar"
-		. Fail.run
+		. Fail.runExc id id
 		. Pipe.run
 		. (`Fail.catch` IO.putStrLn)
 		. (`Except.catch` IO.putStrLn)
@@ -56,17 +56,17 @@ main = do
 			Pipe.=$= Steps.chunk "foobar"
 			Pipe.=$= forever do
 				bs <- Pipe.await
-				IO.print bs
 				cn <- State.getN "foobar"
+				IO.print bs
 				IO.print @Steps.Chunk cn
 				printOneChunk cn bs
 
 printOneChunk ::
 	U.Base IO.I effs => Steps.Chunk -> BSF.ByteString -> Eff.E effs i o ()
-printOneChunk (Steps.Chunk "acTL") bs =
+printOneChunk (Steps.Chunk { Steps.chunkName = "acTL" }) bs =
 	IO.print @(Maybe (Word32, Word32)) $ (BSF.toBitsBE *** BSF.toBitsBE) <$> BSF.splitAt' 4 bs
-printOneChunk (Steps.Chunk "fcTL") "" = pure ()
-printOneChunk (Steps.Chunk "fcTL") bs = IO.print $ decodeFctl bs
+printOneChunk (Steps.Chunk { Steps.chunkName = "fcTL" }) "" = pure ()
+printOneChunk (Steps.Chunk { Steps.chunkName = "fcTL" }) bs = IO.print $ decodeFctl bs
 printOneChunk _ _ = pure ()
 
 data Fctl = Fctl {

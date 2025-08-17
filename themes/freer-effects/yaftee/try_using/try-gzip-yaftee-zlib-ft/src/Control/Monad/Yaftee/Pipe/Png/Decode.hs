@@ -76,7 +76,7 @@ decode nm m ib ob = void $
 		Chunk.chunk nm 500
 	Pipe.=$= forever do
 		x <- Pipe.await
-		Chunk.Chunk c <- State.getN nm
+		Chunk.Chunk { Chunk.chunkName = c } <- State.getN nm
 		when (BSF.toStrict c == "IHDR" || BSF.toStrict c == "IDAT")
 			$ Pipe.yield x
 	Pipe.=$= do
@@ -180,7 +180,7 @@ decodeHeader nm = void $
 	Pipe.=$= forever do
 		x <- Pipe.await
 		c <- State.getN nm
-		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
+		when ("IHDR" `Chunk.isChunkName` c || "IDAT" `Chunk.isChunkName` c)
 			$ Pipe.yield x
 	Pipe.=$= OnDemand.onDemand nm Pipe.=$= Header.read nm (const $ pure ())
 
@@ -197,7 +197,7 @@ decodePalette nm = void $
 	Pipe.=$= forever do
 		x <- Pipe.await
 		c <- State.getN nm
-		when (c == Chunk.Chunk "IHDR" || c == Chunk.Chunk "IDAT")
+		when ("IHDR" `Chunk.isChunkName` c || "IDAT" `Chunk.isChunkName` c)
 			$ Pipe.yield x
 	Pipe.=$= OnDemand.onDemand nm Pipe.=$= Header.read nm (const $ pure ())
 
