@@ -26,6 +26,7 @@ import Data.Bits
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
+import Data.Png.Header qualified as Header
 
 import System.IO
 import System.Environment
@@ -53,6 +54,7 @@ main = do
 
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. (`State.run` (0 :: Int))
+		. (`State.run` fctl0)
 		. Steps.chunkRun_ @"foobar"
 		. Fail.runExc id id
 		. PipeZ.run @"foobar"
@@ -69,8 +71,8 @@ main = do
 					Steps.chunkBegin = cb,
 					Steps.chunkName = cnn
 					} <- State.getN "foobar"
+				when (cb && cnn == "IDAT") $ Pipe.yield ""
 				when (cnn == "IDAT") $ Pipe.yield bs
-				when (cnn == "fdAT") $ Pipe.yield bs
 --				IO.print bs
 				when cb do
 					if bs == "" && cnn == "fdAT"
@@ -79,25 +81,44 @@ main = do
 						IO.print "hogepiyofuga"
 						let Just (srn :: Word32, bs') = (BSF.toBitsBE `first`) <$> BSF.splitAt' 4 bs
 						IO.print srn
+						Pipe.yield ""
 						Pipe.yield bs'
 					else IO.print "foobarbaz"
+				when (not cb && cnn == "fdAT") $ Pipe.yield bs
 				IO.print cn
 				when (bs /= "") $ printOneChunk cn bs
 			Pipe.=$= do
 				"" <- Pipe.await
 				n <- State.get
-				replicateM n $
+				replicateM n do
+					"" <- Pipe.await
+					fctl <- State.get
+					IO.print $ (+ 1) <$> Header.headerToRows' hdr
+						(fctlWidth fctl) (fctlHeight fctl)
 					PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
-			Pipe.=$= PipeIO.print
+			Pipe.=$= do
+				PipeIO.print'
+				{-
+				fctl <- State.get
+				IO.print @Fctl fctl
+				IO.print hdr
+				IO.print $ (+ 1) <$> Header.headerToRows hdr
+				IO.print $ (+ 1) <$> Header.headerToRows' hdr
+					(fctlWidth fctl) (fctlHeight fctl)
+					-}
 
-printOneChunk :: U.Member (State.S Int) effs =>
+printOneChunk :: (
+	U.Member (State.S Int) effs, U.Member (State.S Fctl) effs ) =>
 	U.Base IO.I effs => Steps.Chunk -> BSF.ByteString -> Eff.E effs i o ()
 printOneChunk (Steps.Chunk { Steps.chunkName = "acTL" }) bs = do
 	let	x@(Just (fn, _)) = (BSF.toBitsBE *** BSF.toBitsBE) <$> BSF.splitAt' 4 bs
 	State.put fn
 	IO.print @(Maybe (Int, Word32)) x
 printOneChunk (Steps.Chunk { Steps.chunkName = "fcTL" }) "" = pure ()
-printOneChunk (Steps.Chunk { Steps.chunkName = "fcTL" }) bs = IO.print $ decodeFctl bs
+printOneChunk (Steps.Chunk { Steps.chunkName = "fcTL" }) bs = do
+	let	fctl = decodeFctl bs
+	State.put fctl
+	IO.print fctl
 printOneChunk _ _ = pure ()
 
 data Fctl = Fctl {
@@ -106,6 +127,9 @@ data Fctl = Fctl {
 	fctlXOffset :: Word32, fctlYOffset :: Word32,
 	fctlDelayNum :: Word16, fctlDelayDen :: Word16,
 	fctlDisposeOp :: Word8, fctlBlendOp :: Word8 } deriving Show
+
+fctl0 :: Fctl
+fctl0 = Fctl 0 0 0 0 0 0 0 0 0
 
 decodeFctl :: BSF.ByteString -> Fctl
 decodeFctl bs = let

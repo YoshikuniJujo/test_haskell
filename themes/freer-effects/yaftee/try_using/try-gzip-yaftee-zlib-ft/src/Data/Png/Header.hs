@@ -45,6 +45,17 @@ headerToRows h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
 			(fromIntegral (headerWidth h))
 			(fromIntegral $ headerHeight h)
 
+headerToRows' :: Header -> Word32 -> Word32 -> [Int]
+headerToRows' h@Header { headerInterlaceMethod = InterlaceMethodNon } wdt hgt =
+	replicate (fromIntegral hgt)
+		((fromIntegral wdt * fromIntegral (headerBitDepth h)) `div'` 8 * sampleNum' h)
+headerToRows' h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } wdt hgt =
+	map ((* sampleNum' h) . (`div'` 8) . (* fromIntegral (headerBitDepth h)))
+--	map (* headerToBpp h)
+		$ interlacePixelNums
+			(fromIntegral wdt)
+			(fromIntegral hgt)
+
 headerToHeights :: Header -> [Int]
 headerToHeights h@Header { headerInterlaceMethod = InterlaceMethodNon } =
 	[fromIntegral $ headerHeight h]
