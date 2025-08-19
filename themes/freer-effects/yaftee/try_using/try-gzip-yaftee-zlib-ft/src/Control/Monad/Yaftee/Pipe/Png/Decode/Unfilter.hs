@@ -7,7 +7,7 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter (
 
-	pngFilter, pngUnfilter, pngUnfilter'
+	pngFilter, pngUnfilter, pngUnfilter', pngUnfilter''
 
 	) where
 
@@ -52,6 +52,19 @@ pngUnfilter' hdr = void do
 	Pipe.yield bs'
 	unfilterAll bpp bs'
 
+pngUnfilter'' :: (
+	U.Member Pipe.P es,
+	U.Member (Except.E String) es ) =>
+	Header.Header -> Int -> Eff.E es BSF.ByteString [Word8] ()
+pngUnfilter'' hdr n = void do
+	bs <- Pipe.await
+	let	bpp = Header.headerToBpp hdr
+		rbs = Header.headerToRowBytes hdr
+	bs' <- either Except.throw pure
+		$ unfilter bpp (replicate rbs 0) bs
+	Pipe.yield bs'
+	unfilterAll' bpp (n - 1) bs'
+
 unfilterAll :: (
 	U.Member Pipe.P es,
 	U.Member (Except.E String) es ) =>
@@ -63,6 +76,18 @@ unfilterAll bpp prior = Pipe.awaitMaybe >>= \case
 		bs' <- either Except.throw pure $ unfilter bpp prior bs
 		Pipe.yield bs'
 		unfilterAll bpp bs'
+
+unfilterAll' :: (
+	U.Member Pipe.P es,
+	U.Member (Except.E String) es ) =>
+	Int -> Int -> [Word8] -> Eff.E es BSF.ByteString [Word8] ()
+unfilterAll' _ 0 _ = pure ()
+unfilterAll' bpp n prior = Pipe.await >>= \case
+	BSF.Empty -> pure ()
+	bs -> do
+		bs' <- either Except.throw pure $ unfilter bpp prior bs
+		Pipe.yield bs'
+		unfilterAll' bpp (n - 1) bs'
 
 pngFilter :: (
 	U.Member Pipe.P es,

@@ -16,6 +16,7 @@ import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
+import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
@@ -103,6 +104,7 @@ main = do
 			Pipe.=$= do
 				"" <- Pipe.await
 				n <- State.get
+				Pipe.yield ""
 				replicateM n do
 					until123
 --					"\123" <- Pipe.await
@@ -114,9 +116,13 @@ main = do
 					Buffer.format "foobar" BSF.splitAt' "" rs
 			Pipe.=$= do
 				"" <- Pipe.await
-				fctl <- State.get
+				n <- State.get
+				replicateM_ n do
+					"" <- Pipe.await
+					fctl <- State.get
+					Unfilter.pngUnfilter'' hdr (fromIntegral $ fctlHeight fctl)
+			Pipe.=$= do
 				PipeIO.print'
-				IO.print @Fctl fctl
 
 until123 :: U.Member Pipe.P effs => Eff.E effs BSF.ByteString o ()
 until123 = do
