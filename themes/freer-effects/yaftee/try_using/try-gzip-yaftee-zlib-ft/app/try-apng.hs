@@ -52,6 +52,7 @@ main = do
 	obd <- PipeZ.cByteArrayMalloc 64
 
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. (`State.run` (0 :: Int))
 		. Steps.chunkRun_ @"foobar"
 		. Fail.runExc id id
 		. PipeZ.run @"foobar"
@@ -81,17 +82,20 @@ main = do
 						Pipe.yield bs'
 					else IO.print "foobarbaz"
 				IO.print cn
-				printOneChunk cn bs
+				when (bs /= "") $ printOneChunk cn bs
 			Pipe.=$= do
-				PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
-				PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
-				PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
+				"" <- Pipe.await
+				n <- State.get
+				replicateM n $
+					PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
 			Pipe.=$= PipeIO.print
 
-printOneChunk ::
+printOneChunk :: U.Member (State.S Int) effs =>
 	U.Base IO.I effs => Steps.Chunk -> BSF.ByteString -> Eff.E effs i o ()
-printOneChunk (Steps.Chunk { Steps.chunkName = "acTL" }) bs =
-	IO.print @(Maybe (Word32, Word32)) $ (BSF.toBitsBE *** BSF.toBitsBE) <$> BSF.splitAt' 4 bs
+printOneChunk (Steps.Chunk { Steps.chunkName = "acTL" }) bs = do
+	let	x@(Just (fn, _)) = (BSF.toBitsBE *** BSF.toBitsBE) <$> BSF.splitAt' 4 bs
+	State.put fn
+	IO.print @(Maybe (Int, Word32)) x
 printOneChunk (Steps.Chunk { Steps.chunkName = "fcTL" }) "" = pure ()
 printOneChunk (Steps.Chunk { Steps.chunkName = "fcTL" }) bs = IO.print $ decodeFctl bs
 printOneChunk _ _ = pure ()
