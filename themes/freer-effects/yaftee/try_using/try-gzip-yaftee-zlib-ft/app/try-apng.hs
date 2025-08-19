@@ -14,6 +14,7 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
+import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
@@ -53,6 +54,7 @@ main = do
 	obd <- PipeZ.cByteArrayMalloc 64
 
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. Buffer.run @"foobar" @BSF.ByteString
 		. (`State.run` (0 :: Int))
 		. (`State.run` fctl0)
 		. Steps.chunkRun_ @"foobar"
@@ -90,22 +92,36 @@ main = do
 			Pipe.=$= do
 				"" <- Pipe.await
 				n <- State.get
+				Pipe.yield ""
 				replicateM n do
 					"" <- Pipe.await
+					Pipe.yield "\123"
 					fctl <- State.get
 					IO.print $ (+ 1) <$> Header.headerToRows' hdr
 						(fctlWidth fctl) (fctlHeight fctl)
 					PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
 			Pipe.=$= do
+				"" <- Pipe.await
+				n <- State.get
+				replicateM n do
+					until123
+--					"\123" <- Pipe.await
+					fctl <- State.get
+					let	rs  = (+ 1) <$> Header.headerToRows' hdr
+							(fctlWidth fctl) (fctlHeight fctl)
+					IO.print rs
+					Buffer.format "foobar" BSF.splitAt' "" rs
+			Pipe.=$= do
 				PipeIO.print'
-				{-
-				fctl <- State.get
-				IO.print @Fctl fctl
-				IO.print hdr
-				IO.print $ (+ 1) <$> Header.headerToRows hdr
-				IO.print $ (+ 1) <$> Header.headerToRows' hdr
-					(fctlWidth fctl) (fctlHeight fctl)
-					-}
+
+until123 :: U.Member Pipe.P effs => Eff.E effs BSF.ByteString o ()
+until123 = do
+	bs <- Pipe.await
+	if bs == "\123"
+	then pure ()
+	else do
+		when (bs /= "") $ error "bad"
+		until123
 
 printOneChunk :: (
 	U.Member (State.S Int) effs, U.Member (State.S Fctl) effs ) =>
