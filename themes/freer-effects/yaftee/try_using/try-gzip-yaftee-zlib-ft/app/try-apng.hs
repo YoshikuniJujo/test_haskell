@@ -16,6 +16,7 @@ import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
+import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
@@ -28,6 +29,9 @@ import Data.ByteString.FingerTree.Bits qualified as BSF
 
 import System.IO
 import System.Environment
+
+import Codec.Compression.Zlib.Constant.Core qualified as Zlib
+import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 main :: IO ()
 main = do
@@ -44,12 +48,16 @@ main = do
 	print hdr
 
 	h <- openFile fp ReadMode
+	ibd <- PipeZ.cByteArrayMalloc 64
+	obd <- PipeZ.cByteArrayMalloc 64
 
-	void . Eff.runM . Except.run @String
+	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Steps.chunkRun_ @"foobar"
 		. Fail.runExc id id
+		. PipeZ.run @"foobar"
 		. Pipe.run
 		. (`Fail.catch` IO.putStrLn)
+		. (`Except.catch` IO.print @Zlib.ReturnCode)
 		. (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 h
 			Pipe.=$= PipeT.convert BSF.fromStrict
@@ -74,6 +82,10 @@ main = do
 					else IO.print "foobarbaz"
 				IO.print cn
 				printOneChunk cn bs
+			Pipe.=$= do
+				PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
+				PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
+				PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
 			Pipe.=$= PipeIO.print
 
 printOneChunk ::
