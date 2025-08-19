@@ -110,9 +110,13 @@ main = do
 					let	rs  = (+ 1) <$> Header.headerToRows' hdr
 							(fctlWidth fctl) (fctlHeight fctl)
 					IO.print rs
+					Pipe.yield ""
 					Buffer.format "foobar" BSF.splitAt' "" rs
 			Pipe.=$= do
+				"" <- Pipe.await
+				fctl <- State.get
 				PipeIO.print'
+				IO.print @Fctl fctl
 
 until123 :: U.Member Pipe.P effs => Eff.E effs BSF.ByteString o ()
 until123 = do
