@@ -56,10 +56,25 @@ main = do
 			Pipe.=$= Steps.chunk "foobar"
 			Pipe.=$= forever do
 				bs <- Pipe.await
-				cn <- State.getN "foobar"
-				IO.print bs
-				IO.print @Steps.Chunk cn
+				cn@Steps.Chunk {
+					Steps.chunkBegin = cb,
+					Steps.chunkName = cnn
+					} <- State.getN "foobar"
+				when (cnn == "IDAT") $ Pipe.yield bs
+				when (cnn == "fdAT") $ Pipe.yield bs
+--				IO.print bs
+				when cb do
+					if bs == "" && cnn == "fdAT"
+					then do
+						bs <- Pipe.await
+						IO.print "hogepiyofuga"
+						let Just (srn :: Word32, bs') = (BSF.toBitsBE `first`) <$> BSF.splitAt' 4 bs
+						IO.print srn
+						Pipe.yield bs'
+					else IO.print "foobarbaz"
+				IO.print cn
 				printOneChunk cn bs
+			Pipe.=$= PipeIO.print
 
 printOneChunk ::
 	U.Base IO.I effs => Steps.Chunk -> BSF.ByteString -> Eff.E effs i o ()
