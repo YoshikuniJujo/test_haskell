@@ -121,6 +121,7 @@ main = do
 					"" <- Pipe.await
 					fctl <- State.get
 					Unfilter.pngUnfilter'' hdr (fromIntegral $ fctlHeight fctl)
+			Pipe.=$= PipeT.convert (Header.word8ListToRgbaList @Double hdr)
 			Pipe.=$= do
 				PipeIO.print'
 
