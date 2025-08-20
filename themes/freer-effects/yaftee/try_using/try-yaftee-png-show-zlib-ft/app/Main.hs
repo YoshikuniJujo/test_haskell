@@ -55,7 +55,7 @@ main = do
 	writeDrawPipe "foobar.png" img wdt hgt $ \img ->
 		void . Eff.runM . Except.run @String
 			. Except.run @Zlib.ReturnCode
-			. Fail.runExc id . Png.run_ @"foobar" . Pipe.run
+			. Fail.runExc id id . Png.run_ @"foobar" . Pipe.run
 			. (`Except.catch` IO.print @Zlib.ReturnCode)
 			. (`Except.catch` IO.print @String) . void
 --			$ PipeBS.hGet 32 h' Pipe.=$=
