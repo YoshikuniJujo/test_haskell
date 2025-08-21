@@ -58,7 +58,7 @@ main = do
 
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Buffer.run @"foobar" @BSF.ByteString
-		. (`State.run` (0 :: Int))
+		. (\m -> State.runN @"foobar" m (0 :: Int))
 		. (`State.run` fctl0)
 		. Steps.chunkRun_ @"foobar"
 		. Fail.runExc id id
@@ -78,7 +78,7 @@ apngPipe :: (
 	Steps.ChunkMembers "foobar" es,
 	U.Member (State.Named "foobar" (Maybe PipeZ.ByteString)) es,
 	U.Member (State.Named "foobar" (Buffer.Monoid BSF.ByteString)) es,
-	U.Member (State.S Int) es,
+	U.Member (State.Named "foobar" Int) es,
 	U.Member (State.S Fctl) es,
 	U.Member (Except.E String) es,
 	U.Member (Except.E Zlib.ReturnCode) es,
@@ -111,7 +111,7 @@ apngPipe hdr ibd obd = void $ Steps.chunk "foobar"
 		when (bs /= "") $ printOneChunk cn bs
 	Pipe.=$= do
 		"" <- Pipe.await
-		n <- State.get
+		n <- State.getN "foobar"
 		Pipe.yield ""
 		replicateM n do
 			"" <- Pipe.await
@@ -122,7 +122,7 @@ apngPipe hdr ibd obd = void $ Steps.chunk "foobar"
 			PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
 	Pipe.=$= do
 		"" <- Pipe.await
-		n <- State.get
+		n <- State.getN "foobar"
 		Pipe.yield ""
 		replicateM n do
 			until123
@@ -135,7 +135,7 @@ apngPipe hdr ibd obd = void $ Steps.chunk "foobar"
 			Buffer.format "foobar" BSF.splitAt' "" rs
 	Pipe.=$= do
 		"" <- Pipe.await
-		n <- State.get
+		n <- State.getN "foobar"
 		replicateM_ n do
 			"" <- Pipe.await
 			fctl <- State.get
@@ -152,11 +152,11 @@ until123 = do
 		until123
 
 printOneChunk :: (
-	U.Member (State.S Int) effs, U.Member (State.S Fctl) effs ) =>
+	U.Member (State.Named "foobar" Int) effs, U.Member (State.S Fctl) effs ) =>
 	U.Base IO.I effs => Steps.Chunk -> BSF.ByteString -> Eff.E effs i o ()
 printOneChunk (Steps.Chunk { Steps.chunkName = "acTL" }) bs = do
 	let	x@(Just (fn, _)) = (BSF.toBitsBE *** BSF.toBitsBE) <$> BSF.splitAt' 4 bs
-	State.put fn
+	State.putN "foobar" fn
 	IO.print @(Maybe (Int, Word32)) x
 printOneChunk (Steps.Chunk { Steps.chunkName = "fcTL" }) "" = pure ()
 printOneChunk (Steps.Chunk { Steps.chunkName = "fcTL" }) bs = do
