@@ -9,6 +9,7 @@ module Main where
 
 import Control.Arrow
 import Control.Monad
+import Control.Monad.ST
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
@@ -28,6 +29,7 @@ import Data.Bits
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
+import Data.Color
 import Data.Png.Header qualified as Header
 
 import System.IO
@@ -67,63 +69,78 @@ main = do
 		. (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 h
 			Pipe.=$= PipeT.convert BSF.fromStrict
-			Pipe.=$= Steps.chunk "foobar"
-			Pipe.=$= forever do
+			Pipe.=$= apngPipe hdr ibd obd
+			Pipe.=$= PipeIO.print'
+
+
+apngPipe :: (
+	U.Member Pipe.P es,
+	Steps.ChunkMembers "foobar" es,
+	U.Member (State.Named "foobar" (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named "foobar" (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.S Int) es,
+	U.Member (State.S Fctl) es,
+	U.Member (Except.E String) es,
+	U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member U.Fail es, U.Base IO.I es ) =>
+	Header.Header ->
+	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
+	Eff.E es BSF.ByteString [Rgba Double] ()
+apngPipe hdr ibd obd = void $ Steps.chunk "foobar"
+	Pipe.=$= forever do
+		bs <- Pipe.await
+		cn@Steps.Chunk {
+			Steps.chunkBegin = cb,
+			Steps.chunkName = cnn
+			} <- State.getN "foobar"
+		when (cb && cnn == "IDAT") $ Pipe.yield ""
+		when (cnn == "IDAT") $ Pipe.yield bs
+--		IO.print bs
+		when cb do
+			if bs == "" && cnn == "fdAT"
+			then do
 				bs <- Pipe.await
-				cn@Steps.Chunk {
-					Steps.chunkBegin = cb,
-					Steps.chunkName = cnn
-					} <- State.getN "foobar"
-				when (cb && cnn == "IDAT") $ Pipe.yield ""
-				when (cnn == "IDAT") $ Pipe.yield bs
---				IO.print bs
-				when cb do
-					if bs == "" && cnn == "fdAT"
-					then do
-						bs <- Pipe.await
-						IO.print "hogepiyofuga"
-						let Just (srn :: Word32, bs') = (BSF.toBitsBE `first`) <$> BSF.splitAt' 4 bs
-						IO.print srn
-						Pipe.yield ""
-						Pipe.yield bs'
-					else IO.print "foobarbaz"
-				when (not cb && cnn == "fdAT") $ Pipe.yield bs
-				IO.print cn
-				when (bs /= "") $ printOneChunk cn bs
-			Pipe.=$= do
-				"" <- Pipe.await
-				n <- State.get
+				IO.print "hogepiyofuga"
+				let Just (srn :: Word32, bs') = (BSF.toBitsBE `first`) <$> BSF.splitAt' 4 bs
+				IO.print srn
 				Pipe.yield ""
-				replicateM n do
-					"" <- Pipe.await
-					Pipe.yield "\123"
-					fctl <- State.get
-					IO.print $ (+ 1) <$> Header.headerToRows' hdr
-						(fctlWidth fctl) (fctlHeight fctl)
-					PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
-			Pipe.=$= do
-				"" <- Pipe.await
-				n <- State.get
-				Pipe.yield ""
-				replicateM n do
-					until123
---					"\123" <- Pipe.await
-					fctl <- State.get
-					let	rs  = (+ 1) <$> Header.headerToRows' hdr
-							(fctlWidth fctl) (fctlHeight fctl)
-					IO.print rs
-					Pipe.yield ""
-					Buffer.format "foobar" BSF.splitAt' "" rs
-			Pipe.=$= do
-				"" <- Pipe.await
-				n <- State.get
-				replicateM_ n do
-					"" <- Pipe.await
-					fctl <- State.get
-					Unfilter.pngUnfilter'' hdr (fromIntegral $ fctlHeight fctl)
-			Pipe.=$= PipeT.convert (Header.word8ListToRgbaList @Double hdr)
-			Pipe.=$= do
-				PipeIO.print'
+				Pipe.yield bs'
+			else IO.print "foobarbaz"
+		when (not cb && cnn == "fdAT") $ Pipe.yield bs
+		IO.print cn
+		when (bs /= "") $ printOneChunk cn bs
+	Pipe.=$= do
+		"" <- Pipe.await
+		n <- State.get
+		Pipe.yield ""
+		replicateM n do
+			"" <- Pipe.await
+			Pipe.yield "\123"
+			fctl <- State.get
+			IO.print $ (+ 1) <$> Header.headerToRows' hdr
+				(fctlWidth fctl) (fctlHeight fctl)
+			PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
+	Pipe.=$= do
+		"" <- Pipe.await
+		n <- State.get
+		Pipe.yield ""
+		replicateM n do
+			until123
+--			"\123" <- Pipe.await
+			fctl <- State.get
+			let	rs  = (+ 1) <$> Header.headerToRows' hdr
+					(fctlWidth fctl) (fctlHeight fctl)
+			IO.print rs
+			Pipe.yield ""
+			Buffer.format "foobar" BSF.splitAt' "" rs
+	Pipe.=$= do
+		"" <- Pipe.await
+		n <- State.get
+		replicateM_ n do
+			"" <- Pipe.await
+			fctl <- State.get
+			Unfilter.pngUnfilter'' hdr (fromIntegral $ fctlHeight fctl)
+	Pipe.=$= PipeT.convert (Header.word8ListToRgbaList @Double hdr)
 
 until123 :: U.Member Pipe.P effs => Eff.E effs BSF.ByteString o ()
 until123 = do
