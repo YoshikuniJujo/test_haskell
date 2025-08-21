@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -58,8 +59,8 @@ main = do
 
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Buffer.run @"foobar" @BSF.ByteString
-		. (\m -> State.runN @"foobar" m (0 :: Int))
-		. (`State.run` fctl0)
+		. (\m -> State.runN @"foobar" m (FrameNumber 0))
+		. (\m -> State.runN @"foobar" m fctl0)
 		. Steps.chunkRun_ @"foobar"
 		. Fail.runExc id id
 		. PipeZ.run @"foobar"
@@ -69,30 +70,31 @@ main = do
 		. (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 h
 			Pipe.=$= PipeT.convert BSF.fromStrict
-			Pipe.=$= apngPipe hdr ibd obd
+			Pipe.=$= apngPipe "foobar" hdr ibd obd
 			Pipe.=$= PipeIO.print'
 
+newtype FrameNumber = FrameNumber Int deriving Show
 
-apngPipe :: (
+apngPipe :: forall es . forall nm -> (
 	U.Member Pipe.P es,
-	Steps.ChunkMembers "foobar" es,
-	U.Member (State.Named "foobar" (Maybe PipeZ.ByteString)) es,
-	U.Member (State.Named "foobar" (Buffer.Monoid BSF.ByteString)) es,
-	U.Member (State.Named "foobar" Int) es,
-	U.Member (State.S Fctl) es,
+	Steps.ChunkMembers nm es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named nm FrameNumber) es,
+	U.Member (State.Named nm Fctl) es,
 	U.Member (Except.E String) es,
 	U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es, U.Base IO.I es ) =>
 	Header.Header ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es BSF.ByteString [Rgba Double] ()
-apngPipe hdr ibd obd = void $ Steps.chunk "foobar"
+apngPipe nm hdr ibd obd = void $ Steps.chunk nm
 	Pipe.=$= forever do
 		bs <- Pipe.await
 		cn@Steps.Chunk {
 			Steps.chunkBegin = cb,
 			Steps.chunkName = cnn
-			} <- State.getN "foobar"
+			} <- State.getN nm
 		when (cb && cnn == "IDAT") $ Pipe.yield ""
 		when (cnn == "IDAT") $ Pipe.yield bs
 --		IO.print bs
@@ -108,37 +110,37 @@ apngPipe hdr ibd obd = void $ Steps.chunk "foobar"
 			else IO.print "foobarbaz"
 		when (not cb && cnn == "fdAT") $ Pipe.yield bs
 		IO.print cn
-		when (bs /= "") $ printOneChunk cn bs
+		when (bs /= "") $ printOneChunk nm cn bs
 	Pipe.=$= do
 		"" <- Pipe.await
-		n <- State.getN "foobar"
+		FrameNumber n <- State.getN nm
 		Pipe.yield ""
 		replicateM n do
 			"" <- Pipe.await
 			Pipe.yield "\123"
-			fctl <- State.get
+			fctl <- State.getN nm
 			IO.print $ (+ 1) <$> Header.headerToRows' hdr
 				(fctlWidth fctl) (fctlHeight fctl)
-			PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
+			PipeZ.inflate nm IO (Zlib.WindowBitsZlib 15) ibd obd
 	Pipe.=$= do
 		"" <- Pipe.await
-		n <- State.getN "foobar"
+		FrameNumber n <- State.getN nm
 		Pipe.yield ""
 		replicateM n do
 			until123
 --			"\123" <- Pipe.await
-			fctl <- State.get
+			fctl <- State.getN nm
 			let	rs  = (+ 1) <$> Header.headerToRows' hdr
 					(fctlWidth fctl) (fctlHeight fctl)
 			IO.print rs
 			Pipe.yield ""
-			Buffer.format "foobar" BSF.splitAt' "" rs
+			Buffer.format nm BSF.splitAt' "" rs
 	Pipe.=$= do
 		"" <- Pipe.await
-		n <- State.getN "foobar"
+		FrameNumber n <- State.getN nm
 		replicateM_ n do
 			"" <- Pipe.await
-			fctl <- State.get
+			fctl <- State.getN nm
 			Unfilter.pngUnfilter'' hdr (fromIntegral $ fctlHeight fctl)
 	Pipe.=$= PipeT.convert (Header.word8ListToRgbaList @Double hdr)
 
@@ -151,19 +153,19 @@ until123 = do
 		when (bs /= "") $ error "bad"
 		until123
 
-printOneChunk :: (
-	U.Member (State.Named "foobar" Int) effs, U.Member (State.S Fctl) effs ) =>
+printOneChunk :: forall effs i o . forall nm -> (
+	U.Member (State.Named nm FrameNumber) effs, U.Member (State.Named nm Fctl) effs ) =>
 	U.Base IO.I effs => Steps.Chunk -> BSF.ByteString -> Eff.E effs i o ()
-printOneChunk (Steps.Chunk { Steps.chunkName = "acTL" }) bs = do
+printOneChunk nm (Steps.Chunk { Steps.chunkName = "acTL" }) bs = do
 	let	x@(Just (fn, _)) = (BSF.toBitsBE *** BSF.toBitsBE) <$> BSF.splitAt' 4 bs
-	State.putN "foobar" fn
+	State.putN nm $ FrameNumber fn
 	IO.print @(Maybe (Int, Word32)) x
-printOneChunk (Steps.Chunk { Steps.chunkName = "fcTL" }) "" = pure ()
-printOneChunk (Steps.Chunk { Steps.chunkName = "fcTL" }) bs = do
+printOneChunk _ (Steps.Chunk { Steps.chunkName = "fcTL" }) "" = pure ()
+printOneChunk nm (Steps.Chunk { Steps.chunkName = "fcTL" }) bs = do
 	let	fctl = decodeFctl bs
-	State.put fctl
+	State.putN nm fctl
 	IO.print fctl
-printOneChunk _ _ = pure ()
+printOneChunk _ _ _ = pure ()
 
 data Fctl = Fctl {
 	fctlSequenceNumber :: Word32,
