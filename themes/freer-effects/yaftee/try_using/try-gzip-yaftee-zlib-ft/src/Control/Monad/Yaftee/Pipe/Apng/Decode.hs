@@ -1,13 +1,10 @@
-{-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, ImportQualifiedPost, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGe FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Control.Monad.Yaftee.Pipe.Apng.Decode where
 
 import Control.Arrow
 import Control.Monad
@@ -15,20 +12,14 @@ import Control.Monad.ST
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
-import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
-import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
-import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
-import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
-import Data.TypeLevel.List
-import Data.HigherFunctor qualified as HFunctor
 import Data.Bits
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
@@ -36,57 +27,8 @@ import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Color
 import Data.Png.Header qualified as Header
 
-import System.IO
-import System.Environment
-
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
-
-main :: IO ()
-main = do
-	fp : _ <- getArgs
-
-	hh <- openFile fp ReadMode
-	Right hdr <- Eff.runM . Except.run @String
-		. Png.runHeader @"foobar" . Pipe.run
-		. void $ PipeBS.hGet 32 hh
-			Pipe.=$= PipeT.convert BSF.fromStrict
-			Pipe.=$= Png.decodeHeader "foobar"
-	hClose hh
-
-	print hdr
-
-	h <- openFile fp ReadMode
-	ibd <- PipeZ.cByteArrayMalloc 64
-	obd <- PipeZ.cByteArrayMalloc 64
-
-	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
-		. Fail.runExc id id
-		. apngRun_ @"foobar"
-		. Pipe.run
-		. (`Fail.catch` IO.putStrLn)
-		. (`Except.catch` IO.print @Zlib.ReturnCode)
-		. (`Except.catch` IO.putStrLn)
-		. void $ PipeBS.hGet 32 h
-			Pipe.=$= PipeT.convert BSF.fromStrict
-			Pipe.=$= apngPipe "foobar" hdr ibd obd
-			Pipe.=$= PipeIO.print'
-
-apngRun_ :: forall nm es i o r .
-	HFunctor.Loose (U.U es) =>
-	Eff.E (
-		State.Named nm (Maybe PipeZ.ByteString) ':
-		(Steps.ChunkStates nm `Append`
-		(State.Named nm Fctl ':
-		State.Named nm FrameNumber ':
-		State.Named nm (Buffer.Monoid BSF.ByteString) ':
-		es ))) i o r ->
-	Eff.E es i o ()
-apngRun_ = void . Buffer.run @nm @BSF.ByteString
-		. (\m -> State.runN @nm m (FrameNumber 0))
-		. (\m -> State.runN @nm m fctl0)
-		. Steps.chunkRun_ @nm
-		. PipeZ.run @nm
 
 newtype FrameNumber = FrameNumber Int deriving Show
 
