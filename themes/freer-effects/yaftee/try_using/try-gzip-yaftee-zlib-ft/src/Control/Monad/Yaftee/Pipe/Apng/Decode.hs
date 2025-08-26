@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.Apng.Decode (
-	apngRun_, ApngStates, apngPipe, ApngMembers ) where
+	apngRun_, ApngStates, apngPipe, ApngMembers, Body(..) ) where
 
 import Control.Arrow
 import Control.Monad
@@ -72,7 +72,7 @@ apngPipe :: forall es . forall nm -> (
 	U.Member U.Fail es, U.Base IO.I es ) =>
 	Header.Header ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
-	Eff.E es BSF.ByteString [Rgba Double] ()
+	Eff.E es BSF.ByteString Body ()
 apngPipe nm hdr ibd obd = void $ Steps.chunk nm
 	Pipe.=$= forever do
 		bs <- Pipe.await
@@ -126,8 +126,9 @@ apngPipe nm hdr ibd obd = void $ Steps.chunk nm
 		replicateM_ n do
 			"" <- Pipe.await
 			fctl <- State.getN nm
+			Pipe.yield $ BodyFctl fctl
 			Unfilter.pngUnfilter'' hdr (fromIntegral $ fctlHeight fctl)
-	Pipe.=$= PipeT.convert (Header.word8ListToRgbaList @Double hdr)
+				Pipe.=$= PipeT.convert (BodyRgba . Header.word8ListToRgbaList @Double hdr)
 
 until123 :: U.Member Pipe.P effs => Eff.E effs BSF.ByteString o ()
 until123 = do
@@ -152,6 +153,8 @@ printOneChunk nm (Steps.Chunk { Steps.chunkName = "fcTL" }) bs = do
 	State.putN nm fctl
 	IO.print fctl
 printOneChunk _ _ _ = pure ()
+
+data Body = BodyFctl Fctl | BodyRgba [Rgba Double] deriving Show
 
 data Fctl = Fctl {
 	fctlSequenceNumber :: Word32,
