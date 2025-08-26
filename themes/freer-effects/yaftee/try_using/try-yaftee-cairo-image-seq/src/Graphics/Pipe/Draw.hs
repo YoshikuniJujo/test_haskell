@@ -92,10 +92,10 @@ draw' :: (
 	U.Member Pipe.P es,
 	U.Base IO.I es
 	) =>
-	Argb32Mut RealWorld -> [(CInt, (CInt, CInt))] -> [[CInt]] -> IO a -> Eff.E es [PixelArgb32] o r
+	Argb32Mut RealWorld -> [(CInt, (CInt, CInt))] -> [[CInt]] -> IO a -> Eff.E es [PixelArgb32] o ()
 draw' img ((y, (w, h)) : ys) (xs : xss) act = do
 	Eff.effBase @IO . drawLine' img y xs (w, h) =<< Pipe.await
 	_ <- Eff.effBase act
 	draw' img ys xss act
-draw' _ [] _ _ = error "no more y positions"
-draw' _ _ [] _ = error "no more x positions"
+draw' _ [] _ _ = pure ()
+draw' _ _ [] _ = pure ()
