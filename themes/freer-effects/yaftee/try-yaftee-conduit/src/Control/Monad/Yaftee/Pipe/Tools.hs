@@ -13,6 +13,10 @@ module Control.Monad.Yaftee.Pipe.Tools (
 
 	convert, convert', convert'',
 
+	-- * FILTER
+
+	filter, filter',
+
 	-- * EITHER
 
 	checkRight, skipLeft1,
@@ -27,7 +31,7 @@ module Control.Monad.Yaftee.Pipe.Tools (
 
 	) where
 
-import Prelude hiding (length, scanl)
+import Prelude hiding (length, filter, scanl)
 import Prelude qualified as P
 import Control.Monad
 import Control.Monad.Fix
@@ -51,6 +55,17 @@ convert'' :: U.Member Pipe.P es => (Bool -> a -> b) -> a -> Eff.E es a b ()
 convert'' f = fix \go p -> Pipe.isMore >>= bool
 	(Pipe.yield (f True p))
 	(Pipe.await >>= \x -> ((>> go x) . Pipe.yield $ f False p))
+
+filter :: U.Member Pipe.P es => (a -> Maybe b) -> Eff.E es a b r
+filter f = fix \go -> Pipe.await >>= \x -> case f x of
+	Nothing -> go
+	Just y -> Pipe.yield y >> go
+
+filter' :: U.Member Pipe.P es => (a -> Maybe b) -> Eff.E es a b ()
+filter' f = fix \go -> Pipe.isMore
+	>>= bool (pure ()) (Pipe.await >>= \x -> case f x of
+		Nothing -> go
+		Just y -> Pipe.yield y >> go)
 
 checkRight :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 	Eff.E es (Either a b) b r
