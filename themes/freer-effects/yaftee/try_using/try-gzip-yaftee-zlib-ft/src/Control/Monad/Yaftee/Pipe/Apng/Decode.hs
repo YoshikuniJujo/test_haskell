@@ -123,6 +123,7 @@ apngPipe nm hdr ibd obd = void $ Steps.chunk nm
 	Pipe.=$= do
 		"" <- Pipe.await
 		FrameNumber n <- State.getN nm
+		Pipe.yield BodyNull
 		replicateM_ n do
 			"" <- Pipe.await
 			fctl <- State.getN nm
@@ -154,7 +155,7 @@ printOneChunk nm (Steps.Chunk { Steps.chunkName = "fcTL" }) bs = do
 	IO.print fctl
 printOneChunk _ _ _ = pure ()
 
-data Body = BodyFctl Fctl | BodyRgba [Rgba Double] deriving Show
+data Body = BodyNull | BodyFctl Fctl | BodyRgba [Rgba Double] deriving Show
 
 data Fctl = Fctl {
 	fctlSequenceNumber :: Word32,
