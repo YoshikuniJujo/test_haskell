@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.Apng.Decode (
-	apngRun_, ApngStates, apngPipe, ApngMembers, Body(..) ) where
+	apngRun_, ApngStates, apngPipe, ApngMembers, Body(..), Fctl(..) ) where
 
 import Control.Arrow
 import Control.Monad
