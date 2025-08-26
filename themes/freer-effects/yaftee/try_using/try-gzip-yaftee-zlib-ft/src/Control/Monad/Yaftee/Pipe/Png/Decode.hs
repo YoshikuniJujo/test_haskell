@@ -10,9 +10,17 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Decode (
 
+	-- * DECODE
+
 	run_, States, decode, Members,
 
+	-- * DECODE HEADER
+
 	runHeader, StatesHeader, decodeHeader, MembersHeader,
+
+	-- * DECODE PALETTE
+
+	decodePalette
 
 	) where
 
@@ -27,7 +35,6 @@ import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnD
 import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
-import Control.Monad.Yaftee.Pipe.Png.Palette
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
