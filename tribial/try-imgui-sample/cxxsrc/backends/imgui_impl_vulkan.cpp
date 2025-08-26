@@ -1483,13 +1483,13 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyCommandPool(
     }
 }
 
-void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers(
 	VkDevice device,
 	uint32_t queue_family, const VkAllocationCallbacks* allocator,
 	uint32_t ic, ImGui_ImplVulkanH_Frame** fds)
 {
 
-	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames begin ***\n");
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers begin ***\n");
 
     // Create Command Buffers
     VkResult err;
@@ -1507,6 +1507,18 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
             check_vk_result(err);
         }
     }
+}
+
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
+	VkDevice device,
+	uint32_t queue_family, const VkAllocationCallbacks* allocator,
+	uint32_t ic, ImGui_ImplVulkanH_Frame** fds)
+{
+
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence begin ***\n");
+
+    // Create Command Buffers
+    VkResult err;
 
     for (uint32_t i = 0; i < ic; i++)
     {
@@ -1519,6 +1531,22 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
             check_vk_result(err);
         }
     }
+}
+
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
+	VkDevice device,
+	uint32_t queue_family, const VkAllocationCallbacks* allocator,
+	uint32_t ic, ImGui_ImplVulkanH_Frame** fds)
+{
+
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames begin ***\n");
+
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers(
+		device, queue_family, allocator, ic, fds );
+
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
+		device, queue_family, allocator, ic, fds );
+
 }
 
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool(VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator, VkCommandPool *cps)
