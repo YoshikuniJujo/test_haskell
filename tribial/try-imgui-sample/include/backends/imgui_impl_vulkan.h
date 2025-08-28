@@ -247,6 +247,12 @@ VkCommandPool *ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd,
 	uint32_t queue_family, const VkAllocationCallbacks* allocator, VkCommandPool *cps );
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyCommandPool(
+	ImGui_ImplVulkanH_Window* wd, VkCommandPool *cps );
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool2(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	uint32_t queue_family, const VkAllocationCallbacks* allocator );
 
 // Helper structure to hold the data needed by one rendering frame
 // (Used by example's main.cpp. Used by multi-viewport features. Probably NOT used by your own engine/app.)
