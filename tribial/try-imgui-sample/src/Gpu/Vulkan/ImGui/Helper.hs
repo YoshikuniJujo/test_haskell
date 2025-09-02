@@ -14,6 +14,8 @@ module Gpu.Vulkan.ImGui.Helper (
 	createWindowCommandBuffers,
 	createWindowCommandBuffersCreateCommandPool,
 	createWindowCommandBuffersFromCommandPool,
+	createWindowCommandBuffersCopyCommandPool,
+	createWindowCommandBuffersFromCommandPool2,
 
 	destroyBeforeCreateSwapChain,
 	createSwapChain, onlyCreateSwapChain,
@@ -116,6 +118,19 @@ createWindowCommandBuffersFromCommandPool :: Vk.AllocCallbacks.ToMiddle mac =>
 createWindowCommandBuffersFromCommandPool (Vk.Dvc.D dvc) wd qfi mac cps =
 	M.createWindowCommandBuffersFromCommandPool
 		dvc wd qfi (Vk.AllocCallbacks.toMiddle mac) (HPList.toList (\(Vk.CmdPl.C cp) -> cp) cps)
+
+createWindowCommandBuffersCopyCommandPool ::
+	Vk.ImGui.H.Win.W -> HPList.PL Vk.CmdPl.C scpls -> IO ()
+createWindowCommandBuffersCopyCommandPool wd cps =
+	M.createWindowCommandBuffersCopyCommandPool
+		wd (HPList.toList (\(Vk.CmdPl.C cp) -> cp) cps)
+
+createWindowCommandBuffersFromCommandPool2 :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
+createWindowCommandBuffersFromCommandPool2 (Vk.Dvc.D dvc) wd qfi mac =
+	M.createWindowCommandBuffersFromCommandPool2
+		dvc wd qfi (Vk.AllocCallbacks.toMiddle mac)
 
 createSwapChain :: Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Word32 -> IO ()
 createSwapChain (Vk.Dvc.D dvc) wd mic = M.createSwapChain dvc wd mic
