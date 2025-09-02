@@ -12,6 +12,8 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 	createWindowCommandBuffers,
 	createWindowCommandBuffersCreateCommandPool,
 	createWindowCommandBuffersFromCommandPool,
+	createWindowCommandBuffersCopyCommandPool,
+	createWindowCommandBuffersFromCommandPool2,
 
 	destroyBeforeCreateSwapChain,
 	createSwapChain, onlyCreateSwapChain,
@@ -119,11 +121,24 @@ createWindowCommandBuffersCreateCommandPool
 createWindowCommandBuffersFromCommandPool ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
 	TPMaybe.M Vk.AllocCallbacks.A mud -> [Vk.CmdPl.C] -> IO ()
-createWindowCommandBuffersFromCommandPool
-	(Vk.Dvc.D dvc) wd (Vk.QFam.Index qfi) macs cps = allocaArray (length cps) \pcps ->
+createWindowCommandBuffersFromCommandPool dvc wd qfi macs cps = do
+	createWindowCommandBuffersCopyCommandPool wd cps
+	createWindowCommandBuffersFromCommandPool2 dvc wd qfi macs
+
+createWindowCommandBuffersCopyCommandPool ::
+	Vk.ImGui.H.Win.W -> [Vk.CmdPl.C] -> IO ()
+createWindowCommandBuffersCopyCommandPool wd cps =
+	allocaArray (length cps) \pcps -> do
+		pokeArray pcps $ (\(Vk.CmdPl.C cp) -> cp) <$> cps
+		C.createWindowCommandBuffersCopyCommandPool wd pcps
+
+createWindowCommandBuffersFromCommandPool2 ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
+	TPMaybe.M Vk.AllocCallbacks.A mud -> IO ()
+createWindowCommandBuffersFromCommandPool2
+	(Vk.Dvc.D dvc) wd (Vk.QFam.Index qfi) macs =
 	Vk.AllocCallbacks.mToCore macs \pacs -> do
-	pokeArray pcps $ (\(Vk.CmdPl.C cp) -> cp) <$> cps
-	C.createWindowCommandBuffersFromCommandPool dvc wd qfi pacs pcps
+	C.createWindowCommandBuffersFromCommandPool2 dvc wd qfi pacs
 
 createSwapChain :: Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Word32 -> IO ()
 createSwapChain (Vk.Dvc.D dvc) wd mic = C.createSwapChain dvc wd mic
