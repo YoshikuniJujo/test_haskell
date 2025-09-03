@@ -253,6 +253,13 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool2(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
 	uint32_t queue_family, const VkAllocationCallbacks* allocator );
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	uint32_t queue_family, const VkAllocationCallbacks* allocator );
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator);
 
 // Helper structure to hold the data needed by one rendering frame
 // (Used by example's main.cpp. Used by multi-viewport features. Probably NOT used by your own engine/app.)
