@@ -12,6 +12,8 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 	createWindowCommandBuffersFromCommandPool,
 	createWindowCommandBuffersCopyCommandPool,
 	createWindowCommandBuffersFromCommandPool2,
+	createWindowCommandBuffersFrames,
+	createWindowCommandBuffersSemaphores,
 
 	destroyBeforeCreateSwapChain,
 
@@ -139,13 +141,34 @@ foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_copy_co
 createWindowCommandBuffersFromCommandPool2 ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
 	Ptr Vk.AllocCallbacks.A -> IO ()
-createWindowCommandBuffersFromCommandPool2 =
-	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool2
+createWindowCommandBuffersFromCommandPool2 dvc wd qf allc = do
+	createWindowCommandBuffersFrames dvc wd qf allc
+	createWindowCommandBuffersSemaphores dvc wd allc
 
 foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool2"
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool2 ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
 	Ptr Vk.AllocCallbacks.A -> IO ()
+
+createWindowCommandBuffersFrames ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
+	Ptr Vk.AllocCallbacks.A -> IO ()
+createWindowCommandBuffersFrames =
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_frames"
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
+	Ptr Vk.AllocCallbacks.A -> IO ()
+
+createWindowCommandBuffersSemaphores ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
+createWindowCommandBuffersSemaphores =
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_semaphores
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_semaphores"
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_semaphores ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
 
 createSwapChain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} -> IO ()
