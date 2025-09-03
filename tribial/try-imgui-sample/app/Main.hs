@@ -336,7 +336,8 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.H.copyFramebufferToWd False wdcxx fbs >>
 	Vk.ImGui.H.createWindowCommandBuffersCopyCommandPool wdcxx cps >>
 
-	Vk.ImGui.H.createWindowCommandBuffersFromCommandPool2 dvc wdcxx qfi nil >>
+	Vk.ImGui.H.createWindowCommandBuffersFrames dvc wdcxx qfi nil >>
+	Vk.ImGui.H.createWindowCommandBuffersSemaphores dvc wdcxx nil >>
 
 	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo -> do
 	cxx_initialize_ImGui_ImplVulkan_InitInfo
