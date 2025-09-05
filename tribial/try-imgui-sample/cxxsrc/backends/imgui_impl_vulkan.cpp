@@ -1515,6 +1515,24 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers(
     }
 }
 
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd )
+{
+
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2 begin ***\n");
+
+	uint32_t ic = wd->ImageCount;
+
+	ImGui_ImplVulkanH_Frame* fds[ic];
+
+	for (uint32_t i = 0; i < ic; i++)
+		fds[i] = &wd->Frames[i];
+
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers(
+		device, ic, fds );
+}
+
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
 	VkDevice device,
 	const VkAllocationCallbacks* allocator,
@@ -1539,13 +1557,13 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
     }
 }
 
-void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2(
 	VkDevice device,
-	ImGui_ImplVulkanH_Window* wd,
-	uint32_t queue_family, const VkAllocationCallbacks* allocator )
+	const VkAllocationCallbacks* allocator,
+	ImGui_ImplVulkanH_Window* wd )
 {
 
-	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames begin ***\n");
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2 begin ***\n");
 
 	uint32_t ic = wd->ImageCount;
 
@@ -1554,11 +1572,25 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
 	for (uint32_t i = 0; i < ic; i++)
 		fds[i] = &wd->Frames[i];
 
-	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers(
-		device, ic, fds );
-
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
 		device, allocator, ic, fds );
+
+}
+
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	uint32_t queue_family,
+	const VkAllocationCallbacks* allocator )
+{
+
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames begin ***\n");
+
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
+		device, wd );
+
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2(
+		device, allocator, wd );
 
 }
 
