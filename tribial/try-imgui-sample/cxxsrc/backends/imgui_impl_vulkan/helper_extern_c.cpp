@@ -154,6 +154,14 @@ im_gui_impl_vulkan_h_create_window_command_buffers_frames(
 }
 
 void
+im_gui_impl_vulkan_h_create_window_command_buffers_frames_command_buffers2(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd )
+{
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
+		device, wd );
+}
+
+void
 im_gui_impl_vulkan_h_create_window_command_buffers_semaphores(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
