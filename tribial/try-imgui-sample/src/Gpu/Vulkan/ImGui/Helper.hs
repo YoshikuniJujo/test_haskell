@@ -17,6 +17,8 @@ module Gpu.Vulkan.ImGui.Helper (
 	createWindowCommandBuffersCopyCommandPool,
 	createWindowCommandBuffersFromCommandPool2,
 	createWindowCommandBuffersFrames,
+	createWindowCommandBuffersFramesCommandBuffers2,
+	createWindowCommandBuffersFramesFence2,
 	createWindowCommandBuffersSemaphores,
 
 	destroyBeforeCreateSwapChain,
@@ -137,9 +139,21 @@ createWindowCommandBuffersFromCommandPool2 (Vk.Dvc.D dvc) wd qfi mac =
 createWindowCommandBuffersFrames :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
-createWindowCommandBuffersFrames (Vk.Dvc.D dvc) wd qfi mac =
-	M.createWindowCommandBuffersFrames
-		dvc wd qfi (Vk.AllocCallbacks.toMiddle mac)
+createWindowCommandBuffersFrames dvc wd qfi mac = do
+	createWindowCommandBuffersFramesCommandBuffers2 dvc wd
+	createWindowCommandBuffersFramesFence2 dvc wd mac
+
+createWindowCommandBuffersFramesCommandBuffers2 ::
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> IO ()
+createWindowCommandBuffersFramesCommandBuffers2 (Vk.Dvc.D dvc) wd =
+	M.createWindowCommandBuffersFramesCommandBuffers2 dvc wd
+
+createWindowCommandBuffersFramesFence2 :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
+createWindowCommandBuffersFramesFence2 (Vk.Dvc.D dvc) wd mac =
+	M.createWindowCommandBuffersFramesFence2
+		dvc wd (Vk.AllocCallbacks.toMiddle mac)
 
 createWindowCommandBuffersSemaphores :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
