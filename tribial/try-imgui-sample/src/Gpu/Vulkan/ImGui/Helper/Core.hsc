@@ -153,13 +153,33 @@ foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_from_co
 createWindowCommandBuffersFrames ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
 	Ptr Vk.AllocCallbacks.A -> IO ()
-createWindowCommandBuffersFrames =
-	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames
+createWindowCommandBuffersFrames dvc wd qf allc = do
+	createWindowCommandBuffersFramesCommandBuffers2 dvc wd
+	createWindowCommandBuffersFramesFence2 dvc wd allc
+--	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames dvc wd qf allc
 
 foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_frames"
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
 	Ptr Vk.AllocCallbacks.A -> IO ()
+
+createWindowCommandBuffersFramesCommandBuffers2 ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> IO ()
+createWindowCommandBuffersFramesCommandBuffers2 =
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames_command_buffers2
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_frames_command_buffers2"
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames_command_buffers2 ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> IO ()
+
+createWindowCommandBuffersFramesFence2 ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
+createWindowCommandBuffersFramesFence2 =
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2"
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2 ::
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
 
 createWindowCommandBuffersSemaphores ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
