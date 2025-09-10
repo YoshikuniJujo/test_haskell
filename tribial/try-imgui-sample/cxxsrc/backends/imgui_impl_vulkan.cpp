@@ -1529,8 +1529,22 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
 	for (uint32_t i = 0; i < ic; i++)
 		fds[i] = &wd->Frames[i];
 
-	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers(
-		device, ic, fds );
+    // Create Command Buffers
+    VkResult err;
+
+    for (uint32_t i = 0; i < ic; i++)
+    {
+        ImGui_ImplVulkanH_Frame* fd = fds[i];
+        {
+            VkCommandBufferAllocateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            info.commandPool = fd->CommandPool;
+            info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            info.commandBufferCount = 1;
+            err = vkAllocateCommandBuffers(device, &info, &fd->CommandBuffer);
+            check_vk_result(err);
+        }
+    }
 }
 
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
