@@ -1515,7 +1515,8 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers(
     }
 }
 
-void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
+VkCommandBuffer *
+ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd )
 {
@@ -1524,27 +1525,63 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
 
 	uint32_t ic = wd->ImageCount;
 
+	VkCommandBuffer *cbs;
+
+	cbs = (VkCommandBuffer *)malloc(sizeof(VkCommandBuffer) * ic);
+
+    // Create Command Buffers
+    VkResult err;
+
 	ImGui_ImplVulkanH_Frame* fds[ic];
 
 	for (uint32_t i = 0; i < ic; i++)
 		fds[i] = &wd->Frames[i];
 
-    // Create Command Buffers
-    VkResult err;
-
     for (uint32_t i = 0; i < ic; i++)
     {
-        ImGui_ImplVulkanH_Frame* fd = fds[i];
         {
             VkCommandBufferAllocateInfo info = {};
             info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            info.commandPool = fd->CommandPool;
+            info.commandPool = fds[i]->CommandPool;
             info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
             info.commandBufferCount = 1;
-            err = vkAllocateCommandBuffers(device, &info, &fd->CommandBuffer);
+            err = vkAllocateCommandBuffers(device, &info, &cbs[i]);
             check_vk_result(err);
         }
     }
+
+    return cbs;
+}
+
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCopyCommandBuffers(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	VkCommandBuffer *cbs )
+{
+
+	uint32_t ic = wd->ImageCount;
+	ImGui_ImplVulkanH_Frame* fds[ic];
+
+	for (uint32_t i = 0; i < ic; i++)
+		fds[i] = &wd->Frames[i];
+
+    for (uint32_t i = 0; i < ic; i++)
+    {
+            fds[i]->CommandBuffer = cbs[i];
+    }
+}
+
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd )
+{
+
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2 begin ***\n");
+
+	VkCommandBuffer *cbs;
+	cbs = ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(device, wd);
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCopyCommandBuffers(
+		device, wd, cbs );
 }
 
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
