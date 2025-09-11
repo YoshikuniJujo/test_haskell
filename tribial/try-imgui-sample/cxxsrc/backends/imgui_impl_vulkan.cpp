@@ -1521,7 +1521,7 @@ ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(
 	ImGui_ImplVulkanH_Window* wd )
 {
 
-	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2 begin ***\n");
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers begin ***\n");
 
 	uint32_t ic = wd->ImageCount;
 
