@@ -34,6 +34,12 @@ im_gui_impl_vulkan_h_create_window_command_buffers_frames(
 extern "C" void
 im_gui_impl_vulkan_h_create_window_command_buffers_frames_command_buffers2(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd );
+extern "C" VkCommandBuffer *
+im_gui_impl_vulkan_h_create_window_command_buffers_frames_create_command_buffers(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd );
+extern "C" void
+im_gui_impl_vulkan_h_create_window_command_buffers_frames_copy_command_buffers(
+	ImGui_ImplVulkanH_Window *wd, VkCommandBuffer *cbs );
 extern "C" void
 im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2(
 	VkDevice device,
@@ -168,6 +174,22 @@ im_gui_impl_vulkan_h_create_window_command_buffers_frames_command_buffers2(
 {
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
 		device, wd );
+}
+
+VkCommandBuffer *
+im_gui_impl_vulkan_h_create_window_command_buffers_frames_create_command_buffers(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd )
+{
+	return ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(
+		device, wd );
+}
+
+void
+im_gui_impl_vulkan_h_create_window_command_buffers_frames_copy_command_buffers(
+	ImGui_ImplVulkanH_Window *wd, VkCommandBuffer *cbs )
+{
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCopyCommandBuffers(
+		wd, cbs );
 }
 
 void

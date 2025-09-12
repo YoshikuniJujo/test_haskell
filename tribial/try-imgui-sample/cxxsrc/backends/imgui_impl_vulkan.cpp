@@ -1554,7 +1554,6 @@ ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(
 }
 
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCopyCommandBuffers(
-	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
 	VkCommandBuffer *cbs )
 {
@@ -1581,7 +1580,7 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
 	VkCommandBuffer *cbs;
 	cbs = ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(device, wd);
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCopyCommandBuffers(
-		device, wd, cbs );
+		wd, cbs );
 }
 
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
