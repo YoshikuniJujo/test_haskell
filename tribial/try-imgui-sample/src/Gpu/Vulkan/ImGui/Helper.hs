@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -17,7 +18,11 @@ module Gpu.Vulkan.ImGui.Helper (
 	createWindowCommandBuffersCopyCommandPool,
 	createWindowCommandBuffersFromCommandPool2,
 	createWindowCommandBuffersFrames,
+
 	createWindowCommandBuffersFramesCommandBuffers2,
+	createWindowCommandBuffersFramesCreateCommandBuffers,
+	createWindowCommandBuffersFramesCopyCommandBuffers,
+
 	createWindowCommandBuffersFramesFence2,
 	createWindowCommandBuffersSemaphores,
 
@@ -52,6 +57,7 @@ import Gpu.Vulkan.Device.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandPool.Type qualified as Vk.CmdPl
+import Gpu.Vulkan.CommandBuffer.Type qualified as Vk.CmdBffr
 import Gpu.Vulkan.Image.Internal qualified as Vk.Img
 import Gpu.Vulkan.ImageView.Type qualified as Vk.ImgVw
 import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
@@ -136,7 +142,8 @@ createWindowCommandBuffersFromCommandPool2 (Vk.Dvc.D dvc) wd qfi mac f =
 	M.createWindowCommandBuffersFromCommandPool2
 		dvc wd qfi (Vk.AllocCallbacks.toMiddle mac) f
 
-createWindowCommandBuffersFrames :: Vk.AllocCallbacks.ToMiddle mac =>
+createWindowCommandBuffersFrames ::
+	Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO a -> IO a
 createWindowCommandBuffersFrames dvc wd qfi mac f =
@@ -146,8 +153,21 @@ createWindowCommandBuffersFrames dvc wd qfi mac f =
 
 createWindowCommandBuffersFramesCommandBuffers2 ::
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> IO a -> IO a
-createWindowCommandBuffersFramesCommandBuffers2 (Vk.Dvc.D dvc) wd =
-	M.createWindowCommandBuffersFramesCommandBuffers2 dvc wd
+createWindowCommandBuffersFramesCommandBuffers2 dvc wd f =
+	createWindowCommandBuffersFramesCreateCommandBuffers dvc wd \cbs ->
+	createWindowCommandBuffersFramesCopyCommandBuffers wd cbs f
+
+createWindowCommandBuffersFramesCreateCommandBuffers ::
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> (forall scbs . HPList.PL Vk.CmdBffr.C scbs -> IO a) -> IO a
+createWindowCommandBuffersFramesCreateCommandBuffers (Vk.Dvc.D dvc) wd f = do
+	cbs <- M.createWindowCommandBuffersFramesCreateCommandBuffers dvc wd
+	fromList Vk.CmdBffr.C cbs f
+
+createWindowCommandBuffersFramesCopyCommandBuffers ::
+	Vk.ImGui.H.Win.W -> HPList.PL Vk.CmdBffr.C scbs -> IO a -> IO a
+createWindowCommandBuffersFramesCopyCommandBuffers wd cbs =
+	M.createWindowCommandBuffersFramesCopyCommandBuffers wd
+		(HPList.toList (\(Vk.CmdBffr.C cb) -> cb) cbs)
 
 createWindowCommandBuffersFramesFence2 :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
