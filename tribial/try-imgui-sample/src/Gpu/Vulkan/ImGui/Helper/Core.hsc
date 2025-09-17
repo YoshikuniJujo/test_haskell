@@ -14,6 +14,8 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 	createWindowCommandBuffersFromCommandPool2,
 	createWindowCommandBuffersFrames,
 	createWindowCommandBuffersFramesCommandBuffers2,
+	createWindowCommandBuffersFramesCreateCommandBuffers,
+	createWindowCommandBuffersFramesCopyCommandBuffers,
 	createWindowCommandBuffersFramesFence2,
 	createWindowCommandBuffersSemaphores,
 

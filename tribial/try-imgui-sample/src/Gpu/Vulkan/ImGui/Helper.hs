@@ -97,10 +97,10 @@ destroyBeforeCreateSwapChain (Vk.Dvc.D dvc) wd mac =
 
 createWindowCommandBuffers :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Word32 -> IO ()
-createWindowCommandBuffers _phd dvc wd qfi mac ic =
-	createWindowCommandBuffersCreateCommandPool dvc qfi mac ic $
-	createWindowCommandBuffersFromCommandPool dvc wd qfi mac
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Word32 -> IO a -> IO a
+createWindowCommandBuffers _phd dvc wd qfi mac ic f =
+	createWindowCommandBuffersCreateCommandPool dvc qfi mac ic \cp ->
+	createWindowCommandBuffersFromCommandPool dvc wd qfi mac cp f
 
 createWindowCommandBuffersCreateCommandPool :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.QFam.Index ->
@@ -118,7 +118,7 @@ fromList k (x : xs) f = fromList k xs \ys -> f $ k x HPList.:** ys
 
 createWindowCommandBuffersFromCommandPool :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> HPList.PL Vk.CmdPl.C scpls -> IO ()
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> HPList.PL Vk.CmdPl.C scpls -> IO a -> IO a
 createWindowCommandBuffersFromCommandPool (Vk.Dvc.D dvc) wd qfi mac cps =
 	M.createWindowCommandBuffersFromCommandPool
 		dvc wd qfi (Vk.AllocCallbacks.toMiddle mac) (HPList.toList (\(Vk.CmdPl.C cp) -> cp) cps)
@@ -131,20 +131,21 @@ createWindowCommandBuffersCopyCommandPool wd cps =
 
 createWindowCommandBuffersFromCommandPool2 :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
-createWindowCommandBuffersFromCommandPool2 (Vk.Dvc.D dvc) wd qfi mac =
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO a -> IO a
+createWindowCommandBuffersFromCommandPool2 (Vk.Dvc.D dvc) wd qfi mac f =
 	M.createWindowCommandBuffersFromCommandPool2
-		dvc wd qfi (Vk.AllocCallbacks.toMiddle mac)
+		dvc wd qfi (Vk.AllocCallbacks.toMiddle mac) f
 
 createWindowCommandBuffersFrames :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
-createWindowCommandBuffersFrames dvc wd qfi mac = do
-	createWindowCommandBuffersFramesCommandBuffers2 dvc wd
-	createWindowCommandBuffersFramesFence2 dvc wd mac
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO a -> IO a
+createWindowCommandBuffersFrames dvc wd qfi mac f =
+	createWindowCommandBuffersFramesCommandBuffers2 dvc wd do
+		createWindowCommandBuffersFramesFence2 dvc wd mac
+		f
 
 createWindowCommandBuffersFramesCommandBuffers2 ::
-	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> IO ()
+	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> IO a -> IO a
 createWindowCommandBuffersFramesCommandBuffers2 (Vk.Dvc.D dvc) wd =
 	M.createWindowCommandBuffersFramesCommandBuffers2 dvc wd
 

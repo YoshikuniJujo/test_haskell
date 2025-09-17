@@ -336,7 +336,8 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.H.copyFramebufferToWd False wdcxx fbs >>
 	Vk.ImGui.H.createWindowCommandBuffersCopyCommandPool wdcxx cps >>
 
-	Vk.ImGui.H.createWindowCommandBuffersFramesCommandBuffers2 dvc wdcxx >>
+	pure () >>= \() ->
+	Vk.ImGui.H.createWindowCommandBuffersFramesCommandBuffers2 dvc wdcxx $
 	Vk.ImGui.H.createWindowCommandBuffersFramesFence2 dvc wdcxx nil >>
 	Vk.ImGui.H.createWindowCommandBuffersSemaphores dvc wdcxx nil >>
 
