@@ -51,6 +51,7 @@ import Gpu.Vulkan.Queue qualified as Vk.Q
 import Gpu.Vulkan.QueueFamily qualified as Vk.QFam
 import Gpu.Vulkan.Device.Internal qualified as Vk.Dvc
 import Gpu.Vulkan.CommandPool qualified as Vk.CmdPl
+import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
 import Gpu.Vulkan.DescriptorPool.Type qualified as Vk.DscPl
@@ -603,3 +604,15 @@ createCommandPool dvc qfi = Vk.CmdPl.create dvc info TPMaybe.N
 		Vk.CmdPl.createInfoNext = TMaybe.N,
 		Vk.CmdPl.createInfoFlags = zeroBits,
 		Vk.CmdPl.createInfoQueueFamilyIndex = qfi }
+
+allocateCommandBuffer :: forall sd scp a .
+	Vk.Dvc.D sd ->
+	Vk.CmdPl.C scp -> (forall scb . Vk.CmdBffr.C scb -> IO a) -> IO a
+allocateCommandBuffer dvc cp f =
+	Vk.CmdBffr.allocateCs dvc info \(cb HPList.:*. HPList.Nil) -> f cb
+	where
+	info :: Vk.CmdBffr.AllocateInfo 'Nothing scp '[ '()]
+	info = Vk.CmdBffr.AllocateInfo {
+		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
+		Vk.CmdBffr.allocateInfoCommandPool = cp,
+		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
