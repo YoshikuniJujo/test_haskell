@@ -120,13 +120,18 @@ main = (GlfwG.setErrorCallback (Just glfwErrorCallback) >>) .
 	vs <- GlfwG.vulkanSupported
 	when (not vs) $ error "GLFW: Vulkan Not Supported"
 	when oldLog $ print AppUseUnlimitedFrameRate.flag
-	createIst \ist -> Vk.Sfc.Win.create ist win nil \sfc ->
-		pickPhd ist sfc >>= \(phd, qfm) ->
-		createLgDvc phd qfm \dvc gq _ ->
-		createDscPl dvc \dp ->
-		Vk.Sfc.Phd.getSupport phd (grFam qfm) sfc >>= \res ->
-		when (not res) (error "Error no WSI support on physicalDevice 0") >> do
-		mainCxx win ist sfc phd (grFam qfm) dvc gq dp
+	createIst \ist -> do
+		Vk.Sfc.Win.create ist win nil \sfc ->
+			pickPhd ist sfc >>= \(phd, qfm) ->
+			createLgDvc phd qfm \dvc gq _ -> do
+				createDscPl dvc \dp ->
+					Vk.Sfc.Phd.getSupport phd (grFam qfm) sfc >>= \res ->
+					when (not res) (error "Error no WSI support on physicalDevice 0") >> do
+						mainCxx win ist sfc phd (grFam qfm) dvc gq dp
+						putStrLn "AFTER mainCxx"
+				putStrLn "AFTER createDscPl"
+		putStrLn "AFTER Vk.Sfc.Win.create"
+	putStrLn "AFTER createIst"
 
 glfwErrorCallback :: GlfwG.Error -> GlfwG.ErrorMessage -> IO ()
 glfwErrorCallback err dsc =
@@ -401,8 +406,10 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 							Vk.ImGui.Win.wCCopyToCxx wd'' wdcxx do
 								cxx_FrameRender wdcxx dvc gq dd pscr
 								cxx_FramePresent wdcxx gq pscr
+	putStrLn "BEFORE cxx_cleanup"
 	cxx_cleanup ist dvc wdcxx
 	cxx_free_ImGui_ImplVulkan_InitInfo pInitInfo
+	putStrLn "AFTER cxx_free_ImGui_ImplVulkan_InitInfo"
 
 data FramebufferInfos sr nm fmt sis where
 	FramebufferInfosNil :: FramebufferInfos sr nm fmt '[]
