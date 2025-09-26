@@ -132,11 +132,13 @@ main = do
 					Apng.FrameNumber fn <- State.getN "foobar"
 --					Eff.effBase $ writeIORef fnref fn
 					for_ [0 .. fn - 1] \n -> do
+						Apng.BodyFctl fctl <- Pipe.await
+						let	w = fromIntegral $ Apng.fctlWidth fctl
+							h = fromIntegral $ Apng.fctlHeight fctl
 
-						i <- Eff.effBase $ newImageArgb32Mut wdt hgt
+						i <- Eff.effBase $ newImageArgb32Mut w h
 						Eff.effBase $ updateMap imgs n i
 
-						Apng.BodyFctl fctl <- Pipe.await
 						Eff.effBase $ updateMap fctls n fctl
 						Eff.effBase $ writeIORef fnref (n + 1)
 --						Eff.effBase $ writeIORef txt . T.pack $ show fctl
@@ -189,7 +191,7 @@ drawFunction txt fnref fctls imgs now _ cr Null = do
 	fn <- readIORef fnref
 
 	cairoMoveTo cr 400 70
-	l <- sampleLayout cr 30 . T.pack $ show fn
+	l <- sampleLayout cr 30 . T.pack $ show fn ++ " " ++ show n
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
 	pangoCairoShowLayout cr l
 
