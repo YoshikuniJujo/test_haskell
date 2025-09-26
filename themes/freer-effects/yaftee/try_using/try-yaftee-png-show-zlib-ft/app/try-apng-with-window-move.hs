@@ -8,6 +8,7 @@
 module Main where
 
 import Control.Monad
+import Control.Monad.Fix
 import Control.Monad.ST
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -37,6 +38,7 @@ import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.CairoPatternT
+import Graphics.Cairo.Drawing.Transformations
 import Graphics.Pipe.Draw
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
@@ -94,9 +96,24 @@ main = do
 	fctls <- newIORef Map.empty
 	fnref <- newIORef 0
 	imgs <- newIORef Map.empty
+	now <- newIORef 0
 	da <- Gtk.DrawingArea.new
 	Gtk.Container.add w da
-	G.Signal.connect_self_cairo_ud da "draw" (drawFunction txt fnref fctls img) Null
+	G.Signal.connect_self_cairo_ud da "draw" (drawFunction txt fnref fctls imgs now) Null
+
+	forkIO $ do
+		fix \f -> do
+			threadDelay 100000
+			fn <- readIORef fnref
+			when (fn == 0) f
+		forever do
+			fn <- readIORef fnref
+			n <- readIORef now
+			let	n' = (n + 1) `mod` fn
+			fctl <- (Map.! n') <$> readIORef fctls
+			threadDelay $ (fromIntegral (Apng.fctlDelayNum fctl) * 1000000 `div` fromIntegral (Apng.fctlDelayDen fctl))
+			writeIORef now n'
+			(G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
 
 	forkIO do
 		h <- openFile fpi ReadMode
@@ -126,10 +143,10 @@ main = do
 						IO.print fctl
 						let	wdt = fromIntegral $ Apng.fctlWidth fctl
 							hgt = fromIntegral $ Apng.fctlHeight fctl
-							yss = map (+ 100 * (n `mod` 8)) [0 .. hgt - 1] `zip` repeat (1, 1)
-							xss = replicate hgt $ map (+ 100 * (n `div` 8)) [0 .. wdt - 1]
+							yss = [0 .. hgt - 1] `zip` repeat (1, 1)
+							xss = replicate hgt [0 .. wdt - 1]
 						IO.print (wdt, hgt)
-						PipeT.convert (\(Apng.BodyRgba r) -> r) Pipe.=$= drawColor' img yss xss
+						PipeT.convert (\(Apng.BodyRgba r) -> r) Pipe.=$= drawColor' i yss xss
 							(G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
 		
 		hClose h
@@ -148,12 +165,21 @@ sampleLayout cr sz txt = do
 	pure l'
 
 drawFunction :: IORef T.Text -> IORef Int -> IORef (Map.Map Int Apng.Fctl) ->
-	Argb32Mut RealWorld -> Gtk.DrawingArea.D -> CairoT r RealWorld -> Null -> IO Bool
-drawFunction txt fnref fctls (CairoImageMutArgb32 -> img) _ cr Null = do
+	IORef (Map.Map Int (Argb32Mut RealWorld)) -> IORef Int -> Gtk.DrawingArea.D -> CairoT r RealWorld -> Null -> IO Bool
+-- drawFunction txt fnref fctls (CairoImageMutArgb32 -> img) _ cr Null = do
+drawFunction txt fnref fctls imgs now _ cr Null = do
+	n <- readIORef now
+	img <- CairoImageMutArgb32 . (Map.! n) <$> readIORef imgs
+	fctl <- (Map.! n) <$> readIORef fctls
 	sfc <- CairoSurfaceTImage <$> cairoImageSurfaceCreateForCairoImageMut img
 	ptn <- cairoPatternCreateForSurface sfc
+
+	cairoTranslate cr
+		(50 + fromIntegral (Apng.fctlXOffset fctl))
+		(50 + fromIntegral (Apng.fctlYOffset fctl))
 	cairoSetSource cr ptn
 	cairoPaint cr
+	cairoIdentityMatrix cr
 
 	cairoMoveTo cr 400 30
 	l <- sampleLayout cr 30 =<< readIORef txt

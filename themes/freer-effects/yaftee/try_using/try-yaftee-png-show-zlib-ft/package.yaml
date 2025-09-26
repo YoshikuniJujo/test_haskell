@@ -84,6 +84,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-yaftee-png-show-zlib-ft
+  try-apng-with-window-move:
+    main:                try-apng-with-window-move.hs
+    source-dirs:         app
+    other-modules:       []
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-yaftee-png-show-zlib-ft
 
 tests:
   try-yaftee-png-show-zlib-ft-test:
