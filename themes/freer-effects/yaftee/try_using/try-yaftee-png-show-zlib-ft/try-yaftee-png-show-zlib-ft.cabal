@@ -37,8 +37,11 @@ library
       base >=4.7 && <5
     , bytestring
     , cairo-image
+    , containers
     , moffy-samples-gtk3-run
     , simple-cairo
+    , simple-pango
+    , text
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee
@@ -61,8 +64,11 @@ executable try-apng-with-window
       base >=4.7 && <5
     , bytestring
     , cairo-image
+    , containers
     , moffy-samples-gtk3-run
     , simple-cairo
+    , simple-pango
+    , text
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee
@@ -86,8 +92,11 @@ executable try-with-window
       base >=4.7 && <5
     , bytestring
     , cairo-image
+    , containers
     , moffy-samples-gtk3-run
     , simple-cairo
+    , simple-pango
+    , text
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee
@@ -115,8 +124,11 @@ executable try-yaftee-png-show-zlib-ft-exe
       base >=4.7 && <5
     , bytestring
     , cairo-image
+    , containers
     , moffy-samples-gtk3-run
     , simple-cairo
+    , simple-pango
+    , text
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee
@@ -145,8 +157,11 @@ test-suite try-yaftee-png-show-zlib-ft-test
       base >=4.7 && <5
     , bytestring
     , cairo-image
+    , containers
     , moffy-samples-gtk3-run
     , simple-cairo
+    , simple-pango
+    , text
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee

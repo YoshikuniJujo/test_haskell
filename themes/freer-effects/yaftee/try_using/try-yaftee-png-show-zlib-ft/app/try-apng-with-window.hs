@@ -22,19 +22,28 @@ import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.Concurrent
 import Data.Foldable
+import Data.Maybe
+import Data.Map qualified as Map
 import Data.ByteString.FingerTree qualified as BSF
+import Data.Text qualified as T
 import Data.Color
 import Data.Png.Header
 import Data.CairoContext
 import Data.CairoImage.Internal
+import Data.IORef
 import System.IO
 import System.Environment
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.CairoPatternT
 import Graphics.Pipe.Draw
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
+
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Rendering.Cairo
 
 import Stopgap.Data.Ptr
 import Stopgap.System.GLib qualified as G
@@ -53,6 +62,8 @@ main = do
 
 	let	blk = opts == ["--block"]
 
+	txt <- newIORef "YoshJ"
+
 	hh <- openFile fpi ReadMode
 	Right hdr <- Eff.runM
 		. Except.run @String
@@ -70,6 +81,7 @@ main = do
 			InterlaceMethodNon -> ([0 .. hgt - 1] `zip` repeat (1, 1), replicate hgt [0 .. wdt - 1])
 			InterlaceMethodAdam7 -> error "not implemented"
 	print (wdt, hgt, ilm)
+	writeIORef txt . T.pack $ show (wdt, hgt, ilm)
 
 	img <- newImageArgb32Mut (wdt * 12) (hgt * 12)
 	print img
@@ -79,9 +91,11 @@ main = do
 	G.Signal.connect_ab_bool w "delete-event" (\_ _ -> pure False) Null
 	G.Signal.connect_void_void w "destroy" Gtk.mainQuit Null
 
+	fctls <- newIORef Map.empty
+	fnref <- newIORef 0
 	da <- Gtk.DrawingArea.new
 	Gtk.Container.add w da
-	G.Signal.connect_self_cairo_ud da "draw" (drawFunction img) Null
+	G.Signal.connect_self_cairo_ud da "draw" (drawFunction txt fnref fctls img) Null
 
 	forkIO do
 		h <- openFile fpi ReadMode
@@ -98,9 +112,13 @@ main = do
 				Apng.apngPipe "foobar" hdr ib ob Pipe.=$= do
 					Apng.BodyNull <- Pipe.await
 					Apng.FrameNumber fn <- State.getN "foobar"
+--					Eff.effBase $ writeIORef fnref fn
 					for_ [0 .. fn - 1] \n -> do
 
 						Apng.BodyFctl fctl <- Pipe.await
+						Eff.effBase $ updateMap fctls n fctl
+						Eff.effBase $ writeIORef fnref (n + 1)
+--						Eff.effBase $ writeIORef txt . T.pack $ show fctl
 						IO.print fctl
 						let	wdt = fromIntegral $ Apng.fctlWidth fctl
 							hgt = fromIntegral $ Apng.fctlHeight fctl
@@ -115,10 +133,43 @@ main = do
 	Gtk.Widget.showAll w
 	Gtk.main
 
-drawFunction :: Argb32Mut RealWorld -> Gtk.DrawingArea.D -> CairoT r RealWorld -> Null -> IO Bool
-drawFunction (CairoImageMutArgb32 -> img) _ cr Null = do
+sampleLayout cr sz txt = do
+	(l, d) <- (,) <$> pangoCairoCreateLayout cr <*> pangoFontDescriptionNew
+	d `pangoFontDescriptionSet` Family "sans-serif"
+	d `pangoFontDescriptionSet` AbsoluteSize sz
+	d' <- pangoFontDescriptionFreeze d
+	l `pangoLayoutSet` pangoFontDescriptionToNullable (Just d')
+	l `pangoLayoutSet` (txt :: T.Text)
+	l' <- pangoLayoutFreeze l
+	pure l'
+
+drawFunction :: IORef T.Text -> IORef Int -> IORef (Map.Map Int Apng.Fctl) ->
+	Argb32Mut RealWorld -> Gtk.DrawingArea.D -> CairoT r RealWorld -> Null -> IO Bool
+drawFunction txt fnref fctls (CairoImageMutArgb32 -> img) _ cr Null = do
 	sfc <- CairoSurfaceTImage <$> cairoImageSurfaceCreateForCairoImageMut img
 	ptn <- cairoPatternCreateForSurface sfc
 	cairoSetSource cr ptn
 	cairoPaint cr
+
+	cairoMoveTo cr 400 30
+	l <- sampleLayout cr 30 =<< readIORef txt
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
+	pangoCairoShowLayout cr l
+
+	fn <- readIORef fnref
+
+	cairoMoveTo cr 400 70
+	l <- sampleLayout cr 30 . T.pack $ show fn
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
+	pangoCairoShowLayout cr l
+
+	for_ [0 .. fn - 1] \n -> do
+		cairoMoveTo cr 400 (100 + 20 * fromIntegral n)
+		l <- sampleLayout cr 15 . T.pack . show . (Map.! n) =<< readIORef fctls
+		cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
+		pangoCairoShowLayout cr l
+
 	pure False
+
+updateMap :: Ord k => IORef (Map.Map k a) -> k -> a -> IO ()
+updateMap m k v = modifyIORef m (Map.insert k v)

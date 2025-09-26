@@ -21,7 +21,9 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- containers
 - bytestring
+- text
 - union-color
 - try-yaftee
 - try-yaftee-basic-monads
@@ -35,6 +37,7 @@ dependencies:
 - try-zlib-core
 - moffy-samples-gtk3-run
 - simple-cairo
+- simple-pango
 - cairo-image
 
 ghc-options:
