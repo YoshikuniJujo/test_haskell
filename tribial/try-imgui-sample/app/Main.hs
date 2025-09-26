@@ -331,7 +331,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	let	fbinfos = mkFramebufferInfoList rp scvs (fromIntegral wdt') (fromIntegral hgt') in
 	createFramebufferList fbg [0 ..] fbinfos >>= \fbs ->
 	HPList.replicateM (length scis) (createCommandPool dvc qfi) \cps ->
---	allocateCommandBuffers dvc cps \cbs ->
+	allocateCommandBuffers dvc cps \cbs ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
@@ -342,11 +342,9 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.H.copyImageViewsToWd' wdcxx scvs >>
 	Vk.ImGui.H.copyFramebufferToWd False wdcxx fbs >>
 	Vk.ImGui.H.createWindowCommandBuffersCopyCommandPool wdcxx cps >>
-
 	pure () >>= \() ->
---	allocateCommandBuffers dvc cps \cbs ->
-	Vk.ImGui.H.createWindowCommandBuffersFramesCreateCommandBuffers dvc wdcxx \cbs ->
 	Vk.ImGui.H.createWindowCommandBuffersFramesCopyCommandBuffers wdcxx cbs $
+
 	Vk.ImGui.H.createWindowCommandBuffersFramesFence2 dvc wdcxx nil >>
 	Vk.ImGui.H.createWindowCommandBuffersSemaphores dvc wdcxx nil >>
 
