@@ -11,7 +11,9 @@ module Control.Monad.Yaftee.Pipe.Png.Encode (
 
 	encodeRgba, encodeGray8, encodeGrayAlpha, encodePalette,
 
-	encodeRaw
+	encodeRaw,
+
+	Chunk(..)
 
 	) where
 

@@ -16,11 +16,14 @@ import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
+import Control.Monad.Yaftee.Pipe.Png.Encode qualified as PngE
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
+import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Data.ByteString.FingerTree qualified as BSF
+import Data.Png.Header qualified as Header
 
 import System.IO
 import System.Environment
@@ -57,7 +60,13 @@ main = do
 		. void $ PipeBS.hGet 32 h
 			Pipe.=$= PipeT.convert BSF.fromStrict
 			Pipe.=$= apngPipe "foobar" hdr ibd obd
-			Pipe.=$= PipeIO.print'
+			Pipe.=$= do
+				PipeIO.print'
+				IO.print @FrameNumber =<< State.getN "foobar"
 
 	putStrLn ""
 	print hdr
+	print $ Header.encodeHeader hdr
+	print PngE.Chunk {
+		PngE.chunkName = "IHDR",
+		PngE.chunkBody = BSF.fromStrict $ Header.encodeHeader hdr }
