@@ -16,9 +16,7 @@ import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
-import Control.Monad.Yaftee.Pipe.Png.Encode qualified as PngE
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
-import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
@@ -38,6 +36,8 @@ import "try-gzip-yaftee-zlib-ft" Tools
 import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 
+import Data.IORef
+
 main :: IO ()
 main = do
 	fp : fpo : _ <- getArgs
@@ -50,9 +50,7 @@ main = do
 			Pipe.=$= Png.decodeHeader "foobar"
 	hClose hh
 
-	img <- Image.new
-		(fromIntegral $ Header.headerWidth hdr)
-		(fromIntegral $ Header.headerHeight hdr)
+	imgs <- newIORef []
 
 	print hdr
 
@@ -75,9 +73,14 @@ main = do
 			Pipe.=$= do
 				doWhile do
 					d <- Pipe.await
-					pure case d of
-						BodyFctl _ -> False
-						_ -> True
+					case d of
+						BodyFctl fctl -> do
+							img <- Eff.effBase $ Image.new @IO
+								(fromIntegral $ fctlWidth fctl)
+								(fromIntegral $ fctlHeight fctl)
+							Eff.effBase $ writeIORef imgs [img]
+							pure False
+						_ -> pure True
 				doWhile do
 					d <- Pipe.await
 					case d of
@@ -89,18 +92,13 @@ main = do
 			Pipe.=$= pipeZip (Header.headerToPoss hdr)
 			Pipe.=$= forever do
 				clrs <- Pipe.await
+				img <- (!! 0) <$> Eff.effBase (readIORef imgs)
 				(\(clr, (x, y)) -> Eff.effBase $ Image.write @IO img x y clr) `mapM_` clrs
 				Pipe.yield (fst <$> clrs)
 			Pipe.=$= PipeIO.print'
 
-	putStrLn ""
-	print hdr
-	print $ Header.encodeHeader hdr
-	print PngE.Chunk {
-		PngE.chunkName = "IHDR",
-		PngE.chunkBody = BSF.fromStrict $ Header.encodeHeader hdr }
-
 	ho <- openFile fpo WriteMode
+	img <- (!! 0) <$> readIORef imgs
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Buffer.run @"barbaz" @BSF.ByteString
 		. PipeZ.run @"barbaz"
