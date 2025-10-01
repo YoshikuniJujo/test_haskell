@@ -10,6 +10,7 @@
 module Main (main) where
 
 import Control.Monad
+import Control.Monad.ST
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
@@ -20,7 +21,9 @@ import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
+import Control.HigherOpenUnion qualified as U
 import Data.ByteString.FingerTree qualified as BSF
+import Data.Color
 import Data.Image.Simple qualified as Image
 import Data.Png.Header qualified as Header
 
@@ -70,25 +73,7 @@ main = do
 		. void $ PipeBS.hGet 32 h
 			Pipe.=$= PipeT.convert BSF.fromStrict
 			Pipe.=$= apngPipe "foobar" hdr ibd obd
-			Pipe.=$= do
-				doWhile do
-					d <- Pipe.await
-					case d of
-						BodyFctl fctl -> do
-							img <- Eff.effBase $ Image.new @IO
-								(fromIntegral $ fctlWidth fctl)
-								(fromIntegral $ fctlHeight fctl)
-							Eff.effBase $ writeIORef imgs [img]
-							pure False
-						_ -> pure True
-				doWhile do
-					d <- Pipe.await
-					case d of
-						BodyFctl _ -> pure False
-						BodyRgba rgba -> do
-							Pipe.yield rgba
-							pure True
-						BodyNull -> pure True
+			Pipe.=$= writeImages imgs
 			Pipe.=$= pipeZip (Header.headerToPoss hdr)
 			Pipe.=$= forever do
 				clrs <- Pipe.await
@@ -114,3 +99,26 @@ doWhile :: Monad m => m Bool -> m ()
 doWhile act = do
 	b <- act
 	when b $ doWhile act
+
+
+writeImages :: (U.Member Pipe.P m, U.Base (U.FromFirst IO) m) =>
+	IORef [Image.I RealWorld] -> Eff.E m Body [Rgba Double] ()
+writeImages imgs = do
+	doWhile do
+		d <- Pipe.await
+		case d of
+			BodyFctl fctl -> do
+				img <- Eff.effBase $ Image.new @IO
+					(fromIntegral $ fctlWidth fctl)
+					(fromIntegral $ fctlHeight fctl)
+				Eff.effBase $ writeIORef imgs [img]
+				pure False
+			_ -> pure True
+	doWhile do
+		d <- Pipe.await
+		case d of
+			BodyFctl _ -> pure False
+			BodyRgba rgba -> do
+				Pipe.yield rgba
+				pure True
+			BodyNull -> pure True
