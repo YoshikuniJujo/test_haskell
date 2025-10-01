@@ -67,7 +67,7 @@ headerToSizes hdr = calcSizes hdr (headerWidth hdr) (headerHeight hdr)
 
 calcSizes :: Header -> Word32 -> Word32 -> [(Int, Int)]
 calcSizes Header { headerInterlaceMethod = InterlaceMethodNon } w h =
-	[(fromIntegral w, fromIntegral w)]
+	[(fromIntegral w, fromIntegral h)]
 calcSizes Header { headerInterlaceMethod = InterlaceMethodAdam7 } w h =
 	adam7Sizes	(fromIntegral w)
 			(fromIntegral h)
@@ -233,7 +233,7 @@ headerToPoss hdr = calcPoss hdr (headerWidth hdr) (headerHeight hdr)
 
 calcPoss :: Header -> Word32 -> Word32 -> [(Int, Int)]
 calcPoss hdr@Header { headerInterlaceMethod = InterlaceMethodNon } w h =
-	[ (fromIntegral x, fromIntegral y) | y <- [0 .. w - 1], x <- [0 .. h - 1] ]
+	[ (fromIntegral x, fromIntegral y) | y <- [0 .. h - 1], x <- [0 .. w - 1] ]
 calcPoss hdr@Header { headerInterlaceMethod = InterlaceMethodAdam7 } w h =
 	concat $ Adam7.poss (fromIntegral w) (fromIntegral h)
 

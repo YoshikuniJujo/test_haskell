@@ -13,6 +13,8 @@ module Control.Monad.Yaftee.Pipe.Png.Encode (
 
 	encodeRaw,
 
+	encodeRgbaCalc,
+
 	Chunk(..)
 
 	) where
@@ -59,6 +61,22 @@ encodeRgba nm m hdr ibe obe =
 		Pipe.=$= PipeT.convert BSF.pack
 
 		Pipe.=$= encodeRaw nm m hdr Nothing ibe obe
+
+encodeRgbaCalc :: forall nm m -> (
+	PrimBase m, RealFrac d, U.Member Pipe.P es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member (Except.E String) es,
+	U.Base (U.FromFirst m) es ) =>
+	Header.Header -> Word32 -> Word32 ->
+	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	Eff.E es [Rgba d] BSF.ByteString ()
+encodeRgbaCalc nm m hdr w h ibe obe =
+	void $ PipeT.convert (Header.rgbaListToWord8List hdr)
+		Pipe.=$= PipeT.convert BSF.pack
+
+		Pipe.=$= encodeRawCalc nm m hdr w h Nothing ibe obe
 
 encodeGray8 :: forall nm m -> (
 	PrimBase m, RealFrac d, U.Member Pipe.P es,
@@ -186,12 +204,26 @@ encodeRaw :: forall nm m -> (
 	Header.Header -> Maybe Palette.Palette ->
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
 	Eff.E es BSF.ByteString BSF.ByteString ()
-encodeRaw nm m hdr mplt ibe obe = void $
+encodeRaw nm m hdr mplt ibe obe =
+	encodeRawCalc nm m hdr (Header.headerWidth hdr) (Header.headerHeight hdr) mplt ibe obe
+
+encodeRawCalc :: forall nm m -> (
+	PrimBase m,
+	U.Member Pipe.P es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
+	U.Base (U.FromFirst m) es
+	) =>
+	Header.Header -> Word32 -> Word32 -> Maybe Palette.Palette ->
+	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	Eff.E es BSF.ByteString BSF.ByteString ()
+encodeRawCalc nm m hdr w h mplt ibe obe = void $
 -- MAKE IDAT
 
 		do
 			bs0 <- Pipe.await
-			Unfilter.pngFilter hdr bs0 $ Header.headerToSizes hdr
+			Unfilter.pngFilter hdr bs0 $ Header.calcSizes hdr w h
 		Pipe.=$= PipeT.convert BSF.pack
 		Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
 		Pipe.=$= Buffer.format' nm BSF.splitAt' "" 5000

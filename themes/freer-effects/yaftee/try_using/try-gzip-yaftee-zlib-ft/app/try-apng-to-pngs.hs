@@ -108,24 +108,29 @@ main = do
 			Pipe.=$= PipeBS.hPutStr ho
 	hClose ho
 
-{-
 	let	(fpbd, fpex) = splitExtension fpo
 		fpo01 = fpbd ++ "-01" <.> fpex
 
 	ho' <- openFile fpo01 WriteMode
 	img1 <- (!! 1) <$> readIORef imgs
 	fctl1 <- (!! 1) <$> readIORef fctls
+	print fctl1
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Buffer.run @"barbaz" @BSF.ByteString
 		. PipeZ.run @"barbaz"
 		. Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. void $ fromImage @Double IO img1 (fctlPoss' hdr fctl1)
-			Pipe.=$= Encode.encodeRgba "barbaz" IO hdr ibe obe
+--			Pipe.=$= Encode.encodeRgbaCalc "barbaz" IO
+			Pipe.=$= Encode.encodeRgba "barbaz" IO
+				hdr {
+					Header.headerWidth = fctlWidth fctl1,
+					Header.headerHeight = fctlHeight fctl1 }
+--				(fctlWidth fctl1) (fctlHeight fctl1)
+				ibe obe
 			Pipe.=$= PipeT.convert BSF.toStrict
 			Pipe.=$= PipeBS.hPutStr ho'
 	hClose ho'
--}
 
 doWhile :: Monad m => m Bool -> m ()
 doWhile act = do
