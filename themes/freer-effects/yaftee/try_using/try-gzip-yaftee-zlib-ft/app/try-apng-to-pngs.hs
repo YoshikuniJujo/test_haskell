@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost, PackageImports #-}
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
@@ -29,6 +29,7 @@ import Data.Png.Header qualified as Header
 
 import System.IO
 import System.Environment
+import System.FilePath
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
@@ -54,6 +55,7 @@ main = do
 	hClose hh
 
 	imgs <- newIORef []
+	fctls <- newIORef []
 
 	print hdr
 
@@ -75,12 +77,19 @@ main = do
 			Pipe.=$= apngPipe "foobar" hdr ibd obd
 			Pipe.=$= do
 				fctl0 <- firstFctl
-				whileWithMeta (writeImage1 imgs) fctl0
-			Pipe.=$= pipeZip (Header.headerToPoss hdr)
+				whileWithMeta (writeImage1 fctls imgs) fctl0
+			Pipe.=$= do
+				[] <- Pipe.await
+				fctl0 : _ <- Eff.effBase $ readIORef fctls
+				pipeZip $ (0 ,) <$> (fctlPoss hdr fctl0)
+				[] <- Pipe.await
+				_ : fctl1 : _ <- Eff.effBase $ readIORef fctls
+				pipeZip $ (1 ,) <$> (fctlPoss hdr fctl1)
 			Pipe.=$= forever do
 				clrs <- Pipe.await
-				img <- (!! 0) <$> Eff.effBase (readIORef imgs)
-				(\(clr, (x, y)) -> Eff.effBase $ Image.write @IO img x y clr) `mapM_` clrs
+				(\(clr, (n, (x, y))) -> do
+					img <- (!! n) <$> Eff.effBase (readIORef imgs)
+					Eff.effBase $ Image.write @IO img x y clr) `mapM_` clrs
 				Pipe.yield (fst <$> clrs)
 			Pipe.=$= PipeIO.print'
 
@@ -98,6 +107,25 @@ main = do
 			Pipe.=$= PipeT.convert BSF.toStrict
 			Pipe.=$= PipeBS.hPutStr ho
 	hClose ho
+
+{-
+	let	(fpbd, fpex) = splitExtension fpo
+		fpo01 = fpbd ++ "-01" <.> fpex
+
+	ho' <- openFile fpo01 WriteMode
+	img1 <- (!! 1) <$> readIORef imgs
+	fctl1 <- (!! 1) <$> readIORef fctls
+	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. Buffer.run @"barbaz" @BSF.ByteString
+		. PipeZ.run @"barbaz"
+		. Pipe.run
+		. (`Except.catch` IO.putStrLn)
+		. void $ fromImage @Double IO img1 (fctlPoss' hdr fctl1)
+			Pipe.=$= Encode.encodeRgba "barbaz" IO hdr ibe obe
+			Pipe.=$= PipeT.convert BSF.toStrict
+			Pipe.=$= PipeBS.hPutStr ho'
+	hClose ho'
+-}
 
 doWhile :: Monad m => m Bool -> m ()
 doWhile act = do
@@ -139,14 +167,19 @@ firstFctl = doWhile' $ Pipe.await >>= \case
 
 
 writeImage1 :: (U.Member Pipe.P m, U.Base (U.FromFirst IO) m) =>
+	IORef [Fctl] ->
 	IORef [Image.I RealWorld] -> Fctl -> Eff.E m Body [Rgba Double] (Maybe Fctl)
-writeImage1 imgs fctl = do
+writeImage1 fctls imgs fctl = do
 	Eff.effBase $ putStrLn "writeImage1 begin"
+	Eff.effBase $ print fctl
 	img <- Eff.effBase $ Image.new @IO
 		(fromIntegral $ fctlWidth fctl)
 		(fromIntegral $ fctlHeight fctl)
 	Eff.effBase $ putStrLn "before modifyIORef"
-	Eff.effBase $ modifyIORef imgs (img :)
+	Eff.effBase $ modifyIORef fctls (++ [fctl])
+	Eff.effBase $ modifyIORef imgs (++ [img])
+--	Eff.effBase $ modifyIORef imgs (img :)
+	Pipe.yield []
 	doWhile' do
 		d <- Pipe.await
 		case d of

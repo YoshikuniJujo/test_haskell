@@ -8,7 +8,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.Apng.Decode (
-	apngRun_, ApngStates, apngPipe, ApngMembers, FrameNumber(..), Body(..), Fctl(..) ) where
+	apngRun_, ApngStates, apngPipe, ApngMembers,
+	FrameNumber(..), Body(..), Fctl(..),
+	fctlPoss, fctlPoss' ) where
 
 import Control.Arrow
 import Control.Monad
@@ -166,6 +168,11 @@ data Fctl = Fctl {
 	fctlXOffset :: Word32, fctlYOffset :: Word32,
 	fctlDelayNum :: Word16, fctlDelayDen :: Word16,
 	fctlDisposeOp :: Word8, fctlBlendOp :: Word8 } deriving Show
+
+fctlPoss :: Header.Header -> Fctl -> [(Int, Int)]
+fctlPoss hdr fctl = Header.calcPoss hdr (fctlWidth fctl) (fctlHeight fctl)
+
+fctlPoss' hdr fctl = Header.calcPoss' hdr (fctlWidth fctl) (fctlHeight fctl)
 
 fctl0 :: Fctl
 fctl0 = Fctl 0 0 0 0 0 0 0 0 0

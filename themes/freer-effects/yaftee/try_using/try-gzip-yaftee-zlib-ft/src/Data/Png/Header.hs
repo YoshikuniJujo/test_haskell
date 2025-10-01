@@ -226,16 +226,19 @@ rgbaToWord8List Header { headerBitDepth = bd, headerColorType = ct } =
 		_ -> error "yet"
 
 headerToPoss :: Header -> [(Int, Int)]
-headerToPoss hdr@Header { headerInterlaceMethod = InterlaceMethodNon } =
-	[ (fromIntegral x, fromIntegral y) |
-		y <- [0 .. headerHeight hdr - 1], x <- [0 .. headerWidth hdr - 1] ]
-headerToPoss hdr@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
-	concat $ Adam7.poss
-		(fromIntegral $ headerWidth hdr) (fromIntegral $ headerHeight hdr)
+headerToPoss hdr = calcPoss hdr (headerWidth hdr) (headerHeight hdr)
+
+calcPoss :: Header -> Word32 -> Word32 -> [(Int, Int)]
+calcPoss hdr@Header { headerInterlaceMethod = InterlaceMethodNon } w h =
+	[ (fromIntegral x, fromIntegral y) | y <- [0 .. w - 1], x <- [0 .. h - 1] ]
+calcPoss hdr@Header { headerInterlaceMethod = InterlaceMethodAdam7 } w h =
+	concat $ Adam7.poss (fromIntegral w) (fromIntegral h)
 
 headerToPoss' :: Header -> [[(Int, Int)]]
-headerToPoss' hdr@Header { headerInterlaceMethod = InterlaceMethodNon } =
-	(\y -> (, y) <$> [0 .. fromIntegral $ headerWidth hdr - 1]) <$> [0 .. fromIntegral $ headerHeight hdr - 1]
-headerToPoss' hdr@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
-	Adam7.poss
-		(fromIntegral $ headerWidth hdr) (fromIntegral $ headerHeight hdr)
+headerToPoss' hdr = calcPoss' hdr (headerWidth hdr) (headerHeight hdr)
+
+calcPoss' :: Header -> Word32 -> Word32 -> [[(Int, Int)]]
+calcPoss' hdr@Header { headerInterlaceMethod = InterlaceMethodNon } w h =
+	(\y -> (, y) <$> [0 .. fromIntegral $ w - 1]) <$> [0 .. fromIntegral $ h - 1]
+calcPoss' hdr@Header { headerInterlaceMethod = InterlaceMethodAdam7 } w h =
+	Adam7.poss (fromIntegral w) (fromIntegral h)
