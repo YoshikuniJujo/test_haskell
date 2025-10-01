@@ -1,4 +1,4 @@
-{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ImportQualifiedPost, PackageImports #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
@@ -23,6 +23,7 @@ import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Data.ByteString.FingerTree qualified as BSF
+import Data.Image.Simple qualified as Image
 import Data.Png.Header qualified as Header
 
 import System.IO
@@ -32,9 +33,14 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
 import Control.Monad.Yaftee.Pipe.Apng.Decode
 
+import "try-gzip-yaftee-zlib-ft" Tools
+
+import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
+import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
+
 main :: IO ()
 main = do
-	fp : _ <- getArgs
+	fp : fpo : _ <- getArgs
 
 	hh <- openFile fp ReadMode
 	Right hdr <- Eff.runM . Except.run @String
@@ -44,11 +50,17 @@ main = do
 			Pipe.=$= Png.decodeHeader "foobar"
 	hClose hh
 
+	img <- Image.new
+		(fromIntegral $ Header.headerWidth hdr)
+		(fromIntegral $ Header.headerHeight hdr)
+
 	print hdr
 
 	h <- openFile fp ReadMode
 	ibd <- PipeZ.cByteArrayMalloc 64
 	obd <- PipeZ.cByteArrayMalloc 64
+	ibe <- PipeZ.cByteArrayMalloc 64
+	obe <- PipeZ.cByteArrayMalloc 64
 
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Fail.runExc id id
@@ -61,8 +73,25 @@ main = do
 			Pipe.=$= PipeT.convert BSF.fromStrict
 			Pipe.=$= apngPipe "foobar" hdr ibd obd
 			Pipe.=$= do
-				PipeIO.print'
-				IO.print @FrameNumber =<< State.getN "foobar"
+				doWhile do
+					d <- Pipe.await
+					pure case d of
+						BodyFctl _ -> False
+						_ -> True
+				doWhile do
+					d <- Pipe.await
+					case d of
+						BodyFctl _ -> pure False
+						BodyRgba rgba -> do
+							Pipe.yield rgba
+							pure True
+						BodyNull -> pure True
+			Pipe.=$= pipeZip (Header.headerToPoss hdr)
+			Pipe.=$= forever do
+				clrs <- Pipe.await
+				(\(clr, (x, y)) -> Eff.effBase $ Image.write @IO img x y clr) `mapM_` clrs
+				Pipe.yield (fst <$> clrs)
+			Pipe.=$= PipeIO.print'
 
 	putStrLn ""
 	print hdr
@@ -70,3 +99,20 @@ main = do
 	print PngE.Chunk {
 		PngE.chunkName = "IHDR",
 		PngE.chunkBody = BSF.fromStrict $ Header.encodeHeader hdr }
+
+	ho <- openFile fpo WriteMode
+	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. Buffer.run @"barbaz" @BSF.ByteString
+		. PipeZ.run @"barbaz"
+		. Pipe.run
+		. (`Except.catch` IO.putStrLn)
+		. void $ fromImage @Double IO img (Header.headerToPoss' hdr)
+			Pipe.=$= Encode.encodeRgba "barbaz" IO hdr ibe obe
+			Pipe.=$= PipeT.convert BSF.toStrict
+			Pipe.=$= PipeBS.hPutStr ho
+	hClose ho
+
+doWhile :: Monad m => m Bool -> m ()
+doWhile act = do
+	b <- act
+	when b $ doWhile act

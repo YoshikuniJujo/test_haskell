@@ -1,4 +1,4 @@
-{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ImportQualifiedPost, PackageImports #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
@@ -8,7 +8,6 @@
 
 module Main (main) where
 
-import Control.Arrow
 import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.Primitive
@@ -41,6 +40,8 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 import Data.Image.Simple qualified as Image
 
 import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
+
+import "try-gzip-yaftee-zlib-ft" Tools
 
 main :: IO ()
 main = do
@@ -130,34 +131,7 @@ main = do
 
 	hClose ho'
 
-fromImage :: forall m -> (
-	PrimMonad m, RealFrac d,
-	U.Member Pipe.P es,
-	U.Base (U.FromFirst m) es
-	) =>
-	Image.I (PrimState m) -> [[(Int, Int)]] ->
-	Eff.E es i [Rgba d] ()
-fromImage m img = \case
-	[] -> pure ()
-	ps : pss -> do
-		Pipe.yield =<< (\(x, y) -> Eff.effBase $ Image.read @m img x y) `mapM` ps
-		fromImage m img pss
-
 data Chunk = Chunk {
 	chunkName :: BSF.ByteString,
 	chunkBody :: BSF.ByteString }
 	deriving Show
-
-pipeZip :: U.Member Pipe.P es => [b] -> Eff.E es [a] [(a, b)] ()
-pipeZip = \case
-	[] -> pure ()
-	ys -> do
-		xs <- Pipe.await
-		let	(xys, (_xs', ys')) = xs `zip'` ys
-		Pipe.yield xys
-		pipeZip ys'
-
-zip' :: [a] -> [b] -> ([(a, b)], ([a], [b]))
-zip' xs [] = ([], (xs, []))
-zip' [] ys = ([], ([], ys))
-zip' (x : xs) (y : ys) = ((x, y) :) `first` zip' xs ys

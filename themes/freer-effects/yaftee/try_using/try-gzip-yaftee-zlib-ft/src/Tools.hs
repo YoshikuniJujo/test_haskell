@@ -1,0 +1,43 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE RequiredTypeArguments #-}
+{-# LANGUAGE FlexibleContexts #-}
+
+module Tools where
+
+import Control.Arrow
+import Control.Monad.Yaftee.Eff qualified as Eff
+import Control.Monad.Yaftee.Pipe qualified as Pipe
+import Control.HigherOpenUnion qualified as U
+
+import Control.Monad.Primitive
+import Data.Color
+import Data.Image.Simple qualified as Image
+
+pipeZip :: U.Member Pipe.P es => [b] -> Eff.E es [a] [(a, b)] ()
+pipeZip = \case
+	[] -> pure ()
+	ys -> do
+		xs <- Pipe.await
+		let	(xys, (_xs', ys')) = xs `zip'` ys
+		Pipe.yield xys
+		pipeZip ys'
+
+zip' :: [a] -> [b] -> ([(a, b)], ([a], [b]))
+zip' xs [] = ([], (xs, []))
+zip' [] ys = ([], ([], ys))
+zip' (x : xs) (y : ys) = ((x, y) :) `first` zip' xs ys
+
+fromImage :: forall m -> (
+	PrimMonad m, RealFrac d,
+	U.Member Pipe.P es,
+	U.Base (U.FromFirst m) es
+	) =>
+	Image.I (PrimState m) -> [[(Int, Int)]] ->
+	Eff.E es i [Rgba d] ()
+fromImage m img = \case
+	[] -> pure ()
+	ps : pss -> do
+		Pipe.yield =<< (\(x, y) -> Eff.effBase $ Image.read @m img x y) `mapM` ps
+		fromImage m img pss
