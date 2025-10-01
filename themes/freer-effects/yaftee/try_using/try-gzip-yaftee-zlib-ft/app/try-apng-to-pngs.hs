@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost, PackageImports #-}
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
@@ -73,7 +73,9 @@ main = do
 		. void $ PipeBS.hGet 32 h
 			Pipe.=$= PipeT.convert BSF.fromStrict
 			Pipe.=$= apngPipe "foobar" hdr ibd obd
-			Pipe.=$= writeImages imgs
+			Pipe.=$= do
+				fctl0 <- firstFctl
+				whileWithMeta (writeImage1 imgs) fctl0
 			Pipe.=$= pipeZip (Header.headerToPoss hdr)
 			Pipe.=$= forever do
 				clrs <- Pipe.await
@@ -81,6 +83,8 @@ main = do
 				(\(clr, (x, y)) -> Eff.effBase $ Image.write @IO img x y clr) `mapM_` clrs
 				Pipe.yield (fst <$> clrs)
 			Pipe.=$= PipeIO.print'
+
+	print =<< length <$> readIORef imgs
 
 	ho <- openFile fpo WriteMode
 	img <- (!! 0) <$> readIORef imgs
@@ -99,6 +103,11 @@ doWhile :: Monad m => m Bool -> m ()
 doWhile act = do
 	b <- act
 	when b $ doWhile act
+
+doWhile' :: Monad m => m (Maybe a) -> m a
+doWhile' act = act >>= \case
+	Nothing -> doWhile' act
+	Just r -> pure r
 
 
 writeImages :: (U.Member Pipe.P m, U.Base (U.FromFirst IO) m) =>
@@ -122,3 +131,37 @@ writeImages imgs = do
 				Pipe.yield rgba
 				pure True
 			BodyNull -> pure True
+
+firstFctl :: U.Member Pipe.P m => Eff.E m Body o Fctl
+firstFctl = doWhile' $ Pipe.await >>= \case
+	BodyFctl fctl -> pure $ Just fctl
+	_ -> pure Nothing
+
+
+writeImage1 :: (U.Member Pipe.P m, U.Base (U.FromFirst IO) m) =>
+	IORef [Image.I RealWorld] -> Fctl -> Eff.E m Body [Rgba Double] (Maybe Fctl)
+writeImage1 imgs fctl = do
+	Eff.effBase $ putStrLn "writeImage1 begin"
+	img <- Eff.effBase $ Image.new @IO
+		(fromIntegral $ fctlWidth fctl)
+		(fromIntegral $ fctlHeight fctl)
+	Eff.effBase $ putStrLn "before modifyIORef"
+	Eff.effBase $ modifyIORef imgs (img :)
+	doWhile' do
+		d <- Pipe.await
+		case d of
+			BodyFctl fctl' -> do
+				Eff.effBase $ putStrLn "writeImage1 end"
+				pure $ Just (Just fctl')
+			BodyRgba rgba -> do
+				Pipe.yield rgba
+				pure Nothing
+			BodyNull -> pure Nothing
+			BodyEnd -> do
+				Eff.effBase $ putStrLn "writeImage1 end"
+				pure $ Just Nothing
+
+whileWithMeta :: Monad m => (meta -> m (Maybe meta)) -> meta -> m ()
+whileWithMeta act meta = act meta >>= \case
+	Nothing -> pure ()
+	Just meta' -> whileWithMeta act meta'
