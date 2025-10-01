@@ -63,11 +63,14 @@ headerToHeights h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
 	adam7heights . fromIntegral $ headerHeight h
 
 headerToSizes :: Header -> [(Int, Int)]
-headerToSizes h@Header { headerInterlaceMethod = InterlaceMethodNon } =
-	[(fromIntegral $ headerWidth h, fromIntegral $ headerHeight h)]
-headerToSizes h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
-	adam7Sizes	(fromIntegral $ headerWidth h)
-			(fromIntegral $ headerHeight h)
+headerToSizes hdr = calcSizes hdr (headerWidth hdr) (headerHeight hdr)
+
+calcSizes :: Header -> Word32 -> Word32 -> [(Int, Int)]
+calcSizes Header { headerInterlaceMethod = InterlaceMethodNon } w h =
+	[(fromIntegral w, fromIntegral w)]
+calcSizes Header { headerInterlaceMethod = InterlaceMethodAdam7 } w h =
+	adam7Sizes	(fromIntegral w)
+			(fromIntegral h)
 
 adam7heights :: Int -> [Int]
 adam7heights h = [
