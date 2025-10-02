@@ -86,6 +86,7 @@ main = do
 							Pipe.yield rgba
 							pure True
 						BodyNull -> pure True
+						BodyFdatEnd -> pure True
 			Pipe.=$= pipeZip (Header.headerToPoss hdr)
 			Pipe.=$= forever do
 				clrs <- Pipe.await

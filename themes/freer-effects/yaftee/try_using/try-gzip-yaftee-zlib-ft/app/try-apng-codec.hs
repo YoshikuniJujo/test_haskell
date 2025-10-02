@@ -175,6 +175,7 @@ writeImage1 fctls imgs fctl = do
 				Pipe.yield rgba
 				pure Nothing
 			BodyNull -> pure Nothing
+			BodyFdatEnd -> pure Nothing
 			BodyEnd -> do
 				Eff.effBase $ putStrLn "writeImage1 end"
 				pure $ Just Nothing

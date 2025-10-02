@@ -134,6 +134,7 @@ apngPipe nm hdr ibd obd = void $ Steps.chunk nm
 			Pipe.yield $ BodyFctl fctl
 			Unfilter.pngUnfilter'' hdr (fromIntegral $ fctlHeight fctl)
 				Pipe.=$= PipeT.convert (BodyRgba . Header.word8ListToRgbaList @Double hdr)
+			Pipe.yield BodyFdatEnd
 		Pipe.yield BodyEnd
 
 until123 :: U.Member Pipe.P effs => Eff.E effs BSF.ByteString o ()
@@ -161,7 +162,7 @@ printOneChunk nm (Steps.Chunk { Steps.chunkName = "fcTL" }) bs = do
 printOneChunk _ _ _ = pure ()
 
 data Body
-	= BodyNull | BodyEnd
+	= BodyNull | BodyEnd | BodyFdatEnd
 	| BodyFctl Fctl | BodyRgba [Rgba Double] deriving Show
 
 instance PngE.Datable Body where

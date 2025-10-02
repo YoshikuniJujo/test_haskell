@@ -143,6 +143,7 @@ writeImages imgs = do
 				Pipe.yield rgba
 				pure True
 			BodyNull -> pure True
+			BodyFdatEnd -> pure True
 
 firstFctl :: U.Member Pipe.P m => Eff.E m Body o Fctl
 firstFctl = doWhile' $ Pipe.await >>= \case
