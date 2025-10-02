@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-05-20
+snapshot: nightly-2025-10-02
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: e8985fdb3a87194ee4d279d12a9df6581362b880
+    commit: fa61f3dc7e0ff924e99a26f146f9d0f4e9f22402
     subdirs:
       - themes/freer-effects/yaftee/try-higher-order-freer-monad
       - themes/freer-effects/yaftee/try-higher-order-open-union
