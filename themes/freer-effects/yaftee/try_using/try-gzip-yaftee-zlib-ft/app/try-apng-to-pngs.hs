@@ -18,6 +18,7 @@ import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
+import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
@@ -79,7 +80,9 @@ main = do
 				fctl0 <- firstFctl
 				whileWithMeta (writeImage1 fctls imgs) fctl0
 			Pipe.=$= do
+				IO.print @FrameNumber =<< State.getN "foobar"
 				[] <- Pipe.await
+				IO.print @FrameNumber =<< State.getN "foobar"
 				fctl0 : _ <- Eff.effBase $ readIORef fctls
 				pipeZip $ (0 ,) <$> (fctlPoss hdr fctl0)
 				[] <- Pipe.await
@@ -91,7 +94,9 @@ main = do
 					img <- (!! n) <$> Eff.effBase (readIORef imgs)
 					Eff.effBase $ Image.write @IO img x y clr) `mapM_` clrs
 				Pipe.yield (fst <$> clrs)
-			Pipe.=$= PipeIO.print'
+			Pipe.=$= do
+				PipeIO.print'
+				IO.print @FrameNumber =<< State.getN "foobar"
 
 	print =<< length <$> readIORef imgs
 
