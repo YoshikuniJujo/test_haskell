@@ -23,6 +23,7 @@ import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.Foldable
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Color
 import Data.Image.Simple qualified as Image
@@ -78,16 +79,19 @@ main = do
 			Pipe.=$= apngPipe "foobar" hdr ibd obd
 			Pipe.=$= do
 				fctl0 <- firstFctl
+				Pipe.yield []
 				whileWithMeta (writeImage1 fctls imgs) fctl0
 			Pipe.=$= do
-				IO.print @FrameNumber =<< State.getN "foobar"
 				[] <- Pipe.await
 				IO.print @FrameNumber =<< State.getN "foobar"
-				fctl0 : _ <- Eff.effBase $ readIORef fctls
-				pipeZip $ (0 ,) <$> (fctlPoss hdr fctl0)
-				[] <- Pipe.await
-				_ : fctl1 : _ <- Eff.effBase $ readIORef fctls
-				pipeZip $ (1 ,) <$> (fctlPoss hdr fctl1)
+				FrameNumber fn <- State.getN "foobar"
+
+				for_ [0 .. fn - 1] \n -> do
+
+					[] <- Pipe.await
+					fctl0 <- (!! n) <$> Eff.effBase (readIORef fctls)
+					pipeZip $ (n ,) <$> (fctlPoss hdr fctl0)
+
 			Pipe.=$= forever do
 				clrs <- Pipe.await
 				(\(clr, (n, (x, y))) -> do
