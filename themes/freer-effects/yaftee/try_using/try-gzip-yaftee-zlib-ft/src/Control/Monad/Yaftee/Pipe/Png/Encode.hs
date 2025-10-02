@@ -286,7 +286,10 @@ pipeDat :: forall nm m -> (
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
 	Eff.E es a BSF.ByteString ()
 pipeDat nm m hdr w h ibe obe = void $
-	PipeT.convert (toDat hdr)
+	(fix \go -> do
+		x <- Pipe.await
+		if endDat x then pure () else Pipe.yield x >> go)
+	Pipe.=$= PipeT.convert (toDat hdr)
 	Pipe.=$= do
 		bs0 <- Pipe.await
 		Unfilter.pngFilter hdr bs0 $ Header.calcSizes hdr w h
@@ -296,8 +299,10 @@ pipeDat nm m hdr w h ibe obe = void $
 
 class Datable a where
 	isDat :: a -> Bool
+	endDat :: a -> Bool
 	toDat :: Header.Header -> a -> BSF.ByteString
 
 instance Datable BSF.ByteString where
 	isDat = const True
+	endDat = const False
 	toDat _ = id

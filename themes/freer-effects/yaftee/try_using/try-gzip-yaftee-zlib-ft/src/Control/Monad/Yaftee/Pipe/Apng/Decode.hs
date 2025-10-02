@@ -167,6 +167,7 @@ data Body
 
 instance PngE.Datable Body where
 	isDat (BodyRgba _) = True
+	endDat BodyFdatEnd = True
 	toDat hdr (BodyRgba rgba) = BSF.pack $ Header.rgbaListToWord8List hdr rgba
 
 data Fctl = Fctl {
