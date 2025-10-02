@@ -56,6 +56,7 @@ main = do
 			Pipe.=$= Png.decodeHeader "foobar"
 	hClose hh
 
+	rfn <- newIORef 0
 	imgs <- newIORef []
 	fctls <- newIORef []
 
@@ -101,45 +102,14 @@ main = do
 			Pipe.=$= do
 				PipeIO.print'
 				IO.print @FrameNumber =<< State.getN "foobar"
+				FrameNumber n <- State.getN "foobar"
+				Eff.effBase $ writeIORef rfn n
 
 	print =<< length <$> readIORef imgs
 
-	ho <- openFile fpo WriteMode
-	img <- (!! 0) <$> readIORef imgs
-	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
-		. Buffer.run @"barbaz" @BSF.ByteString
-		. PipeZ.run @"barbaz"
-		. Pipe.run
-		. (`Except.catch` IO.putStrLn)
-		. void $ fromImage @Double IO img (Header.headerToPoss' hdr)
-			Pipe.=$= Encode.encodeRgba "barbaz" IO hdr ibe obe
-			Pipe.=$= PipeT.convert BSF.toStrict
-			Pipe.=$= PipeBS.hPutStr ho
-	hClose ho
+	fn <- readIORef rfn
 
-	let	(fpbd, fpex) = splitExtension fpo
-		fpo01 = fpbd ++ "-01" <.> fpex
-
-	ho' <- openFile fpo01 WriteMode
-	img1 <- (!! 1) <$> readIORef imgs
-	fctl1 <- (!! 1) <$> readIORef fctls
-	print fctl1
-	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
-		. Buffer.run @"barbaz" @BSF.ByteString
-		. PipeZ.run @"barbaz"
-		. Pipe.run
-		. (`Except.catch` IO.putStrLn)
-		. void $ fromImage @Double IO img1 (fctlPoss' hdr fctl1)
---			Pipe.=$= Encode.encodeRgbaCalc "barbaz" IO
-			Pipe.=$= Encode.encodeRgba "barbaz" IO
-				hdr {
-					Header.headerWidth = fctlWidth fctl1,
-					Header.headerHeight = fctlHeight fctl1 }
---				(fctlWidth fctl1) (fctlHeight fctl1)
-				ibe obe
-			Pipe.=$= PipeT.convert BSF.toStrict
-			Pipe.=$= PipeBS.hPutStr ho'
-	hClose ho'
+	for_ [0 .. fn - 1] $ writePng fpo hdr fctls imgs ibe obe
 
 doWhile :: Monad m => m Bool -> m ()
 doWhile act = do
@@ -212,3 +182,30 @@ whileWithMeta :: Monad m => (meta -> m (Maybe meta)) -> meta -> m ()
 whileWithMeta act meta = act meta >>= \case
 	Nothing -> pure ()
 	Just meta' -> whileWithMeta act meta'
+
+writePng fpo hdr fctls imgs ibe obe n = do
+	let	(fpbd, fpex) = splitExtension fpo
+		fpo01 = fpbd ++ "-" ++ showN 2 n <.> fpex
+	ho' <- openFile fpo01 WriteMode
+	img1 <- (!! n) <$> readIORef imgs
+	fctl1 <- (!! n) <$> readIORef fctls
+	print fctl1
+	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. Buffer.run @"barbaz" @BSF.ByteString
+		. PipeZ.run @"barbaz"
+		. Pipe.run
+		. (`Except.catch` IO.putStrLn)
+		. void $ fromImage @Double IO img1 (fctlPoss' hdr fctl1)
+			Pipe.=$= Encode.encodeRgba "barbaz" IO
+				hdr {
+					Header.headerWidth = fctlWidth fctl1,
+					Header.headerHeight = fctlHeight fctl1 }
+				ibe obe
+			Pipe.=$= PipeT.convert BSF.toStrict
+			Pipe.=$= PipeBS.hPutStr ho'
+	hClose ho'
+
+showN :: (Integral n, Show n) => Int -> n -> String
+showN ln n = replicate (ln - length s) '0' ++ s
+	where
+	s = show n
