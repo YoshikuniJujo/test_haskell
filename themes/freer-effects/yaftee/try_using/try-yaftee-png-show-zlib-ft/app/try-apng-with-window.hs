@@ -131,6 +131,9 @@ main = do
 						IO.print (wdt, hgt)
 						PipeT.convert (\(Apng.BodyRgba r) -> r) Pipe.=$= drawColor' img yss xss
 							(G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
+
+						Apng.BodyFdatEnd <- Pipe.await
+						pure ()
 		
 		hClose h
 
