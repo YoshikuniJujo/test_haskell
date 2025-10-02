@@ -15,7 +15,9 @@ module Control.Monad.Yaftee.Pipe.Png.Encode (
 
 	encodeRgbaCalc,
 
-	Chunk(..)
+	Chunk(..),
+
+	pipeDat, Datable(..)
 
 	) where
 
@@ -33,8 +35,6 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
 import Data.Bits
-import Data.MonoTraversable
-import Data.Vector qualified as V
 import Data.Word
 import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree qualified as BSF
@@ -109,7 +109,7 @@ encodeGrayAlpha nm m hdr ibe obe =
 		Pipe.=$= encodeRaw nm m hdr Nothing ibe obe
 
 encodePalette :: forall nm m -> (
-	PrimBase m, RealFrac d, U.Member Pipe.P es,
+	PrimBase m, U.Member Pipe.P es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
 	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es,
@@ -138,6 +138,7 @@ grayAlphaToWords :: RealFrac d => Header.Header -> [GrayAlpha d] -> [Word8]
 grayAlphaToWords = \case
 	Header.Header { Header.headerBitDepth = 8 } -> grayAlphasToWords8
 	Header.Header { Header.headerBitDepth = 16 } -> grayAlphasToWords16
+	_ -> error "Control.Monad.Yaftee.Pipe.Png.Encode.grayAlphaToWords: no such bit depth"
 
 graysToWords1 :: RealFrac d => [Gray d] -> [Word8]
 graysToWords1 [] = []
@@ -220,13 +221,7 @@ encodeRawCalc :: forall nm m -> (
 	Eff.E es BSF.ByteString BSF.ByteString ()
 encodeRawCalc nm m hdr w h mplt ibe obe = void $
 -- MAKE IDAT
-
-		do
-			bs0 <- Pipe.await
-			Unfilter.pngFilter hdr bs0 $ Header.calcSizes hdr w h
-		Pipe.=$= PipeT.convert BSF.pack
-		Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
-		Pipe.=$= Buffer.format' nm BSF.splitAt' "" 5000
+		pipeDat nm m hdr w h ibe obe
 
 -- MAKE CHUNKS
 
@@ -277,3 +272,32 @@ sampleOptions = PipeZ.DeflateOptions {
 	PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
 	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
 	PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
+
+pipeDat :: forall nm m -> (
+	Datable a,
+	PrimBase m,
+	U.Member Pipe.P es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
+	U.Base (U.FromFirst m) es
+	) =>
+	Header.Header -> Word32 -> Word32 ->
+	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	Eff.E es a BSF.ByteString ()
+pipeDat nm m hdr w h ibe obe = void $
+	PipeT.convert (toDat hdr)
+	Pipe.=$= do
+		bs0 <- Pipe.await
+		Unfilter.pngFilter hdr bs0 $ Header.calcSizes hdr w h
+	Pipe.=$= PipeT.convert BSF.pack
+	Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
+	Pipe.=$= Buffer.format' nm BSF.splitAt' "" 5000
+
+class Datable a where
+	isDat :: a -> Bool
+	toDat :: Header.Header -> a -> BSF.ByteString
+
+instance Datable BSF.ByteString where
+	isDat = const True
+	toDat _ = id

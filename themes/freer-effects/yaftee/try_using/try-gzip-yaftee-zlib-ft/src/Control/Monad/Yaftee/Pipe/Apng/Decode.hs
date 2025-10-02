@@ -38,6 +38,8 @@ import Data.Png.Header qualified as Header
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
+import Control.Monad.Yaftee.Pipe.Png.Encode qualified as PngE
+
 type ApngStates nm =
 	State.Named nm (Maybe PipeZ.ByteString) ':
 	Steps.ChunkStates nm `Append` '[
@@ -161,6 +163,10 @@ printOneChunk _ _ _ = pure ()
 data Body
 	= BodyNull | BodyEnd
 	| BodyFctl Fctl | BodyRgba [Rgba Double] deriving Show
+
+instance PngE.Datable Body where
+	isDat (BodyRgba _) = True
+	toDat hdr (BodyRgba rgba) = BSF.pack $ Header.rgbaListToWord8List hdr rgba
 
 data Fctl = Fctl {
 	fctlSequenceNumber :: Word32,
