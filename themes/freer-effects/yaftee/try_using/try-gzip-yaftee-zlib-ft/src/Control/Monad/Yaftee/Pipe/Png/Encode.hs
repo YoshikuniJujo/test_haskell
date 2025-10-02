@@ -250,6 +250,7 @@ encodeRawCalc nm m hdr w h mplt ibe obe = void $
 				Nothing -> pure ()
 				Just bd -> (>> go) $ Pipe.yield Chunk {
 					chunkName = "IDAT", chunkBody = bd }
+
 			Pipe.yield Chunk {
 				chunkName = "IEND", chunkBody = "" }
 		Pipe.=$= do

@@ -109,7 +109,8 @@ main = do
 
 	fn <- readIORef rfn
 
-	for_ [0 .. fn - 1] $ writePng fpo hdr fctls imgs ibe obe
+	for_ (zip [0 .. fn - 1] (filePath fpo <$> [0 ..])) \(n, fpp) ->
+		writePng fpp hdr fctls imgs ibe obe n
 
 doWhile :: Monad m => m Bool -> m ()
 doWhile act = do
@@ -183,27 +184,29 @@ whileWithMeta act meta = act meta >>= \case
 	Nothing -> pure ()
 	Just meta' -> whileWithMeta act meta'
 
-writePng fpo hdr fctls imgs ibe obe n = do
-	let	(fpbd, fpex) = splitExtension fpo
-		fpo01 = fpbd ++ "-" ++ showN 2 n <.> fpex
-	ho' <- openFile fpo01 WriteMode
-	img1 <- (!! n) <$> readIORef imgs
-	fctl1 <- (!! n) <$> readIORef fctls
-	print fctl1
+writePng fpp hdr fctls imgs ibe obe n = do
+	ho <- openFile fpp WriteMode
+	img <- (!! n) <$> readIORef imgs
+	fctl <- (!! n) <$> readIORef fctls
+
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Buffer.run @"barbaz" @BSF.ByteString
 		. PipeZ.run @"barbaz"
 		. Pipe.run
 		. (`Except.catch` IO.putStrLn)
-		. void $ fromImage @Double IO img1 (fctlPoss' hdr fctl1)
+		. void $ fromImage @Double IO img (fctlPoss' hdr fctl)
 			Pipe.=$= Encode.encodeRgba "barbaz" IO
 				hdr {
-					Header.headerWidth = fctlWidth fctl1,
-					Header.headerHeight = fctlHeight fctl1 }
+					Header.headerWidth = fctlWidth fctl,
+					Header.headerHeight = fctlHeight fctl }
 				ibe obe
 			Pipe.=$= PipeT.convert BSF.toStrict
-			Pipe.=$= PipeBS.hPutStr ho'
-	hClose ho'
+			Pipe.=$= PipeBS.hPutStr ho
+
+	hClose ho
+
+filePath fpo n = fpbd ++ "-" ++ showN 2 n <.> fpex
+	where (fpbd, fpex) = splitExtension fpo
 
 showN :: (Integral n, Show n) => Int -> n -> String
 showN ln n = replicate (ln - length s) '0' ++ s
