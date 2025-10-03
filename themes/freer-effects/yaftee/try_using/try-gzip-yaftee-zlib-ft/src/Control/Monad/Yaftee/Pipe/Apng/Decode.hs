@@ -9,7 +9,7 @@
 
 module Control.Monad.Yaftee.Pipe.Apng.Decode (
 	apngRun_, ApngStates, apngPipe, ApngMembers,
-	FrameNumber(..), Body(..), Fctl(..),
+	FrameNumber(..), Body(..), Fctl(..), encodeFctl,
 	fctlPoss, fctlPoss' ) where
 
 import Control.Arrow
@@ -202,6 +202,14 @@ decodeFctl bs = do
 		fctlXOffset = x, fctlYOffset = y,
 		fctlDelayNum = dn, fctlDelayDen = dd,
 		fctlDisposeOp = dpo, fctlBlendOp = blo }
+
+encodeFctl :: Fctl -> BSF.ByteString
+encodeFctl c =
+	BSF.fromBitsBE' (fctlSequenceNumber c) <>
+	BSF.fromBitsBE' (fctlWidth c) <> BSF.fromBitsBE' (fctlHeight c) <>
+	BSF.fromBitsBE' (fctlXOffset c) <> BSF.fromBitsBE' (fctlYOffset c) <>
+	BSF.fromBitsBE' (fctlDelayNum c) <> BSF.fromBitsBE' (fctlDelayDen c) <>
+	BSF.fromBitsBE' (fctlDisposeOp c) <> BSF.fromBitsBE' (fctlBlendOp c)
 
 splitBits ::
 	forall b . FiniteBits b => BSF.ByteString -> Maybe (b, BSF.ByteString)
