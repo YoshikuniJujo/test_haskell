@@ -19,7 +19,9 @@ module Control.Monad.Yaftee.Pipe.Png.Encode (
 
 	pipeDat, Datable(..),
 
-	Rgbas(..)
+	Rgbas(..),
+
+	toDat
 
 	) where
 

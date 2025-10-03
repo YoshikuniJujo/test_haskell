@@ -26,6 +26,7 @@ import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Foldable
+import Data.Bool
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Color
 import Data.Image.Simple qualified as Image
@@ -51,6 +52,8 @@ import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree.Bits qualified as BSF
 import Control.Monad.Yaftee.Pipe.Png.Palette qualified as Palette
 import Data.Png qualified as Png
+import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
+import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 main :: IO ()
 main = do
@@ -183,6 +186,7 @@ hWritePng :: (Monad m, U.Base (U.FromFirst IO) '[U.FromFirst m]) =>
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> m ()
 hWritePng ho hdr fctl img ibe obe =
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. Fail.run
 		. Buffer.run @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
 		. Pipe.run $ hWritePngPipe ho hdr fctl img ibe obe
 
@@ -191,18 +195,44 @@ hWritePngPipe :: (
 	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member U.Fail es,
 	U.Base IO.I es ) =>
 	Handle -> Header.Header -> Fctl -> Image.I RealWorld ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es i o ()
 hWritePngPipe ho hdr fctl img ibe obe = (`Except.catch` IO.putStrLn)
-	. void $ fromImage @Double IO img (fctlPoss' hdr fctl)
-		Pipe.=$= PipeT.convert BodyRgba
-
+	. void $ fromFctlImage IO hdr fctl img
 		Pipe.=$= encodeApng hdr fctl ibe obe
 
 		Pipe.=$= PipeT.convert BSF.toStrict
 		Pipe.=$= PipeBS.hPutStr ho
+
+fromFctlImage :: forall m -> (
+	PrimMonad m,
+	U.Member Pipe.P es,
+	U.Base (U.FromFirst m) es
+	) =>
+	Header.Header ->
+	Fctl ->
+	Image.I (PrimState m) ->
+	Eff.E es i Body ()
+fromFctlImage m hdr fctl img = do
+	Pipe.yield $ BodyFctl fctl
+	fromImage' m fctl img (fctlPoss' hdr fctl)
+
+fromImage' :: forall m -> (
+	PrimMonad m,
+	U.Member Pipe.P es,
+	U.Base (U.FromFirst m) es
+	) =>
+	Fctl ->
+	Image.I (PrimState m) -> [[(Int, Int)]] ->
+	Eff.E es i Body ()
+fromImage' m fctl img = \case
+	[] -> pure ()
+	ps : pss -> do
+		Pipe.yield . BodyRgba =<< (\(x, y) -> Eff.effBase $ Image.read @m img x y) `mapM` ps
+		fromImage' m fctl img pss
 
 encodeApng :: (
 	U.Member Pipe.P es,
@@ -210,6 +240,7 @@ encodeApng :: (
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
 	U.Member (Except.E String) es,
 	U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member U.Fail es,
 	U.Base (U.FromFirst IO) es ) =>
 	Header.Header -> Fctl ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
@@ -218,7 +249,6 @@ encodeApng hdr fctl ibe obe =
 	encodeRawCalc "barbaz" IO hdr {
 		Header.headerWidth = fctlWidth fctl,
 		Header.headerHeight = fctlHeight fctl }
-		fctl
 		(fctlWidth fctl) (fctlHeight fctl)
 		Nothing ibe obe
 
@@ -230,60 +260,56 @@ showN :: Show n => Int -> n -> String
 showN ln n = replicate (ln - length s) '0' ++ s where s = show n
 
 encodeRawCalc :: forall nm m -> (
-	Encode.Datable a,
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
 	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
+	U.Member U.Fail es,
 	U.Base (U.FromFirst m) es
 	) =>
-	Header.Header -> Fctl ->
+	Header.Header ->
 	Word32 -> Word32 -> Maybe Palette.Palette ->
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
-	Eff.E es a BSF.ByteString ()
-encodeRawCalc nm m hdr fctl w h mplt ibe obe = void $
+	Eff.E es Body BSF.ByteString ()
+encodeRawCalc nm m hdr w h mplt ibe obe = void $
 -- MAKE IDAT
-		Encode.pipeDat nm m hdr w h ibe obe
+	forever do
+		BodyFctl fctl <- Pipe.await
+		Pipe.yield . Chunk "fcTL" $ encodeFctl fctl {
+			fctlSequenceNumber = 0,
+			fctlXOffset = 0, fctlYOffset = 0 }
+		pipeDat nm m False hdr w h ibe obe
 
 -- MAKE CHUNKS
 
-		Pipe.=$= do
-			let	bd'' = Header.encodeHeader hdr
-			Pipe.yield $ Chunk {
-				chunkName = "IHDR",
-				chunkBody = BSF.fromStrict bd'' }
+	Pipe.=$= do
+		let	bd'' = Header.encodeHeader hdr
+		Pipe.yield $ Chunk {
+			chunkName = "IHDR",
+			chunkBody = BSF.fromStrict bd'' }
 
-			case mplt of
-				Nothing -> pure ()
-				Just plt -> Pipe.yield $ Chunk {
-					chunkName = "PLTE",
-					chunkBody = Palette.encodePalette plt }
+		case mplt of
+			Nothing -> pure ()
+			Just plt -> Pipe.yield $ Chunk {
+				chunkName = "PLTE",
+				chunkBody = Palette.encodePalette plt }
 
-			Pipe.yield $ Chunk {
-				chunkName = "acTL",
-				chunkBody = encodeActl $ Actl 1 1 }
+		Pipe.yield $ Chunk {
+			chunkName = "acTL",
+			chunkBody = encodeActl $ Actl 1 1 }
 
-			Pipe.yield $ Chunk {
-				chunkName = "fcTL",
-				chunkBody = encodeFctl fctl {
-					fctlSequenceNumber = 0,
-					fctlXOffset = 0, fctlYOffset = 0 } }
+		bd0 <- Pipe.await
+		Pipe.yield bd0
+		fix \go -> Pipe.awaitMaybe >>= \case
+			Nothing -> pure ()
+			Just bd -> (>> go) $ Pipe.yield bd
 
-			bd0 <- Pipe.await
-			Pipe.yield $ Chunk {
-				chunkName = "IDAT",
-				chunkBody = bd0 }
-			fix \go -> Pipe.awaitMaybe >>= \case
-				Nothing -> pure ()
-				Just bd -> (>> go) $ Pipe.yield Chunk {
-					chunkName = "IDAT", chunkBody = bd }
-
-			Pipe.yield Chunk {
-				chunkName = "IEND", chunkBody = "" }
-		Pipe.=$= do
-			Pipe.yield Png.fileHeader
-			PipeT.convert chunkToByteString
+		Pipe.yield Chunk {
+			chunkName = "IEND", chunkBody = "" }
+	Pipe.=$= do
+		Pipe.yield Png.fileHeader
+		PipeT.convert chunkToByteString
 
 data Chunk = Chunk {
 	chunkName :: BSF.ByteString,
@@ -297,3 +323,37 @@ chunkToByteString Chunk { chunkName = nm, chunkBody = bd } =
 	ln = fromIntegral @_ @Word32 $ BSF.length bd
 	nmbd = nm <> bd
 	crc = Crc32.complement $ BSF.foldl' Crc32.step Crc32.initial nmbd
+
+pipeDat :: forall nm m -> (
+	Encode.Datable a,
+	PrimBase m,
+	U.Member Pipe.P es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
+	U.Base (U.FromFirst m) es
+	) =>
+	Bool ->
+	Header.Header -> Word32 -> Word32 ->
+	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	Eff.E es a Chunk ()
+pipeDat nm m iorf hdr w h ibe obe = void $
+	(fix \go -> do
+		x <- Pipe.await
+		if Encode.endDat x then pure () else Pipe.yield x >> go)
+	Pipe.=$= PipeT.convert (Encode.toDat hdr)
+	Pipe.=$= do
+		bs0 <- Pipe.await
+		Unfilter.pngFilter hdr bs0 $ Header.calcSizes hdr w h
+	Pipe.=$= PipeT.convert BSF.pack
+	Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
+	Pipe.=$= Buffer.format' nm BSF.splitAt' "" 5000
+	Pipe.=$= PipeT.convert (Chunk $ bool "IDAT" "fdAT" iorf)
+
+sampleOptions :: PipeZ.DeflateOptions
+sampleOptions = PipeZ.DeflateOptions {
+	PipeZ.deflateOptionsCompressionLevel = Zlib.DefaultCompression,
+	PipeZ.deflateOptionsCompressionMethod = Zlib.Deflated,
+	PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
+	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
+	PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
