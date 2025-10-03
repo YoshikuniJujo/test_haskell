@@ -9,7 +9,7 @@
 
 module Control.Monad.Yaftee.Pipe.Apng.Decode (
 	apngRun_, ApngStates, apngPipe, ApngMembers,
-	FrameNumber(..), Body(..), Fctl(..), encodeFctl,
+	FrameNumber(..), Body(..), Fctl(..), encodeFctl, Actl(..), encodeActl,
 	fctlPoss, fctlPoss' ) where
 
 import Control.Arrow
@@ -215,3 +215,10 @@ splitBits ::
 	forall b . FiniteBits b => BSF.ByteString -> Maybe (b, BSF.ByteString)
 splitBits bs =
 	(BSF.toBitsBE `first`) <$> BSF.splitAt' (finiteBitSize @b undefined `div` 8) bs
+
+data Actl = Actl {
+	actlFrames :: Word32,
+	actlPlays :: Word32 } deriving Show
+
+encodeActl :: Actl -> BSF.ByteString
+encodeActl c = BSF.fromBitsBE' (actlFrames c) <> BSF.fromBitsBE' (actlPlays c)
