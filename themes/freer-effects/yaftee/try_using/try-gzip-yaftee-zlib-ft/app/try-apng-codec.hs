@@ -109,41 +109,14 @@ main = do
 
 	fn <- readIORef rfn
 
-	for_ (zip [0 .. fn - 1] (filePath fpo <$> [0 ..])) \(n, fpp) ->
+	for_ (zip [0 .. fn - 1] (filePath fpo <$> [0 :: Int ..])) \(n, fpp) ->
 		writePng fpp hdr fctls imgs ibe obe n
-
-doWhile :: Monad m => m Bool -> m ()
-doWhile act = do
-	b <- act
-	when b $ doWhile act
 
 doWhile' :: Monad m => m (Maybe a) -> m a
 doWhile' act = act >>= \case
 	Nothing -> doWhile' act
 	Just r -> pure r
 
-
-writeImages :: (U.Member Pipe.P m, U.Base (U.FromFirst IO) m) =>
-	IORef [Image.I RealWorld] -> Eff.E m Body [Rgba Double] ()
-writeImages imgs = do
-	doWhile do
-		d <- Pipe.await
-		case d of
-			BodyFctl fctl -> do
-				img <- Eff.effBase $ Image.new @IO
-					(fromIntegral $ fctlWidth fctl)
-					(fromIntegral $ fctlHeight fctl)
-				Eff.effBase $ writeIORef imgs [img]
-				pure False
-			_ -> pure True
-	doWhile do
-		d <- Pipe.await
-		case d of
-			BodyFctl _ -> pure False
-			BodyRgba rgba -> do
-				Pipe.yield rgba
-				pure True
-			BodyNull -> pure True
 
 firstFctl :: U.Member Pipe.P m => Eff.E m Body o Fctl
 firstFctl = doWhile' $ Pipe.await >>= \case
@@ -163,7 +136,6 @@ writeImage1 fctls imgs fctl = do
 	Eff.effBase $ putStrLn "before modifyIORef"
 	Eff.effBase $ modifyIORef fctls (++ [fctl])
 	Eff.effBase $ modifyIORef imgs (++ [img])
---	Eff.effBase $ modifyIORef imgs (img :)
 	Pipe.yield []
 	doWhile' do
 		d <- Pipe.await
@@ -185,31 +157,50 @@ whileWithMeta act meta = act meta >>= \case
 	Nothing -> pure ()
 	Just meta' -> whileWithMeta act meta'
 
+writePng ::
+	FilePath -> Header.Header ->
+	IORef [Fctl] -> IORef [Image.I RealWorld] ->
+	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> Int -> IO ()
 writePng fpp hdr fctls imgs ibe obe n = do
 	ho <- openFile fpp WriteMode
-	img <- (!! n) <$> readIORef imgs
 	fctl <- (!! n) <$> readIORef fctls
+	img <- (!! n) <$> readIORef imgs
 
-	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
-		. Buffer.run @"barbaz" @BSF.ByteString
-		. PipeZ.run @"barbaz"
-		. Pipe.run
-		. (`Except.catch` IO.putStrLn)
-		. void $ fromImage @Double IO img (fctlPoss' hdr fctl)
-			Pipe.=$= Encode.encodeRgba "barbaz" IO
-				hdr {
-					Header.headerWidth = fctlWidth fctl,
-					Header.headerHeight = fctlHeight fctl }
-				ibe obe
-			Pipe.=$= PipeT.convert BSF.toStrict
-			Pipe.=$= PipeBS.hPutStr ho
+	hWritePng ho hdr fctl img ibe obe
 
 	hClose ho
 
+hWritePng :: (Monad m, U.Base (U.FromFirst IO) '[U.FromFirst m]) =>
+	Handle -> Header.Header -> Fctl -> Image.I RealWorld ->
+	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> m ()
+hWritePng ho hdr fctl img ibe obe =
+	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+		. Buffer.run @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
+		. Pipe.run $ hWritePngPipe ho hdr fctl img ibe obe
+
+hWritePngPipe :: (
+	U.Member Pipe.P es,
+	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
+	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
+	U.Base IO.I es ) =>
+	Handle -> Header.Header -> Fctl -> Image.I RealWorld ->
+	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
+	Eff.E es i o ()
+hWritePngPipe ho hdr fctl img ibe obe = (`Except.catch` IO.putStrLn)
+	. void $ fromImage @Double IO img (fctlPoss' hdr fctl)
+		Pipe.=$= PipeT.convert BodyRgba
+		Pipe.=$= Encode.encodeRaw "barbaz" IO
+			hdr {
+				Header.headerWidth = fctlWidth fctl,
+				Header.headerHeight = fctlHeight fctl }
+			Nothing ibe obe
+		Pipe.=$= PipeT.convert BSF.toStrict
+		Pipe.=$= PipeBS.hPutStr ho
+
+filePath :: FilePath -> Int -> FilePath
 filePath fpo n = fpbd ++ "-" ++ showN 2 n <.> fpex
 	where (fpbd, fpex) = splitExtension fpo
 
-showN :: (Integral n, Show n) => Int -> n -> String
-showN ln n = replicate (ln - length s) '0' ++ s
-	where
-	s = show n
+showN :: Show n => Int -> n -> String
+showN ln n = replicate (ln - length s) '0' ++ s where s = show n

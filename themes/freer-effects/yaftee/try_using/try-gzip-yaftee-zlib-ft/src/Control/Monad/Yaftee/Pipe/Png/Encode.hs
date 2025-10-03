@@ -17,7 +17,9 @@ module Control.Monad.Yaftee.Pipe.Png.Encode (
 
 	Chunk(..),
 
-	pipeDat, Datable(..)
+	pipeDat, Datable(..),
+
+	Rgbas(..)
 
 	) where
 
@@ -57,10 +59,7 @@ encodeRgba :: forall nm m -> (
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
 	Eff.E es [Rgba d] BSF.ByteString ()
 encodeRgba nm m hdr ibe obe =
-	void $ PipeT.convert (Header.rgbaListToWord8List hdr)
-		Pipe.=$= PipeT.convert BSF.pack
-
-		Pipe.=$= encodeRaw nm m hdr Nothing ibe obe
+	void $ PipeT.convert Rgbas Pipe.=$= encodeRaw nm m hdr Nothing ibe obe
 
 encodeRgbaCalc :: forall nm m -> (
 	PrimBase m, RealFrac d, U.Member Pipe.P es,
@@ -195,6 +194,7 @@ grayAlphasToWords16 (GrayAlphaWord16 x a : gas) =
 	fromIntegral (a `shiftR` 8) : fromIntegral a : grayAlphasToWords16 gas
 
 encodeRaw :: forall nm m -> (
+	Datable a,
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
@@ -204,11 +204,12 @@ encodeRaw :: forall nm m -> (
 	) =>
 	Header.Header -> Maybe Palette.Palette ->
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
-	Eff.E es BSF.ByteString BSF.ByteString ()
+	Eff.E es a BSF.ByteString ()
 encodeRaw nm m hdr mplt ibe obe =
 	encodeRawCalc nm m hdr (Header.headerWidth hdr) (Header.headerHeight hdr) mplt ibe obe
 
 encodeRawCalc :: forall nm m -> (
+	Datable a,
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
@@ -218,7 +219,7 @@ encodeRawCalc :: forall nm m -> (
 	) =>
 	Header.Header -> Word32 -> Word32 -> Maybe Palette.Palette ->
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
-	Eff.E es BSF.ByteString BSF.ByteString ()
+	Eff.E es a BSF.ByteString ()
 encodeRawCalc nm m hdr w h mplt ibe obe = void $
 -- MAKE IDAT
 		pipeDat nm m hdr w h ibe obe
@@ -306,3 +307,11 @@ instance Datable BSF.ByteString where
 	isDat = const True
 	endDat = const False
 	toDat _ = id
+
+newtype Rgbas d = Rgbas [Rgba d]
+
+instance RealFrac d => Datable (Rgbas d) where
+	isDat = const True
+	endDat = const False
+	toDat hdr (Rgbas rgbas) =
+		BSF.pack $ Header.rgbaListToWord8List hdr rgbas

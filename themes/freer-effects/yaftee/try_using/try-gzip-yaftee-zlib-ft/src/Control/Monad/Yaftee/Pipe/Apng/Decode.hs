@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
@@ -167,7 +167,7 @@ data Body
 
 instance PngE.Datable Body where
 	isDat (BodyRgba _) = True
-	endDat BodyFdatEnd = True
+	endDat = \case BodyFdatEnd -> True; _ -> False
 	toDat hdr (BodyRgba rgba) = BSF.pack $ Header.rgbaListToWord8List hdr rgba
 
 data Fctl = Fctl {
