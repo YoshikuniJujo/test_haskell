@@ -111,8 +111,8 @@ main = do
 			n <- readIORef now
 			let	n' = (n + 1) `mod` fn
 			fctl <- (Map.! n') <$> readIORef fctls
-			threadDelay $ (fromIntegral (Apng.fctlDelayNum fctl) * 1000000 `div` fromIntegral (Apng.fctlDelayDen fctl))
 			writeIORef now n'
+			threadDelay $ (fromIntegral (Apng.fctlDelayNum fctl) * 1000000 `div` fromIntegral (Apng.fctlDelayDen fctl))
 			(G.idleAdd (\_ -> Gtk.Widget.queueDraw da >> pure False) Null)
 
 	forkIO do
