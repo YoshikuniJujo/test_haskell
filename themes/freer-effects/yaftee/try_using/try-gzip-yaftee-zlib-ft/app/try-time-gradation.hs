@@ -16,7 +16,6 @@ import Control.Monad.Primitive
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
-import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
@@ -40,8 +39,6 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
 import Control.Monad.Yaftee.Pipe.Apng.Decode
 
-import "try-gzip-yaftee-zlib-ft" Tools
-
 import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 
@@ -59,6 +56,11 @@ main :: IO ()
 main = do
 	fp : fpo : _ <- getArgs
 
+	imgs <- newIORef []
+	fctls <- newIORef []
+	ibe <- PipeZ.cByteArrayMalloc 64
+	obe <- PipeZ.cByteArrayMalloc 64
+
 	hh <- openFile fp ReadMode
 	Right hdr <- Eff.runM . Except.run @String
 		. Png.runHeader @"foobar" . Pipe.run
@@ -67,118 +69,72 @@ main = do
 			Pipe.=$= Png.decodeHeader "foobar"
 	hClose hh
 
-	rfn <- newIORef 0
-	imgs <- newIORef []
-	fctls <- newIORef []
-
 	print hdr
-
-	h <- openFile fp ReadMode
-	ibd <- PipeZ.cByteArrayMalloc 64
-	obd <- PipeZ.cByteArrayMalloc 64
-	ibe <- PipeZ.cByteArrayMalloc 64
-	obe <- PipeZ.cByteArrayMalloc 64
-
-	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
-		. Fail.runExc id id
-		. apngRun_ @"foobar"
-		. Pipe.run
-		. (`Fail.catch` IO.putStrLn)
-		. (`Except.catch` IO.print @Zlib.ReturnCode)
-		. (`Except.catch` IO.putStrLn)
-		. void $ PipeBS.hGet 32 h
-			Pipe.=$= PipeT.convert BSF.fromStrict
-			Pipe.=$= apngPipe "foobar" hdr ibd obd
-			Pipe.=$= do
-				fctl0 <- firstFctl
-				Pipe.yield []
-				whileWithMeta (writeImage1 fctls imgs) fctl0
-			Pipe.=$= do
-				[] <- Pipe.await
-				IO.print @FrameNumber =<< State.getN "foobar"
-				FrameNumber fn <- State.getN "foobar"
-
-				for_ [0 .. fn - 1] \n -> do
-
-					[] <- Pipe.await
-					fctl0 <- (!! n) <$> Eff.effBase (readIORef fctls)
-					pipeZip $ (n ,) <$> (fctlPoss hdr fctl0)
-
-			Pipe.=$= forever do
-				clrs <- Pipe.await
-				(\(clr, (n, (x, y))) -> do
-					img <- (!! n) <$> Eff.effBase (readIORef imgs)
-					Eff.effBase $ Image.write @IO img x y clr) `mapM_` clrs
-				Pipe.yield (fst <$> clrs)
-			Pipe.=$= do
-				PipeIO.print'
-				IO.print @FrameNumber =<< State.getN "foobar"
-				FrameNumber n <- State.getN "foobar"
-				Eff.effBase $ writeIORef rfn n
 
 	print =<< length <$> readIORef imgs
 
-	fn <- readIORef rfn
+	let	fn = 208
 
---	for_ (zip [0 .. fn - 1] (filePath fpo <$> [0 :: Int ..])) \(n, fpp) ->
-	for_ (zip [0 .. 0] (filePath fpo <$> [0 :: Int ..])) \(n, fpp) ->
-		writePng fpp hdr fctls imgs ibe obe n
+	imgs_ <- replicateM fn $ Image.new @IO 100 100
 
-doWhile' :: Monad m => m (Maybe a) -> m a
-doWhile' act = act >>= \case
-	Nothing -> doWhile' act
-	Just r -> pure r
+	writeIORef imgs imgs_
 
+	for_ [0 .. fn - 1] \n -> do
+		print n
+		img <- (!! n) <$> readIORef imgs
+		(\y -> (\x -> Image.write @IO img x y $ gradation n)
+				`mapM_` [0 .. 99]) `mapM_` [0 .. 99]
 
-firstFctl :: U.Member Pipe.P m => Eff.E m Body o Fctl
-firstFctl = doWhile' $ Pipe.await >>= \case
-	BodyFctl fctl -> pure $ Just fctl
-	_ -> pure Nothing
+	writeIORef fctls . sampleFctls $ fromIntegral fn
 
+	writePng (filePath fpo 0) hdr fctls imgs ibe obe
 
-writeImage1 :: (U.Member Pipe.P m, U.Base (U.FromFirst IO) m) =>
-	IORef [Fctl] ->
-	IORef [Image.I RealWorld] -> Fctl -> Eff.E m Body [Rgba Double] (Maybe Fctl)
-writeImage1 fctls imgs fctl = do
-	Eff.effBase $ putStrLn "writeImage1 begin"
-	Eff.effBase $ print fctl
-	img <- Eff.effBase $ Image.new @IO
-		(fromIntegral $ fctlWidth fctl)
-		(fromIntegral $ fctlHeight fctl)
-	Eff.effBase $ putStrLn "before modifyIORef"
-	Eff.effBase $ modifyIORef fctls (++ [fctl])
-	Eff.effBase $ modifyIORef imgs (++ [img])
-	Pipe.yield []
-	doWhile' do
-		d <- Pipe.await
-		case d of
-			BodyFctl fctl' -> do
-				Eff.effBase $ putStrLn "writeImage1 end"
-				pure $ Just (Just fctl')
-			BodyRgba rgba -> do
-				Pipe.yield rgba
-				pure Nothing
-			BodyNull -> pure Nothing
-			BodyFdatEnd -> pure Nothing
-			BodyEnd -> do
-				Eff.effBase $ putStrLn "writeImage1 end"
-				pure $ Just Nothing
+gradation :: Int -> Rgba Double
+gradation n
+	| 0 <= n && n < 52 = RgbaWord8 @Double
+		(5 * fromIntegral n)
+		0
+		(255 - 5 * fromIntegral n)
+		255
+	| 52 <= n && n < 104 = let n' = n - 52 in RgbaWord8 @Double
+		255
+		(5 * fromIntegral n')
+		0
+		255
+	| 104 <= n && n < 156 = let n' = n - 104 in RgbaWord8 @Double
+		(255 - 5 * fromIntegral n')
+		255
+		0
+		255
+	| 156 <= n && n < 208 = let n' = n - 156 in RgbaWord8 @Double
+		0
+		(255 - 5 * fromIntegral n')
+		(5 * fromIntegral n')
+		255
 
-whileWithMeta :: Monad m => (meta -> m (Maybe meta)) -> meta -> m ()
-whileWithMeta act meta = act meta >>= \case
-	Nothing -> pure ()
-	Just meta' -> whileWithMeta act meta'
+sampleFctls :: Word32 -> [Fctl]
+sampleFctls fn = mkFctl 0 : (mkFctl <$> [1, 3 .. fn * 2 - 3])
+
+mkFctl :: Word32 -> Fctl
+mkFctl sn = Fctl {
+	fctlSequenceNumber = sn,
+	fctlWidth = 100,
+	fctlHeight = 100,
+	fctlXOffset = 0,
+	fctlYOffset = 0,
+	fctlDelayNum = 75,
+	fctlDelayDen = 1000,
+	fctlDisposeOp = 1,
+	fctlBlendOp = 0 }
 
 writePng ::
 	FilePath -> Header.Header ->
 	IORef [Fctl] -> IORef [Image.I RealWorld] ->
-	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> Int -> IO ()
-writePng fpp hdr fctls imgs ibe obe n = do
+	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
+writePng fpp hdr fctls_ imgs_ ibe obe = do
 	ho <- openFile fpp WriteMode
-	fctl <- (!! n) <$> readIORef fctls
-	img <- (!! n) <$> readIORef imgs
-	fctls <- readIORef fctls
-	imgs <- readIORef imgs
+	fctls <- readIORef fctls_
+	imgs <- readIORef imgs_
 
 	hWritePng ho hdr fctls imgs ibe obe
 
@@ -219,24 +175,12 @@ fromFctlImages :: forall m -> (
 	[Fctl] ->
 	[Image.I (PrimState m)] ->
 	Eff.E es i Body ()
-fromFctlImages m hdr [] [] = pure ()
+fromFctlImages _ _ [] [] = pure ()
 fromFctlImages m hdr (fctl : fctls) (img : imgs) = do
 	Pipe.yield $ BodyFctl fctl
 	fromImage' m fctl img (fctlPoss' hdr fctl)
 	fromFctlImages m hdr fctls imgs
-
-fromFctlImage :: forall m -> (
-	PrimMonad m,
-	U.Member Pipe.P es,
-	U.Base (U.FromFirst m) es
-	) =>
-	Header.Header ->
-	Fctl ->
-	Image.I (PrimState m) ->
-	Eff.E es i Body ()
-fromFctlImage m hdr fctl img = do
-	Pipe.yield $ BodyFctl fctl
-	fromImage' m fctl img (fctlPoss' hdr fctl)
+fromFctlImages _ _ _ _ = error "bad"
 
 fromImage' :: forall m -> (
 	PrimMonad m,
@@ -263,6 +207,7 @@ encodeApng :: (
 	Header.Header -> [Fctl] ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es Body BSF.ByteString ()
+encodeApng _ [] _ _ = pure ()
 encodeApng hdr fctls@(fctl : _) ibe obe =
 	encodeRawCalc "barbaz" IO hdr {
 		Header.headerWidth = fctlWidth fctl,
@@ -270,6 +215,7 @@ encodeApng hdr fctls@(fctl : _) ibe obe =
 		(fctlToSize <$> fctls)
 		Nothing ibe obe
 
+fctlToSize :: Fctl -> (Word32, Word32)
 fctlToSize c = (fctlWidth c, fctlHeight c)
 
 filePath :: FilePath -> Int -> FilePath
@@ -292,10 +238,11 @@ encodeRawCalc :: forall nm m -> (
 	[(Word32, Word32)] -> Maybe Palette.Palette ->
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
 	Eff.E es Body BSF.ByteString ()
+encodeRawCalc _ _ _ [] _ _ _ = pure ()
 encodeRawCalc nm m hdr ((w0, h0) : sz) mplt ibe obe = void $
 -- MAKE IDAT
- 	do	BodyFctl fctl <- Pipe.await
-		Pipe.yield . Chunk "fcTL" $ encodeFctl fctl
+	do	BodyFctl fctl0 <- Pipe.await
+		Pipe.yield . Chunk "fcTL" $ encodeFctl fctl0
 		pipeDat nm m False 0 hdr w0 h0 ibe obe
 		for_ sz \(w, h) -> do
 			BodyFctl fctl <- Pipe.await
@@ -318,7 +265,7 @@ encodeRawCalc nm m hdr ((w0, h0) : sz) mplt ibe obe = void $
 
 		Pipe.yield $ Chunk {
 			chunkName = "acTL",
-			chunkBody = encodeActl $ Actl 20 0 }
+			chunkBody = encodeActl $ Actl 208 0 }
 
 		bd0 <- Pipe.await
 		Pipe.yield bd0
