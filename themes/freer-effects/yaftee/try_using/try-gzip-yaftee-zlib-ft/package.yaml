@@ -176,8 +176,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gzip-yaftee-zlib-ft
-  try-gradation-triangle:
-    main:                try-gradation-triangle.hs
+  try-all-red:
+    main:                try-all-red.hs
     source-dirs:         app
     other-modules:       []
     ghc-options:
