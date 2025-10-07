@@ -30,6 +30,7 @@ import Data.Bool
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Color
 import Data.Image.Simple qualified as Image
+import Data.Image.Immutable qualified as ImageI
 import Data.Png qualified as Png
 import Data.Png.Header qualified as Header
 
@@ -125,7 +126,9 @@ main = do
 
 	fctls <- readIORef rfctls
 
-	writePngGray (filePathGray fpo) hdr' (zip fctls gimgs)
+	gimgs' <- Image.grayFreeze `mapM` gimgs
+
+	writePngGray (filePathGray fpo) hdr' (zip fctls gimgs')
 
 	print hdr'
 
@@ -181,24 +184,23 @@ whileWithMeta act meta = act meta >>= \case
 	Nothing -> pure ()
 	Just meta' -> whileWithMeta act meta'
 
-writePngGray ::
-	FilePath -> Header.Header ->
-	[(Fctl, Image.Gray RealWorld)] -> IO ()
+writePngGray :: FilePath -> Header.Header -> [(Fctl, ImageI.Gray)] -> IO ()
 writePngGray fpp hdr fctlsimgs = do
 	ho <- openFile fpp WriteMode
 	ibe <- PipeZ.cByteArrayMalloc 64
 	obe <- PipeZ.cByteArrayMalloc 64
+	let	(fctls, imgs_) = unzip fctlsimgs
 
-	hWritePngGray ho hdr (unzip fctlsimgs) ibe obe
+	hWritePngGray ho hdr (fctls, imgs_) ibe obe
 
 	PipeZ.cByteArrayFree ibe
 	PipeZ.cByteArrayFree obe
 	hClose ho
 
-hWritePngGray :: (Monad m, U.Base (U.FromFirst IO) '[U.FromFirst m]) =>
-	Handle -> Header.Header -> ([Fctl], [Image.Gray RealWorld]) ->
-	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> m ()
-hWritePngGray ho hdr (fctls, imgs) ibe obe =
+hWritePngGray ::
+	Handle -> Header.Header -> ([Fctl], [ImageI.Gray]) ->
+	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
+hWritePngGray ho hdr (fctls, imgs) ibe obe = do
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Fail.run
 		. Buffer.run @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
@@ -211,7 +213,7 @@ hWritePngPipeGray :: (
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
 	U.Base IO.I es ) =>
-	Handle -> Header.Header -> [Fctl] -> [Image.Gray RealWorld] ->
+	Handle -> Header.Header -> [Fctl] -> [ImageI.Gray] ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es i o ()
 hWritePngPipeGray ho hdr fctls imgs ibe obe = (`Except.catch` IO.putStrLn)
@@ -224,11 +226,11 @@ hWritePngPipeGray ho hdr fctls imgs ibe obe = (`Except.catch` IO.putStrLn)
 fromFctlImagesGray :: forall m -> (
 	PrimMonad m,
 	U.Member Pipe.P es,
-	U.Base (U.FromFirst m) es
+	U.Base (U.FromFirst IO) es
 	) =>
 	Header.Header ->
 	[Fctl] ->
-	[Image.Gray (PrimState m)] ->
+	[ImageI.Gray] ->
 	Eff.E es i BodyGray ()
 fromFctlImagesGray _ _ [] [] = pure ()
 fromFctlImagesGray m hdr (fctl : fctls) (img : imgs) = do
@@ -240,12 +242,12 @@ fromFctlImagesGray _ _ _ _ = error "bad"
 fromGrayImage :: forall m -> (
 	PrimMonad m,
 	U.Member Pipe.P es,
-	U.Base (U.FromFirst m) es ) =>
-	Fctl -> Image.Gray (PrimState m) -> [[(Int, Int)]] -> Eff.E es i BodyGray ()
+	U.Base (U.FromFirst IO) es ) =>
+	Fctl -> ImageI.Gray -> [[(Int, Int)]] -> Eff.E es i BodyGray ()
 fromGrayImage m fctl img = \case
 	[] -> pure ()
 	ps : pss -> do
-		Pipe.yield . BodyGrayPixels =<< (\(x, y) -> Eff.effBase $ Image.grayRead @m img x y) `mapM` ps
+		Pipe.yield . BodyGrayPixels =<< (\(x, y) -> Eff.effBase . pure @IO $ ImageI.grayRead img x y) `mapM` ps
 		fromGrayImage m fctl img pss
 
 encodeApngGray :: (
