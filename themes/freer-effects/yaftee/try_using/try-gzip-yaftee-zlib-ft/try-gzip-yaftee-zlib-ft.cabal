@@ -41,6 +41,7 @@ library
       Data.Png
       Data.Png.Filters
       Data.Png.Header
+      FctlImage
       Tools
   other-modules:
       Paths_try_gzip_yaftee_zlib_ft
