@@ -9,7 +9,7 @@
 
 module Control.Monad.Yaftee.Pipe.Apng.Decode (
 	apngRun_, ApngStates, apngPipe, ApngMembers,
-	FrameNumber(..), Body(..), Fctl(..), encodeFctl, Actl(..), encodeActl,
+	FrameNumber(..), Body(..), Fctl(..), encodeFctl, encodeFctl', Actl(..), encodeActl,
 	fctlPoss, fctlPoss',
 
 	BodyGray(..),
@@ -219,6 +219,14 @@ decodeFctl bs = do
 encodeFctl :: Fctl -> BSF.ByteString
 encodeFctl c =
 	BSF.fromBitsBE' (fctlSequenceNumber c) <>
+	BSF.fromBitsBE' (fctlWidth c) <> BSF.fromBitsBE' (fctlHeight c) <>
+	BSF.fromBitsBE' (fctlXOffset c) <> BSF.fromBitsBE' (fctlYOffset c) <>
+	BSF.fromBitsBE' (fctlDelayNum c) <> BSF.fromBitsBE' (fctlDelayDen c) <>
+	BSF.fromBitsBE' (fctlDisposeOp c) <> BSF.fromBitsBE' (fctlBlendOp c)
+
+encodeFctl' :: Word32 -> Fctl -> BSF.ByteString
+encodeFctl' sn c =
+	BSF.fromBitsBE' sn <>
 	BSF.fromBitsBE' (fctlWidth c) <> BSF.fromBitsBE' (fctlHeight c) <>
 	BSF.fromBitsBE' (fctlXOffset c) <> BSF.fromBitsBE' (fctlYOffset c) <>
 	BSF.fromBitsBE' (fctlDelayNum c) <> BSF.fromBitsBE' (fctlDelayDen c) <>

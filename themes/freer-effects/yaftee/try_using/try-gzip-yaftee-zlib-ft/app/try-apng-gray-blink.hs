@@ -293,42 +293,58 @@ encodeRawCalcGray _ _ _ [] _ _ _ = pure ()
 encodeRawCalcGray nm m hdr szs@((w0, h0) : sz) mplt ibe obe = void $
 -- MAKE IDAT
  	do	BodyGrayFctl fctl <- Pipe.await
-		Pipe.yield . Chunk "fcTL" $ encodeFctl fctl
+		Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn fctl, sn + 1)
+--		Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl fctl, sn + 1)
 		pipeDat nm m False 0 hdr w0 h0 ibe obe
 		for_ sz \(w, h) -> do
 			BodyGrayFctl fctl' <- Pipe.await
-			Pipe.yield . Chunk "fcTL" $ encodeFctl fctl'
+			Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn fctl', sn + 1)
+--			Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl fctl', sn + 1)
 			pipeDat nm m True (fctlSequenceNumber fctl' + 1) hdr w h ibe obe
 
 -- MAKE CHUNKS
 
 	Pipe.=$= do
 		let	bd'' = Header.encodeHeader hdr
-		Pipe.yield $ Chunk {
-			chunkName = "IHDR",
-			chunkBody = BSF.fromStrict bd'' }
+		Pipe.yield $ \sn -> (
+			Chunk {
+				chunkName = "IHDR",
+				chunkBody = BSF.fromStrict bd'' },
+				sn )
 
 		case mplt of
 			Nothing -> pure ()
-			Just plt -> Pipe.yield $ Chunk {
-				chunkName = "PLTE",
-				chunkBody = Palette.encodePalette plt }
+			Just plt -> Pipe.yield $ \sn -> (
+				Chunk {
+					chunkName = "PLTE",
+					chunkBody = Palette.encodePalette plt },
+				sn )
 
-		Pipe.yield $ Chunk {
-			chunkName = "acTL",
-			chunkBody = encodeActl $ Actl (fromIntegral $ length szs) 0 }
+		Pipe.yield $ \sn -> (
+			Chunk {
+				chunkName = "acTL",
+				chunkBody = encodeActl $ Actl (fromIntegral $ length szs) 0 },
+			sn )
 
 		bd0 <- Pipe.await
-		Pipe.yield bd0
+		Pipe.yield bd0 -- \sn -> (bd0, sn)
 		fix \go -> Pipe.awaitMaybe >>= \case
 			Nothing -> pure ()
-			Just bd -> (>> go) $ Pipe.yield bd
+			Just bd -> (>> go) $ Pipe.yield bd -- \sn -> (bd, sn)
 
-		Pipe.yield Chunk {
-			chunkName = "IEND", chunkBody = "" }
+		Pipe.yield \sn -> (
+			Chunk { chunkName = "IEND", chunkBody = "" },
+			sn )
 	Pipe.=$= do
 		Pipe.yield Png.fileHeader
-		PipeT.convert chunkToByteString
+		forever' 0 \sn -> do
+			f <- Pipe.await
+			let	(c, sn') = f sn
+			Pipe.yield $ chunkToByteString c
+			pure sn'
+
+forever' :: Monad m => a -> (a -> m a) -> m a
+forever' st act = act st >>= (`forever'` act)
 
 data Chunk = Chunk {
 	chunkName :: BSF.ByteString,
@@ -355,7 +371,7 @@ pipeDat :: forall nm m -> (
 	Bool -> Word32 ->
 	Header.Header -> Word32 -> Word32 ->
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
-	Eff.E es a Chunk ()
+	Eff.E es a (Word32 -> (Chunk, Word32)) ()
 pipeDat nm m iorf sn hdr w h ibe obe = void $
 	(fix \go -> do
 		x <- Pipe.await
@@ -366,9 +382,10 @@ pipeDat nm m iorf sn hdr w h ibe obe = void $
 		Unfilter.pngFilter hdr bs0 $ Header.calcSizes hdr w h
 	Pipe.=$= PipeT.convert BSF.pack
 	Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
---	Pipe.=$= Buffer.format' nm BSF.splitAt' "" 5000
-	Pipe.=$= Buffer.format' nm BSF.splitAt' "" 100000
-	Pipe.=$= PipeT.convert (bool (Chunk "IDAT") (Chunk "fdAT" . (BSF.fromBitsBE' sn <>)) iorf)
+	Pipe.=$= Buffer.format' nm BSF.splitAt' "" 1000
+--	Pipe.=$= Buffer.format' nm BSF.splitAt' "" 100000
+	Pipe.=$= PipeT.convert \dt sn' ->
+		(bool ((, sn') . (Chunk "IDAT")) ((, sn' + 1) . (Chunk "fdAT" . (BSF.fromBitsBE' sn' <>))) iorf) dt
 
 sampleOptions :: PipeZ.DeflateOptions
 sampleOptions = PipeZ.DeflateOptions {
