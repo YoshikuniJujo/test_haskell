@@ -162,6 +162,36 @@ executable try-apng-codec
     , vector
   default-language: Haskell2010
 
+executable try-apng-gray-blink
+  main-is: try-apng-gray-blink.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , filepath
+    , mono-traversable
+    , primitive
+    , tools-yj
+    , try-bytestring-ft
+    , try-gzip-yaftee-zlib-ft
+    , try-higher-order-open-union
+    , try-yaftee
+    , try-yaftee-basic-monads
+    , try-yaftee-conduit
+    , try-yaftee-conduit-bytestring
+    , try-yaftee-conduit-bytestring-ft
+    , try-yaftee-conduit-mono-traversable
+    , try-zlib-core
+    , try-zlib-library
+    , typelevel-tools-yj
+    , union-color
+    , vector
+  default-language: Haskell2010
+
 executable try-apng-rgba-to-gray
   main-is: try-apng-rgba-to-gray.hs
   hs-source-dirs:
