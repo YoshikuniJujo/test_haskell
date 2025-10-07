@@ -124,6 +124,11 @@ main = do
 	for_ (zip [0 .. 0] (filePath fpo <$> [0 :: Int ..])) \(n, fpp) ->
 		writePng fpp hdr fctls imgs ibe obe n
 
+	imgsd <- readIORef imgs
+	gimgs <- toGrayImage `mapM` imgsd
+
+	pure ()
+
 doWhile' :: Monad m => m (Maybe a) -> m a
 doWhile' act = act >>= \case
 	Nothing -> doWhile' act
@@ -379,3 +384,17 @@ sampleOptions = PipeZ.DeflateOptions {
 	PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
 	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
 	PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
+
+toGrayImage :: PrimMonad m => Image.I (PrimState m) -> m (Image.Gray (PrimState m))
+toGrayImage i@Image.I { Image.width = w, Image.height = h } = do
+	i' <- Image.grayNew w h
+	for_ [0 .. h - 1] \y -> for_ [0 .. w - 1] \x ->
+		Image.grayWrite i' x y . rgbaToGray =<< Image.read i x y
+	pure i'
+
+rgbaToGray :: RealFrac d => Rgba d -> Word8
+rgbaToGray (RgbaWord8 r_ g_ b_ _a) = fromIntegral @Int $ (r + g + b) `div` 3
+	where
+	r = fromIntegral r_
+	g = fromIntegral g_
+	b = fromIntegral b_
