@@ -10,7 +10,11 @@
 module Control.Monad.Yaftee.Pipe.Apng.Decode (
 	apngRun_, ApngStates, apngPipe, ApngMembers,
 	FrameNumber(..), Body(..), Fctl(..), encodeFctl, Actl(..), encodeActl,
-	fctlPoss, fctlPoss' ) where
+	fctlPoss, fctlPoss',
+
+	BodyGray(..),
+
+	) where
 
 import Control.Arrow
 import Control.Monad
@@ -165,10 +169,19 @@ data Body
 	= BodyNull | BodyEnd | BodyFdatEnd
 	| BodyFctl Fctl | BodyRgba [Rgba Double] deriving Show
 
+data BodyGray
+	= BodyGrayNull | BodyGrayEnd | BodyGrayFdatEnd
+	| BodyGrayFctl Fctl | BodyGrayPixels [Word8] deriving Show
+
 instance PngE.Datable Body where
 	isDat (BodyRgba _) = True
 	endDat = \case BodyFdatEnd -> True; _ -> False
 	toDat hdr (BodyRgba rgba) = BSF.pack $ Header.rgbaListToWord8List hdr rgba
+
+instance PngE.Datable BodyGray where
+	isDat (BodyGrayPixels _) = True
+	endDat = \case BodyGrayFdatEnd -> True; _ -> False
+	toDat hdr (BodyGrayPixels g) = BSF.pack g
 
 data Fctl = Fctl {
 	fctlSequenceNumber :: Word32,

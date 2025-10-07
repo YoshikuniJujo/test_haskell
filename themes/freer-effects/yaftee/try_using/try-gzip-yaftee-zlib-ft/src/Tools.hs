@@ -12,6 +12,7 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.HigherOpenUnion qualified as U
 
 import Control.Monad.Primitive
+import Data.Word
 import Data.Color
 import Data.Image.Simple qualified as Image
 
@@ -41,3 +42,14 @@ fromImage m img = \case
 	ps : pss -> do
 		Pipe.yield =<< (\(x, y) -> Eff.effBase $ Image.read @m img x y) `mapM` ps
 		fromImage m img pss
+
+fromImageGray :: forall m -> (
+	PrimMonad m,
+	U.Member Pipe.P es,
+	U.Base (U.FromFirst m) es ) =>
+	Image.Gray (PrimState m) -> [[(Int, Int)]] -> Eff.E es i [Word8] ()
+fromImageGray m img = \case
+	[] -> pure ()
+	ps : pss -> do
+		Pipe.yield =<< (\(x, y) -> Eff.effBase $ Image.grayRead @m img x y) `mapM` ps
+		fromImageGray m img pss
