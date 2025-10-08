@@ -9,16 +9,50 @@ import Data.Image.Simple qualified as Image
 import Data.Image.Immutable qualified as ImageI
 import Data.Vector qualified as V
 
-data GrayM s = GrayM {
-	grayMWidth :: Word32, grayMHeight :: Word32,
-	grayMXOffset :: Word32, grayMYOffset :: Word32,
-	grayMDelayNum :: Word16, grayMDelayDen :: Word16,
-	grayMDisposeOP :: Word8, grayMBlendOp :: Word8,
-	grayMImage :: V.MVector s Word8 }
-
 data GrayI = GrayI {
 	grayIWidth :: Word32, grayIHeight :: Word32,
 	grayIXOffset :: Word32, grayIYOffset :: Word32,
 	grayIDelayNum :: Word16, grayIDelayDen :: Word16,
-	grayIDisposeOP :: Word8, grayIBlendOp :: Word8,
+	grayIDisposeOp :: Word8, grayIBlendOp :: Word8,
 	grayIImage :: V.Vector Word8 }
+
+fromFctlImageGray :: Decode.Fctl -> ImageI.Gray -> GrayI
+fromFctlImageGray f g
+	| w == fromIntegral w', h == fromIntegral h' =
+	GrayI {
+		grayIWidth = w, grayIHeight = h,
+		grayIXOffset = xo, grayIYOffset = yo,
+		grayIDelayNum = dn, grayIDelayDen = dd,
+		grayIDisposeOp = dop, grayIBlendOp = bop,
+		grayIImage = bd }
+	| otherwise = error "bad"
+	where
+	Decode.Fctl {
+		Decode.fctlWidth = w, Decode.fctlHeight = h,
+		Decode.fctlXOffset = xo, Decode.fctlYOffset = yo,
+		Decode.fctlDelayNum = dn, Decode.fctlDelayDen = dd,
+		Decode.fctlDisposeOp = dop, Decode.fctlBlendOp = bop } = f
+	ImageI.Gray {
+		ImageI.grayWidth = w',
+		ImageI.grayHeight = h',
+		ImageI.grayBody = bd } = g
+
+toFctlImageGray :: GrayI -> (Decode.Fctl, ImageI.Gray)
+toFctlImageGray g = (
+	Decode.Fctl {
+		Decode.fctlSequenceNumber = 0,
+		Decode.fctlWidth = w, Decode.fctlHeight = h,
+		Decode.fctlXOffset = xo, Decode.fctlYOffset = yo,
+		Decode.fctlDelayNum = dn, Decode.fctlDelayDen = dd,
+		Decode.fctlDisposeOp = dop, Decode.fctlBlendOp = bop },
+	ImageI.Gray {
+		ImageI.grayWidth = fromIntegral w,
+		ImageI.grayHeight = fromIntegral h,
+		ImageI.grayBody = bd } )
+	where
+	GrayI {
+		grayIWidth = w, grayIHeight = h,
+		grayIXOffset = xo, grayIYOffset = yo,
+		grayIDelayNum = dn, grayIDelayDen = dd,
+		grayIDisposeOp = dop, grayIBlendOp = bop,
+		grayIImage = bd } = g

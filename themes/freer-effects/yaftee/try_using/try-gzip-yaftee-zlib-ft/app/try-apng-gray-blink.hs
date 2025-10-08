@@ -56,6 +56,8 @@ import Control.Monad.Yaftee.Pipe.Png.Palette qualified as Palette
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
+import FctlImage qualified
+
 main :: IO ()
 main = do
 	fp : fpo : _ <- getArgs
@@ -128,7 +130,7 @@ main = do
 
 	gimgs' <- Image.grayFreeze `mapM` gimgs
 
-	writePngGray (filePathGray fpo) hdr' (zip fctls gimgs')
+	writePngGray (filePathGray fpo) hdr' (zipWith FctlImage.fromFctlImageGray fctls gimgs')
 
 	print hdr'
 
@@ -184,8 +186,11 @@ whileWithMeta act meta = act meta >>= \case
 	Nothing -> pure ()
 	Just meta' -> whileWithMeta act meta'
 
-writePngGray :: FilePath -> Header.Header -> [(Fctl, ImageI.Gray)] -> IO ()
-writePngGray fpp hdr fctlsimgs = do
+writePngGray :: FilePath -> Header.Header -> [FctlImage.GrayI] -> IO ()
+writePngGray fp hdr = writePngGray'' fp hdr . (FctlImage.toFctlImageGray <$>)
+
+writePngGray'' :: FilePath -> Header.Header -> [(Fctl, ImageI.Gray)] -> IO ()
+writePngGray'' fpp hdr fctlsimgs = do
 	ho <- openFile fpp WriteMode
 	ibe <- PipeZ.cByteArrayMalloc 64
 	obe <- PipeZ.cByteArrayMalloc 64
