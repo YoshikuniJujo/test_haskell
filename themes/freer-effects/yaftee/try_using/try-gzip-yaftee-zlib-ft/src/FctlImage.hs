@@ -3,6 +3,7 @@
 
 module FctlImage where
 
+import Control.Arrow
 import Control.Monad.Yaftee.Pipe.Apng.Decode qualified as Decode
 import Data.Word
 import Data.Image.Simple qualified as Image
@@ -56,3 +57,17 @@ toFctlImageGray g = (
 		grayIDelayNum = dn, grayIDelayDen = dd,
 		grayIDisposeOp = dop, grayIBlendOp = bop,
 		grayIImage = bd } = g
+
+-- diffToFctlImageGray :: ImageI.Gray -> ImageI.Gray ->
+
+-- diffGray :: ImageI.Gray -> ImageI.Gray -> Maybe (Word32, Word32, ImageI.Gray)
+-- diffGray p c
+
+diffGrayTop :: ImageI.Gray -> ImageI.Gray -> Maybe (Word32, (ImageI.Gray, ImageI.Gray))
+diffGrayTop p c = case ImageI.grayUnconsRow p of
+	Nothing -> Nothing
+	Just (hp, tp) -> case ImageI.grayUnconsRow c of
+		Nothing -> Nothing
+		Just (hc, tc)
+			| hp == hc -> ((+ 1) `first`) <$> diffGrayTop tp tc
+			| otherwise -> Just (0, (p, c))
