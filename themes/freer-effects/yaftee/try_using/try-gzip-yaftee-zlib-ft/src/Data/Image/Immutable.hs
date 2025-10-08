@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Image.Immutable where
@@ -23,7 +24,7 @@ grayUnsnocRow :: Gray -> Maybe (Gray, V.Vector Word8)
 grayUnsnocRow Gray { grayHeight = 0 } = Nothing
 grayUnsnocRow Gray { grayWidth = w, grayHeight = h, grayBody = bd } = Just (
 	Gray { grayWidth = w, grayHeight = h - 1, grayBody = dropR w bd },
-	dropR w bd )
+	takeR w bd )
 
 grayUnconsCol :: Gray -> Maybe (V.Vector Word8, Gray)
 grayUnconsCol Gray { grayWidth = 0 } = Nothing
@@ -53,3 +54,59 @@ takeR n v = V.drop (V.length v - n) v
 
 dropR :: Int -> V.Vector a -> V.Vector a
 dropR n v = V.take (V.length v - n) v
+
+fromAscii :: [String] -> Gray
+fromAscii = fromList . ((asciiToWord8 <$>) <$>)
+
+toAscii :: Gray -> [String]
+toAscii g = (word8ToAscii <$>) . V.toList <$> rs
+	where
+	rs = rows g
+
+printAsAscii :: Gray -> IO ()
+printAsAscii = (putStrLn `mapM_`) . toAscii
+
+asciiToWord8 :: Char -> Word8
+asciiToWord8 = \case
+	'.' -> 0; ',' -> 51; '-' -> 102; '!' -> 153; '+' -> 204; '*' -> 255
+	_ -> error "bad"
+
+word8ToAscii :: Word8 -> Char
+word8ToAscii w
+	| w < 26 = '.' | w < 77 = ',' | w < 128 = '-'
+	| w < 179 = '!' | w < 230 = '+' | otherwise = '*'
+
+fromList :: [[Word8]] -> Gray
+fromList wss = Gray {
+	grayWidth = w, grayHeight = h, grayBody = V.fromList $ concat wss }
+	where
+	w = length $ head wss
+	h = length wss
+
+sampleGray0, sampleGray1 :: Gray
+sampleGray0 = fromAscii sampleAscii0
+sampleGray1 = fromAscii sampleAscii1
+
+sampleAscii0 :: [String]
+sampleAscii0 = [
+	"........................",
+	"........********........",
+	"........********........",
+	"........********........",
+	"........********........",
+	"........********........",
+	"........********........",
+	"........********........",
+	"........................" ]
+
+sampleAscii1 :: [String]
+sampleAscii1 = [
+	"........................",
+	"........********........",
+	"........********........",
+	"........**...***........",
+	"........**...***........",
+	"........**...***........",
+	"........********........",
+	"........********........",
+	"........................" ]
