@@ -110,3 +110,9 @@ sampleAscii1 = [
 	"........********........",
 	"........********........",
 	"........................" ]
+
+filled :: Int -> Int -> Word8 -> Gray
+filled w h c = Gray {
+	grayWidth = w,
+	grayHeight = h,
+	grayBody = V.fromList $ replicate (w * h) c }

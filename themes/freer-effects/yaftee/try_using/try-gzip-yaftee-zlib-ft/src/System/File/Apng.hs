@@ -7,7 +7,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module System.File.Apng (writeApngGray) where
+module System.File.Apng (writeApngGray, writeApngGray') where
 
 import Control.Monad
 import Control.Monad.Fix
@@ -24,6 +24,7 @@ import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Foldable
+import Data.Ratio
 import Data.Bool
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Image.Immutable qualified as ImageI
@@ -47,6 +48,9 @@ import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 import FctlImage qualified
+
+writeApngGray' :: FilePath -> Header.Header -> [(ImageI.Gray, Ratio Word16)] -> IO ()
+writeApngGray' fp hdr = writeApngGray fp hdr . FctlImage.fromImagesGray
 
 writeApngGray :: FilePath -> Header.Header -> [FctlImage.GrayI] -> IO ()
 writeApngGray fp hdr = writePngGray'' fp hdr . (FctlImage.toFctlImageGray <$>)

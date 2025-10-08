@@ -5,8 +5,8 @@ module FctlImage where
 
 import Control.Arrow
 import Control.Monad.Yaftee.Pipe.Apng.Decode qualified as Decode
+import Data.Ratio
 import Data.Word
-import Data.Image.Simple qualified as Image
 import Data.Image.Immutable qualified as ImageI
 import Data.Vector qualified as V
 
@@ -58,19 +58,35 @@ toFctlImageGray g = (
 		grayIDisposeOp = dop, grayIBlendOp = bop,
 		grayIImage = bd } = g
 
-firstImageGray :: ImageI.Gray -> Word16 -> Word16 -> GrayI
+fromImagesGray :: [(ImageI.Gray, Ratio Word16)] -> [GrayI]
+fromImagesGray [] = error "no images"
+fromImagesGray ida@((i0, d0) : _) =
+	firstImageGray i0 d0 : go 0 ida
+	where
+	go _ [] = error "no images"
+	go _ [_] = []
+	go d ((i1, _) : ids@((i2, d2) : _)) =
+		case diffToFctlImageGray i1 i2 (d + d2) of
+			Nothing -> go (d + d2) ids
+			Just g -> g : go 0 ids
+
+firstImageGray :: ImageI.Gray -> Ratio Word16 -> GrayI
 firstImageGray ImageI.Gray {
 	ImageI.grayWidth = w,
 	ImageI.grayHeight = h,
-	ImageI.grayBody = bd } dn dd = GrayI {
+	ImageI.grayBody = bd } dly = GrayI {
 	grayIWidth = fromIntegral w, grayIHeight = fromIntegral h,
 	grayIXOffset = 0, grayIYOffset = 0,
 	grayIDelayNum = dn, grayIDelayDen = dd,
+	grayIDisposeOp = 0, grayIBlendOp = 0,
 	grayIImage = bd }
+	where
+	dn = numerator dly
+	dd = numerator dly
 
 diffToFctlImageGray ::
-	ImageI.Gray -> ImageI.Gray -> Word16 -> Word16 -> Maybe GrayI
-diffToFctlImageGray p c dn dd = case diffGray p c of
+	ImageI.Gray -> ImageI.Gray -> Ratio Word16 -> Maybe GrayI
+diffToFctlImageGray p c dly = case diffGray p c of
 	Nothing -> Nothing
 	Just (xo, yo, ImageI.Gray {
 		ImageI.grayWidth = w,
@@ -81,6 +97,9 @@ diffToFctlImageGray p c dn dd = case diffGray p c of
 		grayIDelayNum = dn, grayIDelayDen = dd,
 		grayIDisposeOp = 0, grayIBlendOp = 0,
 		grayIImage = bd }
+	where
+	dn = numerator dly
+	dd = denominator dly
 
 diffGray :: ImageI.Gray -> ImageI.Gray -> Maybe (Word32, Word32, ImageI.Gray)
 diffGray p c = do
