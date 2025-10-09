@@ -9,6 +9,8 @@
 
 module System.File.Apng (writeApngGray, writeApngGray') where
 
+import GHC.Stack
+
 import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.ST
@@ -57,18 +59,23 @@ writeApngGray fp hdr = writePngGray'' fp hdr . (FctlImage.toFctlImageGray <$>)
 
 writePngGray'' :: FilePath -> Header.Header -> [(Fctl, ImageI.Gray)] -> IO ()
 writePngGray'' fpp hdr fctlsimgs = do
+	putStrLn "writePngGray'' begin"
 	ho <- openFile fpp WriteMode
 	ibe <- PipeZ.cByteArrayMalloc 64
 	obe <- PipeZ.cByteArrayMalloc 64
 	let	(fctls, imgs_) = unzip fctlsimgs
 
+	putStrLn "before hWritePngGray"
+
 	hWritePngGray ho hdr (fctls, imgs_) ibe obe
+
+	putStrLn "after hWritePngGray"
 
 	PipeZ.cByteArrayFree ibe
 	PipeZ.cByteArrayFree obe
 	hClose ho
 
-hWritePngGray ::
+hWritePngGray :: HasCallStack =>
 	Handle -> Header.Header -> ([Fctl], [ImageI.Gray]) ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
 hWritePngGray ho hdr (fctls, imgs) ibe obe = do
@@ -78,6 +85,7 @@ hWritePngGray ho hdr (fctls, imgs) ibe obe = do
 		. Pipe.run $ hWritePngPipeGray ho hdr fctls imgs ibe obe
 
 hWritePngPipeGray :: (
+	HasCallStack,
 	U.Member Pipe.P es,
 	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
@@ -122,6 +130,7 @@ fromGrayImage m fctl img = \case
 		fromGrayImage m fctl img pss
 
 encodeApngGray :: (
+	HasCallStack,
 	U.Member Pipe.P es,
 	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
@@ -144,6 +153,7 @@ fctlToSize :: Fctl -> (Word32, Word32)
 fctlToSize c = (fctlWidth c, fctlHeight c)
 
 encodeRawCalcGray :: forall nm m -> (
+	HasCallStack,
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
