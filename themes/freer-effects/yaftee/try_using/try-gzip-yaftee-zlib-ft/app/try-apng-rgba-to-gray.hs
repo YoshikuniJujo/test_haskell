@@ -122,7 +122,7 @@ main = do
 
 	gimgs' <- Image.grayFreeze @IO `mapM` gimgs
 
-	writeApngGray (filePathGray fpo) hdr' $ zipWith FctlImage.fromFctlImageGray fctls gimgs'
+	writeApngGray (filePathGray fpo) hdr' 0 $ zipWith FctlImage.fromFctlImageGray fctls gimgs'
 
 	print =<< readIORef rfctls
 

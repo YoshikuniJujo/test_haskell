@@ -9,9 +9,8 @@
 
 module Main (main) where
 
-import GHC.Stack
-
 import Data.Ratio
+import Data.Bool
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Image.Immutable qualified as ImageI
@@ -25,8 +24,11 @@ import Lifegame
 
 main :: IO ()
 main = do
-	fpo : _ <- getArgs
-	writeApngGray' (filePathGray fpo) header images'
+	fpi : fpo : _ <- getArgs
+	src <- lines <$> readFile fpi
+	let	(rt, w, h, xo, yo, drp, fnm, dly, shp) = readLifegame src
+		(rpt, img) = mkImages rt w h xo yo drp fnm dly shp
+	writeApngGray' (filePathGray fpo) header (bool 1 0 rpt) img
 
 filePathGray :: FilePath -> FilePath
 filePathGray fpo = fpbd ++ "-gray" <.> fpex
@@ -46,10 +48,17 @@ header = Header.Header {
 	Header.headerFilterMethod = Header.FilterMethodDefaultFilter,
 	Header.headerInterlaceMethod = Header.InterlaceMethodNon }
 
-images :: HasCallStack => [(ImageI.Gray, Ratio Word16)]
-images = take 50
-	$ (, 0.5) . boardToGray 10 <$> boards (listToBoard $ putShapeAscii 10 10 3 3 glider)
+images :: (Bool, [(ImageI.Gray, Ratio Word16)])
+images = mkImages 10 10 10 3 3 0 50 0.5 glider
 
-images' :: HasCallStack => [(ImageI.Gray, Ratio Word16)]
-images' = take 15 . drop 2
-	$ (, 0.5) . boardToGray 10 <$> boards (listToBoard $ putShapeAscii 20 11 5 5 penta)
+images' :: (Bool, [(ImageI.Gray, Ratio Word16)])
+images' = mkImages 10 20 11 5 5 2 15 0.5 penta
+
+mkImages ::
+	Int -> Int -> Int -> Int -> Int -> Int -> Int -> Ratio Word16 -> [String] ->
+	(Bool, [(ImageI.Gray, Ratio Word16)])
+mkImages rt w h xo yo drp nm dly shp =
+	((bd0 == bd0'), (, dly) . boardToGray rt <$> bds')
+	where
+	(bds', bd0' : _) = splitAt nm bds
+	bds@(bd0 : _) = drop drp . boards . listToBoard $ putShapeAscii w h xo yo shp

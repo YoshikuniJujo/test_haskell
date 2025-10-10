@@ -22,7 +22,7 @@ import System.File.Apng
 main :: IO ()
 main = do
 	fpo : _ <- getArgs
-	writeApngGray' (filePathGray fpo) header images
+	writeApngGray' (filePathGray fpo) header 0 images
 
 filePathGray :: FilePath -> FilePath
 filePathGray fpo = fpbd ++ "-gray" <.> fpex

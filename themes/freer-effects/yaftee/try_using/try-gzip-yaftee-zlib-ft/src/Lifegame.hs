@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lifegame where
@@ -7,11 +8,14 @@ module Lifegame where
 import GHC.Stack
 
 import Data.Vector qualified as V
+import Data.Ratio
+import Data.Word
 import Data.Bool
 import Data.Image.Immutable qualified as ImageI
 
 data Board = Board {
 	boardWidth :: Int, boardHeight :: Int, boardBody :: V.Vector Bool }
+	deriving Eq
 
 boardToGray :: HasCallStack => Int -> Board -> ImageI.Gray
 boardToGray n Board { boardWidth = w, boardHeight = h, boardBody = bd } =
@@ -89,3 +93,20 @@ glider = [
 
 penta :: [String]
 penta = ["**********"]
+
+readLifegame :: [String] ->
+	(Int, Int, Int, Int, Int, Int, Int, Ratio Word16, [String])
+readLifegame src = case words <$> src of
+	["ratio:", rt] :
+		["width:", w] :
+		["height:", h] :
+		["x-offset:", xo] :
+		["y-offset:", yo] :
+		["first-frame:", drp] :
+		["frame-number:", fn] :
+		["delay:", dly] :
+		["shape:"] : shp -> (
+		read rt, read w, read h, read xo, read yo, read drp, read fn,
+		read dly, head <$> shp )
+
+	_ -> error "bad"
