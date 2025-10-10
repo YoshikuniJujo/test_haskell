@@ -1,12 +1,15 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lifegame where
 
+import GHC.Generics
 import GHC.Stack
 
+import Control.DeepSeq
 import Data.Vector qualified as V
 import Data.Ratio
 import Data.Word
@@ -15,7 +18,9 @@ import Data.Image.Immutable qualified as ImageI
 
 data Board = Board {
 	boardWidth :: Int, boardHeight :: Int, boardBody :: V.Vector Bool }
-	deriving Eq
+	deriving (Eq, Generic)
+
+instance NFData Board
 
 boardToGray :: HasCallStack => Int -> Board -> ImageI.Gray
 boardToGray n Board { boardWidth = w, boardHeight = h, boardBody = bd } =
@@ -27,7 +32,7 @@ boardToGray n Board { boardWidth = w, boardHeight = h, boardBody = bd } =
 				bool 0xff 0x00 (bd V.! (y `div` n * w + x `div` n)) }
 
 boards :: Board -> [Board]
-boards b = b : boards (next b)
+boards b = ((:) $!! b) $ boards (next b)
 
 next :: Board -> Board
 next Board { boardWidth = w, boardHeight = h, boardBody = bd } =

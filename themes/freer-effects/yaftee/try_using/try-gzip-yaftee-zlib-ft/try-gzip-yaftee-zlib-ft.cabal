@@ -57,6 +57,7 @@ library
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -86,6 +87,7 @@ executable try-all-red
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -116,6 +118,7 @@ executable try-apng
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -146,6 +149,7 @@ executable try-apng-codec
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -176,6 +180,7 @@ executable try-apng-gray-blink
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -206,6 +211,7 @@ executable try-apng-lifegame
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -236,6 +242,7 @@ executable try-apng-rgba-to-gray
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -266,6 +273,7 @@ executable try-apng-to-png
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -296,6 +304,7 @@ executable try-apng-to-pngs
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -326,6 +335,7 @@ executable try-decod-gray
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -356,6 +366,7 @@ executable try-gray-alpha
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -386,6 +397,7 @@ executable try-gzip-deflate
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -420,6 +432,7 @@ executable try-gzip-yaftee-zlib-ft-exe
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -450,6 +463,7 @@ executable try-palette
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -480,6 +494,7 @@ executable try-png-decode
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -510,6 +525,7 @@ executable try-read-chunk
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -540,6 +556,7 @@ executable try-time-gradation
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -570,6 +587,7 @@ executable try-zlib-deflate
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
@@ -605,6 +623,7 @@ test-suite try-gzip-yaftee-zlib-ft-test
     , base >=4.7 && <5
     , bytestring
     , containers
+    , deepseq
     , filepath
     , mono-traversable
     , primitive
