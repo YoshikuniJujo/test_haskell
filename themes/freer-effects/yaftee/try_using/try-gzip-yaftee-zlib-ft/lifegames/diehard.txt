@@ -1,0 +1,12 @@
+ratio:		5
+width:		30
+height:		30
+x-offset:	13
+y-offset:	8
+first-frame:	0
+frame-number:	131
+delay:		1%2
+shape:
+......*.
+**......
+.*...***
