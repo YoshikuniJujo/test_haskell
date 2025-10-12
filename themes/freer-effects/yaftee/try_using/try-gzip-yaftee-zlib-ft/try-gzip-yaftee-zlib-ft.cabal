@@ -44,6 +44,7 @@ library
       FctlImage
       Lifegame
       System.File.Apng
+      System.File.Png
       Tools
   other-modules:
       Paths_try_gzip_yaftee_zlib_ft
