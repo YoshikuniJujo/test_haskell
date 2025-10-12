@@ -28,7 +28,7 @@ main = do
 	src <- lines <$> readFile fpi
 	let	(rt, w, h, xo, yo, drp, fnm, dly, shp) = readLifegame src
 		(rpt, img) = mkImages rt w h xo yo drp fnm dly shp
-	writeApngGray' (filePathGray fpo) header (bool 1 0 rpt) img
+	writeApngGray' (filePathGray fpo) header fnm (bool 1 0 rpt) img
 
 filePathGray :: FilePath -> FilePath
 filePathGray fpo = fpbd ++ "-gray" <.> fpex

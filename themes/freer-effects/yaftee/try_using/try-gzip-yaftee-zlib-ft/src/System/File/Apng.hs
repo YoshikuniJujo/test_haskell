@@ -49,23 +49,23 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 import FctlImage qualified
 
-writeApngGray' :: FilePath -> Header.Header -> Word32 -> [(ImageI.Gray, Ratio Word16)] -> IO ()
-writeApngGray' fp hdr np = writeApngGray fp hdr np . FctlImage.fromImagesGray
+writeApngGray' :: FilePath -> Header.Header -> Int -> Word32 -> [(ImageI.Gray, Ratio Word16)] -> IO ()
+writeApngGray' fp hdr fn np = writeApngGray fp hdr fn np . FctlImage.fromImagesGray
 
-writeApngGray :: FilePath -> Header.Header -> Word32 -> [FctlImage.GrayI] -> IO ()
-writeApngGray fp hdr np = writePngGray'' fp hdr np . (FctlImage.toFctlImageGray <$>)
+writeApngGray :: FilePath -> Header.Header -> Int -> Word32 -> [FctlImage.GrayI] -> IO ()
+writeApngGray fp hdr fn np = writePngGray'' fp hdr fn np . (FctlImage.toFctlImageGray <$>)
 
-writePngGray'' :: FilePath -> Header.Header -> Word32 -> [(Fctl, ImageI.Gray)] -> IO ()
-writePngGray'' fpp hdr np fctlsimgs = do
+writePngGray'' :: FilePath -> Header.Header -> Int -> Word32 -> [(Fctl, ImageI.Gray)] -> IO ()
+writePngGray'' fpp hdr fn np fctlsimgs = do
 	putStrLn "writePngGray'' begin"
 	ho <- openFile fpp WriteMode
 	ibe <- PipeZ.cByteArrayMalloc 64
 	obe <- PipeZ.cByteArrayMalloc 64
-	let	(fctls, imgs_) = unzip fctlsimgs
+	let	(fctls, imgs_) = unzip $ take fn fctlsimgs
 
 	putStrLn "before hWritePngGray"
 
-	hWritePngGray ho hdr np (fctls, imgs_) ibe obe
+	hWritePngGray ho hdr fn np (fctls, imgs_) ibe obe
 
 	putStrLn "after hWritePngGray"
 
@@ -74,13 +74,13 @@ writePngGray'' fpp hdr np fctlsimgs = do
 	hClose ho
 
 hWritePngGray ::
-	Handle -> Header.Header -> Word32 -> ([Fctl], [ImageI.Gray]) ->
+	Handle -> Header.Header -> Int -> Word32 -> ([Fctl], [ImageI.Gray]) ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
-hWritePngGray ho hdr np (fctls, imgs) ibe obe = do
+hWritePngGray ho hdr fn np (fctls, imgs) ibe obe = do
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Fail.run
 		. Buffer.run @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
-		. Pipe.run $ hWritePngPipeGray ho hdr np fctls imgs ibe obe
+		. Pipe.run $ hWritePngPipeGray ho hdr fn np fctls imgs ibe obe
 
 hWritePngPipeGray :: (
 	U.Member Pipe.P es,
@@ -89,12 +89,12 @@ hWritePngPipeGray :: (
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
 	U.Base IO.I es ) =>
-	Handle -> Header.Header -> Word32 -> [Fctl] -> [ImageI.Gray] ->
+	Handle -> Header.Header -> Int -> Word32 -> [Fctl] -> [ImageI.Gray] ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es i o ()
-hWritePngPipeGray ho hdr np fctls imgs ibe obe = (`Except.catch` IO.putStrLn)
+hWritePngPipeGray ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrLn)
 	. void $ fromFctlImagesGray IO hdr fctls imgs
-		Pipe.=$= encodeApngGray hdr np fctls ibe obe
+		Pipe.=$= encodeApngGray hdr fn np fctls ibe obe
 
 		Pipe.=$= PipeT.convert BSF.toStrict
 		Pipe.=$= PipeBS.hPutStr ho
@@ -134,14 +134,14 @@ encodeApngGray :: (
 	U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
 	U.Base (U.FromFirst IO) es ) =>
-	Header.Header -> Word32 -> [Fctl] ->
+	Header.Header -> Int -> Word32 -> [Fctl] ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es BodyGray BSF.ByteString ()
-encodeApngGray _ _ [] _ _ = pure ()
-encodeApngGray hdr pn fctls@(fctl : _) ibe obe =
+encodeApngGray _ _ _ [] _ _ = pure ()
+encodeApngGray hdr fn pn fctls@(fctl : _) ibe obe =
 	encodeRawCalcGray "barbaz" IO hdr {
 		Header.headerWidth = fctlWidth fctl,
-		Header.headerHeight = fctlHeight fctl } pn
+		Header.headerHeight = fctlHeight fctl } fn pn
 		(fctlToSize <$> fctls)
 		Nothing ibe obe
 
@@ -157,17 +157,17 @@ encodeRawCalcGray :: forall nm m -> (
 	U.Member U.Fail es,
 	U.Base (U.FromFirst m) es
 	) =>
-	Header.Header -> Word32 ->
+	Header.Header -> Int -> Word32 ->
 	[(Word32, Word32)] -> Maybe Palette.Palette ->
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
 	Eff.E es BodyGray BSF.ByteString ()
-encodeRawCalcGray _ _ _ _ [] _ _ _ = pure ()
-encodeRawCalcGray nm m hdr np szs@((w0, h0) : sz) mplt ibe obe = void $
+encodeRawCalcGray _ _ _ _ _ [] _ _ _ = pure ()
+encodeRawCalcGray nm m hdr fn np ((w0, h0) : sz) mplt ibe obe = void $
 -- MAKE IDAT
  	do	BodyGrayFctl fctl <- Pipe.await
 		Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn fctl, sn + 1)
 		pipeDat nm m False hdr w0 h0 ibe obe
-		for_ sz \(w, h) -> do
+		for_ (take (fn - 1) sz) \(w, h) -> do
 			BodyGrayFctl fctl' <- Pipe.await
 			Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn fctl', sn + 1)
 			pipeDat nm m True hdr w h ibe obe
@@ -193,7 +193,7 @@ encodeRawCalcGray nm m hdr np szs@((w0, h0) : sz) mplt ibe obe = void $
 		Pipe.yield $ \sn -> (
 			Chunk {
 				chunkName = "acTL",
-				chunkBody = encodeActl $ Actl (fromIntegral $ length szs) np },
+				chunkBody = encodeActl $ Actl (fromIntegral fn) np },
 			sn )
 
 		bd0 <- Pipe.await

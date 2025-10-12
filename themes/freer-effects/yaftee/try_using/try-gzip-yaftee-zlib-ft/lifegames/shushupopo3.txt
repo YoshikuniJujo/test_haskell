@@ -1,9 +1,9 @@
 ratio:		1
-width:		680
-height:		200
-x-offset:	40
-y-offset:	90
-first-frame:	0
+width:		2100
+height:		240
+x-offset:	110
+y-offset:	110
+first-frame:	2300
 frame-number:	1150
 delay:		1%64
 shape:
