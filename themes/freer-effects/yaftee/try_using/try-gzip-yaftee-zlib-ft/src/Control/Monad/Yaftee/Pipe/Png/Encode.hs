@@ -9,7 +9,9 @@
 
 module Control.Monad.Yaftee.Pipe.Png.Encode (
 
-	encodeRgba, encodeGray8, encodeGrayAlpha, encodePalette,
+	encodeRgba,
+	encodeGray8, encodeGray1,
+	encodeGrayAlpha, encodePalette,
 
 	encodeRaw,
 
@@ -39,6 +41,7 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
 import Data.Bits
+import Data.Bool
 import Data.Word
 import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree qualified as BSF
@@ -92,6 +95,20 @@ encodeGray8 :: forall nm m -> (
 encodeGray8 nm m hdr ibe obe =
 	void $ PipeT.convert (graysToWords hdr)
 		Pipe.=$= PipeT.convert BSF.pack
+		Pipe.=$= encodeRaw nm m hdr Nothing ibe obe
+
+encodeGray1 :: forall nm m -> (
+	PrimBase m, RealFrac d, U.Member Pipe.P es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member (Except.E String) es,
+	U.Base (U.FromFirst m) es ) =>
+	Header.Header ->
+	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	Eff.E es [Bool] BSF.ByteString ()
+encodeGray1 nm m hdr ibe obe =
+	void $ PipeT.convert Gray1
 		Pipe.=$= encodeRaw nm m hdr Nothing ibe obe
 
 encodeGrayAlpha :: forall nm m -> (
@@ -317,3 +334,24 @@ instance RealFrac d => Datable (Rgbas d) where
 	endDat = const False
 	toDat hdr (Rgbas rgbas) =
 		BSF.pack $ Header.rgbaListToWord8List hdr rgbas
+
+newtype Gray1 = Gray1 [Bool]
+
+instance Datable Gray1 where
+	isDat = const True
+	endDat = const False
+	toDat _hdr (Gray1 bs) =
+		BSF.pack $ boolsToWords bs
+
+boolsToWords :: [Bool] -> [Word8]
+boolsToWords = (boolsToWord <$>) . sep 8
+
+boolsToWord :: [Bool] -> Word8
+boolsToWord = go 0
+	where
+	go r [] = r
+	go r (b : bs) = go (bool id (.|. 1) b (r `shiftL` 1)) bs
+
+sep :: Int -> [a] -> [[a]]
+sep _ [] = []
+sep n xs = take n xs : sep n (drop n xs)
