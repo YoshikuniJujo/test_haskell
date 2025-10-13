@@ -12,7 +12,7 @@ module Control.Monad.Yaftee.Pipe.Apng.Decode (
 	FrameNumber(..), Body(..), Fctl(..), encodeFctl, encodeFctl', Actl(..), encodeActl,
 	fctlPoss, fctlPoss',
 
-	BodyGray(..),
+	BodyGray(..), BodyGray1(..)
 
 	) where
 
@@ -33,6 +33,7 @@ import Control.HigherOpenUnion qualified as U
 import Data.TypeLevel.List
 import Data.HigherFunctor qualified as HFunctor
 import Data.Bits
+import Data.Bool
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
@@ -173,6 +174,10 @@ data BodyGray
 	= BodyGrayNull | BodyGrayEnd | BodyGrayFdatEnd
 	| BodyGrayFctl Fctl | BodyGrayPixels [Word8] deriving Show
 
+data BodyGray1
+	= BodyBray1Null | BodyGray1End | BodyGray1FdatEnd
+	| BodyGray1Fctl Fctl | BodyGray1Pixels [Bool] deriving Show
+
 instance PngE.Datable Body where
 	isDat (BodyRgba _) = True
 	endDat = \case BodyFdatEnd -> True; _ -> False
@@ -182,6 +187,25 @@ instance PngE.Datable BodyGray where
 	isDat (BodyGrayPixels _) = True
 	endDat = \case BodyGrayFdatEnd -> True; _ -> False
 	toDat hdr (BodyGrayPixels g) = BSF.pack g
+
+instance PngE.Datable BodyGray1 where
+	isDat (BodyGray1Pixels _) = True
+	endDat = \case BodyGray1FdatEnd -> True; _ -> False
+	toDat _hdr (BodyGray1Pixels bs) = BSF.pack $ boolsToWords bs
+
+boolsToWords :: [Bool] -> [Word8]
+boolsToWords = (boolsToWord <$>) . sep 8
+
+boolsToWord :: [Bool] -> Word8
+boolsToWord = go 0 . to8
+	where
+	go r [] = r
+	go r (b : bs) = go (bool id (.|. 1) b (r `shiftL` 1)) bs
+	to8 bs = bs ++ replicate (8 - Prelude.length bs) False
+
+sep :: Int -> [a] -> [[a]]
+sep _ [] = []
+sep n xs = take n xs : sep n (drop n xs)
 
 data Fctl = Fctl {
 	fctlSequenceNumber :: Word32,

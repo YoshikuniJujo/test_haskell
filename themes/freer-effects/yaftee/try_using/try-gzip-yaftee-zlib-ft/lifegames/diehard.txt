@@ -5,7 +5,7 @@ x-offset:	13
 y-offset:	8
 first-frame:	0
 frame-number:	131
-delay:		1%2
+delay:		1%8
 shape:
 ......*.
 **......
