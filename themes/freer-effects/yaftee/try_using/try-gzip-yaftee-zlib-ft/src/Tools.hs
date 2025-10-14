@@ -12,6 +12,8 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.HigherOpenUnion qualified as U
 
 import Control.Monad.Primitive
+import Data.Bits
+import Data.Bool
 import Data.Word
 import Data.Color
 import Data.Image.Simple qualified as Image
@@ -53,3 +55,17 @@ fromImageGray m img = \case
 	ps : pss -> do
 		Pipe.yield =<< (\(x, y) -> Eff.effBase $ Image.grayRead @m img x y) `mapM` ps
 		fromImageGray m img pss
+
+boolsToWords :: [Bool] -> [Word8]
+boolsToWords = (boolsToWord <$>) . sep 8
+
+boolsToWord :: [Bool] -> Word8
+boolsToWord = go 0 . to8
+	where
+	go r [] = r
+	go r (b : bs) = go (bool id (.|. 1) b (r `shiftL` 1)) bs
+	to8 bs = bs ++ replicate (8 - Prelude.length bs) False
+
+sep :: Int -> [a] -> [[a]]
+sep _ [] = []
+sep n xs = take n xs : sep n (drop n xs)

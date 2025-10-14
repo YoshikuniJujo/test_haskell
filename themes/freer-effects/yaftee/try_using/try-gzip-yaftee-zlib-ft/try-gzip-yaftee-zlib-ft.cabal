@@ -44,6 +44,7 @@ library
       Data.Png.Header
       FctlImage
       FctlImageBody.Gray1Bools
+      FctlImageBody.Gray1Words
       Lifegame
       LifegameBools
       System.File.Apng

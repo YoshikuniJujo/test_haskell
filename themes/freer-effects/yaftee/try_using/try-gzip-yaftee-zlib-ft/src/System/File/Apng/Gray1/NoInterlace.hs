@@ -50,7 +50,9 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 import Data.Image.Gray1 qualified as Gray1
 
 import FctlImage qualified
-import FctlImageBody.Gray1Bools
+import FctlImageBody.Gray1Bools qualified as B
+import FctlImageBody.Gray1Words qualified as W
+import Tools
 
 writeApngGray1' :: FilePath -> Header.Header -> Int -> Word32 -> [(ImageI.Gray, Ratio Word16)] -> IO ()
 writeApngGray1' fp hdr fn np = writeApngGray1 fp hdr fn np . FctlImage.fromImagesGray
@@ -114,21 +116,21 @@ hWritePngPipeGray1 ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrLn
 
 fromFctlImagesGray1 :: forall m -> (
 	PrimMonad m, U.Member Pipe.P es, U.Base (U.FromFirst IO) es ) =>
-	Header.Header -> [Fctl] -> [ImageI.Gray] -> Eff.E es i BodyGray1 ()
+	Header.Header -> [Fctl] -> [ImageI.Gray] -> Eff.E es i W.BodyGray1 ()
 fromFctlImagesGray1 _ _ [] [] = pure ()
 fromFctlImagesGray1 m hdr (fctl : fctls) (img : imgs) = do
-	Pipe.yield $ BodyGray1Fctl fctl
+	Pipe.yield $ W.BodyGray1Fctl fctl
 	fromGrayImage1 m fctl img (fctlPoss' hdr fctl)
 	fromFctlImagesGray1 m hdr fctls imgs
 fromFctlImagesGray1 _ _ _ _ = error "bad"
 
 fromGrayImage1 :: forall m -> (
 	PrimMonad m, U.Member Pipe.P es, U.Base (U.FromFirst IO) es ) =>
-	Fctl -> ImageI.Gray -> [[(Int, Int)]] -> Eff.E es i BodyGray1 ()
+	Fctl -> ImageI.Gray -> [[(Int, Int)]] -> Eff.E es i W.BodyGray1 ()
 fromGrayImage1 m fctl img = \case
 	[] -> pure ()
 	ps : pss -> do
-		Pipe.yield . BodyGray1Pixels
+		Pipe.yield . W.BodyGray1Pixels . boolsToWords
 			=<< (\(x, y) -> Eff.effBase . pure @IO . (0x7f <)
 				$ ImageI.grayRead img x y) `mapM` ps
 		fromGrayImage1 m fctl img pss
