@@ -43,6 +43,7 @@ library
       Data.Png.Filters
       Data.Png.Header
       FctlImage
+      FctlImageBody.Gray1Bools
       Lifegame
       LifegameBools
       System.File.Apng

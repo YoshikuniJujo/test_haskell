@@ -50,6 +50,7 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 import Data.Image.Gray1 qualified as Gray1
 
 import FctlImage qualified
+import FctlImageBody.Gray1Bools
 
 writeApngGray1' :: FilePath -> Header.Header -> Int -> Word32 -> [(ImageI.Gray, Ratio Word16)] -> IO ()
 writeApngGray1' fp hdr fn np = writeApngGray1 fp hdr fn np . FctlImage.fromImagesGray

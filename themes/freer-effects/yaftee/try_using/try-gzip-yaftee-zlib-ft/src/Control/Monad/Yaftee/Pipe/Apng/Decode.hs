@@ -14,7 +14,7 @@ module Control.Monad.Yaftee.Pipe.Apng.Decode (
 
 	Fctlable(..),
 
-	BodyGray(..), BodyGray1(..)
+	BodyGray(..),
 
 	) where
 
@@ -176,12 +176,7 @@ data BodyGray
 	= BodyGrayNull | BodyGrayEnd | BodyGrayFdatEnd
 	| BodyGrayFctl Fctl | BodyGrayPixels [Word8] deriving Show
 
-data BodyGray1 = BodyGray1Fctl Fctl | BodyGray1Pixels [Bool] deriving Show
-
 class Fctlable a where getFctl :: a -> Maybe Fctl
-
-instance Fctlable BodyGray1 where
-	getFctl = \case BodyGray1Fctl f -> Just f; _ -> Nothing
 
 instance PngE.Datable Body where
 	isDat (BodyRgba _) = True
@@ -192,10 +187,6 @@ instance PngE.Datable BodyGray where
 	isDat (BodyGrayPixels _) = True
 	endDat = \case BodyGrayFdatEnd -> True; _ -> False
 	toDat hdr (BodyGrayPixels g) = BSF.pack g
-
-instance PngE.Datable BodyGray1 where
-	isDat (BodyGray1Pixels _) = True; endDat _ = False
-	toDat _hdr (BodyGray1Pixels bs) = BSF.pack $ boolsToWords bs
 
 boolsToWords :: [Bool] -> [Word8]
 boolsToWords = (boolsToWord <$>) . sep 8
