@@ -27,7 +27,7 @@ import Data.Foldable
 import Data.Ratio
 import Data.Bool
 import Data.ByteString.FingerTree qualified as BSF
-import Data.Image.Immutable qualified as ImageI
+import Data.Image.Gray qualified as ImageI
 import Data.Png qualified as Png
 import Data.Png.Header qualified as Header
 
@@ -49,13 +49,13 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 import FctlImage qualified
 
-writeApngGray' :: FilePath -> Header.Header -> Int -> Word32 -> [(ImageI.Gray, Ratio Word16)] -> IO ()
+writeApngGray' :: FilePath -> Header.Header -> Int -> Word32 -> [(ImageI.G, Ratio Word16)] -> IO ()
 writeApngGray' fp hdr fn np = writeApngGray fp hdr fn np . FctlImage.fromImagesGray
 
 writeApngGray :: FilePath -> Header.Header -> Int -> Word32 -> [FctlImage.GrayI] -> IO ()
 writeApngGray fp hdr fn np = writePngGray'' fp hdr fn np . (FctlImage.toFctlImageGray <$>)
 
-writePngGray'' :: FilePath -> Header.Header -> Int -> Word32 -> [(Fctl, ImageI.Gray)] -> IO ()
+writePngGray'' :: FilePath -> Header.Header -> Int -> Word32 -> [(Fctl, ImageI.G)] -> IO ()
 writePngGray'' fpp hdr fn np fctlsimgs = do
 	putStrLn "writePngGray'' begin"
 	ho <- openFile fpp WriteMode
@@ -74,7 +74,7 @@ writePngGray'' fpp hdr fn np fctlsimgs = do
 	hClose ho
 
 hWritePngGray ::
-	Handle -> Header.Header -> Int -> Word32 -> ([Fctl], [ImageI.Gray]) ->
+	Handle -> Header.Header -> Int -> Word32 -> ([Fctl], [ImageI.G]) ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
 hWritePngGray ho hdr fn np (fctls, imgs) ibe obe = do
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
@@ -89,7 +89,7 @@ hWritePngPipeGray :: (
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
 	U.Base IO.I es ) =>
-	Handle -> Header.Header -> Int -> Word32 -> [Fctl] -> [ImageI.Gray] ->
+	Handle -> Header.Header -> Int -> Word32 -> [Fctl] -> [ImageI.G] ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es i o ()
 hWritePngPipeGray ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrLn)
@@ -106,7 +106,7 @@ fromFctlImagesGray :: forall m -> (
 	) =>
 	Header.Header ->
 	[Fctl] ->
-	[ImageI.Gray] ->
+	[ImageI.G] ->
 	Eff.E es i BodyGray ()
 fromFctlImagesGray _ _ [] [] = pure ()
 fromFctlImagesGray m hdr (fctl : fctls) (img : imgs) = do
@@ -119,7 +119,7 @@ fromGrayImage :: forall m -> (
 	PrimMonad m,
 	U.Member Pipe.P es,
 	U.Base (U.FromFirst IO) es ) =>
-	Fctl -> ImageI.Gray -> [[(Int, Int)]] -> Eff.E es i BodyGray ()
+	Fctl -> ImageI.G -> [[(Int, Int)]] -> Eff.E es i BodyGray ()
 fromGrayImage m fctl img = \case
 	[] -> pure ()
 	ps : pss -> do

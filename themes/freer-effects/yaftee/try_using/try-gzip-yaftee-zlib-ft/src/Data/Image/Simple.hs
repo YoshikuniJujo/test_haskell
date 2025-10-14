@@ -10,7 +10,7 @@ import Data.Vector.Generic.Mutable qualified as VG
 import Data.Word
 import Data.Color qualified as Color
 
-import Data.Image.Immutable qualified as Immutable
+import Data.Image.Gray qualified as Immutable
 
 data I s = I { width :: Int, height :: Int, body :: V.MVector s Word8 }
 
@@ -48,7 +48,7 @@ grayRead :: PrimMonad m => Gray (PrimState m) -> Int -> Int -> m Word8
 grayRead Gray { grayWidth = w, grayHeight = _h, grayBody = bd } x y =
 	VG.read bd $ w * y + x
 
-grayFreeze :: forall m . PrimMonad m => Gray (PrimState m) -> m Immutable.Gray
+grayFreeze :: forall m . PrimMonad m => Gray (PrimState m) -> m Immutable.G
 grayFreeze Gray { grayWidth = w, grayHeight = h, grayBody = bd } = do
 	bd' <- V.freeze @m bd
-	pure Immutable.Gray { Immutable.grayWidth = w, Immutable.grayHeight = h, Immutable.grayBody = bd' }
+	pure Immutable.G { Immutable.grayWidth = w, Immutable.grayHeight = h, Immutable.grayBody = bd' }

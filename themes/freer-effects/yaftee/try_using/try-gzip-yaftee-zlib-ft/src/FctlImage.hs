@@ -7,7 +7,7 @@ import Control.Arrow
 import Control.Monad.Yaftee.Pipe.Apng.Decode qualified as Decode
 import Data.Ratio
 import Data.Word
-import Data.Image.Immutable qualified as ImageI
+import Data.Image.Gray qualified as ImageI
 import Data.Vector qualified as V
 
 data GrayI = GrayI {
@@ -17,7 +17,7 @@ data GrayI = GrayI {
 	grayIDisposeOp :: Word8, grayIBlendOp :: Word8,
 	grayIImage :: V.Vector Word8 }
 
-fromFctlImageGray :: Decode.Fctl -> ImageI.Gray -> GrayI
+fromFctlImageGray :: Decode.Fctl -> ImageI.G -> GrayI
 fromFctlImageGray f g
 	| w == fromIntegral w', h == fromIntegral h' =
 	GrayI {
@@ -33,12 +33,12 @@ fromFctlImageGray f g
 		Decode.fctlXOffset = xo, Decode.fctlYOffset = yo,
 		Decode.fctlDelayNum = dn, Decode.fctlDelayDen = dd,
 		Decode.fctlDisposeOp = dop, Decode.fctlBlendOp = bop } = f
-	ImageI.Gray {
+	ImageI.G {
 		ImageI.grayWidth = w',
 		ImageI.grayHeight = h',
 		ImageI.grayBody = bd } = g
 
-toFctlImageGray :: GrayI -> (Decode.Fctl, ImageI.Gray)
+toFctlImageGray :: GrayI -> (Decode.Fctl, ImageI.G)
 toFctlImageGray g = (
 	Decode.Fctl {
 		Decode.fctlSequenceNumber = 0,
@@ -46,7 +46,7 @@ toFctlImageGray g = (
 		Decode.fctlXOffset = xo, Decode.fctlYOffset = yo,
 		Decode.fctlDelayNum = dn, Decode.fctlDelayDen = dd,
 		Decode.fctlDisposeOp = dop, Decode.fctlBlendOp = bop },
-	ImageI.Gray {
+	ImageI.G {
 		ImageI.grayWidth = fromIntegral w,
 		ImageI.grayHeight = fromIntegral h,
 		ImageI.grayBody = bd } )
@@ -58,7 +58,7 @@ toFctlImageGray g = (
 		grayIDisposeOp = dop, grayIBlendOp = bop,
 		grayIImage = bd } = g
 
-fromImagesGray :: [(ImageI.Gray, Ratio Word16)] -> [GrayI]
+fromImagesGray :: [(ImageI.G, Ratio Word16)] -> [GrayI]
 fromImagesGray [] = error "no images"
 fromImagesGray ida@((i0, d0) : _) =
 	firstImageGray i0 d0 : go 0 ida
@@ -70,8 +70,8 @@ fromImagesGray ida@((i0, d0) : _) =
 			Nothing -> go (d + d2) ids
 			Just g -> g : go 0 ids
 
-firstImageGray :: ImageI.Gray -> Ratio Word16 -> GrayI
-firstImageGray ImageI.Gray {
+firstImageGray :: ImageI.G -> Ratio Word16 -> GrayI
+firstImageGray ImageI.G {
 	ImageI.grayWidth = w,
 	ImageI.grayHeight = h,
 	ImageI.grayBody = bd } dly = GrayI {
@@ -85,10 +85,10 @@ firstImageGray ImageI.Gray {
 	dd = numerator dly
 
 diffToFctlImageGray ::
-	ImageI.Gray -> ImageI.Gray -> Ratio Word16 -> Maybe GrayI
+	ImageI.G -> ImageI.G -> Ratio Word16 -> Maybe GrayI
 diffToFctlImageGray p c dly = case diffGray p c of
 	Nothing -> Nothing
-	Just (xo, yo, ImageI.Gray {
+	Just (xo, yo, ImageI.G {
 		ImageI.grayWidth = w,
 		ImageI.grayHeight = h,
 		ImageI.grayBody = bd }) -> Just GrayI {
@@ -101,7 +101,7 @@ diffToFctlImageGray p c dly = case diffGray p c of
 	dn = numerator dly
 	dd = denominator dly
 
-diffGray :: ImageI.Gray -> ImageI.Gray -> Maybe (Word32, Word32, ImageI.Gray)
+diffGray :: ImageI.G -> ImageI.G -> Maybe (Word32, Word32, ImageI.G)
 diffGray p c = do
 	(nt, (pt, ct)) <- diffGrayTop p c
 	((pb, cb), _) <- diffGrayBottom pt ct
@@ -109,7 +109,7 @@ diffGray p c = do
 	((_, cr), _) <- diffGrayRight pl cl
 	pure (nl, nt, cr)
 
-diffGrayTop :: ImageI.Gray -> ImageI.Gray -> Maybe (Word32, (ImageI.Gray, ImageI.Gray))
+diffGrayTop :: ImageI.G -> ImageI.G -> Maybe (Word32, (ImageI.G, ImageI.G))
 diffGrayTop p c = case ImageI.grayUnconsRow p of
 	Nothing -> Nothing
 	Just (hp, tp) -> case ImageI.grayUnconsRow c of
@@ -118,7 +118,7 @@ diffGrayTop p c = case ImageI.grayUnconsRow p of
 			| hp == hc -> ((+ 1) `first`) <$> diffGrayTop tp tc
 			| otherwise -> Just (0, (p, c))
 
-diffGrayBottom :: ImageI.Gray -> ImageI.Gray -> Maybe ((ImageI.Gray, ImageI.Gray), Word32)
+diffGrayBottom :: ImageI.G -> ImageI.G -> Maybe ((ImageI.G, ImageI.G), Word32)
 diffGrayBottom p c = case ImageI.grayUnsnocRow p of
 	Nothing -> Nothing
 	Just (ip, lp) -> case ImageI.grayUnsnocRow c of
@@ -127,7 +127,7 @@ diffGrayBottom p c = case ImageI.grayUnsnocRow p of
 			| lp == lc -> ((+ 1) `second`) <$> diffGrayBottom ip ic
 			| otherwise -> Just ((p, c), 0)
 
-diffGrayLeft :: ImageI.Gray -> ImageI.Gray -> Maybe (Word32, (ImageI.Gray, ImageI.Gray))
+diffGrayLeft :: ImageI.G -> ImageI.G -> Maybe (Word32, (ImageI.G, ImageI.G))
 diffGrayLeft p c = case ImageI.grayUnconsCol p of
 	Nothing -> Nothing
 	Just (hp, tp) -> case ImageI.grayUnconsCol c of
@@ -136,7 +136,7 @@ diffGrayLeft p c = case ImageI.grayUnconsCol p of
 			| hp == hc -> ((+ 1) `first`) <$> diffGrayLeft tp tc
 			| otherwise -> Just (0, (p, c))
 
-diffGrayRight :: ImageI.Gray -> ImageI.Gray -> Maybe ((ImageI.Gray, ImageI.Gray), Word32)
+diffGrayRight :: ImageI.G -> ImageI.G -> Maybe ((ImageI.G, ImageI.G), Word32)
 diffGrayRight p c = case ImageI.grayUnsnocCol p of
 	Nothing -> Nothing
 	Just (ip, lp) -> case ImageI.grayUnsnocCol c of

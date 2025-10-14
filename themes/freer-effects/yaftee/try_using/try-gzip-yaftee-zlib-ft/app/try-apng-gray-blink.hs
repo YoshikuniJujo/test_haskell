@@ -12,7 +12,7 @@ module Main (main) where
 import Data.Ratio
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
-import Data.Image.Immutable qualified as ImageI
+import Data.Image.Gray qualified as ImageI
 import Data.Png.Header qualified as Header
 
 import System.Environment
@@ -42,6 +42,6 @@ header = Header.Header {
 	Header.headerFilterMethod = Header.FilterMethodDefaultFilter,
 	Header.headerInterlaceMethod = Header.InterlaceMethodNon }
 
-images :: [(ImageI.Gray, Ratio Word16)]
+images :: [(ImageI.G, Ratio Word16)]
 images = (, 0.1) . ImageI.filled 100 100
 	<$> [0x00, 0x03 .. 0xff] ++ [0xfc, 0xf9 .. 0x03]

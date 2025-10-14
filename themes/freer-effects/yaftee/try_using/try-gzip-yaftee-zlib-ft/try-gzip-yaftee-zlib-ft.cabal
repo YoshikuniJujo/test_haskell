@@ -36,8 +36,8 @@ library
       Control.Monad.Yaftee.Pipe.Png.Palette
       Data.Adam7
       Data.Gzip.Header
+      Data.Image.Gray
       Data.Image.Gray1
-      Data.Image.Immutable
       Data.Image.Simple
       Data.Png
       Data.Png.Filters

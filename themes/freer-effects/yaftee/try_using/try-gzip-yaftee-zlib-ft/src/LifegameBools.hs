@@ -24,7 +24,7 @@ import Data.Vector qualified as V
 import Data.Ratio
 import Data.Word
 import Data.Bool
-import Data.Image.Immutable qualified as ImageI
+import Data.Image.Gray qualified as ImageI
 
 data Board = Board {
 	boardWidth :: Int, boardHeight :: Int, boardBody :: V.Vector Bool }
@@ -32,9 +32,9 @@ data Board = Board {
 
 instance NFData Board
 
-boardToGray :: Int -> Board -> ImageI.Gray
+boardToGray :: Int -> Board -> ImageI.G
 boardToGray n Board { boardWidth = w, boardHeight = h, boardBody = bd } =
-	ImageI.Gray {
+	ImageI.G {
 		ImageI.grayWidth = w * n,
 		ImageI.grayHeight = h * n,
 		ImageI.grayBody = V.generate (w * n * h * n) \i ->
