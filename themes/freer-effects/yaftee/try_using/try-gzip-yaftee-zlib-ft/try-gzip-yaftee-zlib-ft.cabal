@@ -43,6 +43,7 @@ library
       Data.Png.Header
       FctlImage
       Lifegame
+      LifegameBools
       System.File.Apng
       System.File.Png
       Tools

@@ -20,7 +20,7 @@ import System.Environment
 import System.FilePath
 import System.File.Apng
 
-import Lifegame
+import LifegameBools
 
 main :: IO ()
 main = do
@@ -31,7 +31,7 @@ main = do
 	writeApngGray1' (filePathGray fpo) header fnm (bool 1 0 rpt) img
 
 filePathGray :: FilePath -> FilePath
-filePathGray fpo = fpbd ++ "-gray" <.> fpex
+filePathGray fpo = fpbd ++ "-gray1" <.> fpex
 	where (fpbd, fpex) = splitExtension fpo
 
 data Chunk = Chunk {

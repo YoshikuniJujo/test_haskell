@@ -1,7 +1,7 @@
 ratio:		1
 width:		1400
-height:		240
-x-offset:	80
+height:		270
+x-offset:	100
 y-offset:	110
 first-frame:	1150
 frame-number:	1150

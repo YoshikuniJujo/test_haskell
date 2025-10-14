@@ -20,7 +20,7 @@ import System.Environment
 import System.FilePath
 import System.File.Apng
 
-import Lifegame
+import LifegameBools
 
 main :: IO ()
 main = do
