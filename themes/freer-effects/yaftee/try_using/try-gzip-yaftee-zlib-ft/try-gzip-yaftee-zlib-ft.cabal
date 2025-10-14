@@ -36,6 +36,7 @@ library
       Control.Monad.Yaftee.Pipe.Png.Palette
       Data.Adam7
       Data.Gzip.Header
+      Data.Image.Gray1
       Data.Image.Immutable
       Data.Image.Simple
       Data.Png
@@ -45,6 +46,7 @@ library
       Lifegame
       LifegameBools
       System.File.Apng
+      System.File.Apng.Gray1
       System.File.Png
       Tools
   other-modules:

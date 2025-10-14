@@ -18,7 +18,7 @@ import Data.Png.Header qualified as Header
 
 import System.Environment
 import System.FilePath
-import System.File.Apng
+import System.File.Apng.Gray1
 
 import LifegameBools
 
