@@ -247,6 +247,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gzip-yaftee-zlib-ft
+  try-apng-lifegame-gray1-nointerlace:
+    main:                try-apng-lifegame-gray1-nointerlace.hs
+    source-dirs:         app
+    other-modules:       []
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gzip-yaftee-zlib-ft
   try-apng-lifegame-gray1:
     main:                try-apng-lifegame-gray1.hs
     source-dirs:         app
