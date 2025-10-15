@@ -5,6 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lifegame.Bools (
+
 	Board,
 
 	boardToGray,
@@ -13,8 +14,8 @@ module Lifegame.Bools (
 
 	listToBoard,
 
-	putShapeAscii,
-	readLifegame, glider, penta
+	putShapeAscii, readLifegame,
+
 	) where
 
 import GHC.Generics
@@ -99,15 +100,6 @@ boardToList Board { boardWidth = w, boardBody = bd } = sep w $ V.toList bd
 sep :: Int -> [a] -> [[a]]
 sep _ [] = []
 sep n xs = take n xs : sep n (drop n xs)
-
-glider :: [String]
-glider = [
-	".*.",
-	"..*",
-	"***" ]
-
-penta :: [String]
-penta = ["**********"]
 
 readLifegame :: [String] ->
 	(Int, Int, Int, Int, Int, Int, Int, Ratio Word16, [String])

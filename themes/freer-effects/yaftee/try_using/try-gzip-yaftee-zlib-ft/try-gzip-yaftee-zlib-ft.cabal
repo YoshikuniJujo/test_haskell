@@ -48,6 +48,7 @@ library
       FctlImageBody.Gray1Words
       Lifegame
       Lifegame.Bools
+      Lifegame.Words
       Samples
       System.File.Apng
       System.File.Apng.Gray1
