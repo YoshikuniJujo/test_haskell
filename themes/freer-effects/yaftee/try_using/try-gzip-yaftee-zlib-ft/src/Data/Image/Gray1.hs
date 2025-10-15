@@ -16,6 +16,14 @@ rows G { width = w, height = h, body = bd } =
 	(<$> [0 .. h - 1]) \y -> (<$> [0 .. (w - 1) `div` 8]) \x ->
 		bd V.! (y * ((w - 1) `div` 8 + 1) + x)
 
+rows' :: G -> [V.Vector Word8]
+rows' G { width = w, body = bd } = go bd
+	where
+	go :: V.Vector Word8 -> [V.Vector Word8]
+	go v	| V.null v = []
+		| otherwise = V.take w' v : go (V.drop w' v)
+	w' = (w - 1) `div` 8 + 1
+
 generate :: Int -> Int -> (Int -> Int -> Bool) -> G
 generate w h px = G {
 	width = w, height = h,
@@ -33,6 +41,40 @@ boolsToWord bs = go 0 bs'
 	go r [] = r
 	go r (b : bs) = go (bool id (`setBit` 0) b $ r `shiftL` 1) bs
 	bs' = bs ++ replicate (8 - length bs) False
+
+unconsRow :: G -> Maybe (V.Vector Word8, G)
+unconsRow G { height = h } | h < 1 = Nothing
+unconsRow G { width = w, height = h, body = bd } = Just (
+	V.take w' bd,
+	G { width = w, height = h - 1, body = V.drop w' bd } )
+	where w' = (w - 1) `div` 8 + 1
+
+unsnocRow :: G -> Maybe (G, V.Vector Word8)
+unsnocRow G { height = h } | h < 1 = Nothing
+unsnocRow G { width = w, height = h, body = bd } = Just (
+	G { width = w, height = h - 1, body = dropR w' bd },
+	takeR w' bd )
+	where w' = (w - 1) `div` 8 + 1
+
+unconsCol :: G -> Maybe (V.Vector Word8, G)
+unconsCol G { width = 0 } = Nothing
+unconsCol g@G { width = w, height = h } = Just (
+	V.fromList (V.head <$> rs),
+	G { width = w - 8, height = h, body = V.concat (V.tail <$> rs) } )
+	where rs = rows' g
+
+unsnocCol :: G -> Maybe (G, V.Vector Word8)
+unsnocCol G { width = 0 } = Nothing
+unsnocCol g@G { width = w, height = h } = Just (
+	G { width = w - 8, height = h, body = V.concat (V.init <$> rs) },
+	V.fromList (V.last <$> rs) )
+	where rs = rows' g
+
+takeR :: Int -> V.Vector a -> V.Vector a
+takeR n v = V.drop (V.length v - n) v
+
+dropR :: Int -> V.Vector a -> V.Vector a
+dropR n v = V.take (V.length v - n) v
 
 printAsAscii :: G -> IO ()
 printAsAscii = (putStrLn `mapM_`) . toAscii

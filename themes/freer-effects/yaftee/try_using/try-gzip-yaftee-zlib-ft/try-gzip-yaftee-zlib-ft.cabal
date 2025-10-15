@@ -43,6 +43,7 @@ library
       Data.Png.Filters
       Data.Png.Header
       FctlImage
+      FctlImage.Gray1
       FctlImageBody.Gray1Bools
       FctlImageBody.Gray1Words
       Lifegame
