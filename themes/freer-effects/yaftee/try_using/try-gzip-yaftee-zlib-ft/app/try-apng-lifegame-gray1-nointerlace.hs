@@ -19,7 +19,7 @@ import System.Environment
 import System.FilePath
 import System.File.Apng.Gray1.NoInterlace
 
-import LifegameBools
+import Lifegame.Bools
 
 main :: IO ()
 main = do

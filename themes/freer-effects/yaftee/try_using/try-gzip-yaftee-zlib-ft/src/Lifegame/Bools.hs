@@ -4,7 +4,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module LifegameBools (
+module Lifegame.Bools (
 	Board,
 
 	boardToGray,
