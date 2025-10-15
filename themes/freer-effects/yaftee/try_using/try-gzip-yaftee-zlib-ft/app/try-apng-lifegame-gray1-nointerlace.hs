@@ -12,7 +12,6 @@ module Main (main) where
 import Data.Ratio
 import Data.Bool
 import Data.Word
-import Data.ByteString.FingerTree qualified as BSF
 import Data.Image.Gray qualified as ImageI
 import Data.Png.Header qualified as Header
 
@@ -34,11 +33,6 @@ filePathGray :: FilePath -> FilePath
 filePathGray fpo = fpbd ++ "-gray1" <.> fpex
 	where (fpbd, fpex) = splitExtension fpo
 
-data Chunk = Chunk {
-	chunkName :: BSF.ByteString,
-	chunkBody :: BSF.ByteString }
-	deriving Show
-
 header :: Header.Header
 header = Header.Header {
 	Header.headerWidth = 100, Header.headerHeight = 100,
@@ -47,12 +41,6 @@ header = Header.Header {
 	Header.headerCompressionMethod = Header.CompressionMethodDeflate,
 	Header.headerFilterMethod = Header.FilterMethodDefaultFilter,
 	Header.headerInterlaceMethod = Header.InterlaceMethodNon }
-
-images :: (Bool, [(ImageI.G, Ratio Word16)])
-images = mkImages 10 10 10 3 3 0 50 0.5 glider
-
-images' :: (Bool, [(ImageI.G, Ratio Word16)])
-images' = mkImages 10 20 11 5 5 2 15 0.5 penta
 
 mkImages ::
 	Int -> Int -> Int -> Int -> Int -> Int -> Int -> Ratio Word16 -> [String] ->

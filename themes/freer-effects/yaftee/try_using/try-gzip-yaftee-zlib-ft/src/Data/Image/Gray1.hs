@@ -4,6 +4,7 @@
 
 module Data.Image.Gray1 where
 
+import Control.Arrow
 import Data.Bits
 import Data.Vector qualified as V
 import Data.Bool
@@ -36,11 +37,52 @@ generate w h px = G {
 	w' = (w - 1) `div` 8 + 1
 
 boolsToWord :: [Bool] -> Word8
-boolsToWord bs = go 0 bs'
+boolsToWord bls = go 0 bls'
 	where
 	go r [] = r
-	go r (b : bs) = go (bool id (`setBit` 0) b $ r `shiftL` 1) bs
-	bs' = bs ++ replicate (8 - length bs) False
+	go r (b : bs') = go (bool id (`setBit` 0) b $ r `shiftL` 1) bs'
+	bls' = bls ++ replicate (8 - length bls) False
+
+diff :: G -> G -> Maybe (Word32, Word32, G)
+diff p c = do
+	(nt, (pt, ct)) <- diffTop p c
+	((pb, cb), _) <- diffBottom pt ct
+	(nl, (pl, cl)) <- diffLeft pb cb
+	((_, cr), _) <- diffRight pl cl
+	pure (nl, nt, cr)
+
+diffTop :: G -> G -> Maybe (Word32, (G, G))
+diffTop p c = case unconsRow p of
+	Nothing -> Nothing
+	Just (hp, tp) -> case unconsRow c of
+		Nothing -> Nothing
+		Just (hc, tc)
+			| hp == hc -> ((+ 1) `first`) <$> diffTop tp tc
+			| otherwise -> Just (0, (p, c))
+
+diffBottom :: G -> G -> Maybe ((G, G), Word32)
+diffBottom p c = do
+	(ip, lp) <- unsnocRow p
+	(ic, lc) <- unsnocRow c
+	if lp == lc
+	then ((+ 1) `second`) <$> diffBottom ip ic
+	else pure ((p, c), 0)
+
+diffLeft :: G -> G -> Maybe (Word32, (G, G))
+diffLeft p c = do
+	(hp, tp) <- unconsCol p
+	(hc, tc) <- unconsCol c
+	if hp == hc
+	then ((+ 8) `first`) <$> diffLeft tp tc
+	else pure (0, (p, c))
+
+diffRight :: G -> G -> Maybe ((G, G), Word32)
+diffRight p c = do
+	(ip, lp) <- unsnocCol p
+	(ic, lc) <- unsnocCol c
+	if lp == lc
+	then ((+ 8) `second`) <$> diffRight ip ic
+	else pure ((p, c), 0)
 
 unconsRow :: G -> Maybe (V.Vector Word8, G)
 unconsRow G { height = h } | h < 1 = Nothing
