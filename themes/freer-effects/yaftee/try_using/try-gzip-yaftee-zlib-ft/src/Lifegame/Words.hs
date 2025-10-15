@@ -42,6 +42,16 @@ boardToGray1 :: Board -> Gray1.G
 boardToGray1 Board { boardWidth = w, boardHeight = h, boardBody = bd } =
 	Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd }
 
+putShape :: Int -> Int -> Int -> Int -> [[Bool]] -> Board
+putShape w h xo yo bss = generate w h \x y ->
+	if	xo <= x && x < xo + (length $ head bss) &&
+		yo <= y && y < yo + (length bss)
+	then	bss !! (y - yo) !! (x - xo)
+	else	False
+
+putShapeAscii :: Int -> Int -> Int -> Int -> [String] -> Board
+putShapeAscii w h xo yo = putShape w h xo yo . (((== '*') <$>) <$>)
+
 asciiToBoard :: [String] -> Board
 asciiToBoard asc = generate w h (\x y -> asc !! y !! x == '*')
 	where
