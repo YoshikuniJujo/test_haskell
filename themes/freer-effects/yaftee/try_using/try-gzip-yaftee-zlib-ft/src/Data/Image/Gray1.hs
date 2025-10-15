@@ -27,10 +27,6 @@ generate w h px = G {
 		| otherwise = px x y
 	w' = (w - 1) `div` 8 + 1
 
-sep :: Int -> [a] -> [[a]]
-sep _ [] = []
-sep n xs = take n xs : sep n (drop n xs)
-
 boolsToWord :: [Bool] -> Word8
 boolsToWord bs = go 0 bs'
 	where
@@ -59,3 +55,13 @@ sample1 = G {
 sample2 = G {
 	width = 17, height = 5,
 	body = V.generate (3 * 5) fromIntegral }
+
+fromAscii :: [String] -> G
+fromAscii asc = generate w h (\x y -> asc !! y !! x == '*')
+	where
+	w = length $ head asc
+	h = length asc
+
+sep :: Int -> [a] -> [[a]]
+sep _ [] = []
+sep n xs = take n xs : sep n (drop n xs)
