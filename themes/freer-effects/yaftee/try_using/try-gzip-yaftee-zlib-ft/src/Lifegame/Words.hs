@@ -5,6 +5,8 @@
 
 module Lifegame.Words where
 
+import Prelude hiding (read)
+
 import GHC.Generics
 
 import Control.DeepSeq
@@ -19,6 +21,34 @@ data Board = Board {
 	deriving (Generic, Eq, Show)
 
 instance NFData Board
+
+next :: Board -> Board
+next bd = generate (boardWidth bd) (boardHeight bd) (calc bd)
+
+boards :: Board -> [Board]
+boards = iterate next
+
+calc :: Board -> Int -> Int -> Bool
+calc p cx cy
+	| not l && length (filter id ls) == 3 = True
+	| l && 2 <= length (filter id ls) && length (filter id ls) <= 3 = True
+	| otherwise = False
+	where
+	ps = [ (x, y) |
+		x <- [cx - 1 .. cx + 1], y <- [cy - 1 .. cy + 1],
+		(x, y) /= (cx, cy) ]
+	l = read p cx cy
+	ls = (\(x, y) -> read p x y) <$> ps
+
+read :: Board -> Int -> Int -> Bool
+read Board { boardWidth = w, boardHeight = h, boardBody = bd } x y =
+	testBit (bd V.! i) bi
+	where
+	i = w' * y' + (x' `div` 8)
+	bi = 7 - x' `mod` 8
+	w' = (w - 1) `div` 8 + 1
+	x' = x `mod` w
+	y' = y `mod` h
 
 generate :: Int -> Int -> (Int -> Int -> Bool) -> Board
 generate w h px = Board {
