@@ -108,7 +108,7 @@ unconsCol g@G { width = w, height = h } = Just (
 unsnocCol :: G -> Maybe (G, V.Vector Word8)
 unsnocCol G { width = 0 } = Nothing
 unsnocCol g@G { width = w, height = h } = Just (
-	G { width = w - 8, height = h, body = V.concat (V.init <$> rs) },
+	G { width = w - ((w - 1) `mod` 8 + 1), height = h, body = V.concat (V.init <$> rs) },
 	V.fromList (V.last <$> rs) )
 	where rs = rows' g
 
