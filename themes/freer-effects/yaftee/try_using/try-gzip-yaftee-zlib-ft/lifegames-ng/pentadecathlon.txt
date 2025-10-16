@@ -1,0 +1,11 @@
+id:		pentadecathlon
+ratio:		10
+width:		20
+height:		11
+x-offset:	5
+y-offset:	5
+first-frame:	2
+frame-number:	15
+delay:		1%2
+shape:
+**********

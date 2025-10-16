@@ -28,6 +28,7 @@ dependencies:
 - array
 - vector
 - bytestring
+- directory
 - filepath
 - union-color
 - tools-yj
@@ -259,6 +260,16 @@ executables:
     - try-gzip-yaftee-zlib-ft
   try-apng-lifegame-gray1:
     main:                try-apng-lifegame-gray1.hs
+    source-dirs:         app
+    other-modules:       []
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gzip-yaftee-zlib-ft
+  try-lifegame-ng:
+    main:                try-lifegame-ng.hs
     source-dirs:         app
     other-modules:       []
     ghc-options:
