@@ -54,6 +54,7 @@ library
       System.File.Apng.Gray1
       System.File.Apng.Gray1.NoInterlace
       System.File.Png
+      System.File.Png.Gray1.NoInterlace
       Tools
   other-modules:
       Paths_try_gzip_yaftee_zlib_ft
