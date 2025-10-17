@@ -3,7 +3,11 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lifegame.Words where
+module Lifegame.Words (
+	boards,
+
+	boardToGray1, putShapeAscii, printAsAscii
+	) where
 
 import Prelude hiding (read)
 
@@ -81,12 +85,6 @@ putShape w h xo yo bss = generate w h \x y ->
 
 putShapeAscii :: Int -> Int -> Int -> Int -> [String] -> Board
 putShapeAscii w h xo yo = putShape w h xo yo . (((== '*') <$>) <$>)
-
-asciiToBoard :: [String] -> Board
-asciiToBoard asc = generate w h (\x y -> asc !! y !! x == '*')
-	where
-	w = length $ head asc
-	h = length asc
 
 printAsAscii :: Board -> IO ()
 printAsAscii = (putStrLn `mapM_`) . boardToAscii
