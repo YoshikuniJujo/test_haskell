@@ -183,11 +183,6 @@ filePathGray :: FilePath -> FilePath
 filePathGray fpo = fpbd ++ "-gray" <.> fpex
 	where (fpbd, fpex) = splitExtension fpo
 
-data Chunk = Chunk {
-	chunkName :: BSF.ByteString,
-	chunkBody :: BSF.ByteString }
-	deriving Show
-
 toGrayImage :: PrimMonad m => Image.I (PrimState m) -> m (Image.Gray (PrimState m))
 toGrayImage i@Image.I { Image.width = w, Image.height = h } = do
 	i' <- Image.grayNew w h
