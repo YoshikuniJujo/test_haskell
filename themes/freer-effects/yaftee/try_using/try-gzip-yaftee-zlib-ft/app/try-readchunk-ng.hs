@@ -1,12 +1,15 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
 import Control.Monad
+import Control.Monad.ToolsYj
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -17,8 +20,8 @@ import Control.Monad.Yaftee.Pipe.BytesCrc32 qualified as Bytes
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.IO qualified as IO
+import Control.HigherOpenUnion qualified as U
 import Data.Foldable
-import Data.Word
 import Data.Word.Word8 qualified as Word8
 import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree qualified as BSF
@@ -28,7 +31,6 @@ import System.Environment
 
 main :: IO ()
 main = do
-	let	m = 10
 	fp : _ <- getArgs
 	putStrLn fp
 	h <- openFile fp ReadMode
@@ -40,22 +42,32 @@ main = do
 			fhdr <- Bytes.readBytes "foobar" 8
 			when (fhdr /= Png.fileHeader)
 				$ Except.throw @String "file header error"
-			n <- Word8.toBitsBE <$> Bytes.readBytes "foobar" 4
-			Bytes.resetCrc32 "foobar"
-			cnm <- Bytes.readBytes "foobar" 4
-			Pipe.yield $ ChunkBegin cnm
-			for_ (split m n) \n' -> Pipe.yield . ChunkBody =<< Bytes.readBytes "foobar" n'
-			Bytes.compCrc32 "foobar"
-			Bytes.Crc32 crc1 <- State.getN "foobar"
-			IO.print crc1
-			IO.print . Crc32.fromWord =<< Word8.toBitsBE <$> Bytes.readBytes "foobar" 4
-			Pipe.yield ChunkEnd
+
+			doWhile_ $ chunk1 "foobar" 10
+
 		Pipe.=$= PipeIO.print
-		where
-		split n = fix \go -> \case
-			0 -> []
-			m'	| n < m' -> n : go (m' - n)
-				| otherwise -> [m']
+
+chunk1 :: forall nm -> (
+	U.Member Pipe.P es, Bytes.BytesMembers nm es,
+	U.Member (Except.E String) es ) =>
+	Int -> Eff.E es BSF.ByteString Chunk Bool
+chunk1 nm m = do
+	n <- Word8.toBitsBE <$> Bytes.readBytes nm 4
+	Bytes.resetCrc32 nm
+	cnm <- Bytes.readBytes nm 4
+	Pipe.yield $ ChunkBegin cnm
+	for_ (split m n) \n' -> Pipe.yield . ChunkBody =<< Bytes.readBytes nm n'
+	Bytes.compCrc32 nm
+	Bytes.Crc32 crc1 <- State.getN nm
+	crc0 <- Crc32.fromWord . Word8.toBitsBE <$> Bytes.readBytes nm 4
+	when (crc1 /= crc0) $ Except.throw @String "chunk1: CRC32 error"
+	Pipe.yield ChunkEnd
+	pure $ cnm /= "IEND"
+	where
+	split n = fix \go -> \case
+		0 -> []
+		m'	| n < m' -> n : go (m' - n)
+			| otherwise -> [m']
 
 data Chunk
 	= ChunkBegin BSF.ByteString
