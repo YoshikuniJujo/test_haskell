@@ -14,6 +14,7 @@ module Control.Monad.Yaftee.Pipe.Png.Decode.Steps (
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
+import Control.Monad.Yaftee.Pipe.BytesCrc32 qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U

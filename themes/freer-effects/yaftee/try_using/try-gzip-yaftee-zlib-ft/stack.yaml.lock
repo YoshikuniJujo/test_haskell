@@ -214,7 +214,7 @@ packages:
     subdir: wrapper/zlib/try-zlib-core
 snapshots:
 - completed:
-    sha256: 78f5b87141b8964ecfbed3f559c3cfb7f1256baf0f6e00d489772dbf9781670b
-    size: 702317
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/10/15.yaml
-  original: nightly-2025-10-15
+    sha256: 26af974d4904c156020917e865a9ad3da47a5753279983b19c3c54139bf18ae2
+    size: 702533
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/10/19.yaml
+  original: nightly-2025-10-19

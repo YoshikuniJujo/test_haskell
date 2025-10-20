@@ -34,6 +34,7 @@ import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
+import Control.Monad.Yaftee.Pipe.BytesCrc32 qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
