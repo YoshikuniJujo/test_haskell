@@ -31,7 +31,6 @@ import Data.Ratio
 import Data.Bool
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Image.Gray qualified as Gray
-import Data.Png qualified as Png
 import Data.Png.Header qualified as Header
 
 import System.IO
@@ -44,7 +43,6 @@ import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 
 import Data.Word
-import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree.Bits qualified as BSF
 import Control.Monad.Yaftee.Pipe.Png.Palette qualified as Palette
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
@@ -54,9 +52,10 @@ import Data.Image.Gray1 qualified as Gray1
 
 import FctlImage qualified
 import FctlImage.Gray1 qualified as FctlImage1
-import FctlImageBody.Gray1Bools qualified as B
 import FctlImageBody.Gray1Words qualified as W
 import Tools
+
+import Control.Monad.Yaftee.Pipe.Png.Encode.Chunk
 
 writeApngGray1' :: FilePath -> Header.Header -> Int -> Word32 -> [(Gray.G, Ratio Word16)] -> IO ()
 writeApngGray1' fp hdr fn np = writeApngGray1 fp hdr fn np . FctlImage.fromImagesGray
@@ -298,29 +297,7 @@ makeChunks hdr fn np mplt = void $ do
 		Pipe.yield \sn -> (
 			Chunk { chunkName = "IEND", chunkBody = "" },
 			sn )
-	Pipe.=$= do
-		Pipe.yield Png.fileHeader
-		forever' 0 \sn -> do
-			f <- Pipe.await
-			let	(c, sn') = f sn
-			Pipe.yield $ chunkToByteString c
-			pure sn'
-
-forever' :: Monad m => a -> (a -> m a) -> m a
-forever' st act = act st >>= (`forever'` act)
-
-data Chunk = Chunk {
-	chunkName :: BSF.ByteString,
-	chunkBody :: BSF.ByteString }
-	deriving Show
-
-chunkToByteString :: Chunk -> BSF.ByteString
-chunkToByteString Chunk { chunkName = nm, chunkBody = bd } =
-	BSF.fromBitsBE' ln <> nmbd <> BSF.fromBitsBE' (Crc32.toWord crc)
-	where
-	ln = fromIntegral @_ @Word32 $ BSF.length bd
-	nmbd = nm <> bd
-	crc = Crc32.complement $ BSF.foldl' Crc32.step Crc32.initial nmbd
+	Pipe.=$= chunks 0
 
 pipeDat :: forall nm m -> (
 	Encode.Datable a,
