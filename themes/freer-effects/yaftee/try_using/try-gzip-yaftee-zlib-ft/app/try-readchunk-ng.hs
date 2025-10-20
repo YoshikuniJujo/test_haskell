@@ -43,13 +43,13 @@ main = do
 			n <- Word8.toBitsBE <$> Bytes.readBytes "foobar" 4
 			Bytes.resetCrc32 "foobar"
 			cnm <- Bytes.readBytes "foobar" 4
-			Pipe.yield $ ChunkName cnm
+			Pipe.yield $ ChunkBegin cnm
 			for_ (split m n) \n' -> Pipe.yield . ChunkBody =<< Bytes.readBytes "foobar" n'
---			IO.print =<< Bytes.readBytes "foobar" n
 			Bytes.compCrc32 "foobar"
 			Bytes.Crc32 crc1 <- State.getN "foobar"
 			IO.print crc1
 			IO.print . Crc32.fromWord =<< Word8.toBitsBE <$> Bytes.readBytes "foobar" 4
+			Pipe.yield ChunkEnd
 		Pipe.=$= PipeIO.print
 		where
 		split n = fix \go -> \case
@@ -57,4 +57,6 @@ main = do
 			m'	| n < m' -> n : go (m' - n)
 				| otherwise -> [m']
 
-data Chunk = ChunkName BSF.ByteString | ChunkBody BSF.ByteString deriving Show
+data Chunk
+	= ChunkBegin BSF.ByteString
+	| ChunkBody BSF.ByteString | ChunkEnd deriving Show
