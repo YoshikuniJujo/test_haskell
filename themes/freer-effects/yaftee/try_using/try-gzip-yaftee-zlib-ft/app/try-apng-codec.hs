@@ -55,6 +55,8 @@ import Data.Png qualified as Png
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
+import Data.Apng
+
 main :: IO ()
 main = do
 	fp : fpo : _ <- getArgs

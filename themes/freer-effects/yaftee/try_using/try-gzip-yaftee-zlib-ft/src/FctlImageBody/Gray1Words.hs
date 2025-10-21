@@ -8,6 +8,7 @@ import Control.Monad.Yaftee.Pipe.Png.Encode qualified as PngE
 import Control.Monad.Yaftee.Pipe.Apng.Decode
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
+import Data.Apng
 
 data BodyGray1 = BodyGray1Fctl Fctl | BodyGray1Pixels [Word8] deriving Show
 

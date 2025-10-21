@@ -44,6 +44,8 @@ import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 
 import Data.IORef
 
+import Data.Apng
+
 main :: IO ()
 main = do
 	fp : fpo : _ <- getArgs

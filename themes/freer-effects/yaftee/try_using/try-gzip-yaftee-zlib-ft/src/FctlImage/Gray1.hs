@@ -7,6 +7,7 @@ import Control.Monad.Yaftee.Pipe.Apng.Decode qualified as Decode
 import Data.Vector qualified as V
 import Data.Ratio
 import Data.Word
+import Data.Apng qualified as Decode
 
 import Data.Image.Gray1 qualified as Gray1
 

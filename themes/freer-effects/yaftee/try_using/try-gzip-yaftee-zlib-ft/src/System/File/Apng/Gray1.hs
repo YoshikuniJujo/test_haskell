@@ -47,10 +47,10 @@ import Control.Monad.Yaftee.Pipe.Png.Palette qualified as Palette
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
-import Data.Image.Gray1 qualified as Gray1
-
 import FctlImage qualified
 import FctlImageBody.Gray1Bools
+
+import Data.Apng
 
 writeApngGray1' :: FilePath -> Header.Header -> Int -> Word32 -> [(ImageI.G, Ratio Word16)] -> IO ()
 writeApngGray1' fp hdr fn np = writeApngGray1 fp hdr fn np . FctlImage.fromImagesGray

@@ -21,6 +21,8 @@ import Control.Monad.Yaftee.Pipe.Apng.Decode
 
 import Tools
 
+import Data.Apng
+
 data BodyGray1 = BodyGray1Fctl Fctl | BodyGray1Pixels [Bool] deriving Show
 
 instance Fctlable BodyGray1 where

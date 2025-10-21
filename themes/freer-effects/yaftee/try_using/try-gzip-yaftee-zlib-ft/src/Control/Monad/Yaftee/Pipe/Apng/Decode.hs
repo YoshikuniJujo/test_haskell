@@ -9,12 +9,9 @@
 
 module Control.Monad.Yaftee.Pipe.Apng.Decode (
 	apngRun_, ApngStates, apngPipe, ApngMembers,
-	FrameNumber(..), Body(..), Fctl(..), encodeFctl, encodeFctl', Actl(..), encodeActl,
+	FrameNumber(..), Body(..), BodyGray(..),
 	fctlPoss, fctlPoss',
-
-	Fctlable(..),
-
-	BodyGray(..),
+	Fctlable(..)
 
 	) where
 
@@ -35,12 +32,12 @@ import Control.HigherOpenUnion qualified as U
 import Data.TypeLevel.List
 import Data.HigherFunctor qualified as HFunctor
 import Data.Bits
-import Data.Bool
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Color
 import Data.Png.Header qualified as Header
+import Data.Apng
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
@@ -139,7 +136,7 @@ apngPipe nm hdr ibd obd = void $ Steps.chunk nm
 			"" <- Pipe.await
 			fctl <- State.getN nm
 			Pipe.yield $ BodyFctl fctl
-			Unfilter.pngUnfilter'' hdr (fromIntegral $ fctlHeight fctl)
+			_ <- Unfilter.pngUnfilter'' hdr (fromIntegral $ fctlHeight fctl)
 				Pipe.=$= PipeT.convert (BodyRgba . Header.word8ListToRgbaList @Double hdr)
 			Pipe.yield BodyFdatEnd
 		Pipe.yield BodyEnd
@@ -179,39 +176,23 @@ data BodyGray
 class Fctlable a where getFctl :: a -> Maybe Fctl
 
 instance PngE.Datable Body where
-	isDat (BodyRgba _) = True
+	isDat = \case BodyRgba _ -> True; _ -> False
 	endDat = \case BodyFdatEnd -> True; _ -> False
-	toDat hdr (BodyRgba rgba) = BSF.pack $ Header.rgbaListToWord8List hdr rgba
+	toDat hdr = \case
+		BodyRgba rgba -> BSF.pack $ Header.rgbaListToWord8List hdr rgba
+		_ -> error "bad"
 
 instance PngE.Datable BodyGray where
-	isDat (BodyGrayPixels _) = True
+	isDat = \case BodyGrayPixels _ -> True; _ -> False
 	endDat = \case BodyGrayFdatEnd -> True; _ -> False
-	toDat hdr (BodyGrayPixels g) = BSF.pack g
-
-boolsToWords :: [Bool] -> [Word8]
-boolsToWords = (boolsToWord <$>) . sep 8
-
-boolsToWord :: [Bool] -> Word8
-boolsToWord = go 0 . to8
-	where
-	go r [] = r
-	go r (b : bs) = go (bool id (.|. 1) b (r `shiftL` 1)) bs
-	to8 bs = bs ++ replicate (8 - Prelude.length bs) False
-
-sep :: Int -> [a] -> [[a]]
-sep _ [] = []
-sep n xs = take n xs : sep n (drop n xs)
-
-data Fctl = Fctl {
-	fctlSequenceNumber :: Word32,
-	fctlWidth :: Word32, fctlHeight :: Word32,
-	fctlXOffset :: Word32, fctlYOffset :: Word32,
-	fctlDelayNum :: Word16, fctlDelayDen :: Word16,
-	fctlDisposeOp :: Word8, fctlBlendOp :: Word8 } deriving Show
+	toDat _hdr = \case
+		BodyGrayPixels g -> BSF.pack g
+		_ -> error "bad"
 
 fctlPoss :: Header.Header -> Fctl -> [(Int, Int)]
 fctlPoss hdr fctl = Header.calcPoss hdr (fctlWidth fctl) (fctlHeight fctl)
 
+fctlPoss' :: Header.Header -> Fctl -> [[(Int, Int)]]
 fctlPoss' hdr fctl = Header.calcPoss' hdr (fctlWidth fctl) (fctlHeight fctl)
 
 fctl0 :: Fctl
@@ -235,30 +216,7 @@ decodeFctl bs = do
 		fctlDelayNum = dn, fctlDelayDen = dd,
 		fctlDisposeOp = dpo, fctlBlendOp = blo }
 
-encodeFctl :: Fctl -> BSF.ByteString
-encodeFctl c =
-	BSF.fromBitsBE' (fctlSequenceNumber c) <>
-	BSF.fromBitsBE' (fctlWidth c) <> BSF.fromBitsBE' (fctlHeight c) <>
-	BSF.fromBitsBE' (fctlXOffset c) <> BSF.fromBitsBE' (fctlYOffset c) <>
-	BSF.fromBitsBE' (fctlDelayNum c) <> BSF.fromBitsBE' (fctlDelayDen c) <>
-	BSF.fromBitsBE' (fctlDisposeOp c) <> BSF.fromBitsBE' (fctlBlendOp c)
-
-encodeFctl' :: Word32 -> Fctl -> BSF.ByteString
-encodeFctl' sn c =
-	BSF.fromBitsBE' sn <>
-	BSF.fromBitsBE' (fctlWidth c) <> BSF.fromBitsBE' (fctlHeight c) <>
-	BSF.fromBitsBE' (fctlXOffset c) <> BSF.fromBitsBE' (fctlYOffset c) <>
-	BSF.fromBitsBE' (fctlDelayNum c) <> BSF.fromBitsBE' (fctlDelayDen c) <>
-	BSF.fromBitsBE' (fctlDisposeOp c) <> BSF.fromBitsBE' (fctlBlendOp c)
-
 splitBits ::
 	forall b . FiniteBits b => BSF.ByteString -> Maybe (b, BSF.ByteString)
 splitBits bs =
 	(BSF.toBitsBE `first`) <$> BSF.splitAt' (finiteBitSize @b undefined `div` 8) bs
-
-data Actl = Actl {
-	actlFrames :: Word32,
-	actlPlays :: Word32 } deriving Show
-
-encodeActl :: Actl -> BSF.ByteString
-encodeActl c = BSF.fromBitsBE' (actlFrames c) <> BSF.fromBitsBE' (actlPlays c)

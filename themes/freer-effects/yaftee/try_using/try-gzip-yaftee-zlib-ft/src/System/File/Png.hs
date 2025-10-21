@@ -46,6 +46,8 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 import FctlImage qualified
 
+import Data.Apng
+
 writePngGray' :: FilePath -> Header.Header -> ImageI.G -> IO ()
 writePngGray' fp hdr = writePngGray fp hdr . uncurry FctlImage.firstImageGray . (, 0)
 

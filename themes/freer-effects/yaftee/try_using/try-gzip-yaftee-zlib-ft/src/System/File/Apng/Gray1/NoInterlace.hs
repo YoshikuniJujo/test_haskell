@@ -57,6 +57,8 @@ import Tools
 
 import Control.Monad.Yaftee.Pipe.Png.Encode.Chunk
 
+import Data.Apng
+
 writeApngGray1' :: FilePath -> Header.Header -> Int -> Word32 -> [(Gray.G, Ratio Word16)] -> IO ()
 writeApngGray1' fp hdr fn np = writeApngGray1 fp hdr fn np . FctlImage.fromImagesGray
 

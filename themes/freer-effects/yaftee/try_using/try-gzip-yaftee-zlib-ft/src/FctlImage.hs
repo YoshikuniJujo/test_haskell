@@ -4,11 +4,12 @@
 module FctlImage where
 
 import Control.Arrow
-import Control.Monad.Yaftee.Pipe.Apng.Decode qualified as Decode
 import Data.Ratio
 import Data.Word
 import Data.Image.Gray qualified as Gray
 import Data.Vector qualified as V
+
+import Data.Apng qualified as Decode
 
 data GrayI = GrayI {
 	grayIWidth :: Word32, grayIHeight :: Word32,

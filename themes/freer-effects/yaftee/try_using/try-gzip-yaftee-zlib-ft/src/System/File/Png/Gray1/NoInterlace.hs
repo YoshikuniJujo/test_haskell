@@ -35,8 +35,6 @@ import System.IO
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
-import Control.Monad.Yaftee.Pipe.Apng.Decode
-
 import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 
@@ -51,6 +49,8 @@ import Data.Image.Gray1 qualified as Gray1
 
 import FctlImage.Gray1 qualified as FctlImage1
 import FctlImageBody.Gray1Words qualified as W
+
+import Data.Apng
 
 write :: FilePath -> Gray1.G -> IO ()
 write fp g =

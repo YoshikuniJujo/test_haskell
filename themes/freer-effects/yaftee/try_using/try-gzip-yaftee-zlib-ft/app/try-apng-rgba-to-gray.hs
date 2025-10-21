@@ -48,6 +48,8 @@ import Data.Word
 import FctlImage qualified
 import System.File.Apng
 
+import Data.Apng
+
 main :: IO ()
 main = do
 	fp : fpo : _ <- getArgs
