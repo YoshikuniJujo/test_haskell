@@ -9,6 +9,7 @@
 module Main (main) where
 
 import Control.Monad
+import Control.Monad.ToolsYj
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
@@ -21,7 +22,10 @@ import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.Ratio
+import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
+import Data.Apng qualified as Apng
 import System.IO
 import System.Environment
 
@@ -37,10 +41,22 @@ main = do
 		. void $ PipeBS.hGet 32 h
 		Pipe.=$= PipeT.convert BSF.fromStrict
 		Pipe.=$= chunks "foobar"
-		Pipe.=$= forever do
-			ChunkBegin cnm <- Pipe.await
+		Pipe.=$= do
+			ChunkBegin "IHDR" <- Pipe.await
 			bd <- chunkBody "foobar"
-			Pipe.yield \() -> (Chunk.Chunk cnm bd, ())
+			Pipe.yield \() -> (Chunk.Chunk "IHDR" bd, ())
+
+			doWhile_ do
+				ChunkBegin cnm <- Pipe.await
+				case cnm of
+					"IDAT" -> do
+						bd <- chunkBody "foobar"
+						Pipe.yield \() -> (Chunk.Chunk cnm bd, ())
+						pure True
+					"IEND" -> pure False
+					_ -> pure True
+
+			Pipe.yield \() -> (Chunk.Chunk "IEND" "", ())
 		Pipe.=$= Chunk.chunks ()
 		Pipe.=$= PipeT.convert BSF.toStrict
 		Pipe.=$= PipeBS.hPutStr ho
@@ -53,3 +69,15 @@ chunkBody nm = Pipe.await >>= \case
 	ChunkBody bd -> State.modifyN nm (<> bd) >> chunkBody nm
 	ChunkEnd -> State.getN nm <* State.putN @BSF.ByteString nm ""
 	_ -> Except.throw @String "chunkBody: not ChunkBody"
+
+actl :: Word32 -> Apng.Actl
+actl fn = Apng.Actl { Apng.actlFrames = fn, Apng.actlPlays = 1 }
+
+fctl :: Word32 -> Word32 -> Ratio Word16 -> Apng.Fctl
+fctl w h d = Apng.Fctl {
+	Apng.fctlSequenceNumber = 0,
+	Apng.fctlWidth = w, Apng.fctlHeight = h,
+	Apng.fctlXOffset = 0, Apng.fctlYOffset = 0,
+	Apng.fctlDelayNum = numerator d, Apng.fctlDelayDen = denominator d,
+	Apng.fctlDisposeOp = Apng.disposeOpNone,
+	Apng.fctlBlendOp = Apng.blendOpSource }

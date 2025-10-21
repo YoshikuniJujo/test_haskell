@@ -10,7 +10,10 @@
 module Data.Apng (
 
 	Actl(..), encodeActl,
-	Fctl(..), encodeFctl, encodeFctl'
+	Fctl(..), encodeFctl, encodeFctl',
+
+	disposeOpNone, disposeOpBackground, disposeOpPrevious,
+	blendOpSource, blendOpOver
 
 	) where
 
@@ -47,3 +50,9 @@ data Actl = Actl {
 
 encodeActl :: Actl -> BSF.ByteString
 encodeActl c = BSF.fromBitsBE' (actlFrames c) <> BSF.fromBitsBE' (actlPlays c)
+
+disposeOpNone, disposeOpBackground, disposeOpPrevious :: Word8
+disposeOpNone = 0; disposeOpBackground = 1; disposeOpPrevious = 2
+
+blendOpSource, blendOpOver :: Word8
+blendOpSource = 0; blendOpOver = 1
