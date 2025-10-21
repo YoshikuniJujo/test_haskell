@@ -34,7 +34,7 @@ main = do
 		bs = take cf $ drop ff $ Lg.boards b0
 		fps = (szostd </>) . boardName <$> [ff .. ff + cf]
 		imgs = Lg.boardToGray1 <$> bs
-	Img.printAsAscii `mapM_` imgs
+--	Img.printAsAscii `mapM_` imgs
 	zipWithM_ Png.write fps imgs
 
 readLifegame :: [String] ->
