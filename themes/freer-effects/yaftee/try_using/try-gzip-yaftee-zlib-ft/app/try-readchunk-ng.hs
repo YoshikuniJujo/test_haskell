@@ -23,18 +23,27 @@ import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.List
 import Data.Ratio
 import Data.Word
 import Data.Word.Word8 qualified as Word8
 import Data.ByteString.FingerTree qualified as BSF
+import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Png.Header.Data qualified as Header
 import Data.Apng qualified as Apng
 import System.IO
 import System.Environment
+import System.Directory
+import System.FilePath
 
 main :: IO ()
 main = do
-	fp : fpo : _ <- getArgs
+	dr : d : fpo : _ <- getArgs
+
+	fps_@(fp : _) <- ((dr </>) <$>) . sort . filter (not . ("." `isSuffixOf`)) <$> getDirectoryContents dr
+
+	let	fps = take 500 fps_
+		n = length fps
 
 	hh <- openFile fp ReadMode
 	((), Just (wdt, hgt)) <- Eff.runM
@@ -51,40 +60,69 @@ main = do
 			State.put =<< headerToSize <$> chunkBody "foobar"
 	hClose hh
 
-	print (wdt, hgt)
-
-	h <- openFile fp ReadMode; ho <- openFile fpo WriteMode
+	hs <- (`openFile` ReadMode) `mapM` fps
+	ho <- openFile fpo WriteMode
 	void . Eff.runM
 		. Bytes.bytesRun_ @"foobar"
 		. flip (State.runN @"foobar") ("" :: BSF.ByteString)
 		. Except.run @String . Fail.run . Pipe.run
 		. (`Fail.catch` IO.putStrLn) . (`Except.catch` IO.putStrLn)
-		. void $ PipeBS.hGet 32 h
+		. void $ (PipeBS.hGet 32 `mapM_` hs)
 		Pipe.=$= PipeT.convert BSF.fromStrict
-		Pipe.=$= chunks "foobar"
+		Pipe.=$= replicateM_ n (chunks "foobar")
 		Pipe.=$= do
-			Pipe.yield \() -> (Chunk.Chunk "IHDR"
+			Pipe.yield \sn -> (Chunk.Chunk "IHDR"
 				. BSF.fromStrict
-				. Header.encodeHeader $ header wdt hgt, ())
+				. Header.encodeHeader $ header wdt hgt, sn)
+			Pipe.yield \sn -> (Chunk.Chunk "acTL"
+				. Apng.encodeActl . actl $ fromIntegral n, sn)
 
-			do	ChunkBegin "IHDR" <- Pipe.await
+			do	
+				ChunkBegin "IHDR" <- Pipe.await
 				_bd <- chunkBody "foobar"
+				Pipe.yield \sn -> (
+					Chunk.Chunk "fcTL"
+						(Apng.encodeFctl' sn . fctl wdt hgt $ read d),
+					sn + 1 )
 				doWhile_ do
 					ChunkBegin cnm <- Pipe.await
 					case cnm of
 						"IDAT" -> do
 							bd <- chunkBody "foobar"
-							Pipe.yield \() -> (Chunk.Chunk cnm bd, ())
+							Pipe.yield \sn -> (Chunk.Chunk cnm bd, sn)
 							pure True
-						"IEND" -> pure False
+						"IEND" -> do
+							ChunkEnd <- Pipe.await
+							pure False
 						_ -> pure True
 
-			Pipe.yield \() -> (Chunk.Chunk "IEND" "", ())
+			doWhile_ $ Pipe.awaitMaybe >>= \case
+				Nothing -> pure False
+				Just (ChunkBegin "IHDR") -> do	
+					_bd <- chunkBody "foobar"
+					Pipe.yield \sn -> (
+						Chunk.Chunk "fcTL"
+							(Apng.encodeFctl' sn . fctl wdt hgt $ read d),
+						sn + 1 )
+					doWhile_ do
+						ChunkBegin cnm <- Pipe.await
+						case cnm of
+							"IDAT" -> do
+								bd <- chunkBody "foobar"
+								Pipe.yield \sn -> (fdatChunk sn bd, sn + 1)
+								pure True
+							"IEND" -> do
+								ChunkEnd <- Pipe.await
+								pure False
+							_ -> pure True
+					pure True
 
-		Pipe.=$= Chunk.chunks ()
+			Pipe.yield \sn -> (Chunk.Chunk "IEND" "", sn)
+
+		Pipe.=$= Chunk.chunks 0
 		Pipe.=$= PipeT.convert BSF.toStrict
 		Pipe.=$= PipeBS.hPutStr ho
-	hClose h; hClose ho
+	hClose `mapM_` hs; hClose ho
 
 headerToSize :: BSF.ByteString -> Maybe (Word32, Word32)
 headerToSize hdr = do
@@ -110,7 +148,7 @@ header w h = Header.Header {
 	Header.headerInterlaceMethod = Header.InterlaceMethodNon }
 
 actl :: Word32 -> Apng.Actl
-actl fn = Apng.Actl { Apng.actlFrames = fn, Apng.actlPlays = 1 }
+actl fn = Apng.Actl { Apng.actlFrames = fn, Apng.actlPlays = 0 }
 
 fctl :: Word32 -> Word32 -> Ratio Word16 -> Apng.Fctl
 fctl w h d = Apng.Fctl {
@@ -120,3 +158,6 @@ fctl w h d = Apng.Fctl {
 	Apng.fctlDelayNum = numerator d, Apng.fctlDelayDen = denominator d,
 	Apng.fctlDisposeOp = Apng.disposeOpNone,
 	Apng.fctlBlendOp = Apng.blendOpSource }
+
+fdatChunk :: Word32 -> BSF.ByteString -> Chunk.Chunk
+fdatChunk sn bd = Chunk.Chunk "fdAT" $ BSF.fromBitsBE' sn <> bd
