@@ -25,6 +25,7 @@ import Control.Monad.Yaftee.IO qualified as IO
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Image.Simple qualified as Image
 import Data.Png.Header qualified as Header
+import Data.Png.Header.Data qualified as Header
 
 import System.IO
 import System.Environment

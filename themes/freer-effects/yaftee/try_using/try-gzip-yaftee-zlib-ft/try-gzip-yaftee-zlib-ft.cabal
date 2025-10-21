@@ -46,6 +46,7 @@ library
       Data.Png
       Data.Png.Filters
       Data.Png.Header
+      Data.Png.Header.Data
       FctlImage
       FctlImage.Gray1
       FctlImageBody.Gray1Bools

@@ -46,6 +46,7 @@ import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png
 import Data.Png.Header qualified as Header
+import Data.Png.Header.Data qualified as Header
 
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 
@@ -127,7 +128,7 @@ headerToColorTypeDepth :: Header.Header -> Maybe (ColorType, BitDepth)
 headerToColorTypeDepth h = do
 	ct <- case Header.headerColorType h of
 		Header.ColorTypeColorUsed -> Just Rgb
-		Header.ColorType 6 -> Just Rgba
+		Header.ColorTypeColorAlpha -> Just Rgba
 		_ -> Nothing
 	bd <- case Header.headerBitDepth h of
 		8 -> Just BitDepth8

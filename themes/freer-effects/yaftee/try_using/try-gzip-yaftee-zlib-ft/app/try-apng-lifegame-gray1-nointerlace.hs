@@ -14,6 +14,7 @@ import Data.Bool
 import Data.Word
 import Data.Image.Gray qualified as Gray
 import Data.Png.Header qualified as Header
+import Data.Png.Header.Data qualified as Header
 
 import System.Environment
 import System.FilePath

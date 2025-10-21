@@ -49,6 +49,7 @@ import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Color
 import Data.Png qualified as Png
 import Data.Png.Header qualified as Header
+import Data.Png.Header.Data qualified as Header
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib

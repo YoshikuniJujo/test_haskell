@@ -70,6 +70,8 @@ chunkBody nm = Pipe.await >>= \case
 	ChunkEnd -> State.getN nm <* State.putN @BSF.ByteString nm ""
 	_ -> Except.throw @String "chunkBody: not ChunkBody"
 
+-- header :: Word32 -> Word32 ->
+
 actl :: Word32 -> Apng.Actl
 actl fn = Apng.Actl { Apng.actlFrames = fn, Apng.actlPlays = 1 }
 

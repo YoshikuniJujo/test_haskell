@@ -32,6 +32,7 @@ import Data.Bool
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Image.Gray qualified as Gray
 import Data.Png.Header qualified as Header
+import Data.Png.Header.Data qualified as Header
 
 import System.IO
 

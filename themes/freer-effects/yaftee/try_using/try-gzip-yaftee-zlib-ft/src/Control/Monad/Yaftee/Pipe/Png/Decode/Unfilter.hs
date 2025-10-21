@@ -22,7 +22,10 @@ import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 
 import Data.Png.Header qualified as Header
+import Data.Png.Header.Data qualified as Header
 import Data.Png.Filters
+
+import Tools
 
 pngUnfilter :: forall nm -> (
 	U.Member Pipe.P es,
@@ -99,7 +102,7 @@ pngFilter hdr bs0 ((w, h) : ss) = void do
 	let	bpp = Header.headerToBpp hdr
 		rbs = Header.headerToRowBytes hdr
 		bd = fromIntegral $ Header.headerBitDepth hdr
-		bs0' = filter bpp (replicate ((w * bd) `Header.div'` 8 * Header.sampleNum' hdr) 0) bs0
+		bs0' = filter bpp (replicate ((w * bd) `div'` 8 * Header.sampleNum' hdr) 0) bs0
 	Pipe.yield bs0'
 	filterAll bpp (BSF.unpack bs0) (h - 1)
 	when (not $ null ss) do

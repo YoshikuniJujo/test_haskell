@@ -69,3 +69,6 @@ boolsToWord = go 0 . to8
 sep :: Int -> [a] -> [[a]]
 sep _ [] = []
 sep n xs = take n xs : sep n (drop n xs)
+
+div' :: Integral n => n -> n -> n
+m `div'`n = (m - 1) `div` n + 1

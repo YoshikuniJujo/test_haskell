@@ -31,6 +31,7 @@ import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Color
 import Data.Png.Header qualified as Header
+import Data.Png.Header.Data qualified as Header
 import System.IO
 import System.Environment
 import System.FilePath

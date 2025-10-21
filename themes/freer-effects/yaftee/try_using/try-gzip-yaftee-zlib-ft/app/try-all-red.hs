@@ -20,6 +20,7 @@ import Control.Monad.Yaftee.IO qualified as IO
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Color
 import Data.Png.Header qualified as Header
+import Data.Png.Header.Data qualified as Header
 import System.IO
 import System.Environment
 import System.FilePath
@@ -38,7 +39,7 @@ main = do
 
 	let	hdr' = Header.Header {
 			Header.headerWidth = 30, Header.headerHeight = 30,
-			Header.headerBitDepth = 8, Header.headerColorType = Header.ColorType 6,
+			Header.headerBitDepth = 8, Header.headerColorType = Header.ColorTypeColorAlpha,
 			Header.headerCompressionMethod = Header.CompressionMethodDeflate,
 			Header.headerFilterMethod = Header.FilterMethodDefaultFilter,
 			Header.headerInterlaceMethod = Header.InterlaceMethodNon }

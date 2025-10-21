@@ -13,6 +13,7 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
 import Data.Png.Header
+import Data.Png.Header.Data
 
 import Data.Word.Word8 qualified as BSF
 import Data.ByteString.FingerTree qualified as BSF
