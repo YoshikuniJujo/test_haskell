@@ -40,9 +40,9 @@ main :: IO ()
 main = do
 	dr : d : fpo : _ <- getArgs
 
-	fps_@(fp : _) <- ((dr </>) <$>) . sort . filter (not . ("." `isSuffixOf`)) <$> getDirectoryContents dr
+	fps@(fp : _) <- ((dr </>) <$>) . sort . filter (not . ("." `isSuffixOf`)) <$> getDirectoryContents dr
 
-	let	fps = take 500 fps_
+	let	-- fps = take 500 fps_
 		n = length fps
 
 	hh <- openFile fp ReadMode
@@ -60,14 +60,14 @@ main = do
 			State.put =<< headerToSize <$> chunkBody "foobar"
 	hClose hh
 
-	hs <- (`openFile` ReadMode) `mapM` fps
+--	hs <- (`openFile` ReadMode) `mapM` fps
 	ho <- openFile fpo WriteMode
 	void . Eff.runM
 		. Bytes.bytesRun_ @"foobar"
 		. flip (State.runN @"foobar") ("" :: BSF.ByteString)
 		. Except.run @String . Fail.run . Pipe.run
 		. (`Fail.catch` IO.putStrLn) . (`Except.catch` IO.putStrLn)
-		. void $ (PipeBS.hGet 32 `mapM_` hs)
+		. void $ ((\fp -> Eff.effBase (openFile fp ReadMode) >>= \h -> PipeBS.hGet 32 h >> Eff.effBase (hClose h)) `mapM_` fps)
 		Pipe.=$= PipeT.convert BSF.fromStrict
 		Pipe.=$= replicateM_ n (chunks "foobar")
 		Pipe.=$= do
@@ -122,7 +122,8 @@ main = do
 		Pipe.=$= Chunk.chunks 0
 		Pipe.=$= PipeT.convert BSF.toStrict
 		Pipe.=$= PipeBS.hPutStr ho
-	hClose `mapM_` hs; hClose ho
+--	hClose `mapM_` hs;
+	hClose ho
 
 headerToSize :: BSF.ByteString -> Maybe (Word32, Word32)
 headerToSize hdr = do
