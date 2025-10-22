@@ -298,6 +298,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gzip-yaftee-zlib-ft
+  try-apng-lifegame-with-ratio:
+    main:                try-apng-lifegame-with-ratio.hs
+    source-dirs:         app
+    other-modules:       []
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gzip-yaftee-zlib-ft
 
 tests:
   try-gzip-yaftee-zlib-ft-test:
