@@ -7,7 +7,9 @@ module Lifegame.Words (
 
 	boards,
 
-	boardToGray1, gray1ToBoard, putShapeAscii, printAsAscii
+	boardToGray1, boardToGray1', gray1ToBoard,
+
+	putShapeAscii, printAsAscii
 
 	) where
 
@@ -77,6 +79,10 @@ boolsToWord bls = go 0 bls'
 boardToGray1 :: Board -> Gray1.G
 boardToGray1 Board { boardWidth = w, boardHeight = h, boardBody = bd } =
 	Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd }
+
+boardToGray1' :: Int -> Board -> Gray1.G
+boardToGray1' n b = Gray1.generate (boardWidth b * n) (boardHeight b * n) \x y ->
+	read b (x `div` n) (y `div` n)
 
 gray1ToBoard :: Gray1.G -> Board
 gray1ToBoard Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd } =

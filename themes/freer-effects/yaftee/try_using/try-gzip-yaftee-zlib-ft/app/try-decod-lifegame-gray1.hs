@@ -11,7 +11,6 @@ import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
-import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
@@ -22,22 +21,15 @@ import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
-import Data.Bits
-import Data.Maybe
-import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
-import Data.Color
 import Data.Png.Header qualified as Header
 import Data.Png.Header.Data qualified as Header
+import Data.Image.Gray1 qualified as ImageG1
 import System.IO
 import System.Environment
-
+import System.File.Png.Gray1.NoInterlace qualified as Png
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
-
-import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
-
-import Data.Image.Gray1 qualified as ImageG1
 import Lifegame.Words qualified as Lifegame
 
 main :: IO ()
@@ -45,16 +37,12 @@ main = do
 	fp : fpo : _ <- getArgs
 
 	hh <- openFile fp ReadMode
-	Right hdr <- Eff.runM . Except.run @String
-		. Png.runHeader @"foobar" . Pipe.run
-		. (`Except.catch` IO.putStrLn)
+	Right hdr <- Eff.runM . Except.run @String . Png.runHeader @"foobar"
+		. Pipe.run . (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 hh
-			Pipe.=$= PipeT.convert BSF.fromStrict
-			Pipe.=$= Png.decodeHeader "foobar"
+		Pipe.=$= PipeT.convert BSF.fromStrict
+		Pipe.=$= Png.decodeHeader "foobar"
 	hClose hh
-
-	print hdr
-	print $ Header.headerToBpp hdr
 
 	let	rs = (+ 1) <$> Header.headerToRows hdr
 
@@ -62,93 +50,36 @@ main = do
 	ibd <- PipeZ.cByteArrayMalloc 64
 	obd <- PipeZ.cByteArrayMalloc 64
 
-	ho <- openFile fpo WriteMode
-	ibe <- PipeZ.cByteArrayMalloc 64
-	obe <- PipeZ.cByteArrayMalloc 64
-
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
-		. Buffer.run @"foobar" @BSF.ByteString
-		. PipeZ.run @"foobar"
-		. Steps.chunkRun_ @"foobar"
-		. Buffer.run @"barbaz" @BSF.ByteString
-		. PipeZ.run @"barbaz"
-		. Pipe.run
+		. Buffer.run @"foobar" @BSF.ByteString . PipeZ.run @"foobar"
+		. Steps.chunkRun_ @"foobar" . Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. (`Except.catch` IO.print @Zlib.ReturnCode)
 		. void $ PipeBS.hGet 32 h
-			Pipe.=$= PipeT.convert BSF.fromStrict
 
 -- DECODE
 
-			Pipe.=$= Steps.chunk "foobar"
-			Pipe.=$= forever do
-				bs <- Pipe.await
-				cnk <- State.getN @Steps.Chunk "foobar"
-				when ("IDAT" `Chunk.isChunkName` cnk) $ Pipe.yield bs
-			Pipe.=$= PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
-			Pipe.=$= Buffer.format "foobar" BSF.splitAt' "" rs
---			Pipe.=$= PipeIO.debugPrint
-			Pipe.=$= Unfilter.pngUnfilter' hdr
-			Pipe.=$= do
-				img <- ImageG1.generateFromBytesM
-					(fromIntegral $ Header.headerWidth hdr)
-					(fromIntegral $ Header.headerHeight hdr)
-					Pipe.await
-				IO.print img
-				Eff.effBase $ ImageG1.printAsAscii img
-				IO.putStrLn ""
-				Eff.effBase . Lifegame.printAsAscii $ Lifegame.gray1ToBoard img
-
-			{-
-
-			Pipe.=$= PipeT.convert (wordsToGrays hdr)
+		Pipe.=$= PipeT.convert BSF.fromStrict
+		Pipe.=$= Steps.chunk "foobar"
+		Pipe.=$= forever do
+			bs <- Pipe.await
+			cnk <- State.getN @Steps.Chunk "foobar"
+			when ("IDAT" `Chunk.isChunkName` cnk) $ Pipe.yield bs
+		Pipe.=$= PipeZ.inflate "foobar" IO (Zlib.WindowBitsZlib 15) ibd obd
+		Pipe.=$= Buffer.format "foobar" BSF.splitAt' "" rs
+		Pipe.=$= Unfilter.pngUnfilter' hdr
 
 -- ENCODE
 
---			Pipe.=$= PipeIO.debugPrint
-			Pipe.=$= Encode.encodeGray8 "barbaz" IO hdr ibe obe
-			Pipe.=$= PipeT.convert BSF.toStrict
-			Pipe.=$= PipeBS.hPutStr ho
+		Pipe.=$= do
+			img <- ImageG1.generateFromBytesM
+				(fromIntegral $ Header.headerWidth hdr)
+				(fromIntegral $ Header.headerHeight hdr)
+				Pipe.await
+			Eff.effBase do
+				let	brd = Lifegame.gray1ToBoard img
+					img' n = Lifegame.boardToGray1' n brd
+				ImageG1.printAsAscii $ img' 3
+				Png.write fpo $ img' 20
 
-			-}
-
-	hClose h; hClose ho
-
-wordsToGrays :: RealFrac d => Header.Header -> [Word8] -> [Gray d]
-wordsToGrays = \case
-	Header.Header { Header.headerBitDepth = 1 } -> wordsToGrays1
-	Header.Header { Header.headerBitDepth = 2 } -> wordsToGrays2
-	Header.Header { Header.headerBitDepth = 4 } -> wordsToGrays4
-	Header.Header { Header.headerBitDepth = 8 } -> (GrayWord8 <$>)
-	Header.Header { Header.headerBitDepth = 16 } -> wordsToGrays16
-
-wordsToGrays16 :: RealFrac d => [Word8] -> [Gray d]
-wordsToGrays16 [] = []
-wordsToGrays16 ((fromIntegral -> x) : (fromIntegral -> y) : ws) =
-	GrayWord16 (x `shiftL` 8 .|. y) : wordsToGrays16 ws
-
-wordsToGrays4 :: RealFrac d => [Word8] -> [Gray d]
-wordsToGrays4 [] = []
-wordsToGrays4 (x : ws) =
-	fromJust (grayWord4 $ x `shiftR` 4) :
-	fromJust (grayWord4 $ x .&. 0xf) : wordsToGrays4 ws
-
-wordsToGrays2 :: RealFrac d => [Word8] -> [Gray d]
-wordsToGrays2 [] = []
-wordsToGrays2 (x : ws) =
-	fromJust (grayWord2 $ x `shiftR` 6 .&. 0x3) :
-	fromJust (grayWord2 $ x `shiftR` 4 .&. 0x3) :
-	fromJust (grayWord2 $ x `shiftR` 2 .&. 0x3) :
-	fromJust (grayWord2 $ x `shiftR` 0 .&. 0x3) : wordsToGrays2 ws
-
-wordsToGrays1 :: RealFrac d => [Word8] -> [Gray d]
-wordsToGrays1 [] = []
-wordsToGrays1 (x : ws) =
-	fromJust (grayWord1 $ x `shiftR` 7 .&. 0x1) :
-	fromJust (grayWord1 $ x `shiftR` 6 .&. 0x1) :
-	fromJust (grayWord1 $ x `shiftR` 5 .&. 0x1) :
-	fromJust (grayWord1 $ x `shiftR` 4 .&. 0x1) :
-	fromJust (grayWord1 $ x `shiftR` 3 .&. 0x1) :
-	fromJust (grayWord1 $ x `shiftR` 2 .&. 0x1) :
-	fromJust (grayWord1 $ x `shiftR` 1 .&. 0x1) :
-	fromJust (grayWord1 $ x `shiftR` 0 .&. 0x1) : wordsToGrays1 ws
+	hClose h

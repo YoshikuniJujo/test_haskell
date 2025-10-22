@@ -4,7 +4,7 @@
 
 module Data.Image.Gray1 (
 
-	G(..),
+	G(..), generate,
 	generateFromBytesM, diff, unconsRow, printAsAscii
 
 	) where
