@@ -54,6 +54,7 @@ library
       Lifegame
       Lifegame.Bools
       Lifegame.Words
+      PngToImageGray1
       Samples
       System.File.Apng
       System.File.Apng.Gray1
