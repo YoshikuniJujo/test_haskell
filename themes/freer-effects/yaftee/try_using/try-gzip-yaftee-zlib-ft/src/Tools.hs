@@ -1,14 +1,18 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 module Tools where
 
+import GHC.TypeLits
+
 import Control.Arrow
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
+import Control.Monad.Yaftee.State qualified as State
 import Control.HigherOpenUnion qualified as U
 
 import Control.Monad.Primitive
@@ -72,3 +76,7 @@ sep n xs = take n xs : sep n (drop n xs)
 
 div' :: Integral n => n -> n -> n
 m `div'`n = (m - 1) `div` n + 1
+
+pop :: forall (nm :: Symbol) ->
+	(U.Member (State.Named nm [a]) es) => Eff.E es i o (Maybe a)
+pop nm = State.getsModifyN nm \case [] -> Nothing; x : xs -> Just (x, xs)

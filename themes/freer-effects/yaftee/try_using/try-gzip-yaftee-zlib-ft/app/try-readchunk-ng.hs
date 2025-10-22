@@ -1,4 +1,4 @@
-{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE PackageImports, ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
@@ -36,14 +36,18 @@ import System.Environment
 import System.Directory
 import System.FilePath
 
+import "try-gzip-yaftee-zlib-ft" Tools
+
 main :: IO ()
 main = do
-	dr : d : fpo : _ <- getArgs
+	dr : d_ : de_ : fpo : _ <- getArgs
 
 	fps@(fp : _) <- ((dr </>) <$>) . sort . filter (not . ("." `isSuffixOf`)) <$> getDirectoryContents dr
 
 	let	-- fps = take 500 fps_
 		n = length fps
+		d = read d_ :: Ratio Word16
+		de = read de_ :: Ratio Word16
 
 	hh <- openFile fp ReadMode
 	((), Just (wdt, hgt)) <- Eff.runM
@@ -65,6 +69,7 @@ main = do
 	void . Eff.runM
 		. Bytes.bytesRun_ @"foobar"
 		. flip (State.runN @"foobar") ("" :: BSF.ByteString)
+		. flip (State.runN @"foobar") (replicate (n - 1) d ++ [de])
 		. Except.run @String . Fail.run . Pipe.run
 		. (`Fail.catch` IO.putStrLn) . (`Except.catch` IO.putStrLn)
 		. void $ ((\fp -> Eff.effBase (openFile fp ReadMode) >>= \h -> PipeBS.hGet 32 h >> Eff.effBase (hClose h)) `mapM_` fps)
@@ -80,9 +85,10 @@ main = do
 			do	
 				ChunkBegin "IHDR" <- Pipe.await
 				_bd <- chunkBody "foobar"
+				Just d' <- pop "foobar"
 				Pipe.yield \sn -> (
 					Chunk.Chunk "fcTL"
-						(Apng.encodeFctl' sn . fctl wdt hgt $ read d),
+						(Apng.encodeFctl' sn $ fctl wdt hgt d'), -- $ read d),
 					sn + 1 )
 				doWhile_ do
 					ChunkBegin cnm <- Pipe.await
@@ -100,9 +106,10 @@ main = do
 				Nothing -> pure False
 				Just (ChunkBegin "IHDR") -> do	
 					_bd <- chunkBody "foobar"
+					Just d' <- pop "foobar"
 					Pipe.yield \sn -> (
 						Chunk.Chunk "fcTL"
-							(Apng.encodeFctl' sn . fctl wdt hgt $ read d),
+							(Apng.encodeFctl' sn $ fctl wdt hgt d'), -- $ read d),
 						sn + 1 )
 					doWhile_ do
 						ChunkBegin cnm <- Pipe.await
