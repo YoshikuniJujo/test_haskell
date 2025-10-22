@@ -4,9 +4,11 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lifegame.Words (
+
 	boards,
 
-	boardToGray1, putShapeAscii, printAsAscii
+	boardToGray1, gray1ToBoard, putShapeAscii, printAsAscii
+
 	) where
 
 import Prelude hiding (read)
@@ -75,6 +77,10 @@ boolsToWord bls = go 0 bls'
 boardToGray1 :: Board -> Gray1.G
 boardToGray1 Board { boardWidth = w, boardHeight = h, boardBody = bd } =
 	Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd }
+
+gray1ToBoard :: Gray1.G -> Board
+gray1ToBoard Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd } =
+	Board { boardWidth = w, boardHeight = h, boardBody = bd }
 
 putShape :: Int -> Int -> Int -> Int -> [[Bool]] -> Board
 putShape w h xo yo bss = generate w h \x y ->

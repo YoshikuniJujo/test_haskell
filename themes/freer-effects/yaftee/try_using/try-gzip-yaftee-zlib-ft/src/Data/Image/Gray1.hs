@@ -1,8 +1,13 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Image.Gray1 where
+module Data.Image.Gray1 (
+
+	G(..),
+	generateFromBytesM, diff, unconsRow, printAsAscii
+
+	) where
 
 import Control.Arrow
 import Data.Bits
@@ -42,6 +47,13 @@ boolsToWord bls = go 0 bls'
 	go r [] = r
 	go r (b : bs') = go (bool id (`setBit` 0) b $ r `shiftL` 1) bs'
 	bls' = bls ++ replicate (8 - length bls) False
+
+generateFromBytesM :: Monad m => Int -> Int -> m [Word8] -> m G
+generateFromBytesM w h f = do
+	bd <- V.unfoldrExactNM (((w - 1) `div` 8 + 1) * h)
+		(\case	[] -> f >>= \(w : ws) -> pure (w, ws)
+			w : ws -> pure (w, ws)) []
+	pure G { width = w, height = h, body = bd }
 
 diff :: G -> G -> Maybe (Word32, Word32, G)
 diff p c = do
