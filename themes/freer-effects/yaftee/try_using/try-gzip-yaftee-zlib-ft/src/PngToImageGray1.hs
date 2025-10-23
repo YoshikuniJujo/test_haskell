@@ -2,13 +2,15 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module PngToImageGray1 (runPngToImageGray1, pngToImageGray1) where
+module PngToImageGray1 (
+	runPngToImageGray1, PngToImageGray1States,
+	pngToImageGray1, PngToImageGray1Members ) where
 
 import Control.Monad
 import Control.Monad.ST
@@ -24,6 +26,7 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.TypeLevel.List
 import Data.HigherFunctor qualified as HFunctor
 import Data.ByteString qualified as BS
 import Data.ByteString.FingerTree qualified as BSF
@@ -35,15 +38,17 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 runPngToImageGray1 ::
 	forall nm m es i o r . (HFunctor.Loose (U.U es), Monoid m) =>
-	Eff.E (	State.Named nm (Maybe PipeZ.ByteString) ':
-		State.Named nm (Buffer.Monoid m) ': es ) i o r ->
+	Eff.E (	PngToImageGray1States nm m `Append` es) i o r ->
 	Eff.E es i o ((r, Maybe PipeZ.ByteString), Buffer.Monoid m)
 runPngToImageGray1 = Buffer.run . PipeZ.run
 
+type PngToImageGray1States nm m = '[
+	State.Named nm (Maybe PipeZ.ByteString),
+	State.Named nm (Buffer.Monoid m) ]
+
 pngToImageGray1 :: forall nm -> (
 	U.Member Pipe.P es, Steps.ChunkMembers nm es,
-	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
-	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
+	PngToImageGray1Members nm es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Base IO.I es ) =>
 	Header.Header ->
@@ -63,3 +68,7 @@ pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
 		(fromIntegral $ Header.headerHeight hdr)
 		Pipe.await)
 	where rs = (+ 1) <$> Header.headerToRows hdr
+
+type PngToImageGray1Members nm es = (
+	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es )
