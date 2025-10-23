@@ -3,6 +3,7 @@
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -14,7 +15,6 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
-import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
@@ -44,7 +44,7 @@ main = do
 	ibd <- PipeZ.cByteArrayMalloc 64
 	obd <- PipeZ.cByteArrayMalloc 64
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
-		. Buffer.run @"foobar" @BSF.ByteString . PipeZ.run @"foobar"
+		. runPngToImageGray1 @"foobar" @BSF.ByteString
 		. Steps.chunkRun_ @"foobar" . Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. (`Except.catch` IO.print @Zlib.ReturnCode)
@@ -54,7 +54,7 @@ main = do
 			let	brd = Lifegame.gray1ToBoard img
 				img' n = Lifegame.boardToGray1' n brd
 			ImageG1.printAsAscii $ img' 3
-			Png.write fpo $ img' 15
+			Png.write fpo $ img' 5
 	PipeZ.cByteArrayFree ibd
 	PipeZ.cByteArrayFree obd
 	hClose h

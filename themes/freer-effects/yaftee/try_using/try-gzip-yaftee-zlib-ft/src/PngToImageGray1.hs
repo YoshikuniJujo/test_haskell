@@ -3,11 +3,12 @@
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module PngToImageGray1 (pngToImageGray1) where
+module PngToImageGray1 (runPngToImageGray1, pngToImageGray1) where
 
 import Control.Monad
 import Control.Monad.ST
@@ -23,6 +24,7 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.HigherFunctor qualified as HFunctor
 import Data.ByteString qualified as BS
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png.Header qualified as Header
@@ -30,6 +32,13 @@ import Data.Png.Header.Data qualified as Header
 import Data.Image.Gray1 qualified as ImageG1
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
+
+runPngToImageGray1 ::
+	forall nm m es i o r . (HFunctor.Loose (U.U es), Monoid m) =>
+	Eff.E (	State.Named nm (Maybe PipeZ.ByteString) ':
+		State.Named nm (Buffer.Monoid m) ': es ) i o r ->
+	Eff.E es i o ((r, Maybe PipeZ.ByteString), Buffer.Monoid m)
+runPngToImageGray1 = Buffer.run . PipeZ.run
 
 pngToImageGray1 :: forall nm -> (
 	U.Member Pipe.P es, Steps.ChunkMembers nm es,
