@@ -41,6 +41,7 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 import PngToImageGray1
 
 import System.File.Apng.Gray1.NoInterlace
+import Lifegame.Words qualified as Lifegame
 
 main :: IO ()
 main = do
@@ -80,7 +81,8 @@ main = do
 				pngToImageGray1 "foobar" hdr ibd obd
 				Bytes.flush "foobar")
 		Pipe.=$= (Pipe.yield =<< replicateM n Pipe.await)
-		Pipe.=$= PipeT.convert ((, 1) <$>)
+		Pipe.=$= PipeT.convert ((Lifegame.boardToGray1' 10 . Lifegame.gray1ToBoard) <$>)
+		Pipe.=$= PipeT.convert ((, read d_) <$>)
 		Pipe.=$= do
 			fs <- Pipe.await
 			Eff.effBase $ writeApngGray1Foo' fpo hdr n 0 fs
