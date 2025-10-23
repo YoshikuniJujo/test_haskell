@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds #-}
@@ -24,6 +24,7 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
+import Data.Foldable
 import Data.List
 import Data.Word
 import Data.Word.Word8 qualified as Word8
@@ -39,44 +40,31 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 import PngToImageGray1
 
+import System.File.Apng.Gray1.NoInterlace
+
 main :: IO ()
 main = do
 	dr : d_ : de_ : fpo : _ <- getArgs
 
-	fps@(fp : _) <- ((dr </>) <$>)
+	fps@(fp0 : _) <- ((dr </>) <$>)
 		. sort . filter (not . ("." `isSuffixOf`)) <$> getDirectoryContents dr
 
-	hh <- openFile fp ReadMode
+	hh <- openFile fp0 ReadMode
 
 	Right hdr <- Eff.runM . Except.run @String . Png.runHeader @"foobar"
 		. Pipe.run . (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 hh
 		Pipe.=$= PipeT.convert BSF.fromStrict
 		Pipe.=$= Png.decodeHeader "foobar"
-
-	{-
-	((), Just (wdt, hgt)) <- Eff.runM
-		. (flip (State.run @_ @(Maybe (Word32, Word32))) Nothing)
-		. Bytes.bytesRun_ @"foobar"
-		. flip (State.runN @"foobar") ("" :: BSF.ByteString)
-		. Except.run @String . Pipe.run
-		. (`Except.catch` IO.putStrLn)
-		. void $ PipeBS.hGet 32 hh
-		Pipe.=$= PipeT.convert BSF.fromStrict
-		Pipe.=$= chunks "foobar"
-		Pipe.=$= do
-			IO.print =<< Pipe.await
-			State.put =<< headerToSize <$> chunkBody "foobar"
-			-}
 	hClose hh
 
-	let	wdt = Header.headerWidth hdr
+	let	n = length fps
+		wdt = Header.headerWidth hdr
 		hgt = Header.headerHeight hdr
 
 	print fps
 	print (wdt, hgt)
 
-	h <- openFile fp ReadMode
 	ibd <- PipeZ.cByteArrayMalloc 64
 	obd <- PipeZ.cByteArrayMalloc 64
 	void . Eff.runM
@@ -84,10 +72,18 @@ main = do
 		. runPngToImageGray1 @"foobar" @BSF.ByteString
 		. Except.run @String . Except.run @Zlib.ReturnCode . Pipe.run
 		. (`Except.catch` IO.putStrLn)
-		. void $ PipeBS.hGet 32 h
-		Pipe.=$= pngToImageGray1 "foobar" hdr ibd obd
-		Pipe.=$= PipeIO.print
-	hClose h
+		. void $ for_ fps (\fp -> do
+				h <- Eff.effBase $ openFile fp ReadMode
+				PipeBS.hGet 32 h
+				Eff.effBase $ hClose h
+			Pipe.=$= do
+				pngToImageGray1 "foobar" hdr ibd obd
+				Bytes.flush "foobar")
+		Pipe.=$= (Pipe.yield =<< replicateM n Pipe.await)
+		Pipe.=$= PipeT.convert ((, 1) <$>)
+		Pipe.=$= do
+			fs <- Pipe.await
+			Eff.effBase $ writeApngGray1Foo' fpo hdr n 0 fs
 
 headerToSize :: BSF.ByteString -> Maybe (Word32, Word32)
 headerToSize hdr = do

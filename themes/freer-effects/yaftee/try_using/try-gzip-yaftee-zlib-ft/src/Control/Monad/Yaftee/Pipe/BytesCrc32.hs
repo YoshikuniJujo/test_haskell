@@ -10,7 +10,9 @@
 module Control.Monad.Yaftee.Pipe.BytesCrc32 (
 	bytesRun_, BytesStates,
 	readBytes, BytesMembers, Sequence(..),
-	resetCrc32, compCrc32, Crc32(..)
+	resetCrc32, compCrc32, Crc32(..),
+
+	flush
 	) where
 
 import GHC.TypeLits
@@ -47,6 +49,15 @@ readBytes nm n = State.getsN nm (BSF.splitAt' n . unSequence) >>= \case
 	Just (t, d) -> t <$ do
 		State.modifyN nm $ Crc32 . (`PipeCrc32.step` t) . unCrc32
 		State.putN nm (Sequence d)
+
+flush :: forall (nm :: Symbol) -> (
+--	U.Member (State.Named nm BSF.ByteString) es,
+	U.Member (State.Named nm Sequence) es ) =>
+	Eff.E es i o BSF.ByteString
+flush nm = do
+	Sequence r <- State.getN nm
+	State.putN nm (Sequence mempty)
+	pure r
 
 resetCrc32 :: forall (nm :: Symbol) ->
 	(U.Member (State.Named nm Crc32) es) => Eff.E es i o ()

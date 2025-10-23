@@ -81,7 +81,7 @@ decode :: forall nm m -> (
 decode nm m ib ob = void $
 	do	fhdr <- Chunk.readBytes nm 8
 		when (fhdr /= fileHeader)
-			$ Except.throw @String "File header error"
+			$ Except.throw @String "decode: File header error"
 		Chunk.chunk nm 500
 	Pipe.=$= forever do
 		x <- Pipe.await
@@ -184,7 +184,7 @@ decodeHeader :: forall nm -> (
 decodeHeader nm = void $
 	do	fhdr <- Chunk.readBytes nm 8
 		when (fhdr /= fileHeader)
-			$ Except.throw @String "File header error"
+			$ Except.throw @String "decodeHeader: File header error"
 		Chunk.chunk nm 500
 	Pipe.=$= forever do
 		x <- Pipe.await
@@ -201,7 +201,7 @@ decodePalette :: forall nm -> (
 decodePalette nm = void $
 	do	fhdr <- Chunk.readBytes nm 8
 		when (fhdr /= fileHeader)
-			$ Except.throw @String "File header error"
+			$ Except.throw @String "decodePalette: File header error"
 		Chunk.chunk nm 500
 	Pipe.=$= forever do
 		x <- Pipe.await

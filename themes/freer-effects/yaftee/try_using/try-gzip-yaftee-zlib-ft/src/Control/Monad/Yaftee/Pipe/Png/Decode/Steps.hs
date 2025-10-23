@@ -39,7 +39,8 @@ chunk :: forall nm -> (
 chunk nm =
 	do	fhdr <- Chunk.readBytes nm 8
 		when (fhdr /= fileHeader)
-			$ Except.throw @String "File header error"
+			. Except.throw @String
+			$ "chunk: File header error: " <> show fhdr
 		Chunk.chunk nm 500
 
 type ChunkMembers nm es = (
