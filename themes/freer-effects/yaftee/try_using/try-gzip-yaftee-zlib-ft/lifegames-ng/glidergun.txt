@@ -5,7 +5,7 @@ height:		50
 x-offset:	25
 y-offset:	15
 first-frame:	0
-frame-number:	800
+frame-number:	1200
 delay:		1%7
 shape:
 ..................................*.......
