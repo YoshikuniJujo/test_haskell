@@ -1,4 +1,104 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE RequiredTypeArguments #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module Main where
 
+import Control.Arrow
+import Control.Monad
+import Control.Monad.Yaftee.Eff qualified as Eff
+import Control.Monad.Yaftee.Pipe qualified as Pipe
+import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
+import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
+import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
+import Control.Monad.Yaftee.Pipe.BytesCrc32 qualified as Bytes
+import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
+import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
+import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
+import Control.Monad.Yaftee.Pipe.PngNg.Decode.Chunk
+import Control.Monad.Yaftee.State qualified as State
+import Control.Monad.Yaftee.Except qualified as Except
+import Control.Monad.Yaftee.IO qualified as IO
+import Control.HigherOpenUnion qualified as U
+import Data.List
+import Data.Word
+import Data.Word.Word8 qualified as Word8
+import Data.ByteString.FingerTree qualified as BSF
+import Data.Png.Header.Data qualified as Header
+import System.IO
+import System.Environment
+import System.Directory
+import System.FilePath
+
+import Codec.Compression.Zlib.Constant.Core qualified as Zlib
+import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
+
+import PngToImageGray1
+
 main :: IO ()
-main = putStrLn "Slozsoft"
+main = do
+	dr : d_ : de_ : fpo : _ <- getArgs
+
+	fps@(fp : _) <- ((dr </>) <$>)
+		. sort . filter (not . ("." `isSuffixOf`)) <$> getDirectoryContents dr
+
+	hh <- openFile fp ReadMode
+
+	Right hdr <- Eff.runM . Except.run @String . Png.runHeader @"foobar"
+		. Pipe.run . (`Except.catch` IO.putStrLn)
+		. void $ PipeBS.hGet 32 hh
+		Pipe.=$= PipeT.convert BSF.fromStrict
+		Pipe.=$= Png.decodeHeader "foobar"
+
+	{-
+	((), Just (wdt, hgt)) <- Eff.runM
+		. (flip (State.run @_ @(Maybe (Word32, Word32))) Nothing)
+		. Bytes.bytesRun_ @"foobar"
+		. flip (State.runN @"foobar") ("" :: BSF.ByteString)
+		. Except.run @String . Pipe.run
+		. (`Except.catch` IO.putStrLn)
+		. void $ PipeBS.hGet 32 hh
+		Pipe.=$= PipeT.convert BSF.fromStrict
+		Pipe.=$= chunks "foobar"
+		Pipe.=$= do
+			IO.print =<< Pipe.await
+			State.put =<< headerToSize <$> chunkBody "foobar"
+			-}
+	hClose hh
+
+	let	wdt = Header.headerWidth hdr
+		hgt = Header.headerHeight hdr
+
+	print fps
+	print (wdt, hgt)
+
+	h <- openFile fp ReadMode
+	ibd <- PipeZ.cByteArrayMalloc 64
+	obd <- PipeZ.cByteArrayMalloc 64
+	void . Eff.runM
+		. Steps.chunkRun_ @"foobar"
+		. runPngToImageGray1 @"foobar" @BSF.ByteString
+		. Except.run @String . Except.run @Zlib.ReturnCode . Pipe.run
+		. (`Except.catch` IO.putStrLn)
+		. void $ PipeBS.hGet 32 h
+		Pipe.=$= pngToImageGray1 "foobar" hdr ibd obd
+		Pipe.=$= PipeIO.print
+	hClose h
+
+headerToSize :: BSF.ByteString -> Maybe (Word32, Word32)
+headerToSize hdr = do
+	(w, hdr') <- first Word8.toBitsBE <$> BSF.splitAt' 4 hdr
+	(h, _) <- first Word8.toBitsBE <$> BSF.splitAt' 4 hdr'
+	pure (w, h)
+
+chunkBody :: forall nm -> (
+	U.Member Pipe.P es, U.Member (State.Named nm BSF.ByteString) es,
+	U.Member (Except.E String) es ) => Eff.E es Chunk o BSF.ByteString
+chunkBody nm = Pipe.await >>= \case
+	ChunkBody bd -> State.modifyN nm (<> bd) >> chunkBody nm
+	ChunkEnd -> State.getN nm <* State.putN @BSF.ByteString nm ""
+	_ -> Except.throw @String "chunkBody: not ChunkBody"
