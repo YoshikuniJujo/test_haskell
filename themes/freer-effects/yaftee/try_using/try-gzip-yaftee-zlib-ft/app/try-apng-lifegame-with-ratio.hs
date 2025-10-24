@@ -73,19 +73,39 @@ main = do
 		. runPngToImageGray1 @"foobar" @BSF.ByteString
 		. Except.run @String . Except.run @Zlib.ReturnCode . Pipe.run
 		. (`Except.catch` IO.putStrLn)
-		. void $ for_ fps (\fp -> do
+		. void $ for_ fps (\fp ->
+			do
 				h <- Eff.effBase $ openFile fp ReadMode
 				PipeBS.hGet 32 h
 				Eff.effBase $ hClose h
 			Pipe.=$= do
 				pngToImageGray1 "foobar" hdr ibd obd
 				Bytes.flush "foobar")
+
 		Pipe.=$= (Pipe.yield =<< replicateM n Pipe.await)
 		Pipe.=$= PipeT.convert ((Lifegame.boardToGray1' 10 . Lifegame.gray1ToBoard) <$>)
 		Pipe.=$= PipeT.convert ((, read d_) <$>)
 		Pipe.=$= do
 			fs <- Pipe.await
 			Eff.effBase $ writeApngGray1Foo' fpo hdr n 0 fs
+	putStrLn ""
+	print hdr
+	print Header.Header {
+		Header.headerWidth = 20, Header.headerHeight = 11,
+		Header.headerBitDepth = 1,
+		Header.headerColorType = Header.ColorTypeGrayscale,
+		Header.headerCompressionMethod = Header.CompressionMethodDeflate,
+		Header.headerFilterMethod = Header.FilterMethodDefaultFilter,
+		Header.headerInterlaceMethod = Header.InterlaceMethodNon }
+
+pngFileToLifegame fp ibd obd hdr =
+	do	h <- Eff.effBase $ openFile fp ReadMode
+		PipeBS.hGet 32 h
+		Eff.effBase $ hClose h
+	Pipe.=$= do
+		pngToImageGray1 "foobar" hdr ibd obd
+		Bytes.flush "foobar"
+	Pipe.=$= PipeT.convert Lifegame.gray1ToBoard
 
 headerToSize :: BSF.ByteString -> Maybe (Word32, Word32)
 headerToSize hdr = do

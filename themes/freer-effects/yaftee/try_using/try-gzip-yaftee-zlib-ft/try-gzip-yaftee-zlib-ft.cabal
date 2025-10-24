@@ -28,6 +28,7 @@ library
       Control.Monad.Yaftee.Pipe.Apng.Decode
       Control.Monad.Yaftee.Pipe.Buffer
       Control.Monad.Yaftee.Pipe.BytesCrc32
+      Control.Monad.Yaftee.Pipe.Lifegame
       Control.Monad.Yaftee.Pipe.Png.Decode
       Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
       Control.Monad.Yaftee.Pipe.Png.Decode.Header
