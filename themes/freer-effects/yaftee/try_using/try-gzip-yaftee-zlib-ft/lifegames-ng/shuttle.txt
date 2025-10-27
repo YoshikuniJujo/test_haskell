@@ -1,0 +1,13 @@
+id:		shuttle
+ratio:		10
+width:		30
+height:		15
+x-offset:	4
+y-offset:	5
+first-frame:	0
+frame-number:	100
+delay:		1%7
+shape:
+.......*....**........
+**......*..*.*......**
+**....***..**.......**
