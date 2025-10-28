@@ -32,7 +32,7 @@ import PngToImageGray1
 
 main :: IO ()
 main = do
-	fp : fpo : _ <- getArgs
+	fp : sz : fpo : _ <- getArgs
 	hh <- openFile fp ReadMode
 	Right hdr <- Eff.runM . Except.run @String . Png.runHeader @"foobar"
 		. Pipe.run . (`Except.catch` IO.putStrLn)
@@ -54,7 +54,7 @@ main = do
 			let	brd = Lifegame.gray1ToBoard img
 				img' n = Lifegame.boardToGray1' n brd
 			ImageG1.printAsAscii $ img' 3
-			Png.write fpo $ img' 5
+			Png.write fpo $ img' (read sz)
 	PipeZ.cByteArrayFree ibd
 	PipeZ.cByteArrayFree obd
 	hClose h

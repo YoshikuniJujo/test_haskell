@@ -1,0 +1,13 @@
+id:		glider4
+ratio:		10
+width:		40
+height:		10
+x-offset:	3
+y-offset:	3
+first-frame:	0
+frame-number:	40
+delay:		1%7
+shape:
+*.....*...*.*....*
+.**....*...**..*.*
+**...***...*....**

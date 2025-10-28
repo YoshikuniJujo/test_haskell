@@ -44,6 +44,7 @@ library
       Data.Image.Gray
       Data.Image.Gray1
       Data.Image.Simple
+      Data.Lifegame.Glider
       Data.Png
       Data.Png.Filters
       Data.Png.Header
