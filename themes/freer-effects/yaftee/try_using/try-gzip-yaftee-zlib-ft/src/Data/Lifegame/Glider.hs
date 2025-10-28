@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Lifegame.Glider (
-	G(..), add
+	G(..), Shape(..), LeftRight(..), UpDown(..), add
 	) where
 
 import Prelude hiding (Either(..))
@@ -11,9 +11,9 @@ import Lifegame.Words
 data G = G { shape :: Shape, leftRight :: LeftRight, upDown :: UpDown }
 	deriving Show
 
-data Shape = Shape0 | Shape1 | Shape2 | Shape3 deriving Show
-data LeftRight = Left | Right deriving Show
-data UpDown = Up | Down deriving Show
+data Shape = Shape0 | Shape1 | Shape2 | Shape3 deriving (Show, Read)
+data LeftRight = Left | Right deriving (Show, Read)
+data UpDown = Up | Down deriving (Show, Read)
 
 -- Left, Right, Top, Bottom
 -- Left, Right, Up, Down

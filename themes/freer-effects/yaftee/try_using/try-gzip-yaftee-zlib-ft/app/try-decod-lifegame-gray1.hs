@@ -54,7 +54,10 @@ main = do
 			let	brd = Lifegame.gray1ToBoard img
 				img' n = Lifegame.boardToGray1' n brd
 			ImageG1.printAsAscii $ img' 3
-			Png.write fpo $ img' (read sz)
+			writeBoard fpo brd (read sz)
 	PipeZ.cByteArrayFree ibd
 	PipeZ.cByteArrayFree obd
 	hClose h
+
+writeBoard :: FilePath -> Lifegame.Board -> Int -> IO ()
+writeBoard fpo bd n = Png.write fpo (Lifegame.boardToGray1' n bd)
