@@ -1,6 +1,44 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Lifegame.Glider where
+module Data.Lifegame.Glider (
+	G(..), add
+	) where
+
+import Prelude hiding (Either(..))
+import Lifegame.Words
+
+data G = G { shape :: Shape, leftRight :: LeftRight, upDown :: UpDown }
+	deriving Show
+
+data Shape = Shape0 | Shape1 | Shape2 | Shape3 deriving Show
+data LeftRight = Left | Right deriving Show
+data UpDown = Up | Down deriving Show
+
+-- Left, Right, Top, Bottom
+-- Left, Right, Up, Down
+
+add :: Board -> Int -> Int -> G -> Board
+add bd x y gld = addShapeAscii bd x y (rotate lr ud sp)
+	where
+	sp = shapeAsAscii $ shape gld
+	lr = leftRight gld
+	ud = upDown gld
+
+shapeAsAscii :: Shape -> [String]
+shapeAsAscii = \case
+	Shape0 -> shape0; Shape1 -> shape1; Shape2 -> shape2; Shape3 -> shape3
+
+rotate :: LeftRight -> UpDown -> [String] -> [String]
+rotate Left Up sp = reverse $ reverse <$> sp
+rotate Left Down sp = flipXY $ reverse sp
+rotate Right Up sp = reverse $ flipXY sp
+rotate Right Down sp = sp
+
+flipXY :: [String] -> [String]
+flipXY sp = (\x -> (!! x) <$> sp) <$> [0 .. w - 1]
+	where
+	w = length $ head sp
 
 shape0, shape1, shape2, shape3 :: [String]
 shape0 = ["*..", ".**", "**."]

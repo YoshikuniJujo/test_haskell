@@ -5,11 +5,13 @@
 
 module Lifegame.Words (
 
+	Board, emptyBoard,
+
 	boards,
 
 	boardToGray1, boardToGray1', gray1ToBoard,
 
-	putShapeAscii, printAsAscii
+	putShapeAscii, addShapeAscii, printAsAscii
 
 	) where
 
@@ -30,11 +32,14 @@ data Board = Board {
 
 instance NFData Board
 
-next :: Board -> Board
-next bd = generate (boardWidth bd) (boardHeight bd) (calc bd)
-
 boards :: Board -> [Board]
 boards = iterate next
+
+emptyBoard :: Int -> Int -> Board
+emptyBoard w h = generate w h \_ _ -> False
+
+next :: Board -> Board
+next bd = generate (boardWidth bd) (boardHeight bd) (calc bd)
 
 calc :: Board -> Int -> Int -> Bool
 calc p cx cy
@@ -47,6 +52,23 @@ calc p cx cy
 		(x, y) /= (cx, cy) ]
 	l = read p cx cy
 	ls = (\(x, y) -> read p x y) <$> ps
+
+addShape :: Board -> Int -> Int -> [[Bool]] -> Board
+addShape bd xo yo bss = generate w h \x y ->
+	if	xo <= x && x < xo + (length $ head bss) &&
+		yo <= y && y < yo + (length bss)
+	then	bss !! (y - yo) !! (x - xo)
+	else	read bd x y
+	where
+	w = boardWidth bd
+	h = boardHeight bd
+
+addShapeAscii :: Board -> Int -> Int -> [String] -> Board
+addShapeAscii bd xo yo = addShape bd xo yo . (((== '*') <$>) <$>)
+
+putLife :: Board -> Int -> Int -> Board
+putLife bd lx ly = generate (boardWidth bd) (boardHeight bd) \x y ->
+	read bd x y || (x, y) == (lx, ly)
 
 read :: Board -> Int -> Int -> Bool
 read Board { boardWidth = w, boardHeight = h, boardBody = bd } x y =
