@@ -1,0 +1,19 @@
+id:		shuttle-maker
+ratio:		10
+width:		45
+height:		60
+x-offset:	10
+y-offset:	25
+first-frame:	0
+frame-number:	250
+delay:		1%7
+shape:
+**.
+*.*
+.**
+
+shape: 3
+x-offset: 15
+y-offset: 25
+left-right: Left
+up-down: Down
