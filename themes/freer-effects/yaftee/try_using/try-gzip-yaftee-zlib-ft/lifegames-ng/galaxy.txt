@@ -1,0 +1,19 @@
+id:		galaxy
+ratio:		10
+width:		19
+height:		19
+x-offset:	5
+y-offset:	5
+first-frame:	0
+frame-number:	40
+delay:		1%7
+shape:
+******.**
+******.**
+.......**
+**.....**
+**.....**
+**.....**
+**.......
+**.******
+**.******
