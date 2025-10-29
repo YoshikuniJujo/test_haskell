@@ -2,11 +2,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Lifegame.Glider (
-	G(..), Shape(..), LeftRight(..), UpDown(..), add
+	G(..), Shape(..), LeftRight(..), UpDown(..), add, addGs,
+
+	readGliders
 	) where
 
 import Prelude hiding (Either(..))
 import Lifegame.Words
+
+import Text.Read
 
 data G = G { shape :: Shape, leftRight :: LeftRight, upDown :: UpDown }
 	deriving Show
@@ -17,6 +21,12 @@ data UpDown = Up | Down deriving (Show, Read)
 
 -- Left, Right, Top, Bottom
 -- Left, Right, Up, Down
+
+addGs :: Board -> [(G, (Int, Int))] -> Board
+addGs = foldl addGlider
+
+addGlider :: Board -> (G, (Int, Int)) -> Board
+addGlider bd (gd, (x, y)) = add bd x y gd
 
 add :: Board -> Int -> Int -> G -> Board
 add bd x y gld = addShapeAscii bd x y (rotate lr ud sp)
@@ -48,3 +58,25 @@ shape3 = ["..*", "*.*", ".**"]
 
 printShape :: [String] -> IO ()
 printShape = (putStrLn `mapM_`)
+
+readGliders :: [[String]] -> Maybe [(G, (Int, Int))]
+readGliders [] = Just []
+readGliders src = do
+	let	src' = dropWhile null src
+	(g1, src'') <- readGlider1 src'
+	(g1 :) <$> readGliders src''
+
+readGlider1 :: [[String]] -> Maybe ((G, (Int, Int)), [[String]])
+readGlider1 (
+	["shape:", spn] :
+	["x-offset:", xo_] :
+	["y-offset:", yo_] :
+	["left-right:", lr_] :
+	["up-down:", ud_] : rst) = do
+	sp <- readMaybe $ "Shape" ++ spn
+	xo <- readMaybe xo_
+	yo <- readMaybe yo_
+	lr <- readMaybe lr_
+	ud <- readMaybe ud_
+	pure ((G sp lr ud, (xo, yo)), rst)
+readGlider1 _ = Nothing

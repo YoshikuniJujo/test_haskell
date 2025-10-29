@@ -31,7 +31,7 @@ writeGliders fpo w h gds sz =
 readSettings :: String -> Maybe (Int, (Int, Int), [(Glider.G, (Int, Int))])
 readSettings src = do
 	((sz, w, h), src'') <- readSize src'
-	glds <- readGliders src''
+	glds <- Glider.readGliders src''
 	pure (sz, (w, h), glds)
 	where
 	src' = words <$> lines src
@@ -43,25 +43,3 @@ readSize (["size:", sz_] : ["width:", wd_] : ["height:", hg_] : rst) = do
 	hg <- readMaybe hg_
 	pure ((sz, wd, hg), rst)
 readSize _ = Nothing
-
-readGliders :: [[String]] -> Maybe [(Glider.G, (Int, Int))]
-readGliders [] = Just []
-readGliders src = do
-	let	src' = dropWhile null src
-	(g1, src'') <- readGlider1 src'
-	(g1 :) <$> readGliders src''
-
-readGlider1 :: [[String]] -> Maybe ((Glider.G, (Int, Int)), [[String]])
-readGlider1 (
-	["shape:", spn] :
-	["x-offset:", xo_] :
-	["y-offset:", yo_] :
-	["left-right:", lr_] :
-	["up-down:", ud_] : rst) = do
-	sp <- readMaybe $ "Shape" ++ spn
-	xo <- readMaybe xo_
-	yo <- readMaybe yo_
-	lr <- readMaybe lr_
-	ud <- readMaybe ud_
-	pure ((Glider.G sp lr ud, (xo, yo)), rst)
-readGlider1 _ = Nothing

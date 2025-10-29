@@ -1,0 +1,81 @@
+size: 10
+width: 50
+height: 24
+
+shape: 1
+x-offset: 3
+y-offset: 3
+left-right: Left
+up-down: Down
+
+shape: 1
+x-offset: 5
+y-offset: 7
+left-right: Left
+up-down: Up
+
+shape: 0
+x-offset: 11
+y-offset: 5
+left-right: Left
+up-down: Down
+
+shape: 3
+x-offset: 12
+y-offset: 9
+left-right: Left
+up-down: Up
+
+shape: 2
+x-offset: 17
+y-offset: 10
+left-right: Left
+up-down: Up
+
+shape: 3
+x-offset: 23
+y-offset: 11
+left-right: Left
+up-down: Up
+
+shape: 3
+x-offset: 26
+y-offset: 7
+left-right: Left
+up-down: Up
+
+shape: 0
+x-offset: 25
+y-offset: 3
+left-right: Left
+up-down: Down
+
+shape: 2
+x-offset: 31
+y-offset: 8
+left-right: Left
+up-down: Up
+
+shape: 1
+x-offset: 31
+y-offset: 19
+left-right: Left
+up-down: Up
+
+shape: 1
+x-offset: 37
+y-offset: 1
+left-right: Left
+up-down: Down
+
+shape: 1
+x-offset: 39
+y-offset: 5
+left-right: Left
+up-down: Up
+
+shape: 3
+x-offset: 42
+y-offset: 14
+left-right: Left
+up-down: Up

@@ -1,0 +1,19 @@
+id:		glider-sample
+ratio:		10
+width:		20
+height:		10
+x-offset:	3
+y-offset:	3
+first-frame:	0
+frame-number:	40
+delay:		1%7
+shape:
+.*.
+..*
+***
+
+shape:	3
+x-offset: 8
+y-offset: 3
+left-right: Right
+up-down: Up

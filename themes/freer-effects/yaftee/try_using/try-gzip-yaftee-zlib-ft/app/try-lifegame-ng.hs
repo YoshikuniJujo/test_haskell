@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -14,6 +15,8 @@ import Data.Image.Gray1 qualified as Img
 import System.File.Png.Gray1.NoInterlace qualified as Png
 import Lifegame.Words qualified as Lg
 
+import Data.Lifegame.Glider qualified as Glider
+
 rootDir :: IO FilePath
 rootDir = (</> ".yoshj/lifegame") <$>  getHomeDirectory
 
@@ -23,14 +26,14 @@ main = do
 	rd <- rootDir
 	createDirectoryIfMissing True rd
 	createDirectoryIfMissing False $ rd </> "pngs"
-	(nm, _, w, h, xo, yo, ff, cf, _, shp) <- readLifegame . lines <$> readFile fp
+	(nm, _, w, h, xo, yo, ff, cf, _, shp, gls) <- readLifegame . lines <$> readFile fp
 	let	nmd = rd </> "pngs" </> nm
 		szost = show w ++ "x" ++ show h ++ "_" ++ show xo ++ "x" ++ show yo
 		szostd = nmd </> szost
 	createDirectoryIfMissing True szostd
 	print nm
 	putStrLn szost
-	let	b0 = Lg.putShapeAscii w h xo yo shp
+	let	b0 = Glider.addGs (Lg.putShapeAscii w h xo yo shp) gls
 		bs = take cf $ drop ff $ Lg.boards b0
 		fps = (szostd </>) . boardName <$> [ff .. ff + cf]
 		imgs = Lg.boardToGray1 <$> bs
@@ -38,7 +41,7 @@ main = do
 	zipWithM_ Png.write fps imgs
 
 readLifegame :: [String] ->
-	(String, Int, Int, Int, Int, Int, Int, Int, Ratio Word16, [String])
+	(String, Int, Int, Int, Int, Int, Int, Int, Ratio Word16, [String], [(Glider.G, (Int, Int))])
 readLifegame src = case words <$> src of
 	["id:", nm] :
 		["ratio:", rt] :
@@ -49,10 +52,12 @@ readLifegame src = case words <$> src of
 		["first-frame:", drp] :
 		["frame-number:", fn] :
 		["delay:", dly] :
-		["shape:"] : shp -> (
-		nm,
-		read rt, read w, read h, read xo, read yo, read drp, read fn,
-		read dly, head <$> shp )
+		["shape:"] : shpgls -> case span (not.null) shpgls of
+			(shp, Glider.readGliders -> Just gls) -> (
+				nm,
+				read rt, read w, read h, read xo, read yo, read drp, read fn,
+				read dly, head <$> shp, gls)
+			(shp, egls) -> error $ "bad: " ++ show egls
 
 	_ -> error "bad"
 
