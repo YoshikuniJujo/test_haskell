@@ -1,0 +1,13 @@
+id:		r-pentamino
+ratio:		10
+width:		120
+height:		50
+x-offset:	60
+y-offset:	25
+first-frame:	0
+frame-number:	200
+delay:		1%7
+shape:
+.**
+**.
+.*.
