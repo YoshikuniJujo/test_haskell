@@ -1,0 +1,91 @@
+id:		glidergun-glider2
+ratio:		10
+width:		100
+height:		50
+x-offset:	25
+y-offset:	15
+first-frame:	0
+frame-number:	1200
+delay:		1%7
+shape:
+.
+
+shape: 1
+x-offset: 3
+y-offset: 5
+left-right: Left
+up-down: Down
+
+shape: 1
+x-offset: 5
+y-offset: 9
+left-right: Left
+up-down: Up
+
+shape: 0
+x-offset: 11
+y-offset: 7
+left-right: Left
+up-down: Down
+
+shape: 3
+x-offset: 12
+y-offset: 11
+left-right: Left
+up-down: Up
+
+shape: 2
+x-offset: 17
+y-offset: 12
+left-right: Left
+up-down: Up
+
+shape: 3
+x-offset: 26
+y-offset: 9
+left-right: Left
+up-down: Up
+
+shape: 0
+x-offset: 25
+y-offset: 5
+left-right: Left
+up-down: Down
+
+shape: 2
+x-offset: 31
+y-offset: 10
+left-right: Left
+up-down: Up
+
+shape: 1
+x-offset: 37
+y-offset: 3
+left-right: Left
+up-down: Down
+
+shape: 1
+x-offset: 39
+y-offset: 7
+left-right: Left
+up-down: Up
+
+
+
+shape: 3
+x-offset: 31
+y-offset: 21
+left-right: Left
+up-down: Up
+
+shape: 1
+x-offset: 39
+y-offset: 29
+left-right: Left
+up-down: Up
+
+shape: 3
+x-offset: 50
+y-offset: 24
+left-right: Left
+up-down: Up

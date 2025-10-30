@@ -11,7 +11,9 @@ module Lifegame.Words (
 
 	boardToGray1, boardToGray1', gray1ToBoard,
 
-	putShapeAscii, addShapeAscii, printAsAscii
+	putShapeAscii, addShapeAscii, printAsAscii,
+
+	Pattern
 
 	) where
 
@@ -133,3 +135,10 @@ rows Board { boardWidth = w, boardHeight = h, boardBody = bd } =
 
 wordToAscii :: Word8 -> String
 wordToAscii w = bool '.' '*' . testBit w <$> [7, 6 .. 0]
+
+data Pattern = Pattern {
+	patternLives :: [(Int, Int)],
+	patternWidth :: Int,
+	patternHeight :: Int,
+	patternBody :: V.Vector Word8 }
+	deriving Show
