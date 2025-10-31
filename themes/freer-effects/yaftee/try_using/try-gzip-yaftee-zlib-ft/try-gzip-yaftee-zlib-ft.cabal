@@ -65,6 +65,7 @@ library
       System.File.Png.Gray1.NoInterlace
       System.File.Png.Lifegame
       Tools
+      TryLifegamePattern
   other-modules:
       Paths_try_gzip_yaftee_zlib_ft
   autogen-modules:

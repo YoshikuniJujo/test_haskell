@@ -6,7 +6,7 @@ module Data.Lifegame.Glider (
 
 	readGliders,
 
-	shape0
+	shape0, shape1
 
 	) where
 
