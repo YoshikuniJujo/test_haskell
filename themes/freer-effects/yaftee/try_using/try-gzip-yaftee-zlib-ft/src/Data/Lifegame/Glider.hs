@@ -4,7 +4,10 @@
 module Data.Lifegame.Glider (
 	G(..), Shape(..), LeftRight(..), UpDown(..), add, addGs,
 
-	readGliders
+	readGliders,
+
+	shape0
+
 	) where
 
 import Prelude hiding (Either(..))

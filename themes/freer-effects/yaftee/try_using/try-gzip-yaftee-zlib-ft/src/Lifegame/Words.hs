@@ -13,7 +13,7 @@ module Lifegame.Words (
 
 	putShapeAscii, addShapeAscii, printAsAscii,
 
-	Pattern
+	Pattern, asciiToPattern, printPatternAsAscii
 
 	) where
 
@@ -85,9 +85,12 @@ read Board { boardWidth = w, boardHeight = h, boardBody = bd } x y =
 generate :: Int -> Int -> (Int -> Int -> Bool) -> Board
 generate w h px = Board {
 	boardWidth = w, boardHeight = h,
-	boardBody = V.generate (w' * h) \i ->
+	boardBody = generateBody w h px }
+
+generateBody :: Int -> Int -> (Int -> Int -> Bool) -> V.Vector Word8
+generateBody w h px = V.generate (w' * h) \i ->
 		boolsToWord $ (<$> [0 .. 7]) \dx ->
-			px' (i `mod` w' * 8 + dx) (i `div` w') }
+			px' (i `mod` w' * 8 + dx) (i `div` w')
 	where
 	px' x y	| x >= w = False
 		| otherwise = px x y
@@ -119,6 +122,13 @@ putShape w h xo yo bss = generate w h \x y ->
 	then	bss !! (y - yo) !! (x - xo)
 	else	False
 
+putShapeBody :: Int -> Int -> Int -> Int -> [[Bool]] -> V.Vector Word8
+putShapeBody w h xo yo bss = generateBody w h \x y ->
+	if	xo <= x && x < xo + (length $ head bss) &&
+		yo <= y && y < yo + (length bss)
+	then	bss !! (y - yo) !! (x - xo)
+	else	False
+
 putShapeAscii :: Int -> Int -> Int -> Int -> [String] -> Board
 putShapeAscii w h xo yo = putShape w h xo yo . (((== '*') <$>) <$>)
 
@@ -128,10 +138,17 @@ printAsAscii = (putStrLn `mapM_`) . boardToAscii
 boardToAscii :: Board -> [String]
 boardToAscii b = (take (boardWidth b) . concat . (wordToAscii <$>) <$>) $ rows b
 
+bodyToAscii :: Int -> Int -> V.Vector Word8 -> [String]
+bodyToAscii w h b = (take w . concat . (wordToAscii <$>) <$>) $ rowsBody w h b
+
 rows :: Board -> [[Word8]]
 rows Board { boardWidth = w, boardHeight = h, boardBody = bd } =
 	(<$> [0 .. h - 1]) \y -> (<$> [0 .. (w - 1) `div` 8]) \x ->
 		bd V.! (y * ((w - 1) `div` 8 + 1) + x)
+
+rowsBody :: Int -> Int -> V.Vector Word8 -> [[Word8]]
+rowsBody w h bd = (<$> [0 .. h - 1]) \y -> (<$> [0 .. (w - 1) `div` 8]) \x ->
+	bd V.! (y * ((w - 1) `div` 8 + 1) + x)
 
 wordToAscii :: Word8 -> String
 wordToAscii w = bool '.' '*' . testBit w <$> [7, 6 .. 0]
@@ -142,3 +159,27 @@ data Pattern = Pattern {
 	patternHeight :: Int,
 	patternBody :: V.Vector Word8 }
 	deriving Show
+
+asciiToPattern :: Int -> Int -> Int -> Int -> [String] -> Pattern
+asciiToPattern w h xo yo = boolsToPattern w h xo yo . (((== '*') <$>) <$>)
+
+boolsToPattern :: Int -> Int -> Int -> Int -> [[Bool]] -> Pattern
+boolsToPattern w h xo yo bs = Pattern {
+	patternLives = boolsToLives xo yo bs,
+	patternWidth = w, patternHeight = h,
+	patternBody = putShapeBody w h xo yo bs }
+
+boolsToLives :: Int -> Int -> [[Bool]] -> [(Int, Int)]
+boolsToLives xo yo bs = go xo yo bs
+	where
+	go _ _ [] = []
+	go x y ([] : rs) = go xo (y + 1) rs
+	go x y ((lf : lvs) : rs) = bool id ((x, y) :) lf $ go (x + 1) y (lvs : rs)
+
+printPatternAsAscii :: Pattern -> IO ()
+printPatternAsAscii = (putStrLn `mapM_`) . patternToAscii
+
+patternToAscii :: Pattern -> [String]
+patternToAscii
+	Pattern { patternWidth = w, patternHeight = h, patternBody = bd } =
+	bodyToAscii w h bd
