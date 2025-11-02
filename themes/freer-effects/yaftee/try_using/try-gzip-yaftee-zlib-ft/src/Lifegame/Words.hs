@@ -13,7 +13,9 @@ module Lifegame.Words (
 
 	putShapeAscii, addShapeAscii, printAsAscii,
 
-	Pattern, asciiToPattern, printPatternAsAscii
+	Pattern, asciiToPattern, printPatternAsAscii,
+
+	Clipped, clip, printClippedAsAscii
 
 	) where
 
@@ -135,8 +137,15 @@ putShapeAscii w h xo yo = putShape w h xo yo . (((== '*') <$>) <$>)
 printAsAscii :: Board -> IO ()
 printAsAscii = (putStrLn `mapM_`) . boardToAscii
 
+printClippedAsAscii :: Clipped -> IO ()
+printClippedAsAscii = (putStrLn `mapM_`) . clippedToAscii
+
 boardToAscii :: Board -> [String]
 boardToAscii b = (take (boardWidth b) . concat . (wordToAscii <$>) <$>) $ rows b
+
+clippedToAscii :: Clipped -> [String]
+clippedToAscii Clipped { clippedWidth = w, clippedHeight = h, clippedBody = bd } =
+	bodyToAscii w h bd
 
 bodyToAscii :: Int -> Int -> V.Vector Word8 -> [String]
 bodyToAscii w h b = (take w . concat . (wordToAscii <$>) <$>) $ rowsBody w h b
@@ -145,6 +154,10 @@ rows :: Board -> [[Word8]]
 rows Board { boardWidth = w, boardHeight = h, boardBody = bd } =
 	(<$> [0 .. h - 1]) \y -> (<$> [0 .. (w - 1) `div` 8]) \x ->
 		bd V.! (y * ((w - 1) `div` 8 + 1) + x)
+
+rowsClipped :: Clipped -> [[Word8]]
+rowsClipped Clipped { clippedWidth = w, clippedHeight = h, clippedBody = bd } =
+	rowsBody w h bd
 
 rowsBody :: Int -> Int -> V.Vector Word8 -> [[Word8]]
 rowsBody w h bd = (<$> [0 .. h - 1]) \y -> (<$> [0 .. (w - 1) `div` 8]) \x ->
@@ -183,3 +196,37 @@ patternToAscii :: Pattern -> [String]
 patternToAscii
 	Pattern { patternWidth = w, patternHeight = h, patternBody = bd } =
 	bodyToAscii w h bd
+
+data Clipped = Clipped {
+	clippedWidth :: Int, clippedHeight :: Int, clippedBody :: V.Vector Word8 }
+	deriving (Generic, Eq, Show)
+
+clip :: Board -> Int -> Int -> Int -> Int -> Clipped
+clip Board { boardWidth = bw, boardHeight = bh, boardBody = bbd } cxo cyo cw ch =
+	Clipped {
+		clippedWidth = cw, clippedHeight = ch,
+		clippedBody = clipBody bw bh bbd cxo cyo cw ch }
+
+clipBody ::
+	Int -> Int -> V.Vector Word8 ->
+	Int -> Int -> Int -> Int -> V.Vector Word8
+clipBody w h bd xo yo cw ch = V.generate
+	(((cw - 1) `div` 8 + 1) * ch) (clipBodyFun w h bd xo yo cw ch)
+
+clipBodyFun ::
+	Int -> Int -> V.Vector Word8 -> Int -> Int -> Int -> Int -> Int -> Word8
+clipBodyFun w h bd cxo cyo cw ch i = if (cxow + xw) < (ww - 1)
+	then combine cxob
+		(bd V.! (((cyo + y) * ww) + cxow + xw))
+		(bd V.! (((cyo + y) * ww) + cxow + xw + 1))
+	else combine cxob (bd V.! (((cyo + y) * ww) + cxow + xw)) 0
+	where
+	xw = i `mod` cww
+	y = i `div` cww
+	ww = (w - 1) `div` 8 + 1
+	cww = (cw - 1) `div` 8 + 1
+	cxow = cxo `div` 8
+	cxob = cxo `mod` 8
+
+combine :: Int -> Word8 -> Word8 -> Word8
+combine n b1 b2 = b1 `shiftL` n .|. b2 `shiftR` (8 - n)
