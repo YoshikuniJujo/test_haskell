@@ -15,6 +15,8 @@ module Lifegame.Words (
 
 	Pattern, asciiToPattern, printPatternAsAscii,
 
+	match,
+
 	Clipped, clip, clip', printClippedAsAscii
 
 	) where
@@ -260,3 +262,16 @@ clipBodyFun' w h bd cxo cyo cw ch i
 
 combine :: Int -> Word8 -> Word8 -> Word8
 combine n b1 b2 = b1 `shiftL` n .|. b2 `shiftR` (8 - n)
+
+patternToArea :: Int -> Int -> Pattern -> Int -> Int -> (Int, Int, Int, Int)
+patternToArea px py Pattern { patternWidth = pw, patternHeight = ph } x y =
+	(x - px, y - py, pw, ph)
+
+match :: Int -> Int -> Pattern -> Int -> Int -> Board -> Bool
+match px py pttn bx by brd = matchClipped pttn $ clip' brd xo yo cw ch
+	where
+	(xo, yo, cw, ch) = patternToArea px py pttn bx by
+
+matchClipped :: Pattern -> Clipped -> Bool
+matchClipped Pattern { patternBody = pbd } Clipped { clippedBody = cbd } =
+	pbd == cbd
