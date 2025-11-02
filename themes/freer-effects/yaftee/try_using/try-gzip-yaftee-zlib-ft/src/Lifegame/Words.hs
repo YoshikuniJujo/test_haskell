@@ -15,7 +15,7 @@ module Lifegame.Words (
 
 	Pattern, asciiToPattern, printPatternAsAscii,
 
-	Clipped, clip, printClippedAsAscii
+	Clipped, clip, clip', printClippedAsAscii
 
 	) where
 
@@ -207,11 +207,23 @@ clip Board { boardWidth = bw, boardHeight = bh, boardBody = bbd } cxo cyo cw ch 
 		clippedWidth = cw, clippedHeight = ch,
 		clippedBody = clipBody bw bh bbd cxo cyo cw ch }
 
+clip' :: Board -> Int -> Int -> Int -> Int -> Clipped
+clip' Board { boardWidth = bw, boardHeight = bh, boardBody = bbd } cxo cyo cw ch =
+	Clipped {
+		clippedWidth = cw, clippedHeight = ch,
+		clippedBody = clipBody' bw bh bbd cxo cyo cw ch }
+
 clipBody ::
 	Int -> Int -> V.Vector Word8 ->
 	Int -> Int -> Int -> Int -> V.Vector Word8
 clipBody w h bd xo yo cw ch = V.generate
 	(((cw - 1) `div` 8 + 1) * ch) (clipBodyFun w h bd xo yo cw ch)
+
+clipBody' ::
+	Int -> Int -> V.Vector Word8 ->
+	Int -> Int -> Int -> Int -> V.Vector Word8
+clipBody' w h bd xo yo cw ch = V.generate
+	(((cw - 1) `div` 8 + 1) * ch) (clipBodyFun' w h bd xo yo cw ch)
 
 clipBodyFun ::
 	Int -> Int -> V.Vector Word8 -> Int -> Int -> Int -> Int -> Int -> Word8
@@ -220,6 +232,24 @@ clipBodyFun w h bd cxo cyo cw ch i = if (cxow + xw) < (ww - 1)
 		(bd V.! (((cyo + y) * ww) + cxow + xw))
 		(bd V.! (((cyo + y) * ww) + cxow + xw + 1))
 	else combine cxob (bd V.! (((cyo + y) * ww) + cxow + xw)) 0
+	where
+	xw = i `mod` cww
+	y = i `div` cww
+	ww = (w - 1) `div` 8 + 1
+	cww = (cw - 1) `div` 8 + 1
+	cxow = cxo `div` 8
+	cxob = cxo `mod` 8
+
+clipBodyFun' ::
+	Int -> Int -> V.Vector Word8 -> Int -> Int -> Int -> Int -> Int -> Word8
+clipBodyFun' w h bd cxo cyo cw ch i
+	| (cxow + xw) < (- 1) || (cxow + xw) >= ww = 0
+	| (cyo + y) < 0 || (cyo + y) >= h = 0
+	| (cxow + xw) < 0 = combine cxob 0 (bd V.! (((cyo + y) * ww) + cxow + xw + 1))
+	| (cxow + xw) < (ww - 1) = combine cxob
+		(bd V.! (((cyo + y) * ww) + cxow + xw))
+		(bd V.! (((cyo + y) * ww) + cxow + xw + 1))
+	| otherwise = combine cxob (bd V.! (((cyo + y) * ww) + cxow + xw)) 0
 	where
 	xw = i `mod` cww
 	y = i `div` cww
