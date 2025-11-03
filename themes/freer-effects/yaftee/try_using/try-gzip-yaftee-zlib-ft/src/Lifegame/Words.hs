@@ -15,7 +15,7 @@ module Lifegame.Words (
 
 	Pattern, asciiToPattern, printPatternAsAscii,
 
-	match, matchLife, matchBoard,
+	match, matchLife, matchBoard, matchBoard',
 
 	Clipped, clip, clip', printClippedAsAscii
 
@@ -29,6 +29,7 @@ import Control.DeepSeq
 import Data.Traversable
 import Data.Bits
 import Data.Maybe
+import Data.List qualified as L
 import Data.Vector qualified as V
 import Data.Bool
 import Data.Word
@@ -284,6 +285,12 @@ match px py pttn bx by brd = matchClipped pttn $ clip' brd xo yo cw ch
 matchClipped :: Pattern -> Clipped -> Bool
 matchClipped Pattern { patternBody = pbd } Clipped { clippedBody = cbd } =
 	pbd == cbd
+
+matchBoard' :: Pattern -> Board -> [(Int, Int)]
+matchBoard' pttn brd@Board { boardWidth = w, boardHeight = h } =
+	L.nub . L.sort . catMaybes . concat
+		$ (<$> [0 .. h - 1]) \y -> (<$> [0 .. w - 1]) \x ->
+			(\(px, py) -> (x - px, y - py)) <$> matchLife pttn x y brd
 
 matchBoard :: Pattern -> Board -> [((Int, Int), (Int, Int))]
 matchBoard pttn brd@Board { boardWidth = w, boardHeight = h } = catMaybes . concat
