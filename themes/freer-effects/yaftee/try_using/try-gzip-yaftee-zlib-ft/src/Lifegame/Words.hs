@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -15,7 +15,7 @@ module Lifegame.Words (
 
 	Pattern, asciiToPattern, printPatternAsAscii,
 
-	match, matchLife,
+	match, matchLife, matchBoard,
 
 	Clipped, clip, clip', printClippedAsAscii
 
@@ -26,7 +26,9 @@ import Prelude hiding (read)
 import GHC.Generics
 
 import Control.DeepSeq
+import Data.Traversable
 import Data.Bits
+import Data.Maybe
 import Data.Vector qualified as V
 import Data.Bool
 import Data.Word
@@ -282,3 +284,8 @@ match px py pttn bx by brd = matchClipped pttn $ clip' brd xo yo cw ch
 matchClipped :: Pattern -> Clipped -> Bool
 matchClipped Pattern { patternBody = pbd } Clipped { clippedBody = cbd } =
 	pbd == cbd
+
+matchBoard :: Pattern -> Board -> [((Int, Int), (Int, Int))]
+matchBoard pttn brd@Board { boardWidth = w, boardHeight = h } = catMaybes . concat
+	$ (<$> [0 .. h - 1]) \y -> (<$> [0 .. w - 1]) \x ->
+		((x, y) ,) <$> matchLife pttn x y brd
