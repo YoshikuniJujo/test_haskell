@@ -83,3 +83,9 @@ readGlider1 (
 	ud <- readMaybe ud_
 	pure ((G sp lr ud, (xo, yo)), rst)
 readGlider1 _ = Nothing
+
+data Independent = Independent {
+	independentShape :: Shape,
+	independentLeftRight :: LeftRight,
+	independentUpDown :: UpDown }
+	deriving Show
