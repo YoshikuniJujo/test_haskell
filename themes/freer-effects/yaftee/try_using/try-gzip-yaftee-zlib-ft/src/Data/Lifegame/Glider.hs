@@ -6,7 +6,9 @@ module Data.Lifegame.Glider (
 
 	readGliders,
 
-	shape0, shape1
+	shape0, shape1, printShape,
+
+	Independent(..), independentToPattern
 
 	) where
 
@@ -47,6 +49,9 @@ rotate Left Up sp = reverse $ reverse <$> sp
 rotate Left Down sp = flipXY $ reverse sp
 rotate Right Up sp = reverse $ flipXY sp
 rotate Right Down sp = sp
+
+rotateShapeAsAscii :: Shape -> LeftRight -> UpDown -> [String]
+rotateShapeAsAscii sp lr ud = rotate lr ud $ shapeAsAscii sp
 
 flipXY :: [String] -> [String]
 flipXY sp = (\x -> (!! x) <$> sp) <$> [0 .. w - 1]
@@ -89,3 +94,10 @@ data Independent = Independent {
 	independentLeftRight :: LeftRight,
 	independentUpDown :: UpDown }
 	deriving Show
+
+independentToPattern :: Independent -> Pattern
+independentToPattern Independent {
+	independentShape = sp,
+	independentLeftRight = lr,
+	independentUpDown = ud } =
+	asciiToPattern 11 11 4 4 $ rotateShapeAsAscii sp lr ud
