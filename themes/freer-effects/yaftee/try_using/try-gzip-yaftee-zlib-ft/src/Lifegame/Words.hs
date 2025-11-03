@@ -15,7 +15,7 @@ module Lifegame.Words (
 
 	Pattern, asciiToPattern, printPatternAsAscii,
 
-	match,
+	match, matchLife,
 
 	Clipped, clip, clip', printClippedAsAscii
 
@@ -266,6 +266,13 @@ combine n b1 b2 = b1 `shiftL` n .|. b2 `shiftR` (8 - n)
 patternToArea :: Int -> Int -> Pattern -> Int -> Int -> (Int, Int, Int, Int)
 patternToArea px py Pattern { patternWidth = pw, patternHeight = ph } x y =
 	(x - px, y - py, pw, ph)
+
+matchLife :: Pattern -> Int -> Int -> Board -> Maybe (Int, Int)
+matchLife pttn@Pattern { patternLives = lvs } bx by brd = go lvs
+	where
+	go [] = Nothing
+	go ((px, py) : lvs) =
+		bool (go lvs) (Just (px, py)) $ match px py pttn bx by brd
 
 match :: Int -> Int -> Pattern -> Int -> Int -> Board -> Bool
 match px py pttn bx by brd = matchClipped pttn $ clip' brd xo yo cw ch
