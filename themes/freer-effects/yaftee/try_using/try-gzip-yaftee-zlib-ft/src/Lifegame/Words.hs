@@ -16,7 +16,7 @@ module Lifegame.Words (
 	Pattern, asciiToPattern, printPatternAsAscii,
 
 	match, matchLife, matchBoard, matchBoard',
-	matchBoardLives, matchBoardLives',
+	matchBoardLives, matchBoardLives', multiMatchBoardLives,
 	matchBoardBottom,
 
 	Clipped, clip, clip', printClippedAsAscii,
@@ -284,6 +284,10 @@ patternToArea :: Int -> Int -> Pattern -> Int -> Int -> (Int, Int, Int, Int)
 patternToArea px py Pattern { patternWidth = pw, patternHeight = ph } x y =
 	(x - px, y - py, pw, ph)
 
+multiMatchLife :: [(a, Pattern)] -> Int -> Int -> Board -> Either (Int, Int) (a, (Int, Int))
+multiMatchLife pttns bx by brd = maybe (Left (bx, by)) Right . listToMaybe . catMaybes $
+	(\(x, pttn) -> (x ,) <$> matchLife pttn bx by brd) <$> pttns
+
 matchLife :: Pattern -> Int -> Int -> Board -> Maybe (Int, Int)
 matchLife pttn@Pattern { patternLives = lvs0 } bx by brd = go lvs0
 	where
@@ -325,6 +329,11 @@ matchBoardLives pttn brd = L.nub . L.sort . catMaybes
 matchBoardLives' :: Pattern -> Board -> ([(Int, Int)], [(Int, Int)])
 matchBoardLives' pttn brd = second (L.nub . L.sort) . partitionEithers
 	$ (<$> boardLives brd) \(x, y) -> (\(px, py) -> (x - px, y - py)) <$> matchLife' pttn x y brd
+
+multiMatchBoardLives :: Ord a =>
+	[(a, Pattern)] -> Board -> ([(Int, Int)], [(a, (Int, Int))])
+multiMatchBoardLives pttns brd = second (L.nub . L.sort) . partitionEithers
+	$ (<$> boardLives brd) \(x, y) -> (\(i, (px, py)) -> (i, (x - px, y - py))) <$> multiMatchLife pttns x y brd
 
 checkBottomEdge :: Board -> Bool
 checkBottomEdge Board { boardWidth = w, boardHeight = h, boardBody = bd } =

@@ -12,7 +12,8 @@ module Data.Lifegame.Glider (
 	Independent(..), independentToPattern,
 
 	matchIndependent, allIndependent,
-	searchIndependent, searchIndependentLives, searchIndependentLives',
+	searchIndependent,
+	searchIndependentLives, searchIndependentLives', searchIndependentLives'',
 	searchIndependentBottom
 
 	) where
@@ -27,9 +28,9 @@ import Text.Read
 data G = G { shape :: Shape, leftRight :: LeftRight, upDown :: UpDown }
 	deriving Show
 
-data Shape = Shape0 | Shape1 | Shape2 | Shape3 deriving (Show, Read, Enum)
-data LeftRight = Left | Right deriving (Show, Read, Enum)
-data UpDown = Up | Down deriving (Show, Read, Enum)
+data Shape = Shape0 | Shape1 | Shape2 | Shape3 deriving (Show, Read, Enum, Eq, Ord)
+data LeftRight = Left | Right deriving (Show, Read, Enum, Eq, Ord)
+data UpDown = Up | Down deriving (Show, Read, Enum, Eq, Ord)
 
 -- Left, Right, Top, Bottom
 -- Left, Right, Up, Down
@@ -100,7 +101,7 @@ data Independent = Independent {
 	independentShape :: Shape,
 	independentLeftRight :: LeftRight,
 	independentUpDown :: UpDown }
-	deriving Show
+	deriving (Show, Eq, Ord)
 
 independentToPattern :: Independent -> Pattern
 independentToPattern Independent {
@@ -123,6 +124,14 @@ matchIndependentLives' :: Independent -> Board -> ([(Int, Int)], [((Int, Int), G
 matchIndependentLives' ind brd =
 	second ((uncurry $ independentPosToGlider ind) <$>) $
 		matchBoardLives' (independentToPattern ind) brd
+
+matchMultiIndependentLives :: [Independent] -> Board -> ([(Int, Int)], [((Int, Int), G)])
+matchMultiIndependentLives inds brd = second ((uncurry independentToG) <$>) $
+	multiMatchBoardLives
+		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
+
+independentToG :: Independent -> (Int, Int) -> ((Int, Int), G)
+independentToG ind = uncurry $ independentPosToGlider ind
 
 matchIndependentBottom :: Int -> Independent -> Board -> [((Int, Int), G)]
 matchIndependentBottom n ind brd =
@@ -150,6 +159,9 @@ searchIndependentLives bd = concat $ (`matchIndependentLives` bd) <$> allIndepen
 searchIndependentLives' :: Board -> ([(Int, Int)], [((Int, Int), G)])
 searchIndependentLives' bd =
 	first (L.nub . L.sort) . concat2 $ (`matchIndependentLives'` bd) <$> allIndependent
+
+searchIndependentLives'' :: Board -> ([(Int, Int)], [((Int, Int), G)])
+searchIndependentLives'' = matchMultiIndependentLives allIndependent
 
 concat2 :: [([a], [b])] -> ([a], [b])
 concat2 [] = ([], [])
