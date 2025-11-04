@@ -16,8 +16,8 @@ module Lifegame.Words (
 	Pattern, asciiToPattern, printPatternAsAscii,
 
 	match, matchLife, matchBoard, matchBoard',
-	matchBoardLives, matchBoardLives', multiMatchBoardLives,
-	matchBoardBottom,
+	matchBoardLives, matchBoardLives', matchBoardBottom,
+	multiMatchBoardLives, multiMatchBoardLivesBottom,
 
 	Clipped, clip, clip', printClippedAsAscii,
 
@@ -334,6 +334,11 @@ multiMatchBoardLives :: Ord a =>
 	[(a, Pattern)] -> Board -> ([(Int, Int)], [(a, (Int, Int))])
 multiMatchBoardLives pttns brd = second (L.nub . L.sort) . partitionEithers
 	$ (<$> boardLives brd) \(x, y) -> (\(i, (px, py)) -> (i, (x - px, y - py))) <$> multiMatchLife pttns x y brd
+
+multiMatchBoardLivesBottom :: Ord a => Int ->
+	[(a, Pattern)] -> Board -> ([(Int, Int)], [(a, (Int, Int))])
+multiMatchBoardLivesBottom n pttns brd = second (L.nub . L.sort) . partitionEithers
+	$ (<$> boardLivesBottom n brd) \(x, y) -> (\(i, (px, py)) -> (i, (x - px, y - py))) <$> multiMatchLife pttns x y brd
 
 checkBottomEdge :: Board -> Bool
 checkBottomEdge Board { boardWidth = w, boardHeight = h, boardBody = bd } =
