@@ -1,7 +1,7 @@
 id:		shushupopo
 ratio:		1
 width:		2000
-height:		270
+height:		320
 x-offset:	200
 y-offset:	110
 first-frame:	0
