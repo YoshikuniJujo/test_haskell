@@ -11,12 +11,13 @@ module Data.Lifegame.Glider (
 	Independent(..), independentToPattern,
 
 	matchIndependent, allIndependent,
-	searchIndependent, searchIndependentLives,
+	searchIndependent, searchIndependentLives, searchIndependentLives',
 	searchIndependentBottom
 
 	) where
 
 import Prelude hiding (Either(..))
+import Control.Arrow
 import Lifegame.Words
 
 import Text.Read
@@ -116,6 +117,11 @@ matchIndependentLives ind brd =
 	uncurry (independentPosToGlider ind) <$>
 		matchBoardLives (independentToPattern ind) brd
 
+matchIndependentLives' :: Independent -> Board -> ([(Int, Int)], [((Int, Int), G)])
+matchIndependentLives' ind brd =
+	second ((uncurry $ independentPosToGlider ind) <$>) $
+		matchBoardLives' (independentToPattern ind) brd
+
 matchIndependentBottom :: Int -> Independent -> Board -> [((Int, Int), G)]
 matchIndependentBottom n ind brd =
 	uncurry (independentPosToGlider ind) <$>
@@ -138,6 +144,14 @@ searchIndependent bd = concat $ (`matchIndependent` bd) <$> allIndependent
 
 searchIndependentLives :: Board -> [((Int, Int), G)]
 searchIndependentLives bd = concat $ (`matchIndependentLives` bd) <$> allIndependent
+
+searchIndependentLives' :: Board -> ([(Int, Int)], [((Int, Int), G)])
+searchIndependentLives' bd = concat2 $ (`matchIndependentLives'` bd) <$> allIndependent
+
+concat2 :: [([a], [b])] -> ([a], [b])
+concat2 [] = ([], [])
+concat2 ((xs, ys) : xsyss) =
+	let (xss, yss) = concat2 xsyss in (xs ++ xss, ys ++ yss)
 
 searchIndependentBottom :: Int -> Board -> [((Int, Int), G)]
 searchIndependentBottom n bd =

@@ -15,7 +15,8 @@ module Lifegame.Words (
 
 	Pattern, asciiToPattern, printPatternAsAscii,
 
-	match, matchLife, matchBoard, matchBoard', matchBoardLives,
+	match, matchLife, matchBoard, matchBoard',
+	matchBoardLives, matchBoardLives',
 	matchBoardBottom,
 
 	Clipped, clip, clip', printClippedAsAscii,
@@ -28,10 +29,12 @@ import Prelude hiding (read)
 
 import GHC.Generics
 
+import Control.Arrow
 import Control.DeepSeq
 import Data.Traversable
 import Data.Bits
 import Data.Maybe
+import Data.Either
 import Data.List qualified as L
 import Data.Vector qualified as V
 import Data.Bool
@@ -278,11 +281,18 @@ patternToArea px py Pattern { patternWidth = pw, patternHeight = ph } x y =
 	(x - px, y - py, pw, ph)
 
 matchLife :: Pattern -> Int -> Int -> Board -> Maybe (Int, Int)
-matchLife pttn@Pattern { patternLives = lvs } bx by brd = go lvs
+matchLife pttn@Pattern { patternLives = lvs0 } bx by brd = go lvs0
 	where
 	go [] = Nothing
 	go ((px, py) : lvs) =
 		bool (go lvs) (Just (px, py)) $ match px py pttn bx by brd
+
+matchLife' :: Pattern -> Int -> Int -> Board -> Either (Int, Int) (Int, Int)
+matchLife' pttn@Pattern { patternLives = lvs0 } bx by brd = go lvs0
+	where
+	go [] = Left (bx, by)
+	go ((px, py) : lvs) =
+		bool (go lvs) (Right (px, py)) $ match px py pttn bx by brd
 
 match :: Int -> Int -> Pattern -> Int -> Int -> Board -> Bool
 match px py pttn bx by brd = matchClipped pttn $ clip' brd xo yo cw ch
@@ -307,6 +317,10 @@ matchBoard pttn brd@Board { boardWidth = w, boardHeight = h } = catMaybes . conc
 matchBoardLives :: Pattern -> Board -> [(Int, Int)]
 matchBoardLives pttn brd = L.nub . L.sort . catMaybes
 	$ (<$> boardLives brd) \(x, y) -> (\(px, py) -> (x - px, y - py)) <$> matchLife pttn x y brd
+
+matchBoardLives' :: Pattern -> Board -> ([(Int, Int)], [(Int, Int)])
+matchBoardLives' pttn brd = second (L.nub . L.sort) . partitionEithers
+	$ (<$> boardLives brd) \(x, y) -> (\(px, py) -> (x - px, y - py)) <$> matchLife' pttn x y brd
 
 checkBottomEdge :: Board -> Bool
 checkBottomEdge Board { boardWidth = w, boardHeight = h, boardBody = bd } =
