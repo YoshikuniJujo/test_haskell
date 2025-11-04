@@ -7,7 +7,7 @@ module Lifegame.Words (
 
 	Board, emptyBoard,
 
-	boards, boardLives,
+	boards, boardLives, boardLivesBottom,
 
 	boardToGray1, boardToGray1', gray1ToBoard,
 
@@ -98,6 +98,10 @@ read Board { boardWidth = w, boardHeight = h, boardBody = bd } x y =
 boardLives :: Board -> [(Int, Int)]
 boardLives bd@Board { boardWidth = w, boardHeight = h } =
 	[ (x, y) | x <- [0 .. w - 1], y <- [0 .. h - 1], read bd x y ]
+
+boardLivesBottom :: Int -> Board -> [(Int, Int)]
+boardLivesBottom n bd@Board { boardWidth = w, boardHeight = h } =
+	[ (x, y) | x <- [0 .. w - 1], y <- [h - n .. h - 1], read bd x y ]
 
 generate :: Int -> Int -> (Int -> Int -> Bool) -> Board
 generate w h px = Board {

@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -18,6 +19,7 @@ module Data.Lifegame.Glider (
 
 import Prelude hiding (Either(..))
 import Control.Arrow
+import Data.List qualified as L
 import Lifegame.Words
 
 import Text.Read
@@ -146,7 +148,8 @@ searchIndependentLives :: Board -> [((Int, Int), G)]
 searchIndependentLives bd = concat $ (`matchIndependentLives` bd) <$> allIndependent
 
 searchIndependentLives' :: Board -> ([(Int, Int)], [((Int, Int), G)])
-searchIndependentLives' bd = concat2 $ (`matchIndependentLives'` bd) <$> allIndependent
+searchIndependentLives' bd =
+	first (L.nub . L.sort) . concat2 $ (`matchIndependentLives'` bd) <$> allIndependent
 
 concat2 :: [([a], [b])] -> ([a], [b])
 concat2 [] = ([], [])
