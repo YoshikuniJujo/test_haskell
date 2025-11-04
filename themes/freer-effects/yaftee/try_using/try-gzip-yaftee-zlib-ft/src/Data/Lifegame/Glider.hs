@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Lifegame.Glider (
@@ -6,9 +6,11 @@ module Data.Lifegame.Glider (
 
 	readGliders,
 
-	shape0, shape1, printShape,
+	shape0, shape1, shape2, shape3, printShape,
 
-	Independent(..), independentToPattern
+	Independent(..), independentToPattern,
+
+	matchIndependent, allIndependent, searchIndependent
 
 	) where
 
@@ -20,9 +22,9 @@ import Text.Read
 data G = G { shape :: Shape, leftRight :: LeftRight, upDown :: UpDown }
 	deriving Show
 
-data Shape = Shape0 | Shape1 | Shape2 | Shape3 deriving (Show, Read)
-data LeftRight = Left | Right deriving (Show, Read)
-data UpDown = Up | Down deriving (Show, Read)
+data Shape = Shape0 | Shape1 | Shape2 | Shape3 deriving (Show, Read, Enum)
+data LeftRight = Left | Right deriving (Show, Read, Enum)
+data UpDown = Up | Down deriving (Show, Read, Enum)
 
 -- Left, Right, Top, Bottom
 -- Left, Right, Up, Down
@@ -101,3 +103,23 @@ independentToPattern Independent {
 	independentLeftRight = lr,
 	independentUpDown = ud } =
 	asciiToPattern 11 11 4 4 $ rotateShapeAsAscii sp lr ud
+
+matchIndependent :: Independent -> Board -> [((Int, Int), G)]
+matchIndependent ind brd =
+	uncurry (independentPosToGlider ind) <$>
+		matchBoard' (independentToPattern ind) brd
+
+independentPosToGlider :: Independent -> Int -> Int -> ((Int, Int), G)
+independentPosToGlider
+	Independent {
+		independentShape = sp,
+		independentLeftRight = lr,
+		independentUpDown = ud } x y = ((x + 4, y + 4), G sp lr ud)
+
+allIndependent :: [Independent]
+allIndependent = concat . concat $
+	(<$> [Shape0 ..]) \sp -> (<$> [Left ..]) \lr -> (<$> [Up ..]) \ud ->
+		Independent sp lr ud
+
+searchIndependent :: Board -> [((Int, Int), G)]
+searchIndependent bd = concat $ (`matchIndependent` bd) <$> allIndependent

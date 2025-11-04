@@ -25,3 +25,8 @@ board2 = unsafePerformIO do
 	hm <- getHomeDirectory
 	readBoard (hm </>
 		".yoshj/lifegame/pngs/glider/10x10_3x3/board_0028.png")
+
+lifegamePngsDirectory :: IO FilePath
+lifegamePngsDirectory = do
+	hm <- getHomeDirectory
+	pure $ hm </> ".yoshj/lifegame/pngs"

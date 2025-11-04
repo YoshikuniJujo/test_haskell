@@ -17,7 +17,9 @@ module Lifegame.Words (
 
 	match, matchLife, matchBoard, matchBoard',
 
-	Clipped, clip, clip', printClippedAsAscii
+	Clipped, clip, clip', printClippedAsAscii,
+
+	checkBottomEdge
 
 	) where
 
@@ -296,3 +298,9 @@ matchBoard :: Pattern -> Board -> [((Int, Int), (Int, Int))]
 matchBoard pttn brd@Board { boardWidth = w, boardHeight = h } = catMaybes . concat
 	$ (<$> [0 .. h - 1]) \y -> (<$> [0 .. w - 1]) \x ->
 		((x, y) ,) <$> matchLife pttn x y brd
+
+checkBottomEdge :: Board -> Bool
+checkBottomEdge Board { boardWidth = w, boardHeight = h, boardBody = bd } =
+	any (/= 0) $ (\x -> bd V.! ((h - 1) * w' + x)) <$> [0 .. w' - 1]
+	where
+	w' = (w - 1) `div` 8 + 1
