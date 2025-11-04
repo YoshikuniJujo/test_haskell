@@ -140,6 +140,11 @@ matchMultiIndependentLivesBottom n inds brd = second ((uncurry independentToG) <
 	multiMatchBoardLivesBottom n
 		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
 
+matchMultiIndependentLivesTop :: Int -> [Independent] -> Board -> ([(Int, Int)], [((Int, Int), G)])
+matchMultiIndependentLivesTop n inds brd = second ((uncurry independentToG) <$>) $
+	multiMatchBoardLivesTop n
+		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
+
 independentToG :: Independent -> (Int, Int) -> ((Int, Int), G)
 independentToG ind = uncurry $ independentPosToGlider ind
 
@@ -176,6 +181,9 @@ searchIndependentLives'' = matchMultiIndependentLives allIndependent
 searchIndependentLivesBottom :: Int -> Board -> ([(Int, Int)], [((Int, Int), G)])
 searchIndependentLivesBottom n = matchMultiIndependentLivesBottom n allIndependent
 
+searchIndependentLivesTop :: Int -> Board -> ([(Int, Int)], [((Int, Int), G)])
+searchIndependentLivesTop n = matchMultiIndependentLivesTop n allIndependent
+
 concat2 :: [([a], [b])] -> ([a], [b])
 concat2 [] = ([], [])
 concat2 ((xs, ys) : xsyss) =
@@ -198,18 +206,32 @@ checkRightDownToLeftDown ((_, g) : gs)
 checkLeftDown :: [((Int, Int), G)] -> Bool
 checkLeftDown = any (checkDirection Left Down . snd)
 
+checkTopEdgeG :: [(Int, Int)] -> [((Int, Int), G)] -> Bool
+checkTopEdgeG [] gls = not $ checkRightUpToLeftUp $ L.sort gls
+checkTopEdgeG _ _ = False
+
+checkRightUpToLeftUp :: [((Int, Int), G)] -> Bool
+checkRightUpToLeftUp [] = False
+checkRightUpToLeftUp ((_, g) : gs)
+	| checkDirection Right Up g = checkLeftUp gs
+	| otherwise = checkRightUpToLeftUp gs
+
+checkLeftUp :: [((Int, Int), G)] -> Bool
+checkLeftUp = any (checkDirection Left Up . snd)
+
 checkDirection :: LeftRight -> UpDown -> G -> Bool
 checkDirection lr0 ud0 G { leftRight = lr, upDown = ud } =
 	lr == lr0 && ud == ud0
-
-isBottomGlider :: Board -> ((Int, Int), G) -> Bool
-isBottomGlider brd ((_, y), _) = y == boardHeight brd - 3
 
 removeGliders :: Board -> [((Int, Int), G)] -> Board
 removeGliders bd gls = removeAreas bd (toArea <$> gls)
 	where toArea ((xo, yo), _) = (xo, yo, 3, 3)
 
 data Change a = NG | OK | Changed a deriving Show
+
+removeBottomGliders' :: Board -> Maybe Board
+removeBottomGliders' brd = case removeBottomGliders brd of
+	NG -> Nothing; OK -> Just brd; Changed brd -> Just brd
 
 removeBottomGliders :: Board -> Change Board
 removeBottomGliders brd
@@ -220,11 +242,27 @@ removeBottomGliders brd
 		else NG
 	| otherwise = OK
 
-removeBottomGliders' :: Board -> Maybe Board
-removeBottomGliders' brd = case removeBottomGliders brd of
+isBottomGlider :: Board -> ((Int, Int), G) -> Bool
+isBottomGlider brd ((_, y), _) = y == boardHeight brd - 3
+
+removeTopGliders' :: Board -> Maybe Board
+removeTopGliders' brd = case removeTopGliders brd of
 	NG -> Nothing; OK -> Just brd; Changed brd -> Just brd
 
+removeTopGliders :: Board -> Change Board
+removeTopGliders brd
+	| checkTopEdge brd = let
+		(lvs, gls) = searchIndependentLivesTop 7 brd in
+		if checkTopEdgeG lvs gls
+		then Changed $ removeGliders brd (filter (isTopGlider brd) gls)
+		else NG
+	| otherwise = OK
+
+isTopGlider :: Board -> ((Int, Int), G) -> Bool
+isTopGlider _ ((_, y), _) = y == 0
+
 boards' :: Board -> [Board]
-boards' brd = brd : case removeBottomGliders' $ boardNext brd of
-	Nothing -> []
-	Just brd' -> boards' brd'
+boards' brd = brd :
+	case removeTopGliders' =<< removeBottomGliders' (boardNext brd) of
+		Nothing -> []
+		Just brd' -> boards' brd'

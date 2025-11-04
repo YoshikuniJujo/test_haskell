@@ -7,7 +7,7 @@ module Lifegame.Words (
 
 	Board, emptyBoard, boardHeight, boardWidth,
 
-	boards, boardNext, boardLives, boardLivesBottom,
+	boards, boardNext, boardLives, boardLivesBottom, boardLivesTop,
 
 	boardToGray1, boardToGray1', gray1ToBoard,
 
@@ -17,11 +17,13 @@ module Lifegame.Words (
 
 	match, matchLife, matchBoard, matchBoard',
 	matchBoardLives, matchBoardLives', matchBoardBottom,
-	multiMatchBoardLives, multiMatchBoardLivesBottom,
+
+	multiMatchBoardLives,
+	multiMatchBoardLivesBottom, multiMatchBoardLivesTop,
 
 	Clipped, clip, clip', printClippedAsAscii,
 
-	checkBottomEdge,
+	checkBottomEdge, checkTopEdge,
 
 	removeAreas
 
@@ -105,6 +107,10 @@ boardLives bd@Board { boardWidth = w, boardHeight = h } =
 boardLivesBottom :: Int -> Board -> [(Int, Int)]
 boardLivesBottom n bd@Board { boardWidth = w, boardHeight = h } =
 	[ (x, y) | x <- [0 .. w - 1], y <- [h - n .. h - 1], read bd x y ]
+
+boardLivesTop :: Int -> Board -> [(Int, Int)]
+boardLivesTop n bd@Board { boardWidth = w, boardHeight = h } =
+	[ (x, y) | x <- [0 .. w - 1], y <- [0 .. n - 1], read bd x y ]
 
 removeAreas :: Board -> [(Int, Int, Int, Int)] -> Board
 removeAreas brd@Board { boardWidth = w, boardHeight = h } ars =
@@ -354,9 +360,20 @@ multiMatchBoardLivesBottom :: Ord a => Int ->
 multiMatchBoardLivesBottom n pttns brd = second (L.nub . L.sort) . partitionEithers
 	$ (<$> boardLivesBottom n brd) \(x, y) -> (\(i, (px, py)) -> (i, (x - px, y - py))) <$> multiMatchLife pttns x y brd
 
+multiMatchBoardLivesTop :: Ord a => Int ->
+	[(a, Pattern)] -> Board -> ([(Int, Int)], [(a, (Int, Int))])
+multiMatchBoardLivesTop n pttns brd = second (L.nub . L.sort) . partitionEithers
+	$ (<$> boardLivesTop n brd) \(x, y) -> (\(i, (px, py)) -> (i, (x - px, y - py))) <$> multiMatchLife pttns x y brd
+
 checkBottomEdge :: Board -> Bool
 checkBottomEdge Board { boardWidth = w, boardHeight = h, boardBody = bd } =
 	any (/= 0) $ (\x -> bd V.! ((h - 1) * w' + x)) <$> [0 .. w' - 1]
+	where
+	w' = (w - 1) `div` 8 + 1
+
+checkTopEdge :: Board -> Bool
+checkTopEdge Board { boardWidth = w, boardHeight = h, boardBody = bd } =
+	any (/= 0) $ (\x -> bd V.! x) <$> [0 .. w' - 1]
 	where
 	w' = (w - 1) `div` 8 + 1
 
