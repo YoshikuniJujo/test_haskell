@@ -7,7 +7,7 @@ module Lifegame.Words (
 
 	Board, emptyBoard,
 
-	boards,
+	boards, boardLives,
 
 	boardToGray1, boardToGray1', gray1ToBoard,
 
@@ -15,7 +15,8 @@ module Lifegame.Words (
 
 	Pattern, asciiToPattern, printPatternAsAscii,
 
-	match, matchLife, matchBoard, matchBoard', matchBoardBottom,
+	match, matchLife, matchBoard, matchBoard', matchBoardLives,
+	matchBoardBottom,
 
 	Clipped, clip, clip', printClippedAsAscii,
 
@@ -90,6 +91,10 @@ read Board { boardWidth = w, boardHeight = h, boardBody = bd } x y =
 	w' = (w - 1) `div` 8 + 1
 	x' = x `mod` w
 	y' = y `mod` h
+
+boardLives :: Board -> [(Int, Int)]
+boardLives bd@Board { boardWidth = w, boardHeight = h } =
+	[ (x, y) | x <- [0 .. w - 1], y <- [0 .. h - 1], read bd x y ]
 
 generate :: Int -> Int -> (Int -> Int -> Bool) -> Board
 generate w h px = Board {
@@ -298,6 +303,10 @@ matchBoard :: Pattern -> Board -> [((Int, Int), (Int, Int))]
 matchBoard pttn brd@Board { boardWidth = w, boardHeight = h } = catMaybes . concat
 	$ (<$> [0 .. h - 1]) \y -> (<$> [0 .. w - 1]) \x ->
 		((x, y) ,) <$> matchLife pttn x y brd
+
+matchBoardLives :: Pattern -> Board -> [(Int, Int)]
+matchBoardLives pttn brd = L.nub . L.sort . catMaybes
+	$ (<$> boardLives brd) \(x, y) -> (\(px, py) -> (x - px, y - py)) <$> matchLife pttn x y brd
 
 checkBottomEdge :: Board -> Bool
 checkBottomEdge Board { boardWidth = w, boardHeight = h, boardBody = bd } =

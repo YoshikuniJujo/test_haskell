@@ -11,7 +11,8 @@ module Data.Lifegame.Glider (
 	Independent(..), independentToPattern,
 
 	matchIndependent, allIndependent,
-	searchIndependent, searchIndependentBottom
+	searchIndependent, searchIndependentLives,
+	searchIndependentBottom
 
 	) where
 
@@ -110,6 +111,11 @@ matchIndependent ind brd =
 	uncurry (independentPosToGlider ind) <$>
 		matchBoard' (independentToPattern ind) brd
 
+matchIndependentLives :: Independent -> Board -> [((Int, Int), G)]
+matchIndependentLives ind brd =
+	uncurry (independentPosToGlider ind) <$>
+		matchBoardLives (independentToPattern ind) brd
+
 matchIndependentBottom :: Int -> Independent -> Board -> [((Int, Int), G)]
 matchIndependentBottom n ind brd =
 	uncurry (independentPosToGlider ind) <$>
@@ -129,6 +135,9 @@ allIndependent = concat . concat $
 
 searchIndependent :: Board -> [((Int, Int), G)]
 searchIndependent bd = concat $ (`matchIndependent` bd) <$> allIndependent
+
+searchIndependentLives :: Board -> [((Int, Int), G)]
+searchIndependentLives bd = concat $ (`matchIndependentLives` bd) <$> allIndependent
 
 searchIndependentBottom :: Int -> Board -> [((Int, Int), G)]
 searchIndependentBottom n bd =
