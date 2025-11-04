@@ -15,7 +15,7 @@ module Lifegame.Words (
 
 	Pattern, asciiToPattern, printPatternAsAscii,
 
-	match, matchLife, matchBoard, matchBoard',
+	match, matchLife, matchBoard, matchBoard', matchBoardBottom,
 
 	Clipped, clip, clip', printClippedAsAscii,
 
@@ -304,3 +304,9 @@ checkBottomEdge Board { boardWidth = w, boardHeight = h, boardBody = bd } =
 	any (/= 0) $ (\x -> bd V.! ((h - 1) * w' + x)) <$> [0 .. w' - 1]
 	where
 	w' = (w - 1) `div` 8 + 1
+
+matchBoardBottom :: Int -> Pattern -> Board -> [(Int, Int)]
+matchBoardBottom n pttn brd@Board { boardWidth = w, boardHeight = h } =
+	L.nub . L.sort . catMaybes . concat
+		$ (<$> [h - n .. h - 1]) \y -> (<$> [0 .. w - 1]) \x ->
+			(\(px, py) -> (x - px, y - py)) <$> matchLife pttn x y brd
