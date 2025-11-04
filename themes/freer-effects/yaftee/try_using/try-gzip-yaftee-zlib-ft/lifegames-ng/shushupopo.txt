@@ -1,11 +1,11 @@
 id:		shushupopo
 ratio:		1
-width:		680
-height:		200
-x-offset:	40
-y-offset:	90
+width:		2000
+height:		270
+x-offset:	200
+y-offset:	110
 first-frame:	0
-frame-number:	1150
+frame-number:	3000
 delay:		1%64
 shape:
 ...*.
