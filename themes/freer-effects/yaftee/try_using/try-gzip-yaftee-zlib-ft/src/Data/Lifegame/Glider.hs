@@ -14,7 +14,12 @@ module Data.Lifegame.Glider (
 	matchIndependent, allIndependent,
 	searchIndependent, searchIndependentBottom,
 	searchIndependentLives, searchIndependentLives', searchIndependentLives'',
-	searchIndependentLivesBottom
+
+	searchIndependentLivesBottom, checkBottomEdgeG,
+
+	removeBottomGliders, removeBottomGliders',
+
+	boards'
 
 	) where
 
@@ -26,7 +31,7 @@ import Lifegame.Words
 import Text.Read
 
 data G = G { shape :: Shape, leftRight :: LeftRight, upDown :: UpDown }
-	deriving Show
+	deriving (Show, Eq, Ord)
 
 data Shape = Shape0 | Shape1 | Shape2 | Shape3 deriving (Show, Read, Enum, Eq, Ord)
 data LeftRight = Left | Right deriving (Show, Read, Enum, Eq, Ord)
@@ -179,3 +184,47 @@ concat2 ((xs, ys) : xsyss) =
 searchIndependentBottom :: Int -> Board -> [((Int, Int), G)]
 searchIndependentBottom n bd =
 	concat $ (\ind -> matchIndependentBottom n ind bd) <$> allIndependent
+
+checkBottomEdgeG :: [(Int, Int)] -> [((Int, Int), G)] -> Bool
+checkBottomEdgeG [] gls = not $ checkRightDownToLeftDown $ L.sort gls
+checkBottomEdgeG _ _ = False
+
+checkRightDownToLeftDown :: [((Int, Int), G)] -> Bool
+checkRightDownToLeftDown [] = False
+checkRightDownToLeftDown ((_, g) : gs)
+	| checkDirection Right Down g = checkLeftDown gs
+	| otherwise = checkRightDownToLeftDown gs
+
+checkLeftDown :: [((Int, Int), G)] -> Bool
+checkLeftDown = any (checkDirection Left Down . snd)
+
+checkDirection :: LeftRight -> UpDown -> G -> Bool
+checkDirection lr0 ud0 G { leftRight = lr, upDown = ud } =
+	lr == lr0 && ud == ud0
+
+isBottomGlider :: Board -> ((Int, Int), G) -> Bool
+isBottomGlider brd ((_, y), _) = y == boardHeight brd - 3
+
+removeGliders :: Board -> [((Int, Int), G)] -> Board
+removeGliders bd gls = removeAreas bd (toArea <$> gls)
+	where toArea ((xo, yo), _) = (xo, yo, 3, 3)
+
+data Change a = NG | OK | Changed a deriving Show
+
+removeBottomGliders :: Board -> Change Board
+removeBottomGliders brd
+	| checkBottomEdge brd = let
+		(lvs, gls) = searchIndependentLivesBottom 7 brd in
+		if checkBottomEdgeG lvs gls
+		then Changed $ removeGliders brd (filter (isBottomGlider brd) gls)
+		else NG
+	| otherwise = OK
+
+removeBottomGliders' :: Board -> Maybe Board
+removeBottomGliders' brd = case removeBottomGliders brd of
+	NG -> Nothing; OK -> Just brd; Changed brd -> Just brd
+
+boards' :: Board -> [Board]
+boards' brd = brd : case removeBottomGliders' $ boardNext brd of
+	Nothing -> []
+	Just brd' -> boards' brd'

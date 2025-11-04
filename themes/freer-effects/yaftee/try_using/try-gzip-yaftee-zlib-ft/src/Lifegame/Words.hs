@@ -5,9 +5,9 @@
 
 module Lifegame.Words (
 
-	Board, emptyBoard,
+	Board, emptyBoard, boardHeight, boardWidth,
 
-	boards, boardLives, boardLivesBottom,
+	boards, boardNext, boardLives, boardLivesBottom,
 
 	boardToGray1, boardToGray1', gray1ToBoard,
 
@@ -21,7 +21,9 @@ module Lifegame.Words (
 
 	Clipped, clip, clip', printClippedAsAscii,
 
-	checkBottomEdge
+	checkBottomEdge,
+
+	removeAreas
 
 	) where
 
@@ -53,8 +55,9 @@ boards = iterate next
 emptyBoard :: Int -> Int -> Board
 emptyBoard w h = generate w h \_ _ -> False
 
-next :: Board -> Board
+next, boardNext :: Board -> Board
 next bd = generate (boardWidth bd) (boardHeight bd) (calc bd)
+boardNext = next
 
 calc :: Board -> Int -> Int -> Bool
 calc p cx cy
@@ -102,6 +105,17 @@ boardLives bd@Board { boardWidth = w, boardHeight = h } =
 boardLivesBottom :: Int -> Board -> [(Int, Int)]
 boardLivesBottom n bd@Board { boardWidth = w, boardHeight = h } =
 	[ (x, y) | x <- [0 .. w - 1], y <- [h - n .. h - 1], read bd x y ]
+
+removeAreas :: Board -> [(Int, Int, Int, Int)] -> Board
+removeAreas brd@Board { boardWidth = w, boardHeight = h } ars =
+	generate w h \x y ->
+		read brd x y && not (insideAreas ars x y)
+
+inside :: (Int, Int, Int, Int) -> Int -> Int -> Bool
+inside (xo, yo, w, h) x y = xo <= x && x < xo + w && yo <= y && y < yo + h
+
+insideAreas :: [(Int, Int, Int, Int)] -> Int -> Int -> Bool
+insideAreas ars x y = any (\ar -> inside ar x y) ars
 
 generate :: Int -> Int -> (Int -> Int -> Bool) -> Board
 generate w h px = Board {
