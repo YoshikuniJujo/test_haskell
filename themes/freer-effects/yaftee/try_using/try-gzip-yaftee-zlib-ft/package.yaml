@@ -288,6 +288,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gzip-yaftee-zlib-ft
+  try-readchunk-ng-black-on-white:
+    main:                try-readchunk-ng-black-on-white.hs
+    source-dirs:         app
+    other-modules:       []
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gzip-yaftee-zlib-ft
   try-decod-lifegame-gray1:
     main:                try-decod-lifegame-gray1.hs
     source-dirs:         app
