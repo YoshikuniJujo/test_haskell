@@ -1,7 +1,21 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.FTCQueue (Q, singleton, (|>), (><), viewl, ViewL(..)) where
+module Data.FTCQueue (
+
+	-- * Q TYPE
+
+	Q,
+
+	-- * CONSTRUCTION
+
+	singleton, (|>), (><),
+
+	-- * VIEW
+
+	viewl, ViewL(..)
+
+	) where
 
 data Q t a b = Leaf (a -> t b) | forall x . Node !(Q t a x) !(Q t x b)
 
