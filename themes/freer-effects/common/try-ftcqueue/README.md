@@ -1,5 +1,11 @@
 # try-ftcqueue
 
+## See
+
+https://okmij.org/ftp/Haskell/zseq.pdf
+
+## Sample Code
+
 ```Haskell
 module Main (main) where
 
