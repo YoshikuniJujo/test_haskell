@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: dfe2577653f44e7f9022d57f8b4132099e283394
+    commit: fbdb284f3df83effda327a88a045d23402aa6bc1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-ext-debug-utils
     pantry-tree:
@@ -14,11 +14,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
     version: 0.1.0.8
   original:
-    commit: dfe2577653f44e7f9022d57f8b4132099e283394
+    commit: fbdb284f3df83effda327a88a045d23402aa6bc1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
 - completed:
-    commit: dfe2577653f44e7f9022d57f8b4132099e283394
+    commit: fbdb284f3df83effda327a88a045d23402aa6bc1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-middle-ext-debug-utils
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
     version: 0.1.0.4
   original:
-    commit: dfe2577653f44e7f9022d57f8b4132099e283394
+    commit: fbdb284f3df83effda327a88a045d23402aa6bc1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
 - completed:
-    commit: dfe2577653f44e7f9022d57f8b4132099e283394
+    commit: fbdb284f3df83effda327a88a045d23402aa6bc1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core-ext-debug-utils
     pantry-tree:
@@ -40,11 +40,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
     version: 0.1.0.0
   original:
-    commit: dfe2577653f44e7f9022d57f8b4132099e283394
+    commit: fbdb284f3df83effda327a88a045d23402aa6bc1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
-    commit: dfe2577653f44e7f9022d57f8b4132099e283394
+    commit: fbdb284f3df83effda327a88a045d23402aa6bc1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-gpu-vulkan-cglm
     pantry-tree:
@@ -53,11 +53,11 @@ packages:
     subdir: themes/gui/vulkan/try-gpu-vulkan-cglm
     version: 0.1.0.7
   original:
-    commit: dfe2577653f44e7f9022d57f8b4132099e283394
+    commit: fbdb284f3df83effda327a88a045d23402aa6bc1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-gpu-vulkan-cglm
 - completed:
-    commit: dfe2577653f44e7f9022d57f8b4132099e283394
+    commit: fbdb284f3df83effda327a88a045d23402aa6bc1
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-codec-wavefront-obj
     pantry-tree:
@@ -66,7 +66,7 @@ packages:
     subdir: themes/codec/try-codec-wavefront-obj
     version: 0.1.0.2
   original:
-    commit: dfe2577653f44e7f9022d57f8b4132099e283394
+    commit: fbdb284f3df83effda327a88a045d23402aa6bc1
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/codec/try-codec-wavefront-obj
 - completed:
@@ -109,12 +109,12 @@ packages:
   original:
     hackage: gpu-vulkan-khr-surface-glfw-0.1.0.0
 - completed:
-    hackage: gpu-vulkan-middle-0.1.0.75@sha256:eea5220f6696b9d35a74a0959cd7987d6879dc558a7697af888236f979df2231,9124
+    hackage: gpu-vulkan-middle-0.1.0.77@sha256:a6b75b38855cf0cf709061ced2282d0d85dc8f6fe8ebb2a797ffc235006bcc7e,9154
     pantry-tree:
-      sha256: 5b163da48b756a822a132b550a204f8a37f65b96b003e98c2e3a1017e523f50d
-      size: 13576
+      sha256: 9160c7debedcc93d541ec4e4140c3218c950e62eb84b3756c6c974ab2f3159b5
+      size: 13577
   original:
-    hackage: gpu-vulkan-middle-0.1.0.75
+    hackage: gpu-vulkan-middle-0.1.0.77
 - completed:
     hackage: gpu-vulkan-middle-khr-swapchain-0.1.0.0@sha256:a15bb45401cfe86eda6d6c9086dbc7aa65c1049a4c32ab7cbf340f2a74db8a8f,2569
     pantry-tree:
@@ -173,7 +173,7 @@ packages:
     hackage: language-spir-v-0.1.0.3
 snapshots:
 - completed:
-    sha256: f7bac574f1ba8b0e4dc6d6d842e59c6da626b979b1d063eae8e1602cb20d18e7
-    size: 654474
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/2/19.yaml
-  original: nightly-2025-02-19
+    sha256: aed20a74b586cf692559f427c3b81275ae15accd022f9ed8d237aa821ba767ba
+    size: 705113
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/4.yaml
+  original: nightly-2025-11-04
