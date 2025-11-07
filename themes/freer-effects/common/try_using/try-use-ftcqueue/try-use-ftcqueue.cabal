@@ -6,7 +6,7 @@ cabal-version: 2.2
 
 name:           try-use-ftcqueue
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-use-ftcqueue#readme>
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/test_haskell/tree/master/themes/freer-effects/common/try_using/try-use-ftcqueue#readme>
 homepage:       https://github.com/YoshikuniJujo/try-use-ftcqueue#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-use-ftcqueue/issues
 author:         Yoshikuni Jujo

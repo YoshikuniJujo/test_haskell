@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-use-ftcqueue#readme>
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/test_haskell/tree/master/themes/freer-effects/common/try_using/try-use-ftcqueue#readme>
 
 dependencies:
 - base >= 4.7 && < 5
