@@ -41,10 +41,10 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
+  - ftcqueue-0.1.0.1
   - git: https://github.com/YoshikuniJujo/test_haskell
     commit: 87a62f29f603ba44af3522702251edd7ac2bc6f6
     subdirs:
-      - themes/freer-effects/common/try-ftcqueue
       - themes/freer-effects/common/try-freer-base-classes
 
 # Override default flag values for project packages and extra-deps
