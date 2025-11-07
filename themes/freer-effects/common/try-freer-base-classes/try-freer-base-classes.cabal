@@ -1,12 +1,14 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
 name:           try-freer-base-classes
 version:        0.1.0.0
+synopsis:       class NonDetable.N and Failable.F
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-freer-base-classes#readme>
+category:       Control
 homepage:       https://github.com/YoshikuniJujo/try-freer-base-classes#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-freer-base-classes/issues
 author:         Yoshikuni Jujo
@@ -17,6 +19,7 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
+extra-doc-files:
     CHANGELOG.md
 
 source-repository head
