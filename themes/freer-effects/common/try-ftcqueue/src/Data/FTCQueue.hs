@@ -22,7 +22,8 @@ data Q t a b = Leaf (a -> t b) | forall x . Node !(Q t a x) !(Q t x b)
 singleton :: (a -> t b) -> Q t a b
 singleton = Leaf
 
-infixr 5 |>, ><, :|
+infixl 5 |>
+infixr 5 ><, :|
 
 (|>) :: Q t a b -> (b -> t c) -> Q t a c
 (|>) = (. Leaf) . Node

@@ -1,11 +1,11 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
 name:           try-ftcqueue
-version:        0.1.0.0
+version:        0.1.0.1
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-ftcqueue#readme>
 homepage:       https://github.com/YoshikuniJujo/try-ftcqueue#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-ftcqueue/issues
