@@ -35,8 +35,7 @@ infixr 0 $
 ($) :: Q.Q (H h i o) a b -> a -> H h i o b
 q $ x = case Q.viewl q of
 	Q.One f -> f x
-	f Q.:| r -> case f x of
-		Pure y -> r $ y; hx :>>= q' -> hx :>>= q' Q.>< r
+	f Q.:| r -> case f x of Pure y -> r $ y; hx :>>= q' -> hx :>>= q' Q.>< r
 
 infixr 9 .
 
