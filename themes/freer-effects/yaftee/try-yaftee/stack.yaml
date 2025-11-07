@@ -41,13 +41,13 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
+  - freer-base-classes-0.1.0.0
+  - ftcqueue-0.1.0.1
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: fa61f3dc7e0ff924e99a26f146f9d0f4e9f22402
+    commit: 65adcaba020b1796e0fd944845682dca39ed67bb
     subdirs:
       - themes/freer-effects/yaftee/try-higher-order-freer-monad
       - themes/freer-effects/yaftee/try-higher-order-open-union
-      - themes/freer-effects/common/try-ftcqueue
-      - themes/freer-effects/common/try-freer-base-classes
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
