@@ -37,7 +37,7 @@ library
   ghc-options: -Wall -O2 -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
-    , try-freer-base-classes
+    , freer-base-classes
   default-language: Haskell2010
 
 test-suite try-higher-order-open-union-test
@@ -52,6 +52,6 @@ test-suite try-higher-order-open-union-test
   ghc-options: -Wall -O2 -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , try-freer-base-classes
+    , freer-base-classes
     , try-higher-order-open-union
   default-language: Haskell2010
