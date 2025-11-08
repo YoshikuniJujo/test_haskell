@@ -25,7 +25,7 @@ module Control.HigherOpenUnion (
 
 	weaken,
 
-	-- * INSTANCES
+	-- * NON DET AND FAIL
 
 	NonDet(..), Fail(..)
 
@@ -82,7 +82,7 @@ extracth (U _ hx) = unsafeCoerce hx
 weaken :: U hs f i o a -> U (any ': hs) f i o a
 weaken (U n a) = U (n + 1) a
 
--- * INSTANCES
+-- * NON DET AND FAIL
 
 instance Member (FromFirst NonDet) effs => NonDetable.N (U effs f i o) where
 	mz = inj (NonDetable.mz @NonDet); mp = inj (NonDetable.mp @NonDet)
