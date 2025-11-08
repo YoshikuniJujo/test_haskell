@@ -13,7 +13,7 @@ packages:
     hackage: freer-base-classes-0.1.0.0
 snapshots:
 - completed:
-    sha256: a82ac3305208490a33760197fb2f4506be2d0310fbda0b4c041b9135f8010eb3
-    size: 686899
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/8/12.yaml
-  original: nightly-2025-08-12
+    sha256: 6f27e5f76a9d67e075f607e8bf81511e5a8df9c7c7c2ee915c2c459f457608bf
+    size: 705119
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/7.yaml
+  original: nightly-2025-11-07
