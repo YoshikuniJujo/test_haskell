@@ -46,7 +46,7 @@ packages:
     subdir: themes/freer-effects/yaftee/try-higher-order-open-union
 snapshots:
 - completed:
-    sha256: d7298f063488cee81798b1fad30d9cf529aeb76f637f462546b8f9f8d93f724e
-    size: 696614
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/10/2.yaml
-  original: nightly-2025-10-02
+    sha256: bf223a1e9cf17606fbbd878d70f4d87eeaf8f772300e771f23359de5c218e76b
+    size: 705182
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/8.yaml
+  original: nightly-2025-11-08
