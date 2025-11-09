@@ -5,6 +5,13 @@
 
 packages:
 - completed:
+    hackage: higher-order-freer-monad-0.1.0.0@sha256:cb577292506e6f906528813f339966874c7c7a23a76cc4b5eabdd600f2843c2d,2038
+    pantry-tree:
+      sha256: a5733f3e7b315da2f2f898201da69dee0fdbe10a37d0686a4bcc381f13bf869a
+      size: 392
+  original:
+    hackage: higher-order-freer-monad-0.1.0.0
+- completed:
     hackage: freer-base-classes-0.1.0.0@sha256:38e4853293416518606ea78699a57025b3595a8fbec36e8a26cce49e18fa1daf,1895
     pantry-tree:
       sha256: ea291a883003d80cdc2bcc4e3589e495ae1559e96e8368fe94ea724078f01476
@@ -21,19 +28,6 @@ packages:
 - completed:
     commit: 65adcaba020b1796e0fd944845682dca39ed67bb
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-higher-order-freer-monad
-    pantry-tree:
-      sha256: 87e71e6e5d48cdc2ca5b7b565da56cda8c8dea295054ab02c8f490c2fa850c6c
-      size: 604
-    subdir: themes/freer-effects/yaftee/try-higher-order-freer-monad
-    version: 0.1.0.0
-  original:
-    commit: 65adcaba020b1796e0fd944845682dca39ed67bb
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-higher-order-freer-monad
-- completed:
-    commit: 65adcaba020b1796e0fd944845682dca39ed67bb
-    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-higher-order-open-union
     pantry-tree:
       sha256: 92339e95a34847d13e07287085d97f920c90682192dcf7c85119bcef8cebe578
@@ -46,7 +40,7 @@ packages:
     subdir: themes/freer-effects/yaftee/try-higher-order-open-union
 snapshots:
 - completed:
-    sha256: bf223a1e9cf17606fbbd878d70f4d87eeaf8f772300e771f23359de5c218e76b
-    size: 705182
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/8.yaml
-  original: nightly-2025-11-08
+    sha256: 4edb7d0ff97950aa354beeb68746cc0c6812c2d478a51a90310822f64744a484
+    size: 705173
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/9.yaml
+  original: nightly-2025-11-09
