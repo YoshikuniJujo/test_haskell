@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-10-20
+snapshot: nightly-2025-11-09
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,14 +41,14 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
+  - higher-order-freer-monad-0.1.0.0
+  - higher-order-open-union-0.1.0.1
+  - freer-base-classes-0.1.0.0
+  - ftcqueue-0.1.0.1
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 96cb683591635b21a8a883d8f554a4d5c12b3b2e
+    commit: 9625518196b19950574a859508cc7a9273b6088b
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee
-      - themes/freer-effects/yaftee/try-higher-order-freer-monad
-      - themes/freer-effects/yaftee/try-higher-order-open-union
-      - themes/freer-effects/common/try-ftcqueue
-      - themes/freer-effects/common/try-freer-base-classes
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

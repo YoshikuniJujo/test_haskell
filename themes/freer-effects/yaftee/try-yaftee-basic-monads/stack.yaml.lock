@@ -5,73 +5,49 @@
 
 packages:
 - completed:
-    commit: 96cb683591635b21a8a883d8f554a4d5c12b3b2e
+    hackage: higher-order-freer-monad-0.1.0.0@sha256:cb577292506e6f906528813f339966874c7c7a23a76cc4b5eabdd600f2843c2d,2038
+    pantry-tree:
+      sha256: a5733f3e7b315da2f2f898201da69dee0fdbe10a37d0686a4bcc381f13bf869a
+      size: 392
+  original:
+    hackage: higher-order-freer-monad-0.1.0.0
+- completed:
+    hackage: higher-order-open-union-0.1.0.1@sha256:d58ef8d765a72af539b26c52fc3187c479f326f5ef6769244c3e7614336f0bdd,2024
+    pantry-tree:
+      sha256: 342311eacbd28872cd17200aeaf1b3c74aedb5ba0edf3abb91635f66797fe0b5
+      size: 515
+  original:
+    hackage: higher-order-open-union-0.1.0.1
+- completed:
+    hackage: freer-base-classes-0.1.0.0@sha256:38e4853293416518606ea78699a57025b3595a8fbec36e8a26cce49e18fa1daf,1895
+    pantry-tree:
+      sha256: ea291a883003d80cdc2bcc4e3589e495ae1559e96e8368fe94ea724078f01476
+      size: 463
+  original:
+    hackage: freer-base-classes-0.1.0.0
+- completed:
+    hackage: ftcqueue-0.1.0.1@sha256:2fdb84a50d3281b622112cd8a4573b5a087043d598e5e47377e1bbc504472d2a,1706
+    pantry-tree:
+      sha256: 1704d5ac9522c7f2800a663b3e837d1069720a7f1821595a3d668a46609631b9
+      size: 363
+  original:
+    hackage: ftcqueue-0.1.0.1
+- completed:
+    commit: 9625518196b19950574a859508cc7a9273b6088b
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee
     pantry-tree:
-      sha256: cf154e7254c06dff427257fabdc27720f31dcc548966d0babee135f3a07cf8e9
+      sha256: f841511647d49100bd6d316344e8907506228de4dde0d5b8c4d88427f968e475
       size: 585
     subdir: themes/freer-effects/yaftee/try-yaftee
     version: 0.1.0.0
   original:
-    commit: 96cb683591635b21a8a883d8f554a4d5c12b3b2e
+    commit: 9625518196b19950574a859508cc7a9273b6088b
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee
-- completed:
-    commit: 96cb683591635b21a8a883d8f554a4d5c12b3b2e
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-higher-order-freer-monad
-    pantry-tree:
-      sha256: 57871a225a3d7983b643f131211a7ac9fe18fe990052ad91a8605721460010b3
-      size: 604
-    subdir: themes/freer-effects/yaftee/try-higher-order-freer-monad
-    version: 0.1.0.0
-  original:
-    commit: 96cb683591635b21a8a883d8f554a4d5c12b3b2e
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-higher-order-freer-monad
-- completed:
-    commit: 96cb683591635b21a8a883d8f554a4d5c12b3b2e
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-higher-order-open-union
-    pantry-tree:
-      sha256: 239b57577f77480efedd1963d951c22dbdae4da9bb117745ba4cb06f948affb3
-      size: 777
-    subdir: themes/freer-effects/yaftee/try-higher-order-open-union
-    version: 0.1.0.1
-  original:
-    commit: 96cb683591635b21a8a883d8f554a4d5c12b3b2e
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-higher-order-open-union
-- completed:
-    commit: 96cb683591635b21a8a883d8f554a4d5c12b3b2e
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-ftcqueue
-    pantry-tree:
-      sha256: 0696950b00b57082a55be1cbfb806ce14fe1f2e5cf7776cd0b085ab7b769929b
-      size: 574
-    subdir: themes/freer-effects/common/try-ftcqueue
-    version: 0.1.0.0
-  original:
-    commit: 96cb683591635b21a8a883d8f554a4d5c12b3b2e
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/common/try-ftcqueue
-- completed:
-    commit: 96cb683591635b21a8a883d8f554a4d5c12b3b2e
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-freer-base-classes
-    pantry-tree:
-      sha256: 837f6c1b1e56efa3935894e0c147dc0648f32ceb7df4542fd0b0d59872288f08
-      size: 675
-    subdir: themes/freer-effects/common/try-freer-base-classes
-    version: 0.1.0.0
-  original:
-    commit: 96cb683591635b21a8a883d8f554a4d5c12b3b2e
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/common/try-freer-base-classes
 snapshots:
 - completed:
-    sha256: 15e067940227eb5945012319422f44cb3ce74420954e4e24b4cffe8262d19533
-    size: 702537
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/10/20.yaml
-  original: nightly-2025-10-20
+    sha256: 4edb7d0ff97950aa354beeb68746cc0c6812c2d478a51a90310822f64744a484
+    size: 705173
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/9.yaml
+  original: nightly-2025-11-09

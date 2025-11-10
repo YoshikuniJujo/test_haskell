@@ -22,12 +22,9 @@ Named, getN, getsN, putN, modifyN, modifyN', getsModifyN, runN
 
 import GHC.TypeLits
 import Control.Monad
-import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
-import Control.Monad.HigherFreer qualified as F
 import Control.HigherOpenUnion qualified as Union
 import Data.HigherFunctor qualified as HFunctor
-import Data.FTCQueue qualified as Q
 
 -- * NORMAL
 
@@ -102,14 +99,3 @@ runN = ((uncurry (flip (,)) <$>) .) .  Eff.handleRelayS (,) fst snd \st k s ->
 		GetsModify f -> case f s of
 			Nothing -> k Nothing s
 			Just (x, s') -> k (Just x) s'
-
-transactionNoGoodN :: forall effs i o a . forall nm s ->
-	Union.Member (Named nm s) effs => Eff.E effs i o a -> Eff.E effs i o a
-transactionNoGoodN nm s m =
-	getN @s nm >>= \s0 ->($ m) . ($ s0) $ fix \go s' -> \case
-		F.Pure x -> putN nm s' >> pure x
-		u F.:>>= q -> case Union.prj @(Named nm s) u of
-			Nothing -> u F.:>>= Q.singleton (go s' F.. q)
-			Just (Union.FromFirst Get k) -> go s' $ q F.$ k s'
-			Just (Union.FromFirst (Put t) k) -> go t $ q F.$ k ()
-			Just (Union.FromFirst (Modify f) k) -> go (f s') $ q F.$ k ()

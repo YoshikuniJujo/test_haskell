@@ -52,9 +52,3 @@ runExcN nm err err' = \case
 		Right (m `U.FailCatch` h) ->
 			runExcN nm err err' F.. q =<< Except.catchN nm
 				(runExcN nm err err' m) (runExcN nm err err' . h . err')
-
-instance HFunctor.Tight U.Fail where
-	mapT _ _ (U.Fail e) = U.Fail e
-	mapT f _ (m `U.FailCatch` h) = (f m) `U.FailCatch` \e -> f $ h e
-
-instance HFunctor.Loose U.Fail
