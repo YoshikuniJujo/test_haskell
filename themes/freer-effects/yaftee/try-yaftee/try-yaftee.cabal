@@ -37,7 +37,7 @@ library
       base >=4.7 && <5
     , ftcqueue
     , higher-order-freer-monad
-    , try-higher-order-open-union
+    , higher-order-open-union
   default-language: Haskell2010
 
 test-suite try-yaftee-test
@@ -54,6 +54,6 @@ test-suite try-yaftee-test
       base >=4.7 && <5
     , ftcqueue
     , higher-order-freer-monad
-    , try-higher-order-open-union
+    , higher-order-open-union
     , try-yaftee
   default-language: Haskell2010

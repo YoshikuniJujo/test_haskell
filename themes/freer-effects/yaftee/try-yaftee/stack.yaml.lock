@@ -12,6 +12,13 @@ packages:
   original:
     hackage: higher-order-freer-monad-0.1.0.0
 - completed:
+    hackage: higher-order-open-union-0.1.0.0@sha256:a8b95e30ef64a6200da465c1fca94db0f9a69f78ffc117fc6bd6c657eaf46dd4,2584
+    pantry-tree:
+      sha256: e32f50989220190773aea855537a3cc503c0314420a25b5ff8e2165c395f7039
+      size: 614
+  original:
+    hackage: higher-order-open-union-0.1.0.0
+- completed:
     hackage: freer-base-classes-0.1.0.0@sha256:38e4853293416518606ea78699a57025b3595a8fbec36e8a26cce49e18fa1daf,1895
     pantry-tree:
       sha256: ea291a883003d80cdc2bcc4e3589e495ae1559e96e8368fe94ea724078f01476
@@ -25,19 +32,6 @@ packages:
       size: 363
   original:
     hackage: ftcqueue-0.1.0.1
-- completed:
-    commit: 65adcaba020b1796e0fd944845682dca39ed67bb
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-higher-order-open-union
-    pantry-tree:
-      sha256: 92339e95a34847d13e07287085d97f920c90682192dcf7c85119bcef8cebe578
-      size: 776
-    subdir: themes/freer-effects/yaftee/try-higher-order-open-union
-    version: 0.1.0.1
-  original:
-    commit: 65adcaba020b1796e0fd944845682dca39ed67bb
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-higher-order-open-union
 snapshots:
 - completed:
     sha256: 4edb7d0ff97950aa354beeb68746cc0c6812c2d478a51a90310822f64744a484
