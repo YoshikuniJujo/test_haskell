@@ -3,7 +3,61 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/topics/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: higher-order-freer-monad-0.1.0.0@sha256:cb577292506e6f906528813f339966874c7c7a23a76cc4b5eabdd600f2843c2d,2038
+    pantry-tree:
+      sha256: a5733f3e7b315da2f2f898201da69dee0fdbe10a37d0686a4bcc381f13bf869a
+      size: 392
+  original:
+    hackage: higher-order-freer-monad-0.1.0.0
+- completed:
+    hackage: higher-order-open-union-0.1.0.1@sha256:d58ef8d765a72af539b26c52fc3187c479f326f5ef6769244c3e7614336f0bdd,2024
+    pantry-tree:
+      sha256: 342311eacbd28872cd17200aeaf1b3c74aedb5ba0edf3abb91635f66797fe0b5
+      size: 515
+  original:
+    hackage: higher-order-open-union-0.1.0.1
+- completed:
+    hackage: freer-base-classes-0.1.0.0@sha256:38e4853293416518606ea78699a57025b3595a8fbec36e8a26cce49e18fa1daf,1895
+    pantry-tree:
+      sha256: ea291a883003d80cdc2bcc4e3589e495ae1559e96e8368fe94ea724078f01476
+      size: 463
+  original:
+    hackage: freer-base-classes-0.1.0.0
+- completed:
+    hackage: ftcqueue-0.1.0.1@sha256:2fdb84a50d3281b622112cd8a4573b5a087043d598e5e47377e1bbc504472d2a,1706
+    pantry-tree:
+      sha256: 1704d5ac9522c7f2800a663b3e837d1069720a7f1821595a3d668a46609631b9
+      size: 363
+  original:
+    hackage: ftcqueue-0.1.0.1
+- completed:
+    commit: 91ef338f29a29d42e3f1ed288222984464381fe2
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-yaftee
+    pantry-tree:
+      sha256: f841511647d49100bd6d316344e8907506228de4dde0d5b8c4d88427f968e475
+      size: 585
+    subdir: themes/freer-effects/yaftee/try-yaftee
+    version: 0.1.0.0
+  original:
+    commit: 91ef338f29a29d42e3f1ed288222984464381fe2
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/freer-effects/yaftee/try-yaftee
+- completed:
+    commit: 91ef338f29a29d42e3f1ed288222984464381fe2
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-yaftee-basic-monads
+    pantry-tree:
+      sha256: 77e773b778bb9fe760cd43cb4de6fcdf1ae60ae38d819127f38dd5895d8ee2bd
+      size: 1308
+    subdir: themes/freer-effects/yaftee/try-yaftee-basic-monads
+    version: 0.1.0.7
+  original:
+    commit: 91ef338f29a29d42e3f1ed288222984464381fe2
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/freer-effects/yaftee/try-yaftee-basic-monads
 snapshots:
 - completed:
     sha256: 5524530ac8c0fd4c9d7488442ff14edb0fcbf4989b928b86398f94f367e01ee3

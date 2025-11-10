@@ -39,8 +39,17 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
-# extra-deps: []
+
+extra-deps:
+  - higher-order-freer-monad-0.1.0.0
+  - higher-order-open-union-0.1.0.1
+  - freer-base-classes-0.1.0.0
+  - ftcqueue-0.1.0.1
+  - git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 91ef338f29a29d42e3f1ed288222984464381fe2
+    subdirs:
+      - themes/freer-effects/yaftee/try-yaftee
+      - themes/freer-effects/yaftee/try-yaftee-basic-monads
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
