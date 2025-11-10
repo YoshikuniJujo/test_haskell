@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - try-yaftee
 - try-yaftee-basic-monads
+- higher-order-open-union
 
 ghc-options:
 - -Wall

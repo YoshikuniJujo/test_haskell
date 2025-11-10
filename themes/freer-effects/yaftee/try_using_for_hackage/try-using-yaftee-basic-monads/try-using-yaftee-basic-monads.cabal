@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      TryYaftee.Except
   other-modules:
       Paths_try_using_yaftee_basic_monads
   autogen-modules:
@@ -35,6 +36,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
   default-language: Haskell2010
@@ -50,6 +52,7 @@ executable try-using-yaftee-basic-monads-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , higher-order-open-union
     , try-using-yaftee-basic-monads
     , try-yaftee
     , try-yaftee-basic-monads
@@ -67,6 +70,7 @@ test-suite try-using-yaftee-basic-monads-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , higher-order-open-union
     , try-using-yaftee-basic-monads
     , try-yaftee
     , try-yaftee-basic-monads
