@@ -28,6 +28,7 @@ library
       Lib
       TryYaftee.Except
       TryYaftee.Fail
+      TryYaftee.NonDet
   other-modules:
       Paths_try_using_yaftee_basic_monads
   autogen-modules:
