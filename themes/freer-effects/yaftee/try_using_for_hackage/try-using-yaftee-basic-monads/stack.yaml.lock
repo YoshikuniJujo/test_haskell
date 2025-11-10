@@ -60,8 +60,7 @@ packages:
     subdir: themes/freer-effects/yaftee/try-yaftee-basic-monads
 snapshots:
 - completed:
-    sha256: 5524530ac8c0fd4c9d7488442ff14edb0fcbf4989b928b86398f94f367e01ee3
-    size: 726110
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/19.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/19.yaml
+    sha256: 3e70d3d8a9eb9f5c9d684fba4c8be83e16733bb36d75cbe67e9771a1b8e81684
+    size: 705173
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/10.yaml
+  original: nightly-2025-11-10
