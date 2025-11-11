@@ -21,8 +21,8 @@ import Data.Functor.Identity
 type T = Union.FromFirst T_
 data T_ a where T_ :: String -> T_ ()
 
-trace :: Union.Base T effs => String -> Eff.E effs i o ()
-trace = Eff.effBase . T_
+trace :: Union.Member T effs => String -> Eff.E effs i o ()
+trace = Eff.eff . T_
 
 run :: Eff.E '[T] i o a -> IO a
 run = \case
