@@ -36,8 +36,8 @@ runIO :: (HFunctor.Loose (Union.U es), Union.Base IO.I es) =>
 runIO = \case
 	HFreer.Pure x -> HFreer.Pure x
 	u F.:>>= q -> case Union.decomp u of
-		Left u' -> HFunctor.map ((Identity <$>) . ignore) Identity u'
-			F.:>>= Q.singleton ((ignore F.. q) . runIdentity)
+		Left u' -> HFunctor.map ((Identity <$>) . runIO) Identity u'
+			F.:>>= Q.singleton ((runIO F.. q) . runIdentity)
 		Right (Union.FromFirst (T_ tr) k) -> do
 			IO.putStrLn tr
 			runIO HFreer.. q $ k ()
