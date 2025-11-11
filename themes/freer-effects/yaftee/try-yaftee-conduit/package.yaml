@@ -23,9 +23,9 @@ dependencies:
 - base >= 4.7 && < 5
 - try-yaftee
 - try-yaftee-basic-monads
-- try-higher-order-freer-monad
-- try-higher-order-open-union
-- try-ftcqueue
+- higher-order-freer-monad
+- higher-order-open-union
+- ftcqueue
 
 ghc-options:
 - -Wall
