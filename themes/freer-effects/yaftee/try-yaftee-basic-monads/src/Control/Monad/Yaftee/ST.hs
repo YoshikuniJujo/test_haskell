@@ -14,10 +14,6 @@ module Control.Monad.Yaftee.ST (
 
 	newRef, readRef, writeRef, modifyRef, modifyRef',
 
-	-- * RUN
-	
-	run
-
 	) where
 
 import Prelude hiding (read)
@@ -44,6 +40,3 @@ modifyRef, modifyRef' :: forall s effs i o a .
 	Union.Base (S s) effs => ST.STRef s a -> (a -> a) -> Eff.E effs i o ()
 modifyRef = (Eff.effBase .) . ST.modifySTRef
 modifyRef' = (Eff.effBase .) . ST.modifySTRef'
-
-run :: (forall s . Eff.E '[S s] i o a) -> a
-run m = ST.runST $ Eff.runM m
