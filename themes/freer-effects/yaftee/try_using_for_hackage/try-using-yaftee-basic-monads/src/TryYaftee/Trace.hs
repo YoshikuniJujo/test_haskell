@@ -9,6 +9,7 @@ module TryYaftee.Trace where
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Trace qualified as Trace
+import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 
 run :: n -> Eff.E '[State.S n, Trace.T] i o r -> IO (r, n)
@@ -26,3 +27,15 @@ calc = do
 	State.modify @Int (* 5)
 	Trace.trace "subtract 4"
 	State.modify @Int (subtract 4)
+
+runIO :: Eff.E '[Trace.T, IO.I] i o r -> IO r
+runIO = Eff.runM . Trace.runIO
+
+ignoreIO :: Eff.E '[Trace.T, IO.I] i o r -> IO r
+ignoreIO = Eff.runM . Trace.ignore
+
+sample :: (U.Member Trace.T es, U.Base IO.I es) => Eff.E es i o ()
+sample = do
+	Trace.trace "I'll say hello now"
+	IO.putStrLn "Hello, world!"
+	Trace.trace "I said hello"
