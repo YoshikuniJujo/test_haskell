@@ -33,7 +33,7 @@ packages:
   original:
     hackage: ftcqueue-0.1.0.1
 - completed:
-    commit: 30064cae77beb64ef402a0f32a006db8cb199e5f
+    commit: 67071cce4906f8e9ff2506bbd6c706d468cf72e3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee
     pantry-tree:
@@ -42,20 +42,20 @@ packages:
     subdir: themes/freer-effects/yaftee/try-yaftee
     version: 0.1.0.0
   original:
-    commit: 30064cae77beb64ef402a0f32a006db8cb199e5f
+    commit: 67071cce4906f8e9ff2506bbd6c706d468cf72e3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee
 - completed:
-    commit: 30064cae77beb64ef402a0f32a006db8cb199e5f
+    commit: 67071cce4906f8e9ff2506bbd6c706d468cf72e3
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee-basic-monads
     pantry-tree:
-      sha256: 22b8471930934622299b952275b9d3f9e8c1566fb28357fb37273ae69e1b68c3
-      size: 1308
+      sha256: 79e44dccad105844ea2a9da4a831cf5dcd064dc73aba91ed060e238d5986ed5d
+      size: 1309
     subdir: themes/freer-effects/yaftee/try-yaftee-basic-monads
     version: 0.1.0.7
   original:
-    commit: 30064cae77beb64ef402a0f32a006db8cb199e5f
+    commit: 67071cce4906f8e9ff2506bbd6c706d468cf72e3
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee-basic-monads
 snapshots:
