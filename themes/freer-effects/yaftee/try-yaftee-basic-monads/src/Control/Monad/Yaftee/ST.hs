@@ -12,7 +12,7 @@ module Control.Monad.Yaftee.ST (
 
 	-- * REF
 
-	new, read, write, modify, modify',
+	newRef, readRef, writeRef, modifyRef, modifyRef',
 
 	-- * RUN
 	
@@ -28,22 +28,22 @@ import Data.STRef qualified as ST
 
 type (S s) = Union.FromFirst (ST.ST s)
 
-new :: forall s effs i o a .
+newRef :: forall s effs i o a .
 	Union.Base (S s) effs => a -> Eff.E effs i o (ST.STRef s a)
-new = Eff.effBase . ST.newSTRef
+newRef = Eff.effBase . ST.newSTRef
 
-read :: forall s effs i o a .
+readRef :: forall s effs i o a .
 	Union.Base (S s) effs => ST.STRef s a -> Eff.E effs i o a
-read = Eff.effBase . ST.readSTRef
+readRef = Eff.effBase . ST.readSTRef
 
-write :: forall s effs i o a .
+writeRef :: forall s effs i o a .
 	Union.Base (S s) effs => ST.STRef s a -> a -> Eff.E effs i o ()
-write = (Eff.effBase .) . ST.writeSTRef
+writeRef = (Eff.effBase .) . ST.writeSTRef
 
-modify, modify' :: forall s effs i o a .
+modifyRef, modifyRef' :: forall s effs i o a .
 	Union.Base (S s) effs => ST.STRef s a -> (a -> a) -> Eff.E effs i o ()
-modify = (Eff.effBase .) . ST.modifySTRef
-modify' = (Eff.effBase .) . ST.modifySTRef'
+modifyRef = (Eff.effBase .) . ST.modifySTRef
+modifyRef' = (Eff.effBase .) . ST.modifySTRef'
 
 run :: (forall s . Eff.E '[S s] i o a) -> a
 run m = ST.runST $ Eff.runM m
