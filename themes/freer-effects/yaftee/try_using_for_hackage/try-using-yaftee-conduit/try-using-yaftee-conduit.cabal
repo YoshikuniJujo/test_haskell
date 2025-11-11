@@ -27,6 +27,7 @@ library
   exposed-modules:
       Lib
       TryConduit.Hello
+      TryConduit.Upper
   other-modules:
       Paths_try_using_yaftee_conduit
   autogen-modules:
