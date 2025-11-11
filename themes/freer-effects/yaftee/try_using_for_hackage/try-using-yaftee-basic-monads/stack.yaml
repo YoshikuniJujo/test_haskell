@@ -46,7 +46,7 @@ extra-deps:
   - freer-base-classes-0.1.0.0
   - ftcqueue-0.1.0.1
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 91ef338f29a29d42e3f1ed288222984464381fe2
+    commit: 30064cae77beb64ef402a0f32a006db8cb199e5f
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee
       - themes/freer-effects/yaftee/try-yaftee-basic-monads

@@ -30,6 +30,7 @@ library
       TryYaftee.Fail
       TryYaftee.NonDet
       TryYaftee.Reader
+      TryYaftee.ST
   other-modules:
       Paths_try_using_yaftee_basic_monads
   autogen-modules:
