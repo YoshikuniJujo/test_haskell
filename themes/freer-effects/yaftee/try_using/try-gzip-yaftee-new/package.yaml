@@ -30,7 +30,7 @@ dependencies:
 - try-yaftee-basic-monads
 - try-yaftee-conduit
 - try-yaftee-conduit-bytestring
-- try-higher-order-open-union
+- higher-order-open-union
 
 ghc-options:
 - -Wall

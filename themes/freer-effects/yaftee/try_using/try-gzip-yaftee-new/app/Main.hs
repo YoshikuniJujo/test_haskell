@@ -26,7 +26,7 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
-	void . Eff.runM . Except.run @String . Fail.runExc id
+	void . Eff.runM . Except.run @String . Fail.runExc id id
 			. Gzip.run_ @"foobar" . Pipe.run $
 		(`Except.catch` IO.putStrLn) . void $ PipeLBS.hGet 64 h Pipe.=$=
 			Gzip.decompress "foobar" IO.print Pipe.=$= PipeIO.print
