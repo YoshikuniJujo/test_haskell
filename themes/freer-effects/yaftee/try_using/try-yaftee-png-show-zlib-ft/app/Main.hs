@@ -28,6 +28,8 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
 import Lib
 
+import Data.Png.Header.Data qualified as Header
+
 main :: IO ()
 main = do
 	fp : _ <- getArgs
@@ -41,12 +43,12 @@ main = do
 			PipeT.convert BSF.fromStrict Pipe.=$=
 			Png.decodeHeader "foobar"
 	print hdr
-	let	wdt = fromIntegral $ headerWidth hdr
-		hgt = fromIntegral $ headerHeight hdr
-		ilm = headerInterlaceMethod hdr
+	let	wdt = fromIntegral $ Header.headerWidth hdr
+		hgt = fromIntegral $ Header.headerHeight hdr
+		ilm = Header.headerInterlaceMethod hdr
 		(yss, xss) = case ilm of
-			InterlaceMethodNon -> ([0 ..] `zip` repeat (1, 1), repeat [0 ..])
-			InterlaceMethodAdam7 -> (mkyss False hgt ++ [(0, (1, 1))], mkxss wdt hgt ++ [[]])
+			Header.InterlaceMethodNon -> ([0 ..] `zip` repeat (1, 1), repeat [0 ..])
+			Header.InterlaceMethodAdam7 -> (mkyss False hgt ++ [(0, (1, 1))], mkxss wdt hgt ++ [[]])
 	img <- newImageArgb32Mut wdt hgt
 	print (wdt, hgt)
 	print img

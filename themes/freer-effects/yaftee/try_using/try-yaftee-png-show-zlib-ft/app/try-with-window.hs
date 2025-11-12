@@ -44,6 +44,8 @@ import Stopgap.Graphics.UI.Gtk.DrawingArea qualified as Gtk.DrawingArea
 
 import Lib
 
+import Data.Png.Header.Data qualified as Header
+
 main :: IO ()
 main = do
 	fpi : opts <- getArgs
@@ -60,12 +62,12 @@ main = do
 	hClose hh
 	print hdr
 
-	let	wdt = fromIntegral $ headerWidth hdr
-		hgt = fromIntegral $ headerHeight hdr
-		ilm = headerInterlaceMethod hdr
+	let	wdt = fromIntegral $ Header.headerWidth hdr
+		hgt = fromIntegral $ Header.headerHeight hdr
+		ilm = Header.headerInterlaceMethod hdr
 		(yss, xss) = case ilm of
-			InterlaceMethodNon -> ([0 ..] `zip` repeat (1, 1), repeat [0 ..])
-			InterlaceMethodAdam7 -> (mkyss blk hgt ++ [(0, (1, 1))], mkxss wdt hgt ++ [[]])
+			Header.InterlaceMethodNon -> ([0 ..] `zip` repeat (1, 1), repeat [0 ..])
+			Header.InterlaceMethodAdam7 -> (mkyss blk hgt ++ [(0, (1, 1))], mkxss wdt hgt ++ [[]])
 	print (wdt, hgt, ilm)
 
 	img <- newImageArgb32Mut wdt hgt

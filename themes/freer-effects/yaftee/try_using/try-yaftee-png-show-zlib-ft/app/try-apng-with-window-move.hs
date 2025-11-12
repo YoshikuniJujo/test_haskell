@@ -58,6 +58,9 @@ import Stopgap.Graphics.UI.Gtk.DrawingArea qualified as Gtk.DrawingArea
 
 import Lib
 
+import Data.Png.Header.Data qualified as Header
+import Data.Apng qualified as Apng
+
 main :: IO ()
 main = do
 	fpi : opts <- getArgs
@@ -76,12 +79,12 @@ main = do
 	hClose hh
 	print hdr
 
-	let	wdt = fromIntegral $ headerWidth hdr
-		hgt = fromIntegral $ headerHeight hdr
-		ilm = headerInterlaceMethod hdr
+	let	wdt = fromIntegral $ Header.headerWidth hdr
+		hgt = fromIntegral $ Header.headerHeight hdr
+		ilm = Header.headerInterlaceMethod hdr
 		(yss, xss) = case ilm of
-			InterlaceMethodNon -> ([0 .. hgt - 1] `zip` repeat (1, 1), replicate hgt [0 .. wdt - 1])
-			InterlaceMethodAdam7 -> error "not implemented"
+			Header.InterlaceMethodNon -> ([0 .. hgt - 1] `zip` repeat (1, 1), replicate hgt [0 .. wdt - 1])
+			Header.InterlaceMethodAdam7 -> error "not implemented"
 	print (wdt, hgt, ilm)
 	writeIORef txt . T.pack $ show (wdt, hgt, ilm)
 
