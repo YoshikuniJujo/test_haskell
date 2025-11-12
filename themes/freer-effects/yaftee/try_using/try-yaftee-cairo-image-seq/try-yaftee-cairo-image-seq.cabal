@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -38,9 +38,9 @@ library
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , higher-order-open-union
     , simple-cairo
     , time
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -62,9 +62,9 @@ executable try-yaftee-cairo-image-seq-exe
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , higher-order-open-union
     , simple-cairo
     , time
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-cairo-image-seq
@@ -88,9 +88,9 @@ test-suite try-yaftee-cairo-image-seq-test
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , higher-order-open-union
     , simple-cairo
     , time
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-cairo-image-seq

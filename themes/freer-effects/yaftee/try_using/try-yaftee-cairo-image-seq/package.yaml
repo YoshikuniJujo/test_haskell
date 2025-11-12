@@ -31,7 +31,7 @@ dependencies:
 - try-yaftee
 - try-yaftee-basic-monads
 - try-yaftee-conduit
-- try-higher-order-open-union
+- higher-order-open-union
 
 ghc-options:
 - -Wall
