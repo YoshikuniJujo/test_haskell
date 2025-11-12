@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -62,9 +62,7 @@ library
     , containers
     , tools-yj
     , try-bitarray-bs
-    , try-higher-order-open-union
     , try-yaftee
-    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
     , typelevel-tools-yj
@@ -82,9 +80,7 @@ executable for-debug
     , tools-yj
     , try-bitarray-bs
     , try-gzip-yaftee
-    , try-higher-order-open-union
     , try-yaftee
-    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
     , typelevel-tools-yj
@@ -102,9 +98,7 @@ executable try-gzip-yaftee-compress
     , tools-yj
     , try-bitarray-bs
     , try-gzip-yaftee
-    , try-higher-order-open-union
     , try-yaftee
-    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
     , typelevel-tools-yj
@@ -126,9 +120,7 @@ executable try-gzip-yaftee-exe
     , tools-yj
     , try-bitarray-bs
     , try-gzip-yaftee
-    , try-higher-order-open-union
     , try-yaftee
-    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
     , typelevel-tools-yj
@@ -146,9 +138,7 @@ executable try-png-decompress-new
     , tools-yj
     , try-bitarray-bs
     , try-gzip-yaftee
-    , try-higher-order-open-union
     , try-yaftee
-    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
     , typelevel-tools-yj
@@ -166,9 +156,7 @@ executable try-read-chunk
     , tools-yj
     , try-bitarray-bs
     , try-gzip-yaftee
-    , try-higher-order-open-union
     , try-yaftee
-    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
     , typelevel-tools-yj
@@ -186,9 +174,7 @@ executable try-zlib-compress
     , tools-yj
     , try-bitarray-bs
     , try-gzip-yaftee
-    , try-higher-order-open-union
     , try-yaftee
-    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
     , typelevel-tools-yj
@@ -206,9 +192,7 @@ executable try-zlib-decompress
     , tools-yj
     , try-bitarray-bs
     , try-gzip-yaftee
-    , try-higher-order-open-union
     , try-yaftee
-    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
     , typelevel-tools-yj
@@ -231,9 +215,7 @@ test-suite try-gzip-yaftee-test
     , tools-yj
     , try-bitarray-bs
     , try-gzip-yaftee
-    , try-higher-order-open-union
     , try-yaftee
-    , try-yaftee-basic-monads
     , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
     , typelevel-tools-yj
