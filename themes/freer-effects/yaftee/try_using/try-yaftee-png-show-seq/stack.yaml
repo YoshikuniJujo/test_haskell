@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-06-11
+snapshot: nightly-2025-11-12
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -43,23 +43,23 @@ packages:
 # extra-deps: []
 
 extra-deps:
+  - higher-order-freer-monad-0.1.0.0
+  - higher-order-open-union-0.1.0.1
+  - freer-base-classes-0.1.0.0
+  - ftcqueue-0.1.0.1
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 588268a565b38b3a26b8cf41722486e9511770f0
+    commit: f79c0028eb985b9ca930ea68237f5299b4280aa9
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee
       - themes/freer-effects/yaftee/try-yaftee-conduit
       - themes/freer-effects/yaftee/try-yaftee-conduit-containers
       - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring
       - themes/freer-effects/yaftee/try-yaftee-basic-monads
-      - themes/freer-effects/yaftee/try-higher-order-freer-monad
-      - themes/freer-effects/yaftee/try-higher-order-open-union
       - themes/freer-effects/yaftee/try-bitarray-seq
       - themes/freer-effects/yaftee/try-bitarray-bs
       - themes/freer-effects/yaftee/try_using/try-gzip-yaftee-seq
       - themes/freer-effects/yaftee/try_using/try-yaftee-cairo-image-seq
-      - themes/freer-effects/common/try-ftcqueue
-      - themes/freer-effects/common/try-freer-base-classes
-  - tools-yj-0.1.0.39
+  - tools-yj-0.1.0.45
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

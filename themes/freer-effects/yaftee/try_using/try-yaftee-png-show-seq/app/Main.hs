@@ -47,7 +47,7 @@ main = do
 	h' <- openFile fp ReadMode
 	writeDrawPipe "foobar.png" img wdt hgt $ \img ->
 		void . Eff.runM . Except.run @String
-			. Fail.runExc id . Png.run_ @"foobar" . Pipe.run
+			. Fail.runExc id id . Png.run_ @"foobar" . Pipe.run
 			. (`Except.catch` IO.print @String)
 			. void $ PipeBS.hGet 32 h' Pipe.=$=
 				PipeT.convert bsToSeq Pipe.=$=
