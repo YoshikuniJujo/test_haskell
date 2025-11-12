@@ -62,7 +62,7 @@ readHeader :: forall nm -> (
 	U.Member (St.Named nm Crc.Crc32) es,
 	U.Member (St.Named nm OnDemand.Request) es,
 	U.Member (Except.E String) es,
-	U.Member (U.FromFirst U.Fail) es ) =>
+	U.Member Fail.F es ) =>
 	(GzipHeader -> Eff.E es BS.ByteString o r) ->
 	Eff.E es BS.ByteString o (
 		Eff.E es BS.ByteString BS.ByteString r1,

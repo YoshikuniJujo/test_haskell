@@ -46,14 +46,14 @@ extra-deps:
   - freer-base-classes-0.1.0.0
   - ftcqueue-0.1.0.1
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 9e4f48517039ecae6b9e340e8872b1f611de3fb6
+    commit: 73c94387a26b20b79360585d7088f1f3c8997319
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee
       - themes/freer-effects/yaftee/try-yaftee-conduit
       - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring
       - themes/freer-effects/yaftee/try-yaftee-basic-monads
       - themes/freer-effects/yaftee/try-bitarray-bs
-  - tools-yj-0.1.0.29
+  - tools-yj-0.1.0.45
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

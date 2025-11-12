@@ -154,7 +154,7 @@ block :: forall nm -> (
 	U.Member (St.Named nm (Huffman.BinTreePair Int)) es,
 	U.Member (St.Named nm Huffman.ExtraBits) es,
 	U.Member (Except.E String) es,
-	U.Member (U.FromFirst U.Fail) es ) =>
+	U.Member Fail.F es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R Bool
 block nm = do
 	St.putN nm $ OnDemand.RequestBits 1
@@ -197,7 +197,7 @@ block' :: forall nm -> (
 	U.Member (St.Named nm (Huffman.BinTreePair Int)) es,
 	U.Member (St.Named nm Huffman.ExtraBits) es,
 	U.Member (Except.E String) es,
-	U.Member (U.FromFirst U.Fail) es ) =>
+	U.Member Fail.F es ) =>
 	Eff.E es (Either BitArray.B BS.ByteString) RunLength.R Bool
 block' nm = do
 	St.putN nm $ OnDemand.RequestBits 1

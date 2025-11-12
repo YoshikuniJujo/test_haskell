@@ -26,9 +26,11 @@ dependencies:
 - tools-yj
 - typelevel-tools-yj
 - try-yaftee
+- try-yaftee-basic-monads
 - try-yaftee-conduit
 - try-yaftee-conduit-bytestring
 - try-bitarray-bs
+- higher-order-open-union
 
 ghc-options:
 - -Wall

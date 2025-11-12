@@ -46,7 +46,7 @@ main = do
 		. OnDemand.run_ @"hogepiyo"
 		. (`State.run` Chunk "IHDR")
 		. Except.run @String
-		. Fail.runExc id
+		. Fail.runExc id id
 		. Pipe.run
 		$ PipeBS.hGet 64 h Pipe.=$=
 			OnDemand.onDemand "foobar" Pipe.=$=
