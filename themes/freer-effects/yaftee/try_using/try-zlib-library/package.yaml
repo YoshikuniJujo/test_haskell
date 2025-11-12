@@ -28,7 +28,7 @@ dependencies:
 - try-yaftee-basic-monads
 - try-yaftee-conduit
 - try-yaftee-conduit-bytestring
-- try-higher-order-open-union
+- higher-order-open-union
 - try-bytestring-ft
 - try-zlib-core
 
