@@ -81,11 +81,11 @@ library
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -112,12 +112,12 @@ executable try-all-red
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -144,12 +144,12 @@ executable try-apng
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -176,12 +176,12 @@ executable try-apng-codec
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -208,12 +208,12 @@ executable try-apng-gray-blink
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -240,12 +240,12 @@ executable try-apng-lifegame
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -272,12 +272,12 @@ executable try-apng-lifegame-gray1
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -304,12 +304,12 @@ executable try-apng-lifegame-gray1-nointerlace
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -336,12 +336,12 @@ executable try-apng-lifegame-with-ratio
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -368,12 +368,12 @@ executable try-apng-rgba-to-gray
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -400,12 +400,12 @@ executable try-apng-to-png
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -432,12 +432,12 @@ executable try-apng-to-pngs
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -464,12 +464,12 @@ executable try-decod-gray
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -496,12 +496,12 @@ executable try-decod-lifegame-gray1
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -528,12 +528,12 @@ executable try-gray-alpha
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -560,12 +560,12 @@ executable try-gzip-deflate
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -596,12 +596,12 @@ executable try-gzip-yaftee-zlib-ft-exe
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -628,12 +628,12 @@ executable try-lifegame-ng
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -660,12 +660,12 @@ executable try-lifegame-ng-remove-glider
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -692,12 +692,12 @@ executable try-palette
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -724,12 +724,12 @@ executable try-png-decode
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -756,12 +756,12 @@ executable try-png-glider
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -788,12 +788,12 @@ executable try-png-rgba-to-gray
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -820,12 +820,12 @@ executable try-png-rgba-to-gray1
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -852,12 +852,12 @@ executable try-read-board
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -884,12 +884,12 @@ executable try-read-chunk
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -916,12 +916,12 @@ executable try-readchunk-ng
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -948,12 +948,12 @@ executable try-readchunk-ng-black-on-white
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -980,12 +980,12 @@ executable try-time-gradation
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -1012,12 +1012,12 @@ executable try-zlib-deflate
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -1049,12 +1049,12 @@ test-suite try-gzip-yaftee-zlib-ft-test
     , deepseq
     , directory
     , filepath
+    , higher-order-open-union
     , mono-traversable
     , primitive
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
