@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -56,9 +56,9 @@ library
       base >=4.7 && <5
     , bytestring
     , containers
+    , higher-order-open-union
     , tools-yj
     , try-bitarray-seq
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -81,10 +81,10 @@ executable try-gzip-yaftee-seq-exe
       base >=4.7 && <5
     , bytestring
     , containers
+    , higher-order-open-union
     , tools-yj
     , try-bitarray-seq
     , try-gzip-yaftee-seq
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -103,10 +103,10 @@ executable try-png-decode
       base >=4.7 && <5
     , bytestring
     , containers
+    , higher-order-open-union
     , tools-yj
     , try-bitarray-seq
     , try-gzip-yaftee-seq
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -125,10 +125,10 @@ executable try-runlength-compress
       base >=4.7 && <5
     , bytestring
     , containers
+    , higher-order-open-union
     , tools-yj
     , try-bitarray-seq
     , try-gzip-yaftee-seq
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit
@@ -152,10 +152,10 @@ test-suite try-gzip-yaftee-seq-test
       base >=4.7 && <5
     , bytestring
     , containers
+    , higher-order-open-union
     , tools-yj
     , try-bitarray-seq
     , try-gzip-yaftee-seq
-    , try-higher-order-open-union
     , try-yaftee
     , try-yaftee-basic-monads
     , try-yaftee-conduit

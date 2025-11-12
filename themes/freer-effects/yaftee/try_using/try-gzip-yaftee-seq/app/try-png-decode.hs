@@ -32,7 +32,7 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	h <- openFile fp ReadMode
-	void . Eff.runM . Except.run @String . Fail.runExc id
+	void . Eff.runM . Except.run @String . Fail.runExc id id
 		. Png.run_ @"foobar" . Pipe.run
 		. (`Except.catch` IO.putStrLn) . void
 		$ PipeBS.hGet (32 * 32) h Pipe.=$=

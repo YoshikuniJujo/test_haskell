@@ -34,7 +34,7 @@ main = do
 	h <- openFile fp ReadMode
 	let	f = IO.print
 	void . Eff.runM
-		. Except.run @String . Fail.runExc id . Gzip.run_ @"foobar"
+		. Except.run @String . Fail.runExc id id . Gzip.run_ @"foobar"
 		. Pipe.run
 		. (`Except.catch` IO.putStrLn) . void $
 			PipeBS.hGet 64 h Pipe.=$=
