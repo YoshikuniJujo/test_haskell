@@ -36,7 +36,7 @@ main = do
 	hh <- openFile fpi ReadMode
 
 	(_, hdr) <- Eff.runM . (`State.run` header0)
-		. Except.run @String . Fail.runExc id . Png.run @"deflate" . Pipe.run
+		. Except.run @String . Fail.runExc id id . Png.run @"deflate" . Pipe.run
 		$ PipeBS.hGet (64 * 64) hh Pipe.=$= Png.decodeHeader "deflate" \hdr -> do
 			IO.print hdr
 			State.put hdr
@@ -55,7 +55,7 @@ main = do
 			img <- newImageMut @Argb32Mut wdt hgt
 			writeDrawPipe Effs fpo (fromIntegral wdt) (fromIntegral hgt) img
 				(Except.run
-					. Fail.runExc id
+					. Fail.runExc id id
 					. (`State.runN` Huffman.IsLiteral (const False))
 					. (`State.runN` Huffman.PhaseOthers)
 					. Png.run) $
@@ -71,7 +71,7 @@ main = do
 			img <- newImageMut @Argb32Mut wdt hgt
 			writeDrawPipe Effs fpo (fromIntegral wdt) (fromIntegral hgt) img
 				(Except.run
-					. Fail.runExc id
+					. Fail.runExc id id
 					. (`State.runN` Huffman.IsLiteral (const False))
 					. (`State.runN` Huffman.PhaseOthers)
 					. Png.run) $

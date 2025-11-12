@@ -57,7 +57,7 @@ main = do
 	hh <- openFile fpi ReadMode
 
 	(_, hdr) <- Eff.runM . (`State.run` header0)
-		. Except.run @String . Fail.runExc id . Png.run @"deflate" . Pipe.run
+		. Except.run @String . Fail.runExc id id . Png.run @"deflate" . Pipe.run
 		$ PipeBS.hGet (64 * 64) hh Pipe.=$= Png.decodeHeader "deflate" \hdr -> do
 			IO.print hdr
 			State.put hdr
@@ -87,7 +87,7 @@ main = do
 		case (ct, itl) of
 			(ColorTypeColorAlpha, InterlaceMethodNon) ->
 
-				Eff.runM . Except.run @String . Fail.runExc id . Png.run @"deflate"
+				Eff.runM . Except.run @String . Fail.runExc id id . Png.run @"deflate"
 
 					. (`State.run` Huffman.PhaseOthers)
 					. (`State.run` Huffman.IsLiteral @Int (const False))
@@ -100,7 +100,7 @@ main = do
 
 			(ColorTypeColorAlpha, InterlaceMethodAdam7) ->
 
-				Eff.runM . Except.run @String . Fail.runExc id . Png.run @"deflate"
+				Eff.runM . Except.run @String . Fail.runExc id id . Png.run @"deflate"
 
 					. (`State.run` Huffman.PhaseOthers)
 					. (`State.run` Huffman.IsLiteral @Int (const False))
@@ -113,7 +113,7 @@ main = do
 
 			(ColorTypeColor, InterlaceMethodNon) ->
 
-				Eff.runM . Except.run @String . Fail.runExc id . Png.run @"deflate"
+				Eff.runM . Except.run @String . Fail.runExc id id . Png.run @"deflate"
 
 					. (`State.run` Huffman.PhaseOthers)
 					. (`State.run` Huffman.IsLiteral @Int (const False))
@@ -126,7 +126,7 @@ main = do
 
 			(ColorTypeColor, InterlaceMethodAdam7) ->
 
-				Eff.runM . Except.run @String . Fail.runExc id . Png.run @"deflate"
+				Eff.runM . Except.run @String . Fail.runExc id id . Png.run @"deflate"
 
 					. (`State.run` Huffman.PhaseOthers)
 					. (`State.run` Huffman.IsLiteral @Int (const False))
