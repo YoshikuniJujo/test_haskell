@@ -9,6 +9,7 @@ module Control.Monad.Yaftee.Pipe.IO where
 import Foreign.Ptr
 import Foreign.Storable
 import Prelude hiding (print)
+import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -50,9 +51,17 @@ hGetStorable h p = fix \go -> do
 	rsz <- Eff.effBase $ hGetBuf h p sz
 	case rsz of
 		0 -> pure ()
-		_	| rsz < sz -> Except.throw "hGetStorable: Not enough input"
+		_	| rsz < sz ->
+				Except.throw "hGetStorable: Not enough input"
 			| rsz == sz -> do
 				Pipe.yield =<< Eff.effBase (peek p)
 				go
 			| otherwise -> Except.throw "never occur"
 	where sz = sizeOf (undefined :: a)
+
+hGetLines ::
+	(U.Member Pipe.P es, U.Base IO.I es) => Handle -> Eff.E es i String ()
+hGetLines h = do
+	eof <- Eff.effBase $ hIsEOF h
+	when (not eof) $
+		(Pipe.yield =<< Eff.effBase (hGetLine h)) >> hGetLines h
