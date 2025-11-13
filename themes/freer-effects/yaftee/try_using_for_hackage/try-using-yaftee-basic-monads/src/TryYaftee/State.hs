@@ -12,6 +12,9 @@ import Control.Monad.Yaftee.Reader qualified as Reader
 import Control.Monad.Yaftee.State qualified as State
 import Control.HigherOpenUnion qualified as U
 
+sample :: ((), Int)
+sample = run @Int 3 5 $ increaseNTimes 7
+
 run :: d -> a -> Eff.E '[Reader.R d, State.S a] i o r -> (r, a)
 run d x0 = Eff.run . (`State.run` x0) . (`Reader.run` d)
 
