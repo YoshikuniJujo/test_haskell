@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RequiredTypeArguments, ExplicitNamespaces #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -28,9 +29,12 @@ sampleIo :: (
 	Eff.E es i o ()
 sampleIo = do
 	IO.putStrLn "Hello, world!"
-	Except.throw $ ErrorCall "Hello"
+	_ <- Except.throw $ ErrorCall "Hello"
 	IO.putStrLn "Good-bye, world!"
 
 sampleCatch :: (U.Member (Except.E ErrorCall) es, U.Base IO.I es) =>
 	Eff.E es i o () -> Eff.E es i o ()
 sampleCatch = (`Except.catch` \(e :: ErrorCall) -> IO.putStrLn $ "ERROR OCCUR: " ++ show e)
+
+sampleFromIO :: (U.Member (Except.E SomeException) es, U.Base IO.I es) => Eff.E es i o String
+sampleFromIO = Except.fromIO (type SomeException) $ readFile "foobar"
