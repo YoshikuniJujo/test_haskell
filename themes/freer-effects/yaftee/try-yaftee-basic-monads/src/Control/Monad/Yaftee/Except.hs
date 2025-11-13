@@ -12,11 +12,11 @@ module Control.Monad.Yaftee.Except (
 
 -- * NORMAL
 
-E, throw, catch, run, runExc, runIO,
+E, throw, catch, run, runExc, runIO, fromIO,
 
 -- * NAMED
 
-Named, throwN, catchN, runN, runExcN, runION,
+Named, throwN, catchN, runN, runExcN, runION, fromION,
 
 -- * TOOLS
 
@@ -57,6 +57,11 @@ runExc = runExcN ""
 
 runIO :: IO.Exception e => Eff.E '[E e, IO.I] i o a -> Eff.E '[IO.I] i o a
 runIO = runION
+
+fromIO :: forall e ->
+	(IO.Exception e, Union.Member (E e) es, Union.Base IO.I es) =>
+	IO a -> Eff.E es i o a
+fromIO e = fromION "" e
 
 -- * NAMED
 
@@ -123,3 +128,8 @@ getLeft e = \case Left r -> pure r; Right _ -> throw e
 
 getRight :: Union.Member (E e) es => e -> Either a b -> Eff.E es i o b
 getRight e = \case Left _ -> throw e; Right r -> pure r
+
+fromION :: forall (nm :: Symbol) -> forall e ->
+	(IO.Exception e, Union.Member (Named nm e) es, Union.Base IO.I es) =>
+	IO r -> Eff.E es i o r
+fromION nm e act = either (throwN nm) pure =<< Eff.effBase (IO.try @e act)
