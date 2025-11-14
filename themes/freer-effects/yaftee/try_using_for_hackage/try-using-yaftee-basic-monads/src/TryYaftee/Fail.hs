@@ -16,7 +16,8 @@ run :: Monad m => Eff.E '[Fail.F, U.FromFirst m] i o a -> m (Either String a)
 run = Eff.runM . Fail.run
 
 runIO :: Eff.E '[Fail.F, Except.E ErrorCall, IO.I] i o a -> IO a
-runIO = Eff.runM . Except.runIO . Fail.runExc ErrorCall (\(ErrorCall str) -> str)
+runIO = Eff.runM
+	. Except.runIO . Fail.runExc ErrorCall (\(ErrorCall str) -> str)
 
 sample0 :: MonadFail m => m ()
 sample0 = do
