@@ -1,3 +1,3 @@
 # try-yaftee
 
-see package yaftee-basic-monads
+see package yaftee-basic-monads and yaftee-conduit
