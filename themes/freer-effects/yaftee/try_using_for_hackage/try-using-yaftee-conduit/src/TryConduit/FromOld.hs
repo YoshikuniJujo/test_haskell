@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -27,8 +28,9 @@ action fp = do
 	hClose h
 
 take :: U.Member Pipe.P es => Int -> Eff.E es a a ()
-take 0 = pure ()
-take n = Pipe.await >>= \x -> Pipe.yield x >> take (n - 1)
+take = \case
+	0 -> pure ()
+	n -> Pipe.await >>= \x -> Pipe.yield x >> take (n - 1)
 
 putStrLn :: (U.Member Pipe.P es, U.Base IO.I es) => Eff.E es String o r
 putStrLn = forever $ IO.putStrLn =<< Pipe.await
