@@ -12,6 +12,12 @@ import Control.Monad.Yaftee.Trace qualified as Trace
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 
+runCalc :: IO ((), Int)
+runCalc = run 6 calc
+
+ignoreCalc :: ((), Int)
+ignoreCalc = ignore 6 calc
+
 run :: n -> Eff.E '[State.S n, Trace.T] i o r -> IO (r, n)
 run n = Trace.run . (`State.run` n)
 
@@ -27,6 +33,12 @@ calc = do
 	State.modify @Int (* 5)
 	Trace.trace "subtract 4"
 	State.modify @Int (subtract 4)
+
+runIOSample :: IO ()
+runIOSample = runIO sample
+
+ignoreIOSample :: IO ()
+ignoreIOSample = ignoreIO sample
 
 runIO :: Eff.E '[Trace.T, IO.I] i o r -> IO r
 runIO = Eff.runM . Trace.runIO
