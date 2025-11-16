@@ -51,9 +51,7 @@ extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
     commit: 2728c604ef2475c5a97b3882a200c0b0fee35fa8
     subdirs:
-      - themes/freer-effects/yaftee/try-yaftee-conduit-containers
       - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring
-      - themes/freer-effects/yaftee/try-bitarray-seq
       - themes/freer-effects/yaftee/try-bitarray-bs
       - packages/bytestring/try-bytestring-ft
       - wrapper/zlib/try-zlib-core
