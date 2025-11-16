@@ -3,7 +3,12 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Compression.Zlib.Gzip.Core where
+module Codec.Compression.Zlib.Gzip.Core (
+
+	GzFile,
+	c_gzopen, c_gzgets, c_gzclose
+
+) where
 
 import Foreign.Ptr
 import Foreign.C.String

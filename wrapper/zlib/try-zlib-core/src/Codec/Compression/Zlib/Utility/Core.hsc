@@ -1,7 +1,9 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Compression.Zlib.Utility.Core where
+module Codec.Compression.Zlib.Utility.Core (
+	c_compress, c_compressBound, c_uncompress
+	) where
 
 import Foreign.Ptr
 import Data.Word

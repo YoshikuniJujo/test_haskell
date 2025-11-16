@@ -3,7 +3,60 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Compression.Zlib.Constant.Core where
+module Codec.Compression.Zlib.Constant.Core (
+
+	-- * RETURN CODE
+
+	ReturnCode(..),
+	pattern Ok,
+	pattern StreamEnd,
+	pattern NeedDict,
+	pattern Errno,
+	pattern StreamError,
+	pattern DataError,
+	pattern MemError,
+	pattern BufError,
+	pattern VersionError,
+
+	-- * FLUSH
+
+	Flush(..),
+	pattern NoFlush,
+	pattern PartialFlush,
+	pattern SyncFlush,
+	pattern FullFlush,
+	pattern Finish,
+	pattern Block,
+	pattern Trees,
+
+
+	-- * MEM LEVEL
+
+	MemLevel(..),
+
+	-- * COMPRESSION STRATEGY
+
+	CompressionStrategy(..),
+	pattern Filtered,
+	pattern HuffmanOnly,
+	pattern Rle,
+	pattern Fixed,
+	pattern DefaultStrategy,
+
+	-- * COMPRESSION LEVEL
+
+	CompressionLevel(..),
+	pattern NoCompression,
+	pattern BestSpeed,
+	pattern BestCompression,
+	pattern DefaultCompression,
+
+	-- * COMPRESSION METHOD
+
+	CompressionMethod(..),
+	pattern Deflated
+
+	) where
 
 import Foreign.Storable
 import Foreign.C.Enum
