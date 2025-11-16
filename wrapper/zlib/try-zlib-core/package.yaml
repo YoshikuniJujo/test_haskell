@@ -43,6 +43,13 @@ library:
   source-dirs: src
   pkg-config-dependencies:
     - zlib
+  exposed-modules:
+    - Codec.Compression.Zlib.Advanced.Core
+    - Codec.Compression.Zlib.Basic.Core
+    - Codec.Compression.Zlib.Constant.Core
+    - Codec.Compression.Zlib.Gzip.Core
+    - Codec.Compression.Zlib.Structure.Core
+    - Codec.Compression.Zlib.Utility.Core
 
 executables:
   try-zlib-core-exe:

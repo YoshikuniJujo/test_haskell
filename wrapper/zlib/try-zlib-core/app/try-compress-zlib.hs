@@ -4,12 +4,13 @@
 
 module Main where
 
+import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Data.Word
 import Data.ByteString qualified as BS
 import System.Environment
-import Tools
 
 import Codec.Compression.Zlib.Utility.Core
 
@@ -24,3 +25,14 @@ main = do
 		poke pln' ln'
 		print =<< c_compress pbso pln' pbsi ln
 		BS.writeFile (fpi ++ ".zlib") =<< ptrW8ToBs pbso . fromIntegral =<< peek pln'
+
+bsToPtrW8 :: BS.ByteString -> (Ptr Word8 -> Int -> IO a) -> IO a
+bsToPtrW8 bs a = do
+	let	ws = BS.unpack bs
+		ln = BS.length bs
+	allocaArray ln \p -> do
+		pokeArray p ws
+		a p ln
+
+ptrW8ToBs :: Ptr Word8 -> Int -> IO BS.ByteString
+ptrW8ToBs p ln = BS.pack <$> peekArray ln p

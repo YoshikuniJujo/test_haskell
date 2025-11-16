@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -31,8 +31,8 @@ library
       Codec.Compression.Zlib.Gzip.Core
       Codec.Compression.Zlib.Structure.Core
       Codec.Compression.Zlib.Utility.Core
-      Tools
   other-modules:
+      Tools
       Paths_try_zlib_core
   autogen-modules:
       Paths_try_zlib_core
