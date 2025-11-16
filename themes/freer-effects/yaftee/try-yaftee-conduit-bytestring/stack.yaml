@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-11-11
+snapshot: nightly-2025-11-15
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -43,16 +43,16 @@ packages:
 # extra-deps: []
 
 extra-deps:
+  - yaftee-0.1.0.0
+  - yaftee-basic-monads-0.1.0.0
+  - yaftee-conduit-0.1.0.0
   - higher-order-freer-monad-0.1.0.0
   - higher-order-open-union-0.1.0.1
   - freer-base-classes-0.1.0.0
   - ftcqueue-0.1.0.1
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 9e4f48517039ecae6b9e340e8872b1f611de3fb6
+    commit: 77aa872299a3c9b7a7c2912a4d4217e50acbbd41
     subdirs:
-      - themes/freer-effects/yaftee/try-yaftee
-      - themes/freer-effects/yaftee/try-yaftee-conduit
-      - themes/freer-effects/yaftee/try-yaftee-basic-monads
       - themes/freer-effects/yaftee/try-bitarray-bs
   - tools-yj-0.1.0.45
 

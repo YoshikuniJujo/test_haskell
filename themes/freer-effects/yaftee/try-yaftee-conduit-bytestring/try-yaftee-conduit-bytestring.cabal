@@ -50,10 +50,10 @@ library
     , higher-order-open-union
     , tools-yj
     , try-bitarray-bs
-    , try-yaftee
-    , try-yaftee-basic-monads
-    , try-yaftee-conduit
     , typelevel-tools-yj
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
   default-language: Haskell2010
 
 test-suite try-yaftee-conduit-bytestring-test
@@ -73,9 +73,9 @@ test-suite try-yaftee-conduit-bytestring-test
     , higher-order-open-union
     , tools-yj
     , try-bitarray-bs
-    , try-yaftee
-    , try-yaftee-basic-monads
-    , try-yaftee-conduit
     , try-yaftee-conduit-bytestring
     , typelevel-tools-yj
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
   default-language: Haskell2010
