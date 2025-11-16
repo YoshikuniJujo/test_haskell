@@ -24,9 +24,9 @@ dependencies:
 - primitive
 - bytestring
 - tools-yj
-- try-yaftee
-- try-yaftee-basic-monads
-- try-yaftee-conduit
+- yaftee
+- yaftee-basic-monads
+- yaftee-conduit
 - try-yaftee-conduit-bytestring
 - higher-order-open-union
 - try-bytestring-ft
