@@ -133,7 +133,7 @@ packages:
     subdir: wrapper/zlib/try-zlib-core
 snapshots:
 - completed:
-    sha256: a73345e0a5bb1d8ef87ba9dafab9f9c167ee1a64d2ab42ea98cb2493cad177e3
+    sha256: 02460994577048c21807f8c199e770b277720f3d03c1cc0dbcb7385dc94bd6b0
     size: 705602
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/15.yaml
-  original: nightly-2025-11-15
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/16.yaml
+  original: nightly-2025-11-16
