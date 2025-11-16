@@ -23,9 +23,9 @@ dependencies:
 - base >= 4.7 && < 5
 - tools-yj
 - typelevel-tools-yj
-- try-yaftee
-- try-yaftee-basic-monads
-- try-yaftee-conduit
+- yaftee
+- yaftee-basic-monads
+- yaftee-conduit
 - higher-order-open-union
 - try-bytestring-ft
 
