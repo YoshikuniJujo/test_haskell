@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-11-12
+snapshot: nightly-2025-11-15
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,21 +41,21 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
+  - yaftee-0.1.0.0
+  - yaftee-basic-monads-0.1.0.0
+  - yaftee-conduit-0.1.0.0
   - higher-order-freer-monad-0.1.0.0
   - higher-order-open-union-0.1.0.1
   - freer-base-classes-0.1.0.0
   - ftcqueue-0.1.0.1
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 387151805fd153d70fa56f3ff426b6785d7c5417
+    commit: b98a55544bff87cd488f9435c9e5bb3440d9c45c
     subdirs:
-      - themes/freer-effects/yaftee/try-yaftee
-      - themes/freer-effects/yaftee/try-yaftee-conduit
       - themes/freer-effects/yaftee/try-yaftee-conduit-containers
       - themes/freer-effects/yaftee/try-yaftee-conduit-mono-traversable
       - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring
       - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
       - themes/freer-effects/yaftee/try_using/try-zlib-library
-      - themes/freer-effects/yaftee/try-yaftee-basic-monads
       - themes/freer-effects/yaftee/try-bitarray-seq
       - themes/freer-effects/yaftee/try-bitarray-bs
       - packages/bytestring/try-bytestring-ft

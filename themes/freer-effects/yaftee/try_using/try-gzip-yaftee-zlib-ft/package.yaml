@@ -33,9 +33,9 @@ dependencies:
 - union-color
 - tools-yj
 - typelevel-tools-yj
-- try-yaftee
-- try-yaftee-basic-monads
-- try-yaftee-conduit
+- yaftee
+- yaftee-basic-monads
+- yaftee-conduit
 - try-yaftee-conduit-mono-traversable
 - try-yaftee-conduit-bytestring
 - try-yaftee-conduit-bytestring-ft
