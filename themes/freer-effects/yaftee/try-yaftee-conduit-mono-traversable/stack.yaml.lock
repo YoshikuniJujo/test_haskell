@@ -5,6 +5,27 @@
 
 packages:
 - completed:
+    hackage: yaftee-0.1.0.0@sha256:777a4d5c12382210e9c7d97ce1d716b04df96dc1a1b6701b2c86c6e1c1e65fcb,1943
+    pantry-tree:
+      sha256: faae28ff3c9b23f30b6c4d56c76c07eb879b3e158af3b74b39c66ef6187e0519
+      size: 372
+  original:
+    hackage: yaftee-0.1.0.0
+- completed:
+    hackage: yaftee-basic-monads-0.1.0.0@sha256:6ac2b56a59177bc7896f459d8caa0594e00dc315d5a647daedb2a5a579b98d55,2382
+    pantry-tree:
+      sha256: 4fe88b20bee7ebce1c073cca9696996b44598f9cf2f542710be210fe4c6151ef
+      size: 978
+  original:
+    hackage: yaftee-basic-monads-0.1.0.0
+- completed:
+    hackage: yaftee-conduit-0.1.0.0@sha256:ea3c0eea2ee059e1c8ea875ae306976f7e072db480e1cd0c695a9b720114e2ce,2237
+    pantry-tree:
+      sha256: dfe9fb08d306b41e069389b82ee8a8857980c7af5f227722fc045907f002ecaf
+      size: 616
+  original:
+    hackage: yaftee-conduit-0.1.0.0
+- completed:
     hackage: higher-order-freer-monad-0.1.0.0@sha256:cb577292506e6f906528813f339966874c7c7a23a76cc4b5eabdd600f2843c2d,2038
     pantry-tree:
       sha256: a5733f3e7b315da2f2f898201da69dee0fdbe10a37d0686a4bcc381f13bf869a
@@ -33,46 +54,7 @@ packages:
   original:
     hackage: ftcqueue-0.1.0.1
 - completed:
-    commit: 1f4f3fd1c875f8322a5b1501120dd53302c215e9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-yaftee
-    pantry-tree:
-      sha256: f841511647d49100bd6d316344e8907506228de4dde0d5b8c4d88427f968e475
-      size: 585
-    subdir: themes/freer-effects/yaftee/try-yaftee
-    version: 0.1.0.0
-  original:
-    commit: 1f4f3fd1c875f8322a5b1501120dd53302c215e9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-yaftee
-- completed:
-    commit: 1f4f3fd1c875f8322a5b1501120dd53302c215e9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-yaftee-conduit
-    pantry-tree:
-      sha256: 1c7f2de050ac9e3d09b3d707be89b3761afd3abee4dab50a806847486e5ce416
-      size: 827
-    subdir: themes/freer-effects/yaftee/try-yaftee-conduit
-    version: 0.1.0.0
-  original:
-    commit: 1f4f3fd1c875f8322a5b1501120dd53302c215e9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-yaftee-conduit
-- completed:
-    commit: 1f4f3fd1c875f8322a5b1501120dd53302c215e9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-yaftee-basic-monads
-    pantry-tree:
-      sha256: 7bdb347903673c8e895dc3e4bb1810a8d0651ad65700945c03ef8365946352ef
-      size: 1309
-    subdir: themes/freer-effects/yaftee/try-yaftee-basic-monads
-    version: 0.1.0.7
-  original:
-    commit: 1f4f3fd1c875f8322a5b1501120dd53302c215e9
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-yaftee-basic-monads
-- completed:
-    commit: 1f4f3fd1c875f8322a5b1501120dd53302c215e9
+    commit: cf35edd6ad8862a291b93495091e644feab7a068
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-bitarray-bs
     pantry-tree:
@@ -81,7 +63,7 @@ packages:
     subdir: themes/freer-effects/yaftee/try-bitarray-bs
     version: 0.1.0.1
   original:
-    commit: 1f4f3fd1c875f8322a5b1501120dd53302c215e9
+    commit: cf35edd6ad8862a291b93495091e644feab7a068
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-bitarray-bs
 - completed:
@@ -93,7 +75,7 @@ packages:
     hackage: tools-yj-0.1.0.45
 snapshots:
 - completed:
-    sha256: a803f1e530d7ff8f2f871ea7ebda10739a9c0ac04ccd4e217a77ceddd8610f78
-    size: 705171
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/12.yaml
-  original: nightly-2025-11-12
+    sha256: a73345e0a5bb1d8ef87ba9dafab9f9c167ee1a64d2ab42ea98cb2493cad177e3
+    size: 705602
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/15.yaml
+  original: nightly-2025-11-15

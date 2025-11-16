@@ -39,9 +39,9 @@ library
     , higher-order-open-union
     , mono-traversable
     , tools-yj
-    , try-yaftee
-    , try-yaftee-basic-monads
-    , try-yaftee-conduit
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
   default-language: Haskell2010
 
 test-suite try-yaftee-conduit-mono-traversable-test
@@ -59,8 +59,8 @@ test-suite try-yaftee-conduit-mono-traversable-test
     , higher-order-open-union
     , mono-traversable
     , tools-yj
-    , try-yaftee
-    , try-yaftee-basic-monads
-    , try-yaftee-conduit
     , try-yaftee-conduit-mono-traversable
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
   default-language: Haskell2010
