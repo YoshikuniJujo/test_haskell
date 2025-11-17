@@ -23,13 +23,13 @@ dependencies:
 - base >= 4.7 && < 5
 - array
 - bytestring
-- tools-yj
-- typelevel-tools-yj
 - yaftee
 - yaftee-conduit
 - yaftee-basic-monads
-- bitarray-bs
 - higher-order-open-union
+- bitarray-bs
+- tools-yj
+- typelevel-tools-yj
 
 ghc-options:
 - -Wall
