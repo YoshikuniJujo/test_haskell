@@ -60,13 +60,6 @@ packages:
       size: 522
   original:
     hackage: bitarray-bs-0.1.0.0
-- completed:
-    hackage: tools-yj-0.1.0.45@sha256:e342ee6fde63d5a3dc05405c7cca61e36eea2315cba1706cbd2bc8c65995db88,2545
-    pantry-tree:
-      sha256: 2ab6e9e8288431766b0b2bddddbda28290dbb94535fe135e0cb3b72cde74945f
-      size: 1835
-  original:
-    hackage: tools-yj-0.1.0.45
 snapshots:
 - completed:
     sha256: 02460994577048c21807f8c199e770b277720f3d03c1cc0dbcb7385dc94bd6b0
