@@ -49,11 +49,11 @@ extra-deps:
   - freer-base-classes-0.1.0.0
   - ftcqueue-0.1.0.1
   - bitarray-bs-0.1.0.0
+  - yaftee-conduit-bytestring-0.1.0.0
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 635e853d8dadff1b77618a3a16607d11ea106f34
+    commit: d9cc05f8e4056158fa9026adc0726c6d962d839c
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee-conduit-mono-traversable
-      - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring
       - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
       - themes/freer-effects/yaftee/try_using/try-zlib-library
       - packages/bytestring/try-bytestring-ft

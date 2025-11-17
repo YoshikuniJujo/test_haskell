@@ -28,7 +28,6 @@ library
       Control.Monad.Yaftee.Pipe.Apng.Decode
       Control.Monad.Yaftee.Pipe.Buffer
       Control.Monad.Yaftee.Pipe.BytesCrc32
-      Control.Monad.Yaftee.Pipe.Lifegame
       Control.Monad.Yaftee.Pipe.Png.Decode
       Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
       Control.Monad.Yaftee.Pipe.Png.Decode.Header
@@ -86,7 +85,6 @@ library
     , primitive
     , tools-yj
     , try-bytestring-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -97,6 +95,7 @@ library
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-all-red
@@ -118,7 +117,6 @@ executable try-all-red
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -129,6 +127,7 @@ executable try-all-red
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-apng
@@ -150,7 +149,6 @@ executable try-apng
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -161,6 +159,7 @@ executable try-apng
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-apng-codec
@@ -182,7 +181,6 @@ executable try-apng-codec
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -193,6 +191,7 @@ executable try-apng-codec
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-apng-gray-blink
@@ -214,7 +213,6 @@ executable try-apng-gray-blink
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -225,6 +223,7 @@ executable try-apng-gray-blink
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-apng-lifegame
@@ -246,7 +245,6 @@ executable try-apng-lifegame
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -257,6 +255,7 @@ executable try-apng-lifegame
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-apng-lifegame-gray1
@@ -278,7 +277,6 @@ executable try-apng-lifegame-gray1
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -289,6 +287,7 @@ executable try-apng-lifegame-gray1
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-apng-lifegame-gray1-nointerlace
@@ -310,7 +309,6 @@ executable try-apng-lifegame-gray1-nointerlace
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -321,6 +319,7 @@ executable try-apng-lifegame-gray1-nointerlace
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-apng-lifegame-with-ratio
@@ -342,7 +341,6 @@ executable try-apng-lifegame-with-ratio
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -353,6 +351,7 @@ executable try-apng-lifegame-with-ratio
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-apng-rgba-to-gray
@@ -374,7 +373,6 @@ executable try-apng-rgba-to-gray
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -385,6 +383,7 @@ executable try-apng-rgba-to-gray
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-apng-to-png
@@ -406,7 +405,6 @@ executable try-apng-to-png
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -417,6 +415,7 @@ executable try-apng-to-png
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-apng-to-pngs
@@ -438,7 +437,6 @@ executable try-apng-to-pngs
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -449,6 +447,7 @@ executable try-apng-to-pngs
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-decod-gray
@@ -470,7 +469,6 @@ executable try-decod-gray
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -481,6 +479,7 @@ executable try-decod-gray
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-decod-lifegame-gray1
@@ -502,7 +501,6 @@ executable try-decod-lifegame-gray1
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -513,6 +511,7 @@ executable try-decod-lifegame-gray1
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-gray-alpha
@@ -534,7 +533,6 @@ executable try-gray-alpha
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -545,6 +543,7 @@ executable try-gray-alpha
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-gzip-deflate
@@ -566,7 +565,6 @@ executable try-gzip-deflate
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -577,6 +575,7 @@ executable try-gzip-deflate
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-gzip-yaftee-zlib-ft-exe
@@ -602,7 +601,6 @@ executable try-gzip-yaftee-zlib-ft-exe
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -613,6 +611,7 @@ executable try-gzip-yaftee-zlib-ft-exe
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-lifegame-ng
@@ -634,7 +633,6 @@ executable try-lifegame-ng
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -645,6 +643,7 @@ executable try-lifegame-ng
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-lifegame-ng-remove-glider
@@ -666,7 +665,6 @@ executable try-lifegame-ng-remove-glider
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -677,6 +675,7 @@ executable try-lifegame-ng-remove-glider
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-palette
@@ -698,7 +697,6 @@ executable try-palette
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -709,6 +707,7 @@ executable try-palette
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-png-decode
@@ -730,7 +729,6 @@ executable try-png-decode
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -741,6 +739,7 @@ executable try-png-decode
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-png-glider
@@ -762,7 +761,6 @@ executable try-png-glider
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -773,6 +771,7 @@ executable try-png-glider
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-png-rgba-to-gray
@@ -794,7 +793,6 @@ executable try-png-rgba-to-gray
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -805,6 +803,7 @@ executable try-png-rgba-to-gray
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-png-rgba-to-gray1
@@ -826,7 +825,6 @@ executable try-png-rgba-to-gray1
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -837,6 +835,7 @@ executable try-png-rgba-to-gray1
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-read-board
@@ -858,7 +857,6 @@ executable try-read-board
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -869,6 +867,7 @@ executable try-read-board
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-read-chunk
@@ -890,7 +889,6 @@ executable try-read-chunk
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -901,6 +899,7 @@ executable try-read-chunk
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-readchunk-ng
@@ -922,7 +921,6 @@ executable try-readchunk-ng
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -933,6 +931,7 @@ executable try-readchunk-ng
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-readchunk-ng-black-on-white
@@ -954,7 +953,6 @@ executable try-readchunk-ng-black-on-white
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -965,6 +963,7 @@ executable try-readchunk-ng-black-on-white
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-time-gradation
@@ -986,7 +985,6 @@ executable try-time-gradation
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -997,6 +995,7 @@ executable try-time-gradation
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 executable try-zlib-deflate
@@ -1018,7 +1017,6 @@ executable try-zlib-deflate
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -1029,6 +1027,7 @@ executable try-zlib-deflate
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
 
 test-suite try-gzip-yaftee-zlib-ft-test
@@ -1055,7 +1054,6 @@ test-suite try-gzip-yaftee-zlib-ft-test
     , tools-yj
     , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -1066,4 +1064,5 @@ test-suite try-gzip-yaftee-zlib-ft-test
     , yaftee
     , yaftee-basic-monads
     , yaftee-conduit
+    , yaftee-conduit-bytestring
   default-language: Haskell2010
