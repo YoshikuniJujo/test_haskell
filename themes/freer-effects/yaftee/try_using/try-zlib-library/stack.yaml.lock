@@ -26,6 +26,13 @@ packages:
   original:
     hackage: yaftee-conduit-0.1.0.0
 - completed:
+    hackage: yaftee-conduit-bytestring-0.1.0.0@sha256:2fd6399d65952995bc82bf0f8b070cc16ad5cf7f40a3e8002c1e90e08d02d40e,2957
+    pantry-tree:
+      sha256: 8b49d2b8c14d81ac631a7da7e096cc83bac761cd67992908f26f447c0a8ff3b1
+      size: 1325
+  original:
+    hackage: yaftee-conduit-bytestring-0.1.0.0
+- completed:
     hackage: higher-order-freer-monad-0.1.0.0@sha256:cb577292506e6f906528813f339966874c7c7a23a76cc4b5eabdd600f2843c2d,2038
     pantry-tree:
       sha256: a5733f3e7b315da2f2f898201da69dee0fdbe10a37d0686a4bcc381f13bf869a
@@ -61,20 +68,7 @@ packages:
   original:
     hackage: bitarray-bs-0.1.0.0
 - completed:
-    commit: ad56e81b9d09bffba1364d2185210825bdf7ca9c
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-yaftee-conduit-bytestring
-    pantry-tree:
-      sha256: 24e4845719ebbae3f6af0624880f05db1768af79cfa96aabd28462cf87183ce4
-      size: 1538
-    subdir: themes/freer-effects/yaftee/try-yaftee-conduit-bytestring
-    version: 0.1.0.9
-  original:
-    commit: ad56e81b9d09bffba1364d2185210825bdf7ca9c
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-yaftee-conduit-bytestring
-- completed:
-    commit: ad56e81b9d09bffba1364d2185210825bdf7ca9c
+    commit: f88ef617b86c41e54c66780ccb700e8dbbcfe874
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-bytestring-ft
     pantry-tree:
@@ -83,11 +77,11 @@ packages:
     subdir: packages/bytestring/try-bytestring-ft
     version: 0.1.0.1
   original:
-    commit: ad56e81b9d09bffba1364d2185210825bdf7ca9c
+    commit: f88ef617b86c41e54c66780ccb700e8dbbcfe874
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: packages/bytestring/try-bytestring-ft
 - completed:
-    commit: ad56e81b9d09bffba1364d2185210825bdf7ca9c
+    commit: f88ef617b86c41e54c66780ccb700e8dbbcfe874
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-zlib-core
     pantry-tree:
@@ -96,7 +90,7 @@ packages:
     subdir: wrapper/zlib/try-zlib-core
     version: 0.1.0.1
   original:
-    commit: ad56e81b9d09bffba1364d2185210825bdf7ca9c
+    commit: f88ef617b86c41e54c66780ccb700e8dbbcfe874
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: wrapper/zlib/try-zlib-core
 snapshots:

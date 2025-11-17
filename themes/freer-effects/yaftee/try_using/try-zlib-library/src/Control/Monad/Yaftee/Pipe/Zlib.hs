@@ -26,7 +26,6 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
-import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.HigherFunctor qualified as HFunctor
 
@@ -81,7 +80,7 @@ deflate nm m dos bai bao = do
 			(deflateOptionsCompressionStrategy os))
 		dos bai bao
 	doWhile_ $ body nm m Zlib.deflate bai bao strm
-	finalize m Zlib.deflateEnd strm
+	finalize @m Zlib.deflateEnd strm
 	restOfInput nm m strm
 
 inflate :: forall nm m -> (
@@ -94,7 +93,7 @@ inflate :: forall nm m -> (
 inflate nm m wbs bai bao = do
 	strm <- initialize nm m Zlib.inflateInit2 wbs bai bao
 	doWhile_ $ body nm m Zlib.inflate bai bao strm
-	finalize m Zlib.inflateEnd strm
+	finalize @m Zlib.inflateEnd strm
 	restOfInput nm m strm
 
 initialize :: forall nm m -> (
@@ -129,12 +128,11 @@ awaitInputMaybe p = Pipe.awaitMaybe >>= \case
 	Nothing -> pure Nothing
 	Just bs -> if p bs then awaitInputMaybe p else pure $ Just bs
 
-finalize :: forall m -> (
-	PrimMonad m,
+finalize :: forall m es i o . ( -- forall m -> (
 	U.Member (Except.E Zlib.ReturnCode) es, U.Base (U.FromFirst m) es ) =>
 	(Zlib.StreamPrim (PrimState m) -> m Zlib.ReturnCode) ->
 	Zlib.StreamPrim (PrimState m) -> Eff.E es i o ()
-finalize m f strm = do
+finalize f strm = do
 	rc <- Eff.effBase $ f strm
 	trace "FINALIZE" $ pure ()
 	when (rc /= Zlib.Ok) do
@@ -174,13 +172,13 @@ body nm m f
 			case minp of
 				Nothing -> do
 					doWhile_ do
-						rc <- Eff.effBase $ f @m strm Zlib.Finish
+						rc' <- Eff.effBase $ f @m strm Zlib.Finish
 						(fromIntegral -> ao') <- Eff.effBase @m $ Zlib.availOut strm
 						Pipe.yield =<< Eff.effBase
 							(unsafeIOToPrim @m $ BSF.peek (o', no - ao'))
-						trace (show rc) $ pure ()
+						trace (show rc') $ pure ()
 						Eff.effBase $ Zlib.setNextOut @m strm o no'
-						pure $ rc /= Zlib.StreamEnd
+						pure $ rc' /= Zlib.StreamEnd
 					pure False
 				Just inp -> do
 					((castPtr -> i', fromIntegral -> n), ebs) <- Eff.effBase
