@@ -27,17 +27,11 @@ module Data.Gzip.Header (
 
 import Foreign.C.Types
 import Control.Arrow
-import Data.Foldable
 import Data.Bits
 import Data.Maybe
-import Data.Sequence.ToolsYj qualified as Seq
-import Data.Sequence.Word8 qualified as Seq
 import Data.Word
-import Data.Char
 import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
-
-import Data.Word.Crc32 qualified as Crc32
 
 import Control.Monad.Yaftee.Pipe.ByteString.Crc qualified as PipeCrc
 

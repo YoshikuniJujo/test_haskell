@@ -9,12 +9,10 @@
 module Main (main) where
 
 import Foreign.C.Types
-import Foreign.C.ByteArray qualified as CByteArray
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
-import Control.Monad.Yaftee.Pipe.IO qualified as PipeIO
 import Control.Monad.Yaftee.Pipe.MonoTraversable qualified as PipeMT
 import Control.Monad.Yaftee.Pipe.MonoTraversable.Crc32 qualified as PipeCrc32
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
@@ -27,9 +25,7 @@ import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Bits
 import Data.Maybe
-import Data.Word
 import Data.Word.Word8 qualified as Word8
-import Data.Int
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Gzip.Header
 import System.IO
@@ -54,7 +50,8 @@ main = do
 			PipeT.convert BSF.fromStrict Pipe.=$= OnDemand.onDemand "foobar" Pipe.=$= do
 				readHeader "foobar" IO.print
 				State.putN "foobar" $ OnDemand.RequestBuffer 25
-				do {	rbs <- PipeZ.inflate "foobar" IO (Zlib.WindowBitsRaw 15) ib ob;
+				_ <- do {
+					rbs <- PipeZ.inflate "foobar" IO (Zlib.WindowBitsRaw 15) ib ob;
 					State.putN "foobar" $ OnDemand.RequestPushBack rbs } Pipe.=$=
 						PipeMT.length "foobar" Pipe.=$= PipeCrc32.crc32 "foobar"
 				"" <- Pipe.await
