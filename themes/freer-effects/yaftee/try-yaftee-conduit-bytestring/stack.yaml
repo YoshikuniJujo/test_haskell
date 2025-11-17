@@ -50,10 +50,7 @@ extra-deps:
   - higher-order-open-union-0.1.0.1
   - freer-base-classes-0.1.0.0
   - ftcqueue-0.1.0.1
-  - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 77aa872299a3c9b7a7c2912a4d4217e50acbbd41
-    subdirs:
-      - themes/freer-effects/yaftee/try-bitarray-bs
+  - bitarray-bs-0.1.0.0
   - tools-yj-0.1.0.45
 
 # Override default flag values for project packages and extra-deps

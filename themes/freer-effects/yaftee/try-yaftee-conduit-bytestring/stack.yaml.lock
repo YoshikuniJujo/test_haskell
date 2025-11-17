@@ -54,18 +54,12 @@ packages:
   original:
     hackage: ftcqueue-0.1.0.1
 - completed:
-    commit: 77aa872299a3c9b7a7c2912a4d4217e50acbbd41
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-bitarray-bs
+    hackage: bitarray-bs-0.1.0.0@sha256:381c747669e6eee3950d2f091432f02ce5be531c155cbae83a7e12ed2487be98,1884
     pantry-tree:
-      sha256: be6284eeedbd5121a39120a9df9d4911d67bc2f70559d555863cc57ed7c7ada4
-      size: 733
-    subdir: themes/freer-effects/yaftee/try-bitarray-bs
-    version: 0.1.0.1
+      sha256: a18ab03c2e292c193eb3501e39c95849274695fd90c9d801b4b442aa34022876
+      size: 522
   original:
-    commit: 77aa872299a3c9b7a7c2912a4d4217e50acbbd41
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-bitarray-bs
+    hackage: bitarray-bs-0.1.0.0
 - completed:
     hackage: tools-yj-0.1.0.45@sha256:e342ee6fde63d5a3dc05405c7cca61e36eea2315cba1706cbd2bc8c65995db88,2545
     pantry-tree:

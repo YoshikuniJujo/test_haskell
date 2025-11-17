@@ -46,10 +46,10 @@ library
   build-depends:
       array
     , base >=4.7 && <5
+    , bitarray-bs
     , bytestring
     , higher-order-open-union
     , tools-yj
-    , try-bitarray-bs
     , typelevel-tools-yj
     , yaftee
     , yaftee-basic-monads
@@ -69,10 +69,10 @@ test-suite try-yaftee-conduit-bytestring-test
   build-depends:
       array
     , base >=4.7 && <5
+    , bitarray-bs
     , bytestring
     , higher-order-open-union
     , tools-yj
-    , try-bitarray-bs
     , try-yaftee-conduit-bytestring
     , typelevel-tools-yj
     , yaftee
