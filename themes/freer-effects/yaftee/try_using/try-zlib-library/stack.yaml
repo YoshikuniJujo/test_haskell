@@ -48,11 +48,11 @@ extra-deps:
   - higher-order-open-union-0.1.0.1
   - freer-base-classes-0.1.0.0
   - ftcqueue-0.1.0.1
+  - bitarray-bs-0.1.0.0
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 2728c604ef2475c5a97b3882a200c0b0fee35fa8
+    commit: ad56e81b9d09bffba1364d2185210825bdf7ca9c
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring
-      - themes/freer-effects/yaftee/try-bitarray-bs
       - packages/bytestring/try-bytestring-ft
       - wrapper/zlib/try-zlib-core
 
