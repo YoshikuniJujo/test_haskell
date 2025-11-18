@@ -12,7 +12,7 @@ module Control.Monad.Yaftee.Pipe.Zlib (
 
 	-- * RUN
 
-	run,
+	run, ByteString,
 
 	-- * DEFLATE
 
