@@ -61,25 +61,19 @@ packages:
   original:
     hackage: ftcqueue-0.1.0.1
 - completed:
+    hackage: bytestring-ft-0.1.0.0@sha256:b20eeafdedbe1f031bef47e721398d4b340140046dae09ac68622ea5e8e895a5,2083
+    pantry-tree:
+      sha256: 8323140812e8ad3a40258a4e56599bc1244893ea55f45103c3887454f59db932
+      size: 705
+  original:
+    hackage: bytestring-ft-0.1.0.0
+- completed:
     hackage: bitarray-bs-0.1.0.0@sha256:381c747669e6eee3950d2f091432f02ce5be531c155cbae83a7e12ed2487be98,1884
     pantry-tree:
       sha256: a18ab03c2e292c193eb3501e39c95849274695fd90c9d801b4b442aa34022876
       size: 522
   original:
     hackage: bitarray-bs-0.1.0.0
-- completed:
-    commit: f88ef617b86c41e54c66780ccb700e8dbbcfe874
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-bytestring-ft
-    pantry-tree:
-      sha256: d0daa45f57545290717d7a4fd9cb11dcf7ff143b35ca2de35c19a793065ef7f2
-      size: 970
-    subdir: packages/bytestring/try-bytestring-ft
-    version: 0.1.0.1
-  original:
-    commit: f88ef617b86c41e54c66780ccb700e8dbbcfe874
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: packages/bytestring/try-bytestring-ft
 - completed:
     commit: f88ef617b86c41e54c66780ccb700e8dbbcfe874
     git: https://github.com/YoshikuniJujo/test_haskell

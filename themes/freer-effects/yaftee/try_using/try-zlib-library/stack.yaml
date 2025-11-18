@@ -49,11 +49,11 @@ extra-deps:
   - higher-order-open-union-0.1.0.1
   - freer-base-classes-0.1.0.0
   - ftcqueue-0.1.0.1
+  - bytestring-ft-0.1.0.0
   - bitarray-bs-0.1.0.0
   - git: https://github.com/YoshikuniJujo/test_haskell
     commit: f88ef617b86c41e54c66780ccb700e8dbbcfe874
     subdirs:
-      - packages/bytestring/try-bytestring-ft
       - wrapper/zlib/try-zlib-core
 
 # Override default flag values for project packages and extra-deps

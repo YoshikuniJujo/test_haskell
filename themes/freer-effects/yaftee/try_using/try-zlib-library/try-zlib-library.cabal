@@ -36,10 +36,10 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , higher-order-open-union
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-zlib-core
     , yaftee
     , yaftee-basic-monads
@@ -55,10 +55,10 @@ executable try-gzip-deflate
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , higher-order-open-union
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-zlib-core
     , try-zlib-library
     , yaftee
@@ -79,10 +79,10 @@ executable try-zlib-library-exe
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , higher-order-open-union
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-zlib-core
     , try-zlib-library
     , yaftee
@@ -104,10 +104,10 @@ test-suite try-zlib-library-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , higher-order-open-union
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-zlib-core
     , try-zlib-library
     , yaftee
