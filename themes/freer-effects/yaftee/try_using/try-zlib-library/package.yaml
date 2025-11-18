@@ -30,7 +30,7 @@ dependencies:
 - yaftee-conduit-bytestring
 - higher-order-open-union
 - bytestring-ft
-- try-zlib-core
+- zlib-core
 
 ghc-options:
 - -Wall

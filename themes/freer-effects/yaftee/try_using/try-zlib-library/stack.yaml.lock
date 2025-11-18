@@ -75,18 +75,12 @@ packages:
   original:
     hackage: bitarray-bs-0.1.0.0
 - completed:
-    commit: f88ef617b86c41e54c66780ccb700e8dbbcfe874
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-zlib-core
+    hackage: zlib-core-0.1.0.1@sha256:16764eb0801becc31feca5fe57be100d957a37e45a497448a4a29e77d57b6a53,2243
     pantry-tree:
-      sha256: 03745867b131da9668a0ad3125aa3f81901f926d0a5d0fe07cd8a0b415e7d38f
-      size: 1631
-    subdir: wrapper/zlib/try-zlib-core
-    version: 0.1.0.1
+      sha256: 527a9d115e1a43166f9cee6d12ad012e407d049d7a1ed7ec1e7ae6799f898dfa
+      size: 804
   original:
-    commit: f88ef617b86c41e54c66780ccb700e8dbbcfe874
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: wrapper/zlib/try-zlib-core
+    hackage: zlib-core-0.1.0.1
 snapshots:
 - completed:
     sha256: 02460994577048c21807f8c199e770b277720f3d03c1cc0dbcb7385dc94bd6b0
