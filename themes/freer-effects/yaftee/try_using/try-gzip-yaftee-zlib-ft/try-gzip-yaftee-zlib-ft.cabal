@@ -76,6 +76,7 @@ library
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -84,7 +85,6 @@ library
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
     , try-zlib-core
@@ -107,6 +107,7 @@ executable try-all-red
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -115,7 +116,6 @@ executable try-all-red
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -139,6 +139,7 @@ executable try-apng
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -147,7 +148,6 @@ executable try-apng
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -171,6 +171,7 @@ executable try-apng-codec
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -179,7 +180,6 @@ executable try-apng-codec
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -203,6 +203,7 @@ executable try-apng-gray-blink
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -211,7 +212,6 @@ executable try-apng-gray-blink
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -235,6 +235,7 @@ executable try-apng-lifegame
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -243,7 +244,6 @@ executable try-apng-lifegame
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -267,6 +267,7 @@ executable try-apng-lifegame-gray1
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -275,7 +276,6 @@ executable try-apng-lifegame-gray1
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -299,6 +299,7 @@ executable try-apng-lifegame-gray1-nointerlace
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -307,7 +308,6 @@ executable try-apng-lifegame-gray1-nointerlace
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -331,6 +331,7 @@ executable try-apng-lifegame-with-ratio
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -339,7 +340,6 @@ executable try-apng-lifegame-with-ratio
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -363,6 +363,7 @@ executable try-apng-rgba-to-gray
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -371,7 +372,6 @@ executable try-apng-rgba-to-gray
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -395,6 +395,7 @@ executable try-apng-to-png
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -403,7 +404,6 @@ executable try-apng-to-png
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -427,6 +427,7 @@ executable try-apng-to-pngs
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -435,7 +436,6 @@ executable try-apng-to-pngs
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -459,6 +459,7 @@ executable try-decod-gray
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -467,7 +468,6 @@ executable try-decod-gray
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -491,6 +491,7 @@ executable try-decod-lifegame-gray1
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -499,7 +500,6 @@ executable try-decod-lifegame-gray1
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -523,6 +523,7 @@ executable try-gray-alpha
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -531,7 +532,6 @@ executable try-gray-alpha
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -555,6 +555,7 @@ executable try-gzip-deflate
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -563,7 +564,6 @@ executable try-gzip-deflate
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -591,6 +591,7 @@ executable try-gzip-yaftee-zlib-ft-exe
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -599,7 +600,6 @@ executable try-gzip-yaftee-zlib-ft-exe
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -623,6 +623,7 @@ executable try-lifegame-ng
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -631,7 +632,6 @@ executable try-lifegame-ng
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -655,6 +655,7 @@ executable try-lifegame-ng-remove-glider
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -663,7 +664,6 @@ executable try-lifegame-ng-remove-glider
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -687,6 +687,7 @@ executable try-palette
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -695,7 +696,6 @@ executable try-palette
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -719,6 +719,7 @@ executable try-png-decode
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -727,7 +728,6 @@ executable try-png-decode
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -751,6 +751,7 @@ executable try-png-glider
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -759,7 +760,6 @@ executable try-png-glider
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -783,6 +783,7 @@ executable try-png-rgba-to-gray
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -791,7 +792,6 @@ executable try-png-rgba-to-gray
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -815,6 +815,7 @@ executable try-png-rgba-to-gray1
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -823,7 +824,6 @@ executable try-png-rgba-to-gray1
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -847,6 +847,7 @@ executable try-read-board
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -855,7 +856,6 @@ executable try-read-board
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -879,6 +879,7 @@ executable try-read-chunk
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -887,7 +888,6 @@ executable try-read-chunk
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -911,6 +911,7 @@ executable try-readchunk-ng
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -919,7 +920,6 @@ executable try-readchunk-ng
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -943,6 +943,7 @@ executable try-readchunk-ng-black-on-white
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -951,7 +952,6 @@ executable try-readchunk-ng-black-on-white
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -975,6 +975,7 @@ executable try-time-gradation
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -983,7 +984,6 @@ executable try-time-gradation
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -1007,6 +1007,7 @@ executable try-zlib-deflate
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -1015,7 +1016,6 @@ executable try-zlib-deflate
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable
@@ -1044,6 +1044,7 @@ test-suite try-gzip-yaftee-zlib-ft-test
       array
     , base >=4.7 && <5
     , bytestring
+    , bytestring-ft
     , containers
     , deepseq
     , directory
@@ -1052,7 +1053,6 @@ test-suite try-gzip-yaftee-zlib-ft-test
     , mono-traversable
     , primitive
     , tools-yj
-    , try-bytestring-ft
     , try-gzip-yaftee-zlib-ft
     , try-yaftee-conduit-bytestring-ft
     , try-yaftee-conduit-mono-traversable

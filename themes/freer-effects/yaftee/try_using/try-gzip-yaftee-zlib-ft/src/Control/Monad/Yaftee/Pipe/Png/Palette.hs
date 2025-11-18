@@ -3,11 +3,16 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.Palette where
+module Control.Monad.Yaftee.Pipe.Png.Palette (
+	Palette(..),
+	encodePalette, elemIndexPalette, lookupPalette,
+
+	readPalette, readPalette2, palette0, palette0',
+	palette2ToPalette
+	) where
 
 import Data.Foldable
 import Data.MonoTraversable
-import Data.Array qualified as A
 import Data.Vector qualified as V
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
@@ -43,11 +48,6 @@ readByte1 (p, [r]) g = (p, [r, g])
 readByte1 (p, [r, g]) b = (snoc p r g b, [])
 readByte1 _ _ = error "bad"
 
-splitAt' :: Int -> V.Vector a -> Maybe (V.Vector a, V.Vector a)
-splitAt' n v
-	| n <= V.length v = Just $ V.splitAt n v
-	| otherwise = Nothing
-
 encodePalette :: Palette -> BSF.ByteString
 encodePalette (Palette v) = foldl' (\bs (r, g, b) -> bs <> BSF.pack [r, g, b]) BSF.empty v
 
@@ -57,12 +57,6 @@ lookupPalette (Palette v) i = let (r, g, b) = v V.! fromIntegral i in RgbWord8 r
 elemIndexPalette :: (RealFrac d, Num i) => Palette -> Rgb d -> Maybe i
 elemIndexPalette (Palette v) (RgbWord8 r g b) =
 	fromIntegral <$> V.elemIndex (r, g, b) v
-
-seqToArray :: Seq.Seq a -> A.Array Int a
-seqToArray s = A.listArray (0, Seq.length s - 1) $ toList s
-
-palette2ToArray :: Palette2 -> A.Array Int (Word8, Word8, Word8)
-palette2ToArray (Palette2 p) = seqToArray p
 
 seqToVector :: Seq.Seq a -> V.Vector a
 seqToVector = V.fromList . toList
