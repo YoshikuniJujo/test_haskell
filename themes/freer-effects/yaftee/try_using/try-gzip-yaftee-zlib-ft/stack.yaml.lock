@@ -75,7 +75,14 @@ packages:
   original:
     hackage: bytestring-ft-0.1.0.0
 - completed:
-    commit: e470d6be590db3358412453d1aee6ee0f8136bff
+    hackage: zlib-core-0.1.0.1@sha256:16764eb0801becc31feca5fe57be100d957a37e45a497448a4a29e77d57b6a53,2243
+    pantry-tree:
+      sha256: 527a9d115e1a43166f9cee6d12ad012e407d049d7a1ed7ec1e7ae6799f898dfa
+      size: 804
+  original:
+    hackage: zlib-core-0.1.0.1
+- completed:
+    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee-conduit-mono-traversable
     pantry-tree:
@@ -84,11 +91,11 @@ packages:
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-mono-traversable
     version: 0.1.0.0
   original:
-    commit: e470d6be590db3358412453d1aee6ee0f8136bff
+    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-mono-traversable
 - completed:
-    commit: e470d6be590db3358412453d1aee6ee0f8136bff
+    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee-conduit-bytestring-ft
     pantry-tree:
@@ -97,35 +104,22 @@ packages:
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
     version: 0.1.0.0
   original:
-    commit: e470d6be590db3358412453d1aee6ee0f8136bff
+    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
 - completed:
-    commit: e470d6be590db3358412453d1aee6ee0f8136bff
+    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-zlib-library
     pantry-tree:
-      sha256: d2a0e39b8ab6cce1089581ca25a777bec6fd35e36fc58aea324760c183630298
-      size: 844
+      sha256: 1767f84c3aaaf0a38175558d114f767501ce57729d35a5d84415ba3d9103316d
+      size: 846
     subdir: themes/freer-effects/yaftee/try_using/try-zlib-library
     version: 0.1.0.0
   original:
-    commit: e470d6be590db3358412453d1aee6ee0f8136bff
+    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try_using/try-zlib-library
-- completed:
-    commit: e470d6be590db3358412453d1aee6ee0f8136bff
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-zlib-core
-    pantry-tree:
-      sha256: 03745867b131da9668a0ad3125aa3f81901f926d0a5d0fe07cd8a0b415e7d38f
-      size: 1631
-    subdir: wrapper/zlib/try-zlib-core
-    version: 0.1.0.1
-  original:
-    commit: e470d6be590db3358412453d1aee6ee0f8136bff
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: wrapper/zlib/try-zlib-core
 snapshots:
 - completed:
     sha256: a73345e0a5bb1d8ef87ba9dafab9f9c167ee1a64d2ab42ea98cb2493cad177e3

@@ -42,7 +42,7 @@ dependencies:
 - higher-order-open-union
 - bytestring-ft
 - try-zlib-library
-- try-zlib-core
+- zlib-core
 
 ghc-options:
 - -Wall

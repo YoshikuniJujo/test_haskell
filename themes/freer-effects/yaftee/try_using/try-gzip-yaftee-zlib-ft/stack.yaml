@@ -51,13 +51,13 @@ extra-deps:
   - bitarray-bs-0.1.0.0
   - yaftee-conduit-bytestring-0.1.0.1
   - bytestring-ft-0.1.0.0
+  - zlib-core-0.1.0.1
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: e470d6be590db3358412453d1aee6ee0f8136bff
+    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee-conduit-mono-traversable
       - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
       - themes/freer-effects/yaftee/try_using/try-zlib-library
-      - wrapper/zlib/try-zlib-core
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
