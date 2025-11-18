@@ -37,8 +37,7 @@ inflate :: forall m . PrimBase m =>
 inflate s = do
 	(i, o) <- (,)	<$> Z.cByteArrayMalloc inputBufSize
 			<*> Z.cByteArrayMalloc outputBufSize
-	r <- ((fst <$>) <$>)
-		. Eff.runM . Except.run @Z.ReturnCode . Z.run @"" . PpBS.to
+	r <- Eff.runM . Except.run @Z.ReturnCode . Z.run @"" . PpBS.to
 		$ PpBS.from readBufSize s Pp.=$=
 			PpT.convert BSF.fromStrict Pp.=$=
 			Z.inflate "" m (Z.WindowBitsZlibAndGzip 15) i o Pp.=$=

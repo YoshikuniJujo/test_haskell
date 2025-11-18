@@ -10,9 +10,21 @@
 
 module Control.Monad.Yaftee.Pipe.Zlib (
 
-	run, deflate, DeflateOptions(..), inflate,
+	-- * RUN
 
-	ByteString, CByteArray, cByteArrayMalloc, cByteArrayFree
+	run,
+
+	-- * DEFLATE
+
+	deflate, DeflateOptions(..),
+
+	-- * INFLATE
+
+	inflate,
+
+	-- * C BYTE ARRAY
+
+	CByteArray, cByteArrayMalloc, cByteArrayFree
 
 	) where
 
@@ -38,12 +50,15 @@ import Data.ByteString qualified as BS
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.CString qualified as BSF
 
-import Debug.Trace
+-- import Debug.Trace qualified as Trace
+
+trace :: String -> a -> a
+trace = const id -- Trace.trace
 
 run :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (State.Named nm (Maybe ByteString) ': es) i o r ->
-	Eff.E es i o (r, Maybe ByteString)
-run = (`State.runN` (Nothing :: Maybe ByteString))
+	Eff.E es i o r
+run = (fst <$>) . (`State.runN` (Nothing :: Maybe ByteString))
 
 newtype ByteString = ByteString { unByteString :: BSF.ByteString } deriving Show
 
