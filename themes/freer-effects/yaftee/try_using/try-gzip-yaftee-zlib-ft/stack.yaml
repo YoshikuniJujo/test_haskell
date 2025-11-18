@@ -49,7 +49,7 @@ extra-deps:
   - freer-base-classes-0.1.0.0
   - ftcqueue-0.1.0.1
   - bitarray-bs-0.1.0.0
-  - yaftee-conduit-bytestring-0.1.0.0
+  - yaftee-conduit-bytestring-0.1.0.1
   - bytestring-ft-0.1.0.0
   - git: https://github.com/YoshikuniJujo/test_haskell
     commit: 984d9e40f58ca475b5eade9b6a51eacf5f8d8fe5

@@ -61,12 +61,12 @@ packages:
   original:
     hackage: bitarray-bs-0.1.0.0
 - completed:
-    hackage: yaftee-conduit-bytestring-0.1.0.0@sha256:2fd6399d65952995bc82bf0f8b070cc16ad5cf7f40a3e8002c1e90e08d02d40e,2957
+    hackage: yaftee-conduit-bytestring-0.1.0.1@sha256:c9c63711bdb6b943c5f61bb840f78de3a72cd309a1dac84525cdd90f0862ed0a,3035
     pantry-tree:
-      sha256: 8b49d2b8c14d81ac631a7da7e096cc83bac761cd67992908f26f447c0a8ff3b1
+      sha256: 43a57fc7a959abc3a17e3951c499b45a06ffadcd3be61c18ddf9ac72b352981f
       size: 1325
   original:
-    hackage: yaftee-conduit-bytestring-0.1.0.0
+    hackage: yaftee-conduit-bytestring-0.1.0.1
 - completed:
     hackage: bytestring-ft-0.1.0.0@sha256:b20eeafdedbe1f031bef47e721398d4b340140046dae09ac68622ea5e8e895a5,2083
     pantry-tree:
