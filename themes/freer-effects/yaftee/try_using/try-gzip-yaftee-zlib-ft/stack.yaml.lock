@@ -75,7 +75,7 @@ packages:
   original:
     hackage: bytestring-ft-0.1.0.0
 - completed:
-    commit: 984d9e40f58ca475b5eade9b6a51eacf5f8d8fe5
+    commit: e470d6be590db3358412453d1aee6ee0f8136bff
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee-conduit-mono-traversable
     pantry-tree:
@@ -84,11 +84,11 @@ packages:
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-mono-traversable
     version: 0.1.0.0
   original:
-    commit: 984d9e40f58ca475b5eade9b6a51eacf5f8d8fe5
+    commit: e470d6be590db3358412453d1aee6ee0f8136bff
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-mono-traversable
 - completed:
-    commit: 984d9e40f58ca475b5eade9b6a51eacf5f8d8fe5
+    commit: e470d6be590db3358412453d1aee6ee0f8136bff
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-yaftee-conduit-bytestring-ft
     pantry-tree:
@@ -97,24 +97,24 @@ packages:
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
     version: 0.1.0.0
   original:
-    commit: 984d9e40f58ca475b5eade9b6a51eacf5f8d8fe5
+    commit: e470d6be590db3358412453d1aee6ee0f8136bff
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
 - completed:
-    commit: 984d9e40f58ca475b5eade9b6a51eacf5f8d8fe5
+    commit: e470d6be590db3358412453d1aee6ee0f8136bff
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-zlib-library
     pantry-tree:
-      sha256: 77391141fa0cd1ac67cb2fde70156b407ab54ce95f84b62d41e5be7ad0f51b53
-      size: 713
+      sha256: d2a0e39b8ab6cce1089581ca25a777bec6fd35e36fc58aea324760c183630298
+      size: 844
     subdir: themes/freer-effects/yaftee/try_using/try-zlib-library
     version: 0.1.0.0
   original:
-    commit: 984d9e40f58ca475b5eade9b6a51eacf5f8d8fe5
+    commit: e470d6be590db3358412453d1aee6ee0f8136bff
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/freer-effects/yaftee/try_using/try-zlib-library
 - completed:
-    commit: 984d9e40f58ca475b5eade9b6a51eacf5f8d8fe5
+    commit: e470d6be590db3358412453d1aee6ee0f8136bff
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-zlib-core
     pantry-tree:
@@ -123,7 +123,7 @@ packages:
     subdir: wrapper/zlib/try-zlib-core
     version: 0.1.0.1
   original:
-    commit: 984d9e40f58ca475b5eade9b6a51eacf5f8d8fe5
+    commit: e470d6be590db3358412453d1aee6ee0f8136bff
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: wrapper/zlib/try-zlib-core
 snapshots:

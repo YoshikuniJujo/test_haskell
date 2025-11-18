@@ -4,7 +4,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module System.File.Png.Lifegame where
+module System.File.Png.Lifegame (
+	readBoard, writeBoard
+	) where
 
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -44,7 +46,7 @@ readBoard fp = do
 	h <- openFile fp ReadMode
 	ibd <- PipeZ.cByteArrayMalloc 64
 	obd <- PipeZ.cByteArrayMalloc 64
-	(x, y) <- Eff.runM
+	(_x, y) <- Eff.runM
 		. (`State.run` Lifegame.emptyBoard 0 0)
 		. Except.run @String . Except.run @Zlib.ReturnCode
 		. runPngToImageGray1 @"foobar" @BSF.ByteString
@@ -55,7 +57,6 @@ readBoard fp = do
 		Pipe.=$= pngToImageGray1 "foobar" hdr ibd obd
 		Pipe.=$= (Pipe.await >>=) \img -> do
 			let	brd = Lifegame.gray1ToBoard img
-				img' n = Lifegame.boardToGray1' n brd
 			State.put brd
 	PipeZ.cByteArrayFree ibd
 	PipeZ.cByteArrayFree obd

@@ -52,7 +52,7 @@ extra-deps:
   - yaftee-conduit-bytestring-0.1.0.1
   - bytestring-ft-0.1.0.0
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 984d9e40f58ca475b5eade9b6a51eacf5f8d8fe5
+    commit: e470d6be590db3358412453d1aee6ee0f8136bff
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee-conduit-mono-traversable
       - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft

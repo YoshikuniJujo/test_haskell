@@ -39,7 +39,7 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 runPngToImageGray1 ::
 	forall nm m es i o r . (HFunctor.Loose (U.U es), Monoid m) =>
 	Eff.E (	PngToImageGray1States nm m `Append` es) i o r ->
-	Eff.E es i o ((r, Maybe PipeZ.ByteString), Buffer.Monoid m)
+	Eff.E es i o (r, Buffer.Monoid m)
 runPngToImageGray1 = Buffer.run . PipeZ.run
 
 type PngToImageGray1States nm m = '[
