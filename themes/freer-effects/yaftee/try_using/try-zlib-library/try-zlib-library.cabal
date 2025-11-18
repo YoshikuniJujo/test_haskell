@@ -67,6 +67,26 @@ executable try-gzip-deflate
     , yaftee-conduit-bytestring
   default-language: Haskell2010
 
+executable try-gzip-inflate
+  main-is: try-gzip-inflate.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , bytestring-ft
+    , higher-order-open-union
+    , primitive
+    , tools-yj
+    , try-zlib-core
+    , try-zlib-library
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
+    , yaftee-conduit-bytestring
+  default-language: Haskell2010
+
 executable try-zlib-library-exe
   main-is: Main.hs
   other-modules:
