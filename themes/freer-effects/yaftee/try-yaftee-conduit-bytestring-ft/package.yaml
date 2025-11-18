@@ -27,7 +27,7 @@ dependencies:
 - yaftee-basic-monads
 - yaftee-conduit
 - higher-order-open-union
-- try-bytestring-ft
+- bytestring-ft
 
 ghc-options:
 - -Wall

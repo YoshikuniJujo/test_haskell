@@ -54,38 +54,19 @@ packages:
   original:
     hackage: ftcqueue-0.1.0.1
 - completed:
-    commit: 099225f6b31b89b62720eb5b14a28d7e454b3940
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-bitarray-bs
+    hackage: bytestring-ft-0.1.0.0@sha256:b20eeafdedbe1f031bef47e721398d4b340140046dae09ac68622ea5e8e895a5,2083
     pantry-tree:
-      sha256: be6284eeedbd5121a39120a9df9d4911d67bc2f70559d555863cc57ed7c7ada4
-      size: 733
-    subdir: themes/freer-effects/yaftee/try-bitarray-bs
-    version: 0.1.0.1
+      sha256: 8323140812e8ad3a40258a4e56599bc1244893ea55f45103c3887454f59db932
+      size: 705
   original:
-    commit: 099225f6b31b89b62720eb5b14a28d7e454b3940
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-bitarray-bs
+    hackage: bytestring-ft-0.1.0.0
 - completed:
-    commit: 099225f6b31b89b62720eb5b14a28d7e454b3940
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-bytestring-ft
+    hackage: bitarray-bs-0.1.0.0@sha256:381c747669e6eee3950d2f091432f02ce5be531c155cbae83a7e12ed2487be98,1884
     pantry-tree:
-      sha256: d0daa45f57545290717d7a4fd9cb11dcf7ff143b35ca2de35c19a793065ef7f2
-      size: 970
-    subdir: packages/bytestring/try-bytestring-ft
-    version: 0.1.0.1
+      sha256: a18ab03c2e292c193eb3501e39c95849274695fd90c9d801b4b442aa34022876
+      size: 522
   original:
-    commit: 099225f6b31b89b62720eb5b14a28d7e454b3940
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: packages/bytestring/try-bytestring-ft
-- completed:
-    hackage: tools-yj-0.1.0.45@sha256:e342ee6fde63d5a3dc05405c7cca61e36eea2315cba1706cbd2bc8c65995db88,2545
-    pantry-tree:
-      sha256: 2ab6e9e8288431766b0b2bddddbda28290dbb94535fe135e0cb3b72cde74945f
-      size: 1835
-  original:
-    hackage: tools-yj-0.1.0.45
+    hackage: bitarray-bs-0.1.0.0
 snapshots:
 - completed:
     sha256: a73345e0a5bb1d8ef87ba9dafab9f9c167ee1a64d2ab42ea98cb2493cad177e3
