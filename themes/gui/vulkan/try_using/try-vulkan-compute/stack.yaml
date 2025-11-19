@@ -48,10 +48,11 @@ extra-deps:
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - gpu-vulkan-0.1.0.166
-- gpu-vulkan-middle-0.1.0.72
-- gpu-vulkan-core-0.1.0.20
+- gpu-vulkan-middle-0.1.0.78
+- gpu-vulkan-core-0.1.0.21
 - language-spir-v-0.1.0.3
 - shaderc-0.1.0.6
+- tools-yj-0.1.0.45
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
