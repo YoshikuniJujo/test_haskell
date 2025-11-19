@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-11-15
+snapshot: nightly-2025-11-19
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -48,11 +48,7 @@ extra-deps:
   - higher-order-open-union-0.1.0.1
   - freer-base-classes-0.1.0.0
   - ftcqueue-0.1.0.1
-  - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: cf35edd6ad8862a291b93495091e644feab7a068
-    subdirs:
-      - themes/freer-effects/yaftee/try-bitarray-bs
-  - tools-yj-0.1.0.45
+  - bitarray-bs-0.1.0.0
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
