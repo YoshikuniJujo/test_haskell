@@ -33,6 +33,13 @@ packages:
   original:
     hackage: yaftee-conduit-0.1.0.0
 - completed:
+    hackage: yaftee-conduit-mono-traversable-0.1.0.0@sha256:4283651c59c35db6a1061e2bfa89c606b8782a7bff3f134f18f4698d2e4204b6,2428
+    pantry-tree:
+      sha256: 99cad728e5453b237c6fe5edf8823a89dc0aaa39a34da1430ecb33b927c572b8
+      size: 509
+  original:
+    hackage: yaftee-conduit-mono-traversable-0.1.0.0
+- completed:
     hackage: higher-order-freer-monad-0.1.0.0@sha256:cb577292506e6f906528813f339966874c7c7a23a76cc4b5eabdd600f2843c2d,2038
     pantry-tree:
       sha256: a5733f3e7b315da2f2f898201da69dee0fdbe10a37d0686a4bcc381f13bf869a
@@ -88,19 +95,6 @@ packages:
       size: 804
   original:
     hackage: zlib-core-0.1.0.1
-- completed:
-    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-yaftee-conduit-mono-traversable
-    pantry-tree:
-      sha256: 5f6b3dbefed9280e09984b22000c1dd81cf94775374d53ce6b234d2e9c2f3ec1
-      size: 722
-    subdir: themes/freer-effects/yaftee/try-yaftee-conduit-mono-traversable
-    version: 0.1.0.0
-  original:
-    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-yaftee-conduit-mono-traversable
 - completed:
     commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
     git: https://github.com/YoshikuniJujo/test_haskell
