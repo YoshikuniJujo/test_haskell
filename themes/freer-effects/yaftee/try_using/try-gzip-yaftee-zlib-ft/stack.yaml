@@ -41,6 +41,7 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 
 extra-deps:
+  - zlib-yaftee-0.1.0.0
   - yaftee-0.1.0.0
   - yaftee-basic-monads-0.1.0.0
   - yaftee-conduit-0.1.0.0
@@ -57,7 +58,6 @@ extra-deps:
     subdirs:
       - themes/freer-effects/yaftee/try-yaftee-conduit-mono-traversable
       - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
-      - themes/freer-effects/yaftee/try_using/try-zlib-library
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

@@ -41,7 +41,7 @@ dependencies:
 - try-yaftee-conduit-bytestring-ft
 - higher-order-open-union
 - bytestring-ft
-- try-zlib-library
+- zlib-yaftee
 - zlib-core
 
 ghc-options:
