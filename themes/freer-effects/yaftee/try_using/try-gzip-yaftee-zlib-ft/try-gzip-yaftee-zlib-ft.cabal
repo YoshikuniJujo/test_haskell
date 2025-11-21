@@ -85,7 +85,6 @@ library
     , mono-traversable
     , primitive
     , tools-yj
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -93,6 +92,7 @@ library
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -117,7 +117,6 @@ executable try-all-red
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -125,6 +124,7 @@ executable try-all-red
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -149,7 +149,6 @@ executable try-apng
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -157,6 +156,7 @@ executable try-apng
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -181,7 +181,6 @@ executable try-apng-codec
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -189,6 +188,7 @@ executable try-apng-codec
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -213,7 +213,6 @@ executable try-apng-gray-blink
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -221,6 +220,7 @@ executable try-apng-gray-blink
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -245,7 +245,6 @@ executable try-apng-lifegame
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -253,6 +252,7 @@ executable try-apng-lifegame
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -277,7 +277,6 @@ executable try-apng-lifegame-gray1
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -285,6 +284,7 @@ executable try-apng-lifegame-gray1
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -309,7 +309,6 @@ executable try-apng-lifegame-gray1-nointerlace
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -317,6 +316,7 @@ executable try-apng-lifegame-gray1-nointerlace
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -341,7 +341,6 @@ executable try-apng-lifegame-with-ratio
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -349,6 +348,7 @@ executable try-apng-lifegame-with-ratio
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -373,7 +373,6 @@ executable try-apng-rgba-to-gray
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -381,6 +380,7 @@ executable try-apng-rgba-to-gray
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -405,7 +405,6 @@ executable try-apng-to-png
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -413,6 +412,7 @@ executable try-apng-to-png
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -437,7 +437,6 @@ executable try-apng-to-pngs
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -445,6 +444,7 @@ executable try-apng-to-pngs
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -469,7 +469,6 @@ executable try-decod-gray
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -477,6 +476,7 @@ executable try-decod-gray
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -501,7 +501,6 @@ executable try-decod-lifegame-gray1
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -509,6 +508,7 @@ executable try-decod-lifegame-gray1
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -533,7 +533,6 @@ executable try-gray-alpha
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -541,6 +540,7 @@ executable try-gray-alpha
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -565,7 +565,6 @@ executable try-gzip-deflate
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -573,6 +572,7 @@ executable try-gzip-deflate
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -601,7 +601,6 @@ executable try-gzip-yaftee-zlib-ft-exe
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -609,6 +608,7 @@ executable try-gzip-yaftee-zlib-ft-exe
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -633,7 +633,6 @@ executable try-lifegame-ng
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -641,6 +640,7 @@ executable try-lifegame-ng
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -665,7 +665,6 @@ executable try-lifegame-ng-remove-glider
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -673,6 +672,7 @@ executable try-lifegame-ng-remove-glider
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -697,7 +697,6 @@ executable try-palette
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -705,6 +704,7 @@ executable try-palette
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -729,7 +729,6 @@ executable try-png-decode
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -737,6 +736,7 @@ executable try-png-decode
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -761,7 +761,6 @@ executable try-png-glider
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -769,6 +768,7 @@ executable try-png-glider
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -793,7 +793,6 @@ executable try-png-rgba-to-gray
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -801,6 +800,7 @@ executable try-png-rgba-to-gray
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -825,7 +825,6 @@ executable try-png-rgba-to-gray1
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -833,6 +832,7 @@ executable try-png-rgba-to-gray1
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -857,7 +857,6 @@ executable try-read-board
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -865,6 +864,7 @@ executable try-read-board
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -889,7 +889,6 @@ executable try-read-chunk
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -897,6 +896,7 @@ executable try-read-chunk
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -921,7 +921,6 @@ executable try-readchunk-ng
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -929,6 +928,7 @@ executable try-readchunk-ng
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -953,7 +953,6 @@ executable try-readchunk-ng-black-on-white
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -961,6 +960,7 @@ executable try-readchunk-ng-black-on-white
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -985,7 +985,6 @@ executable try-time-gradation
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -993,6 +992,7 @@ executable try-time-gradation
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -1017,7 +1017,6 @@ executable try-zlib-deflate
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1025,6 +1024,7 @@ executable try-zlib-deflate
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -1054,7 +1054,6 @@ test-suite try-gzip-yaftee-zlib-ft-test
     , primitive
     , tools-yj
     , try-gzip-yaftee-zlib-ft
-    , try-yaftee-conduit-bytestring-ft
     , typelevel-tools-yj
     , union-color
     , vector
@@ -1062,6 +1061,7 @@ test-suite try-gzip-yaftee-zlib-ft-test
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee

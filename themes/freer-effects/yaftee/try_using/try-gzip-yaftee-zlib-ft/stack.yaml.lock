@@ -40,6 +40,13 @@ packages:
   original:
     hackage: yaftee-conduit-mono-traversable-0.1.0.0
 - completed:
+    hackage: yaftee-conduit-bytestring-ft-0.1.0.0@sha256:181184f321ea2bb2a79484f8fd90b77594a05bbc4019f3ffd5b2675fa8daadc5,2489
+    pantry-tree:
+      sha256: fa8d87e31777138acbd776e3df6c8d2efc137ff865d5aa840e5f80dbdca1eed9
+      size: 527
+  original:
+    hackage: yaftee-conduit-bytestring-ft-0.1.0.0
+- completed:
     hackage: higher-order-freer-monad-0.1.0.0@sha256:cb577292506e6f906528813f339966874c7c7a23a76cc4b5eabdd600f2843c2d,2038
     pantry-tree:
       sha256: a5733f3e7b315da2f2f898201da69dee0fdbe10a37d0686a4bcc381f13bf869a
@@ -95,22 +102,9 @@ packages:
       size: 804
   original:
     hackage: zlib-core-0.1.0.1
-- completed:
-    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-yaftee-conduit-bytestring-ft
-    pantry-tree:
-      sha256: cbd0a1003b501fe4fddb8934ac076dc60e8ada5e65ba1a2de9a57004a35de715
-      size: 740
-    subdir: themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
-    version: 0.1.0.0
-  original:
-    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
 snapshots:
 - completed:
-    sha256: a73345e0a5bb1d8ef87ba9dafab9f9c167ee1a64d2ab42ea98cb2493cad177e3
-    size: 705602
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/15.yaml
-  original: nightly-2025-11-15
+    sha256: 2dead96d1a0217c9c8f84bdb6c694bfc7542ccc5a09bbc8f648ebc1cdd9b6d2f
+    size: 705813
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/19.yaml
+  original: nightly-2025-11-19

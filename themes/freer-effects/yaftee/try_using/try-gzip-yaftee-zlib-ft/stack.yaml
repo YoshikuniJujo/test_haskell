@@ -9,7 +9,7 @@
 # to be used for project dependencies. For example:
 #
 # snapshot: lts-23.14
-# snapshot: nightly-2025-02-15
+# snapshot: nightly-2025-02-21
 # snapshot: ghc-9.8.4
 #
 # The location of a snapshot can be provided as a file or url. Stack assumes
@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-11-15
+snapshot: nightly-2025-11-19
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -46,6 +46,7 @@ extra-deps:
   - yaftee-basic-monads-0.1.0.0
   - yaftee-conduit-0.1.0.0
   - yaftee-conduit-mono-traversable-0.1.0.0
+  - yaftee-conduit-bytestring-ft-0.1.0.0
   - higher-order-freer-monad-0.1.0.0
   - higher-order-open-union-0.1.0.1
   - freer-base-classes-0.1.0.0
@@ -54,10 +55,6 @@ extra-deps:
   - yaftee-conduit-bytestring-0.1.0.1
   - bytestring-ft-0.1.0.0
   - zlib-core-0.1.0.1
-  - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: a6b170ed127824d230501ad36eb6d7aa68327d6a
-    subdirs:
-      - themes/freer-effects/yaftee/try-yaftee-conduit-bytestring-ft
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

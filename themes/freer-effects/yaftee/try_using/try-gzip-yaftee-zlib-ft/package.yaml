@@ -38,7 +38,7 @@ dependencies:
 - yaftee-conduit
 - yaftee-conduit-mono-traversable
 - yaftee-conduit-bytestring
-- try-yaftee-conduit-bytestring-ft
+- yaftee-conduit-bytestring-ft
 - higher-order-open-union
 - bytestring-ft
 - zlib-yaftee
