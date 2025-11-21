@@ -1,0 +1,18 @@
+id:		n
+ratio:		10
+width:		50
+height:		50
+x-offset:	20
+y-offset:	20
+first-frame:	0
+frame-number:	300
+delay:		1%7
+shape:
+*......*
+**.....*
+*.*....*
+*..*...*
+*...*..*
+*....*.*
+*.....**
+*......*
