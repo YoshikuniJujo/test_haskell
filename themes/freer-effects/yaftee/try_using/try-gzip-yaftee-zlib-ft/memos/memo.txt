@@ -1,0 +1,9 @@
+* 各世代を表すPNG画像を生成
+	+ トーラス			try-lifegame-ng
+	+ はみ出すグライダーを消す	try-lifegame-ng-remove-glider
+* 換大した画像を生成			try-decod-lifegame-gray1
+* APNGを生成
+	+ サイズそのまま
+		- 黒地に白		try-readchunk-ng
+		- 白地に黒		try-readchunk-ng-black-on-white
+	+ サイズを拡大する		try-apng-lifegame-with-ratio
