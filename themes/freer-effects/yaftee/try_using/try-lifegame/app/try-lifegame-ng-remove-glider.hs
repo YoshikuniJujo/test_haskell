@@ -11,7 +11,6 @@ import System.Environment
 import System.Directory
 import System.FilePath
 
-import Data.Image.Gray1 qualified as Img
 import System.File.Png.Gray1.NoInterlace qualified as Png
 import Lifegame.Words qualified as Lg
 

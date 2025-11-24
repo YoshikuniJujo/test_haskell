@@ -28,7 +28,9 @@ library
       Control.Monad.Yaftee.Pipe.Apng.Decode
       Control.Monad.Yaftee.Pipe.Buffer
       Control.Monad.Yaftee.Pipe.BytesCrc32
+      Control.Monad.Yaftee.Pipe.Png.Decode
       Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
+      Control.Monad.Yaftee.Pipe.Png.Decode.Header
       Control.Monad.Yaftee.Pipe.Png.Decode.Steps
       Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter
       Control.Monad.Yaftee.Pipe.Png.Encode
@@ -47,7 +49,9 @@ library
       FctlImageBody.Gray1Words
       Lib
       Lifegame.Words
+      PngToImageGray1
       System.File.Png.Gray1.NoInterlace
+      System.File.Png.Lifegame
       Tools
   other-modules:
       Paths_try_lifegame
@@ -75,6 +79,38 @@ library
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
+    , yaftee-conduit-mono-traversable
+    , zlib-core
+    , zlib-yaftee
+  default-language: Haskell2010
+
+executable try-decod-lifegame-gray1
+  main-is: try-decod-lifegame-gray1.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , bytestring-ft
+    , containers
+    , deepseq
+    , directory
+    , filepath
+    , higher-order-open-union
+    , mono-traversable
+    , primitive
+    , tools-yj
+    , try-lifegame
+    , typelevel-tools-yj
+    , union-color
+    , vector
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
+    , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -105,6 +141,7 @@ executable try-lifegame-exe
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -135,6 +172,7 @@ executable try-lifegame-ng
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -165,6 +203,7 @@ executable try-lifegame-ng-remove-glider
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee
@@ -200,6 +239,7 @@ test-suite try-lifegame-test
     , yaftee-basic-monads
     , yaftee-conduit
     , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
     , yaftee-conduit-mono-traversable
     , zlib-core
     , zlib-yaftee

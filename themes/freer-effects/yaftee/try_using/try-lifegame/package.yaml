@@ -35,6 +35,7 @@ dependencies:
 - yaftee-conduit
 - yaftee-conduit-mono-traversable
 - yaftee-conduit-bytestring
+- yaftee-conduit-bytestring-ft
 - higher-order-open-union
 - bytestring-ft
 - zlib-core
@@ -79,6 +80,16 @@ executables:
     - try-lifegame
   try-lifegame-ng-remove-glider:
     main:                try-lifegame-ng-remove-glider.hs
+    source-dirs:         app
+    other-modules:       []
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-lifegame
+  try-decod-lifegame-gray1:
+    main:                try-decod-lifegame-gray1.hs
     source-dirs:         app
     other-modules:       []
     ghc-options:
