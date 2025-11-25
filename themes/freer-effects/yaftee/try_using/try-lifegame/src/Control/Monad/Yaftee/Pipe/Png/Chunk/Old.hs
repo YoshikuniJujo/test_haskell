@@ -22,8 +22,7 @@ import Data.Word.Word8 qualified as Word8
 import Data.Word.Crc32 qualified as Crc32
 import Data.Png qualified as Png
 
-data C
-	= Begin BSF.ByteString
+data C	= Begin BSF.ByteString
 	| Body BSF.ByteString | End deriving Show
 
 decode :: forall nm -> (

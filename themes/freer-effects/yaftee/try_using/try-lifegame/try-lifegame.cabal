@@ -120,6 +120,37 @@ executable try-apng-lifegame-with-ratio
     , zlib-yaftee
   default-language: Haskell2010
 
+executable try-chunk
+  main-is: try-chunk.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , bytestring-ft
+    , containers
+    , deepseq
+    , directory
+    , filepath
+    , higher-order-open-union
+    , mono-traversable
+    , primitive
+    , tools-yj
+    , try-lifegame
+    , typelevel-tools-yj
+    , union-color
+    , vector
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
+    , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
+    , yaftee-conduit-mono-traversable
+    , zlib-core
+    , zlib-yaftee
+  default-language: Haskell2010
+
 executable try-decod-lifegame-gray1
   main-is: try-decod-lifegame-gray1.hs
   hs-source-dirs:
