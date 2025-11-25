@@ -22,13 +22,13 @@ import Data.Word.Word8 qualified as Word8
 import Data.Word.Crc32 qualified as Crc32
 import Data.Png qualified as Png
 
-data Chunk
-	= ChunkBegin BSF.ByteString
-	| ChunkBody BSF.ByteString | ChunkEnd deriving Show
+data C
+	= Begin BSF.ByteString
+	| Body BSF.ByteString | End deriving Show
 
 decode :: forall nm -> (
 	U.Member Pipe.P es, Bytes.BytesMembers nm es,
-	U.Member (Except.E String) es ) => Eff.E es BSF.ByteString Chunk ()
+	U.Member (Except.E String) es ) => Eff.E es BSF.ByteString C ()
 decode nm = do
 	fhdr <- Bytes.readBytes nm 8
 	when (fhdr /= Png.fileHeader) $ Except.throw @String "file header error"
@@ -37,18 +37,18 @@ decode nm = do
 decode1 :: forall nm -> (
 	U.Member Pipe.P es, Bytes.BytesMembers nm es,
 	U.Member (Except.E String) es ) =>
-	Int -> Eff.E es BSF.ByteString Chunk Bool
+	Int -> Eff.E es BSF.ByteString C Bool
 decode1 nm m = do
 	n <- Word8.toBitsBE <$> Bytes.readBytes nm 4
 	Bytes.resetCrc32 nm
 	cnm <- Bytes.readBytes nm 4
-	Pipe.yield $ ChunkBegin cnm
-	for_ (split m n) \n' -> Pipe.yield . ChunkBody =<< Bytes.readBytes nm n'
+	Pipe.yield $ Begin cnm
+	for_ (split m n) \n' -> Pipe.yield . Body =<< Bytes.readBytes nm n'
 	Bytes.compCrc32 nm
 	Bytes.Crc32 crc1 <- State.getN nm
 	crc0 <- Crc32.fromWord . Word8.toBitsBE <$> Bytes.readBytes nm 4
 	when (crc1 /= crc0) $ Except.throw @String "decode1: CRC32 error"
-	Pipe.yield ChunkEnd
+	Pipe.yield End
 	pure $ cnm /= "IEND"
 	where
 	split n = fix \go -> \case

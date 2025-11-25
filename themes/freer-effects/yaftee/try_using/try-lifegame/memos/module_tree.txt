@@ -13,9 +13,6 @@ Control.Monad.Yaftee.Pipe
 				+ Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter
 			+ Control.Monad.Yaftee.Pipe.Png.Encode
 				+ Control.Monad.Yaftee.Pipe.Png.Encode.Chunk
-	+ Control.Monad.Yaftee.Pipe.PngNg
-		+ Control.Monad.Yaftee.Pipe.PngNg.Decode
-			+ Control.Monad.Yaftee.Pipe.PngNg.Decode.Chunk
 	+ Data
 		+ Data.Adam7
 		+ Data.Apng

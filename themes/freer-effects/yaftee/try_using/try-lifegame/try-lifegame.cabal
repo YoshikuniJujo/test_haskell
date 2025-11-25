@@ -37,7 +37,6 @@ library
       Control.Monad.Yaftee.Pipe.Png.Encode
       Control.Monad.Yaftee.Pipe.Png.Encode.Chunk
       Control.Monad.Yaftee.Pipe.Png.Palette
-      Control.Monad.Yaftee.Pipe.PngNg.Decode.Chunk
       Data.Adam7
       Data.Apng
       Data.Image.Gray
