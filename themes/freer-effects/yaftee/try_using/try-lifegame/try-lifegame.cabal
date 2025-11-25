@@ -34,7 +34,9 @@ library
       Control.Monad.Yaftee.Pipe.Png.Decode.Steps
       Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter
       Control.Monad.Yaftee.Pipe.Png.Encode
+      Control.Monad.Yaftee.Pipe.Png.Encode.Chunk
       Control.Monad.Yaftee.Pipe.Png.Palette
+      Control.Monad.Yaftee.Pipe.PngNg.Decode.Chunk
       Data.Adam7
       Data.Apng
       Data.Image.Gray
@@ -45,11 +47,13 @@ library
       Data.Png.Filters
       Data.Png.Header
       Data.Png.Header.Data
+      FctlImage
       FctlImage.Gray1
       FctlImageBody.Gray1Words
       Lib
       Lifegame.Words
       PngToImageGray1
+      System.File.Apng.Gray1.NoInterlace
       System.File.Png.Gray1.NoInterlace
       System.File.Png.Lifegame
       Tools
@@ -72,6 +76,37 @@ library
     , mono-traversable
     , primitive
     , tools-yj
+    , typelevel-tools-yj
+    , union-color
+    , vector
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
+    , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
+    , yaftee-conduit-mono-traversable
+    , zlib-core
+    , zlib-yaftee
+  default-language: Haskell2010
+
+executable try-apng-lifegame-with-ratio
+  main-is: try-apng-lifegame-with-ratio.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , bytestring-ft
+    , containers
+    , deepseq
+    , directory
+    , filepath
+    , higher-order-open-union
+    , mono-traversable
+    , primitive
+    , tools-yj
+    , try-lifegame
     , typelevel-tools-yj
     , union-color
     , vector
