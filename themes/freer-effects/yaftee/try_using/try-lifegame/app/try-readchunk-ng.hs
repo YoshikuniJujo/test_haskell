@@ -16,8 +16,7 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.BytesCrc32 qualified as Bytes
-import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as Chunk
--- import Control.Monad.Yaftee.Pipe.PngNg.Decode.Chunk
+import Control.Monad.Yaftee.Pipe.Png.Chunk.Old qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Png.Encode.Chunk qualified as EnChunk
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except

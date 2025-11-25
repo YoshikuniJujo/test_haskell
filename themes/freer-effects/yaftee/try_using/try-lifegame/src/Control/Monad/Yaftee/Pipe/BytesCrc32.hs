@@ -51,7 +51,6 @@ readBytes nm n = State.getsN nm (BSF.splitAt' n . unSequence) >>= \case
 		State.putN nm (Sequence d)
 
 flush :: forall (nm :: Symbol) -> (
---	U.Member (State.Named nm BSF.ByteString) es,
 	U.Member (State.Named nm Sequence) es ) =>
 	Eff.E es i o BSF.ByteString
 flush nm = do
