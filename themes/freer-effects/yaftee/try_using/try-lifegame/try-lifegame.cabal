@@ -244,6 +244,68 @@ executable try-lifegame-ng-remove-glider
     , zlib-yaftee
   default-language: Haskell2010
 
+executable try-readchunk-ng
+  main-is: try-readchunk-ng.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , bytestring-ft
+    , containers
+    , deepseq
+    , directory
+    , filepath
+    , higher-order-open-union
+    , mono-traversable
+    , primitive
+    , tools-yj
+    , try-lifegame
+    , typelevel-tools-yj
+    , union-color
+    , vector
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
+    , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
+    , yaftee-conduit-mono-traversable
+    , zlib-core
+    , zlib-yaftee
+  default-language: Haskell2010
+
+executable try-readchunk-ng-black-on-white
+  main-is: try-readchunk-ng-black-on-white.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , bytestring-ft
+    , containers
+    , deepseq
+    , directory
+    , filepath
+    , higher-order-open-union
+    , mono-traversable
+    , primitive
+    , tools-yj
+    , try-lifegame
+    , typelevel-tools-yj
+    , union-color
+    , vector
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
+    , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
+    , yaftee-conduit-mono-traversable
+    , zlib-core
+    , zlib-yaftee
+  default-language: Haskell2010
+
 test-suite try-lifegame-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
