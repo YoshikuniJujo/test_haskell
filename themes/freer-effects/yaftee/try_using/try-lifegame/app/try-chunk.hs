@@ -39,6 +39,8 @@ main = do
 
 encodeRun_ :: forall nm es i o r .
 	F.Loose (U.U es) =>
-	Eff.E (St.Named nm Crc32.C ': OnDemand.States nm `Append` es) i o r ->
+	Eff.E (EncodeStates nm `Append` es) i o r ->
 	Eff.E es i o ()
 encodeRun_ = void . OnDemand.run @nm . PipeCrc32.run @nm
+
+type EncodeStates nm = St.Named nm Crc32.C ': OnDemand.States nm
