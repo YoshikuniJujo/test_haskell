@@ -27,5 +27,5 @@ main = do
 	ho <- openFile fpo WriteMode
 	void . Eff.runM . Except.run @String . Fail.run . OnDemand.run @"foo"
 		. PipeCrc32.run @"foo" . PipeCrc32.run @"bar" . Pipe.run
-		$ hDecode "foo" h Pipe.=$= hEncode "bar" ho
+		$ hDecode "foo" h 32 50 Pipe.=$= hEncode "bar" ho
 	hClose ho; hClose h

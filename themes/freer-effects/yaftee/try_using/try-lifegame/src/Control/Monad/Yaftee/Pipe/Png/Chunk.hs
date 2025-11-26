@@ -50,22 +50,22 @@ import System.IO
 decode :: forall nm -> (
 	U.Member Pipe.P es, OnDemand.Members nm es,
 	U.Member (State.Named nm Crc32.C) es, U.Member (Except.E String) es ) =>
-	Eff.E es BSF.ByteString C ()
-decode nm = void $ OnDemand.onDemand nm Pipe.=$= PipeCrc32.crc32 nm Pipe.=$= do
+	Int -> Eff.E es BSF.ByteString C ()
+decode nm n = void $ OnDemand.onDemand nm Pipe.=$= PipeCrc32.crc32 nm Pipe.=$= do
 	State.putN nm $ OnDemand.RequestBytes 8
 	fh <- Pipe.await
 	when (fh /= fileHeader) $ Except.throw @String "Not PNG file"
-	chunks nm 50
+	chunks nm n
 
 hDecode :: forall nm -> (
 	U.Member Pipe.P es, OnDemand.Members nm es,
 	U.Member (State.Named nm Crc32.C) es, U.Member (Except.E String) es,
 	U.Base IO.I es ) =>
-	Handle -> Eff.E es BSF.ByteString C ()
-hDecode nm h = void $
-	PipeBS.hGet 32 h Pipe.=$=
+	Handle -> Int -> Int -> Eff.E es BSF.ByteString C ()
+hDecode nm h n n' = void $
+	PipeBS.hGet n h Pipe.=$=
 	PipeT.convert BSF.fromStrict Pipe.=$=
-	decode nm
+	decode nm n'
 
 chunks :: forall nm -> (
 	U.Member Pipe.P es, OnDemand.Members nm es,
