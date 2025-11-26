@@ -54,7 +54,7 @@ chunk1 nm d = do
 	PipeCrc32.reset nm
 	State.putN nm $ OnDemand.RequestBytes 4
 	cn <- Pipe.await
-	Pipe.yield $ Begin Nothing cn
+	Pipe.yield $ Begin n cn
 	for_ (split d n) \n' -> do
 		State.putN nm $ OnDemand.RequestBytes n'
 		Pipe.yield . Body =<< Pipe.await
@@ -70,7 +70,7 @@ chunk1 nm d = do
 		0 -> []
 		m | n < m -> n : go (m - n) | otherwise -> [m]
 
-data C	= Begin (Maybe Int) BSF.ByteString
+data C	= Begin Int BSF.ByteString
 	| Body BSF.ByteString | End deriving Show
 
 fileHeader :: BSF.ByteString
