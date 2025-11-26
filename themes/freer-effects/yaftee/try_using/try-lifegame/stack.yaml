@@ -45,7 +45,7 @@ extra-deps:
   - yaftee-0.1.0.0
   - yaftee-basic-monads-0.1.0.0
   - yaftee-conduit-0.1.0.0
-  - yaftee-conduit-mono-traversable-0.1.0.0
+  - yaftee-conduit-mono-traversable-0.1.0.1
   - yaftee-conduit-bytestring-0.1.0.1
   - yaftee-conduit-bytestring-ft-0.1.0.0
   - higher-order-freer-monad-0.1.0.0

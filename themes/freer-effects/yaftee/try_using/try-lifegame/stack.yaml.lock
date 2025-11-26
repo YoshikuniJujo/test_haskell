@@ -33,12 +33,12 @@ packages:
   original:
     hackage: yaftee-conduit-0.1.0.0
 - completed:
-    hackage: yaftee-conduit-mono-traversable-0.1.0.0@sha256:4283651c59c35db6a1061e2bfa89c606b8782a7bff3f134f18f4698d2e4204b6,2428
+    hackage: yaftee-conduit-mono-traversable-0.1.0.1@sha256:a700f88e67b862c2335dbe1397134b2136481d9e04e3b6da8963911229399349,2428
     pantry-tree:
-      sha256: 99cad728e5453b237c6fe5edf8823a89dc0aaa39a34da1430ecb33b927c572b8
+      sha256: b2cd19a3af9e49499c8702ad9678d901eb6b008be97e834213cb6798b188171a
       size: 509
   original:
-    hackage: yaftee-conduit-mono-traversable-0.1.0.0
+    hackage: yaftee-conduit-mono-traversable-0.1.0.1
 - completed:
     hackage: yaftee-conduit-bytestring-0.1.0.1@sha256:c9c63711bdb6b943c5f61bb840f78de3a72cd309a1dac84525cdd90f0862ed0a,3035
     pantry-tree:

@@ -2,29 +2,50 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.Png.Chunk (
-	decode, C(..)
+
+	-- * DATA TYPE
+
+	C(..),
+
+	-- * DECODE
+
+	decode, hDecode,
+
+	-- * ENCODE
+
+	encode, hEncode,
+
 	) where
 
 import Control.Monad
 import Control.Monad.Fix
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
+import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
+import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand
 	qualified as OnDemand
-import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.Crc32
+-- import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.Crc32
+import Control.Monad.Yaftee.Pipe.MonoTraversable.Crc32
 	qualified as PipeCrc32
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
+import Control.Monad.Yaftee.Fail qualified as Fail
+import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Foldable
+import Data.MonoTraversable
 import Data.Word
 import Data.Word.Word8 qualified as Word8
 import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree qualified as BSF
+import Data.ByteString.FingerTree.Bits qualified as BSF
+import System.IO	
 
 decode :: forall nm -> (
 	U.Member Pipe.P es, OnDemand.Members nm es,
@@ -35,6 +56,16 @@ decode nm = void $ OnDemand.onDemand nm Pipe.=$= PipeCrc32.crc32 nm Pipe.=$= do
 	fh <- Pipe.await
 	when (fh /= fileHeader) $ Except.throw @String "Not PNG file"
 	chunks nm 50
+
+hDecode :: forall nm -> (
+	U.Member Pipe.P es, OnDemand.Members nm es,
+	U.Member (State.Named nm Crc32.C) es, U.Member (Except.E String) es,
+	U.Base IO.I es ) =>
+	Handle -> Eff.E es BSF.ByteString C ()
+hDecode nm h = void $
+	PipeBS.hGet 32 h Pipe.=$=
+	PipeT.convert BSF.fromStrict Pipe.=$=
+	decode nm
 
 chunks :: forall nm -> (
 	U.Member Pipe.P es, OnDemand.Members nm es,
@@ -75,3 +106,58 @@ data C	= Begin Int BSF.ByteString
 
 fileHeader :: BSF.ByteString
 fileHeader = "\137PNG\r\n\SUB\n"
+
+type instance Element C = Word8
+
+instance MonoFoldable C where
+	ofoldMap f = \case
+		Begin _ bs -> ofoldMap f bs
+		Body bs -> ofoldMap f bs; End -> mempty
+	ofoldr o v = \case
+		Begin _ bs -> ofoldr o v bs
+		Body bs -> ofoldr o v bs; End -> v
+	ofoldl' o v = \case
+		Begin _ bs -> ofoldl' o v bs
+		Body bs -> ofoldl' o v bs; End -> v
+	ofoldr1Ex o = \case
+		Begin _ bs -> ofoldr1Ex o bs
+		Body bs -> ofoldr1Ex o bs; End -> error "bad"
+	ofoldl1Ex' o = \case
+		Begin _ bs -> ofoldl1Ex' o bs
+		Body bs -> ofoldl1Ex' o bs; End -> error "bad"
+
+encode :: forall nm -> (
+	U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) =>
+	Eff.E es C BSF.ByteString ()
+encode nm = void $
+	PipeCrc32.crc32 nm
+	Pipe.=$= do
+		Pipe.yield fileHeader
+		fix \go -> (`when` go) =<< encodeChunk1 nm
+
+hEncode :: forall nm -> (
+	U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es,
+	U.Member (Except.E String) es, U.Member Fail.F es, U.Base IO.I es ) =>
+	Handle -> Eff.E es C o ()
+hEncode nm ho = void $ encode nm
+	Pipe.=$= PipeT.convert BSF.toStrict
+	Pipe.=$= PipeBS.hPutStr ho
+
+encodeChunk1 :: forall nm -> (
+	U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) =>
+	Eff.E es C BSF.ByteString Bool
+encodeChunk1 nm = do
+	PipeCrc32.reset nm
+	Begin n cn <- Pipe.await
+	Pipe.yield . BSF.fromBitsBE' @Word32 $ fromIntegral n
+	Pipe.yield cn
+	fix \go -> Pipe.await >>= \case
+		Body bd -> Pipe.yield bd >> go
+		End -> pure ()
+		_ -> Except.throw @String "bad"
+	PipeCrc32.complement nm
+	c <- State.getN @Crc32.C nm
+	Pipe.yield . BSF.fromBitsBE' $ Crc32.toWord c
+	pure $ cn /= "IEND"
