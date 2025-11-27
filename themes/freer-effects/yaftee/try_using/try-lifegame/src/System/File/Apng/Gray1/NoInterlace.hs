@@ -60,6 +60,9 @@ import Control.Monad.Yaftee.Pipe.Png.Encode.Chunk
 
 import Data.Apng
 
+import Data.Word.Crc32 qualified as Crc32
+import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as ChunkNew
+
 writeApngGray1' :: FilePath -> Header.Header -> Int -> Word32 -> [(Gray.G, Ratio Word16)] -> IO ()
 writeApngGray1' fp hdr fn np = writeApngGray1 fp hdr fn np . FctlImage.fromImagesGray
 
@@ -126,7 +129,7 @@ hWritePngGray1 ::
 	Handle -> Header.Header -> Int -> Word32 -> ([Fctl], [Gray.G]) ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
 hWritePngGray1 ho hdr fn np (fctls, imgs) ibe obe = do
-	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+	void . Eff.runM . ChunkNew.encodeRun_ @"foo" . Except.run @String . Except.run @Zlib.ReturnCode
 		. Fail.run
 		. Buffer.run @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
 		. Pipe.run $ hWritePngPipeGray1 ho hdr fn np fctls imgs ibe obe
@@ -135,13 +138,14 @@ hWritePngGray1' ::
 	Handle -> Header.Header -> Int -> Word32 -> ([Fctl], [Gray1.G]) ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
 hWritePngGray1' ho hdr fn np (fctls, imgs) ibe obe = do
-	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+	void . Eff.runM . ChunkNew.encodeRun_ @"foo" . Except.run @String . Except.run @Zlib.ReturnCode
 		. Fail.run
 		. Buffer.run @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
 		. Pipe.run $ hWritePngPipeGray1' ho hdr fn np fctls imgs ibe obe
 
 hWritePngPipeGray1 :: (
 	U.Member Pipe.P es,
+	U.Member (State.Named "foo" Crc32.C) es,
 	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
@@ -159,6 +163,7 @@ hWritePngPipeGray1 ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrLn
 
 hWritePngPipeGray1' :: (
 	U.Member Pipe.P es,
+	U.Member (State.Named "foo" Crc32.C) es,
 	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
@@ -216,6 +221,7 @@ fromGrayImage1' img = case Gray1.unconsRow img of
 encodeApngGray1 :: (
 	Fctlable a, Encode.Datable a,
 	U.Member Pipe.P es,
+	U.Member (State.Named "foo" Crc32.C) es,
 	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
 	U.Member (Except.E String) es,
@@ -240,6 +246,7 @@ encodeRawCalcGray1 :: forall nm m -> (
 	Fctlable a, Encode.Datable a,
 	PrimBase m,
 	U.Member Pipe.P es,
+	U.Member (State.Named "foo" Crc32.C) es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
 	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
@@ -264,7 +271,9 @@ encodeRawCalcGray1 nm m hdr fn np ((w0, h0) : sz) mplt ibe obe = void $
 
 makeChunks :: (
 	Integral a, Num b,
-	U.Member Pipe.P es
+	U.Member Pipe.P es,
+	U.Member (State.Named "foo" Crc32.C) es,
+	U.Member (Except.E String) es, U.Member Fail.F es
 	) =>
 	Header.Header -> a -> Word32 -> Maybe Palette.Palette ->
 	Eff.E es (b -> (Chunk, b)) BSF.ByteString ()
@@ -300,7 +309,7 @@ makeChunks hdr fn np mplt = void $ do
 		Pipe.yield \sn -> (
 			Chunk { chunkName = "IEND", chunkBody = "" },
 			sn )
-	Pipe.=$= chunks 0
+	Pipe.=$= chunksSt 0
 
 pipeDat :: forall nm m -> (
 	Encode.Datable a,
