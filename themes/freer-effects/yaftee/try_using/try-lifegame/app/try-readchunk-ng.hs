@@ -75,58 +75,7 @@ main = do
 		. void $ ((\fp' -> Eff.effBase (openFile fp' ReadMode) >>= \h -> PipeBS.hGet 32 h >> Eff.effBase (hClose h)) `mapM_` fps)
 		Pipe.=$= PipeT.convert BSF.fromStrict
 		Pipe.=$= replicateM_ n (Chunk.decode "foobar")
-		Pipe.=$= do
-			Pipe.yield \sn -> (EnChunk.Chunk "IHDR"
-				. BSF.fromStrict
-				. Header.encodeHeader $ header wdt hgt, sn)
-			Pipe.yield \sn -> (EnChunk.Chunk "acTL"
-				. Apng.encodeActl . actl $ fromIntegral n, sn)
-
-			do	
-				Chunk.Begin "IHDR" <- Pipe.await
-				_bd <- chunkBody "foobar"
-				Just d' <- pop "foobar"
-				Pipe.yield \sn -> (
-					EnChunk.Chunk "fcTL"
-						(Apng.encodeFctl' sn $ fctl wdt hgt d'), -- $ read d),
-					sn + 1 )
-				doWhile_ do
-					Chunk.Begin cnm <- Pipe.await
-					case cnm of
-						"IDAT" -> do
-							bd <- chunkBody "foobar"
-							Pipe.yield \sn -> (EnChunk.Chunk cnm bd, sn)
-							pure True
-						"IEND" -> do
-							Chunk.End <- Pipe.await
-							pure False
-						_ -> pure True
-
-			doWhile_ $ Pipe.awaitMaybe >>= \case
-				Nothing -> pure False
-				Just (Chunk.Begin "IHDR") -> do	
-					_bd <- chunkBody "foobar"
-					Just d' <- pop "foobar"
-					Pipe.yield \sn -> (
-						EnChunk.Chunk "fcTL"
-							(Apng.encodeFctl' sn $ fctl wdt hgt d'), -- $ read d),
-						sn + 1 )
-					doWhile_ do
-						Chunk.Begin cnm <- Pipe.await
-						case cnm of
-							"IDAT" -> do
-								bd <- chunkBody "foobar"
-								Pipe.yield \sn -> (fdatChunk sn bd, sn + 1)
-								pure True
-							"IEND" -> do
-								Chunk.End <- Pipe.await
-								pure False
-							_ -> pure True
-					pure True
-				_ -> Except.throw @String "bad"
-
-			Pipe.yield \sn -> (EnChunk.Chunk "IEND" "", sn)
-
+		Pipe.=$= mkChunks wdt hgt n
 		Pipe.=$= EnChunk.chunks 0
 		Pipe.=$= PipeT.convert BSF.toStrict
 		Pipe.=$= PipeBS.hPutStr ho
@@ -170,3 +119,48 @@ fctl w h d = Apng.Fctl {
 
 fdatChunk :: Word32 -> BSF.ByteString -> EnChunk.Chunk
 fdatChunk sn bd = EnChunk.Chunk "fdAT" $ BSF.fromBitsBE' sn <> bd
+
+mkChunks wdt hgt n = do
+	Pipe.yield \sn -> (EnChunk.Chunk "IHDR" . BSF.fromStrict
+		. Header.encodeHeader $ header wdt hgt, sn)
+	Pipe.yield \sn -> (EnChunk.Chunk "acTL"
+		. Apng.encodeActl . actl $ fromIntegral n, sn)
+
+	Chunk.Begin "IHDR" <- Pipe.await
+	_bd <- chunkBody "foobar"
+	Just d' <- pop "foobar"
+	Pipe.yield \sn -> (
+		EnChunk.Chunk "fcTL" (Apng.encodeFctl' sn $ fctl wdt hgt d'),
+		sn + 1 )
+	doWhile_ do
+		Chunk.Begin cnm <- Pipe.await
+		case cnm of
+			"IDAT" -> do
+				bd <- chunkBody "foobar"
+				Pipe.yield \sn -> (EnChunk.Chunk "IDAT" bd, sn)
+				pure True
+			"IEND" -> do { Chunk.End <- Pipe.await; pure False }
+			_ -> pure True
+	doWhile_ $ Pipe.awaitMaybe >>= \case
+		Nothing -> pure False
+		Just (Chunk.Begin "IHDR") -> do	
+			_bd <- chunkBody "foobar"
+			Just d'' <- pop "foobar"
+			Pipe.yield \sn -> (
+				EnChunk.Chunk "fcTL" (
+					Apng.encodeFctl' sn $ fctl wdt hgt d''),
+					sn + 1 )
+			doWhile_ do
+				Chunk.Begin cnm <- Pipe.await
+				case cnm of
+					"IDAT" -> do
+						bd <- chunkBody "foobar"
+						Pipe.yield \sn -> (fdatChunk sn bd, sn + 1)
+						pure True
+					"IEND" -> do
+						Chunk.End <- Pipe.await
+						pure False
+					_ -> pure True
+			pure True
+		_ -> Except.throw @String "bad"
+	Pipe.yield \sn -> (EnChunk.Chunk "IEND" "", sn)
