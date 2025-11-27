@@ -16,6 +16,7 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.BytesCrc32 qualified as Bytes
+import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as ChunkNew
 import Control.Monad.Yaftee.Pipe.Png.Chunk.Old qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Png.Encode.Chunk qualified as EnChunk
 import Control.Monad.Yaftee.State qualified as State
@@ -68,6 +69,7 @@ main = do
 	ho <- openFile fpo WriteMode
 	void . Eff.runM
 		. Bytes.bytesRun_ @"foobar"
+		. ChunkNew.encodeRun_ @"foo"
 		. flip (State.runN @"foobar") ("" :: BSF.ByteString)
 		. flip (State.runN @"foobar") (replicate (n - 1) d ++ [de])
 		. Except.run @String . Fail.run . Pipe.run
@@ -76,7 +78,7 @@ main = do
 		Pipe.=$= PipeT.convert BSF.fromStrict
 		Pipe.=$= replicateM_ n (Chunk.decode "foobar")
 		Pipe.=$= mkChunks wdt hgt n
-		Pipe.=$= EnChunk.chunks 0
+		Pipe.=$= EnChunk.chunksSt 0
 		Pipe.=$= PipeT.convert BSF.toStrict
 		Pipe.=$= PipeBS.hPutStr ho
 --	hClose `mapM_` hs;

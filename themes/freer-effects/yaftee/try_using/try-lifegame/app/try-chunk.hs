@@ -36,11 +36,3 @@ main = do
 		. Except.run @String . Fail.run . Pipe.run
 		$ hDecode "foo" h 32 50 Pipe.=$= hEncode "bar" ho
 	hClose ho; hClose h
-
-encodeRun_ :: forall nm es i o r .
-	F.Loose (U.U es) =>
-	Eff.E (EncodeStates nm `Append` es) i o r ->
-	Eff.E es i o ()
-encodeRun_ = void . OnDemand.run @nm . PipeCrc32.run @nm
-
-type EncodeStates nm = St.Named nm Crc32.C ': OnDemand.States nm

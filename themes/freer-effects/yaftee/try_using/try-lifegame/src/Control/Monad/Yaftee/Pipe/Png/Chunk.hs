@@ -1,8 +1,9 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE ExplicitForAll, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -18,7 +19,7 @@ module Control.Monad.Yaftee.Pipe.Png.Chunk (
 
 	-- * ENCODE
 
-	encode, hEncode,
+	encode, hEncode, encodeRun_
 
 	) where
 
@@ -46,6 +47,9 @@ import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
 import System.IO	
+
+import Data.HigherFunctor qualified as F
+import Data.TypeLevel.List
 
 decode :: forall nm -> (
 	U.Member Pipe.P es, OnDemand.Members nm es,
@@ -161,3 +165,11 @@ encodeChunk1 nm = do
 	c <- State.getN @Crc32.C nm
 	Pipe.yield . BSF.fromBitsBE' $ Crc32.toWord c
 	pure $ cn /= "IEND"
+
+encodeRun_ :: forall nm es i o r .
+	F.Loose (U.U es) =>
+	Eff.E (EncodeStates nm `Append` es) i o r ->
+	Eff.E es i o ()
+encodeRun_ = void . OnDemand.run @nm . PipeCrc32.run @nm
+
+type EncodeStates nm = State.Named nm Crc32.C ': OnDemand.States nm
