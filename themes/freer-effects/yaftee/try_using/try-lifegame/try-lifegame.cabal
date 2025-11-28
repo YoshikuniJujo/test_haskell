@@ -31,7 +31,6 @@ library
       Control.Monad.Yaftee.Pipe.Png.Filter
       Control.Monad.Yaftee.Pipe.Png.Header
       Control.Monad.Yaftee.Pipe.Png.Header.Read
-      Data.Adam7
       Data.Apng
       Data.Image.Gray
       Data.Image.Gray1
