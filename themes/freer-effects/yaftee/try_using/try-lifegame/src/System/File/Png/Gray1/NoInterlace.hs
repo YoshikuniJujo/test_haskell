@@ -36,7 +36,7 @@ import System.IO
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
 import Data.Png.Datable qualified as Encode
-import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
+import Control.Monad.Yaftee.Pipe.Monoid.Divide qualified as Buffer
 
 import Data.Word
 import Data.Word.Crc32 qualified as Crc32
@@ -250,8 +250,8 @@ pipeDat nm m iorf hdr w h ibe obe = void $
 		Unfilter.pngFilter hdr bs0 $ Header.calcSizes hdr w h
 	Pipe.=$= PipeT.convert BSF.pack
 	Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
---	Pipe.=$= Buffer.format' nm BSF.splitAt' "" 1000
-	Pipe.=$= Buffer.format' nm BSF.splitAt' "" 100000
+--	Pipe.=$= Buffer.devide nm BSF.splitAt' "" 1000
+	Pipe.=$= Buffer.devide nm BSF.splitAt' "" 100000
 	Pipe.=$= PipeT.convert \dt sn' ->
 		(bool ((, sn') . (Chunk "IDAT")) ((, sn' + 1) . (Chunk "fdAT" . (BSF.fromBitsBE' sn' <>))) iorf) dt
 

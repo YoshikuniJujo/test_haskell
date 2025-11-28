@@ -6,11 +6,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Buffer (
+module Control.Monad.Yaftee.Pipe.Monoid.Divide (
 
 	run,
-	format,
-	format',
+	devideNs,
+	devide,
 	Monoid(..)
 
 	) where
@@ -30,11 +30,11 @@ run :: forall nm m es i o r . (P.Monoid m, HFunctor.Loose (U.U es)) =>
 	Eff.E es i o (r, Monoid m)
 run = flip (State.runN @nm) (Monoid mempty)
 
-format :: forall nm -> (
+devideNs :: forall nm -> (
 	Semigroup m,
 	U.Member Pipe.P es, U.Member (State.Named nm (Monoid m)) es ) =>
 	(Int -> m -> Maybe (m, m)) -> m -> [Int] -> Eff.E es m m ()
-format nm sp bs0 ns0 = do
+devideNs nm sp bs0 ns0 = do
 	State.putN nm $ Monoid bs0
 	($ ns0) $ fix \go -> \case
 		[] -> pure ()
@@ -42,11 +42,11 @@ format nm sp bs0 ns0 = do
 			Pipe.yield =<< getInput nm sp n
 			go ns
 
-format' :: forall nm -> (
+devide :: forall nm -> (
 	Eq m, P.Monoid m,
 	U.Member Pipe.P es, U.Member (State.Named nm (Monoid m)) es ) =>
 	(Int -> m -> Maybe (m, m)) -> m -> Int -> Eff.E es m m ()
-format' nm sp bs0 n = do
+devide nm sp bs0 n = do
 	State.putN nm $ Monoid bs0
 	fix \go -> do
 		bs <- getInput' nm sp n

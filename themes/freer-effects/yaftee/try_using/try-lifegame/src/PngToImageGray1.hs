@@ -19,7 +19,7 @@ import Control.Monad.ST
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
-import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
+import Control.Monad.Yaftee.Pipe.Monoid.Divide qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
@@ -73,7 +73,7 @@ pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
 		"123" <- Pipe.await
 		Pipe.yield "OKOKIMOK"
 	Pipe.=$= do
-		trace (show rs) $ Buffer.format nm BSF.splitAt' "" rs
+		trace (show rs) $ Buffer.devideNs nm BSF.splitAt' "" rs
 		fix \go -> do
 			x <- Pipe.await
 			when (x /= "OKOKIMOK") $ go

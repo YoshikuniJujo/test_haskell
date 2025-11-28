@@ -25,7 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Control.Monad.Yaftee.Pipe.Buffer
+      Control.Monad.Yaftee.Pipe.Monoid.Divide
       Control.Monad.Yaftee.Pipe.Png.Chunk
       Control.Monad.Yaftee.Pipe.Png.Decode
       Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
