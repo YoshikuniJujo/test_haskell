@@ -47,7 +47,7 @@ type PngToImageGray1States nm m = '[
 	State.Named nm (Buffer.Monoid m) ]
 
 pngToImageGray1 :: forall nm -> (
-	U.Member Pipe.P es, Steps.ChunkMembers nm es,
+	U.Member Pipe.P es, Chunk.ChunkMembers nm es,
 	PngToImageGray1Members nm es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Base IO.I es ) =>
@@ -58,7 +58,7 @@ pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
 	Pipe.=$= Steps.chunk nm
 	Pipe.=$= forever do
 		bs <- Pipe.await
-		cnk <- State.getN @Steps.Chunk nm
+		cnk <- State.getN @Chunk.Chunk nm
 		when ("IDAT" `Chunk.isChunkName` cnk) $ Pipe.yield bs
 	Pipe.=$= PipeZ.inflate nm IO (Zlib.WindowBitsZlib 15) ibd obd
 	Pipe.=$= Buffer.format nm BSF.splitAt' "" rs

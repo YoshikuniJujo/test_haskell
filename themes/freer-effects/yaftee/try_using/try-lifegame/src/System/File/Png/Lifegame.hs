@@ -13,6 +13,7 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
+import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
@@ -28,11 +29,12 @@ import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
-import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
 
 import PngToImageGray1
 
 import Data.Word.Crc32 qualified as Crc32
+
+import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 
 writeBoard :: FilePath -> Lifegame.Board -> Int -> IO ()
 writeBoard fpo bd n = Png.write fpo (Lifegame.boardToGray1' n bd)
@@ -40,14 +42,14 @@ writeBoard fpo bd n = Png.write fpo (Lifegame.boardToGray1' n bd)
 readBoard :: FilePath -> IO Lifegame.Board
 readBoard fp = do
 	hh <- openFile fp ReadMode
-	Right hdr <- Eff.runM . Except.run @String . Png.runHeader @"foobar"
+	Right hdr <- Eff.runM . Except.run @String . Png.runHeader' @"barbaz"
 		. flip (State.runN @"foobar") Crc32.initial
+		. OnDemand.run @"foobar"
 		. Fail.run
 		. Pipe.run . (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 hh
 		Pipe.=$= PipeT.convert BSF.fromStrict
---		Pipe.=$= Png.decodeHeader' "foobar" "barbaz"
-		Pipe.=$= Png.decodeHeader "foobar"
+		Pipe.=$= Png.decodeHeader' "foobar" "barbaz"
 	hClose hh
 	h <- openFile fp ReadMode
 	ibd <- PipeZ.cByteArrayMalloc 64
@@ -56,7 +58,7 @@ readBoard fp = do
 		. (`State.run` Lifegame.emptyBoard 0 0)
 		. Except.run @String . Except.run @Zlib.ReturnCode
 		. runPngToImageGray1 @"foobar" @BSF.ByteString
-		. Steps.chunkRun_ @"foobar" . Pipe.run
+		. Chunk.chunkRun_ @"foobar" . Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. (`Except.catch` IO.print @Zlib.ReturnCode)
 		. void $ PipeBS.hGet 32 h

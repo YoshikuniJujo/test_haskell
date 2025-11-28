@@ -7,8 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Yaftee.Pipe.Png.Decode.Steps (
-	module Control.Monad.Yaftee.Pipe.Png.Decode.Steps,
-	Chunk.Chunk(..)
+	chunk
 	) where
 
 import Control.Monad
@@ -18,21 +17,12 @@ import Control.Monad.Yaftee.Pipe.BytesCrc32 qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
-import Data.TypeLevel.List
-import Data.HigherFunctor qualified as HFunctor
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png
 
-chunkRun_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
-	Eff.E (ChunkStates nm `Append` es) i o r -> Eff.E es i o ()
-chunkRun_ = void . Chunk.chunkRun_ @nm
-
-type ChunkStates nm =
-	Chunk.ChunkStates nm
-
 chunk :: forall nm -> (
 	U.Member Pipe.P es,
-	ChunkMembers nm es,
+	Chunk.ChunkMembers nm es,
 	U.Member (Except.E String) es
 	) =>
 	Eff.E es BSF.ByteString BSF.ByteString ()
@@ -42,6 +32,3 @@ chunk nm =
 			. Except.throw @String
 			$ "chunk: File header error: " <> show fhdr
 		Chunk.chunk nm 500
-
-type ChunkMembers nm es = (
-	Chunk.ChunkMembers nm es )
