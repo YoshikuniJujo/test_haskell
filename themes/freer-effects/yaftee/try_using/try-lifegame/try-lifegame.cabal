@@ -30,7 +30,6 @@ library
       Control.Monad.Yaftee.Pipe.Png.Decode
       Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
       Control.Monad.Yaftee.Pipe.Png.Decode.Header
-      Control.Monad.Yaftee.Pipe.Png.Decode.Steps
       Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter
       Control.Monad.Yaftee.Pipe.Png.Encode
       Control.Monad.Yaftee.Pipe.Png.Encode.Chunk

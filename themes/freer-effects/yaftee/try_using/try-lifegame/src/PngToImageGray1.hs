@@ -21,7 +21,6 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
-import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
@@ -38,8 +37,6 @@ import Data.Png.Header.Data qualified as Header
 import Data.Image.Gray1 qualified as ImageG1
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
-
-import Debug.Trace
 
 runPngToImageGray1 ::
 	forall nm m es i o r . (HFunctor.Loose (U.U es), Monoid m) =>
@@ -61,7 +58,7 @@ pngToImageGray1 :: forall nm -> (
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es BS.ByteString ImageG1.G ()
 pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
-	Pipe.=$= Steps.chunk nm
+	Pipe.=$= Chunk.chunk' nm 500
 	Pipe.=$= forever do
 		bs <- Pipe.await
 		cnk <- State.getN @Chunk.Chunk nm
