@@ -55,7 +55,6 @@ library
       PngToImageGray1
       System.File.Apng.Gray1.NoInterlace
       System.File.Png.Gray1.NoInterlace
-      System.File.Png.Lifegame
       Tools
   other-modules:
       Paths_try_lifegame

@@ -26,13 +26,14 @@ import Data.ByteString.FingerTree qualified as BSF
 import Data.Image.Gray1 qualified as ImageG1
 import System.IO
 import System.Environment
-import System.File.Png.Lifegame qualified as Lifegame
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Lifegame.Words qualified as Lifegame
 
 import PngToImageGray1
 import Data.Word.Crc32 qualified as Crc32
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
+
+import System.File.Png.Gray1.NoInterlace qualified as Png
 
 main :: IO ()
 main = do
@@ -62,7 +63,7 @@ main = do
 			let	brd = Lifegame.gray1ToBoard img
 				img' n = Lifegame.boardToGray1' n brd
 			ImageG1.printAsAscii $ img' 3
-			Lifegame.writeBoard fpo brd (read sz)
+			Png.write fpo (Lifegame.boardToGray1' (read sz) brd)
 	PipeZ.cByteArrayFree ibd
 	PipeZ.cByteArrayFree obd
 	hClose h

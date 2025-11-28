@@ -10,7 +10,8 @@
 
 module PngToImageGray1 (
 	runPngToImageGray1, PngToImageGray1States,
-	pngToImageGray1, PngToImageGray1Members ) where
+	pngToImageGray1,
+	PngToImageGray1Members ) where
 
 import Control.Monad
 import Control.Monad.ST
