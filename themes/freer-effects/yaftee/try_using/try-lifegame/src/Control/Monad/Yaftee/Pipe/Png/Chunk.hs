@@ -19,7 +19,11 @@ module Control.Monad.Yaftee.Pipe.Png.Chunk (
 
 	-- * ENCODE
 
-	encode, hEncode, encodeRun_
+	encode, hEncode, encodeRun_,
+
+	-- * OTHERS
+
+	isName
 
 	) where
 
@@ -50,6 +54,8 @@ import System.IO
 
 import Data.HigherFunctor qualified as F
 import Data.TypeLevel.List
+
+import Numeric
 
 decode :: forall nm -> (
 	U.Member Pipe.P es, OnDemand.Members nm es,
@@ -97,7 +103,9 @@ chunk1 nm d = do
 	c1 <- State.getN @Crc32.C nm
 	State.putN nm $ OnDemand.RequestBytes 4
 	c0 <- Crc32.fromWord . Word8.toBitsBE @_ @Word32 <$> Pipe.await
-	when (c1 /= c0) $ Except.throw @String "corrupted -- crc32 mismatch"
+	when (c1 /= c0) $ Except.throw @String
+		$ "corrupted -- crc32 mismatch: " ++
+			showHex (Crc32.toWord c0) "" ++ " " ++ showHex (Crc32.toWord c1) ""
 	Pipe.yield End
 	pure $ cn /= "IEND"
 	where
@@ -125,10 +133,10 @@ instance MonoFoldable C where
 		Body bs -> ofoldl' o v bs; End -> v
 	ofoldr1Ex o = \case
 		Begin _ bs -> ofoldr1Ex o bs
-		Body bs -> ofoldr1Ex o bs; End -> error "bad"
+		Body bs -> ofoldr1Ex o bs; End -> error "instance MonoFoldable C: bad"
 	ofoldl1Ex' o = \case
 		Begin _ bs -> ofoldl1Ex' o bs
-		Body bs -> ofoldl1Ex' o bs; End -> error "bad"
+		Body bs -> ofoldl1Ex' o bs; End -> error "instance MonoFoldable C: bad"
 
 encode :: forall nm -> (
 	U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es,
@@ -160,7 +168,7 @@ encodeChunk1 nm = do
 	fix \go -> Pipe.await >>= \case
 		Body bd -> Pipe.yield bd >> go
 		End -> pure ()
-		_ -> Except.throw @String "bad"
+		_ -> Except.throw @String "encodeChunk1: bad"
 	PipeCrc32.complement nm
 	c <- State.getN @Crc32.C nm
 	Pipe.yield . BSF.fromBitsBE' $ Crc32.toWord c
@@ -173,3 +181,7 @@ encodeRun_ :: forall nm es i o r .
 encodeRun_ = void . OnDemand.run @nm . PipeCrc32.run @nm
 
 type EncodeStates nm = State.Named nm Crc32.C ': OnDemand.States nm
+
+isName :: BSF.ByteString -> C -> Bool
+isName nm0 (Begin _ nm) = nm == nm0
+isName _ _ = False

@@ -17,7 +17,9 @@ import Control.Monad.Yaftee.Pipe.BytesCrc32 qualified as Bytes
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
+import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
+import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Data.Foldable
 import Data.List qualified as L
@@ -35,6 +37,8 @@ import PngToImageGray1
 import System.File.Apng.Gray1.NoInterlace
 import Lifegame.Words qualified as Lifegame
 
+import Data.Word.Crc32 qualified as Crc32
+
 main :: IO ()
 main = do
 	dr : d_ : de_ : fpo : _ <- getArgs
@@ -45,6 +49,8 @@ main = do
 	hh <- openFile fp0 ReadMode
 
 	Right hdr <- Eff.runM . Except.run @String . Png.runHeader @"foobar"
+		. flip (State.runN @"foobar") Crc32.initial
+		. Fail.run
 		. Pipe.run . (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 hh
 		Pipe.=$= PipeT.convert BSF.fromStrict

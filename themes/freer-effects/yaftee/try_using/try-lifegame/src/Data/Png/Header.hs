@@ -39,7 +39,7 @@ headerToRows h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
 		$ interlacePixelNums
 			(fromIntegral (headerWidth h))
 			(fromIntegral $ headerHeight h)
-headerToRows _ = error "bad"
+headerToRows h = error $ "headerToRows: " ++ show h
 
 headerToRows' :: Header -> Word32 -> Word32 -> [Int]
 headerToRows' h@Header { headerInterlaceMethod = InterlaceMethodNon } wdt hgt =

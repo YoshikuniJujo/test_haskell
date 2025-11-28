@@ -18,7 +18,10 @@ import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.Pipe.Png.Decode.Steps qualified as Steps
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
+import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
+import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
+import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Image.Gray1 qualified as ImageG1
@@ -29,16 +32,21 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Lifegame.Words qualified as Lifegame
 
 import PngToImageGray1
+import Data.Word.Crc32 qualified as Crc32
 
 main :: IO ()
 main = do
 	fp : sz : fpo : _ <- getArgs
 	hh <- openFile fp ReadMode
-	Right hdr <- Eff.runM . Except.run @String . Png.runHeader @"foobar"
-		. Pipe.run . (`Except.catch` IO.putStrLn)
+	Right hdr <- Eff.runM . Except.run @String . Png.runHeader' @"barbaz"
+		. OnDemand.run @"foobar"
+		. flip (State.runN @"foobar") Crc32.initial
+		. Fail.run
+		. Pipe.run
+		. (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 hh
 		Pipe.=$= PipeT.convert BSF.fromStrict
-		Pipe.=$= Png.decodeHeader "foobar"
+		Pipe.=$= Png.decodeHeader' "foobar" "barbaz"
 	hClose hh
 	h <- openFile fp ReadMode
 	ibd <- PipeZ.cByteArrayMalloc 64
