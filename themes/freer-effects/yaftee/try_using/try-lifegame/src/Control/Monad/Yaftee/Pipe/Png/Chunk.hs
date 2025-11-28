@@ -98,7 +98,8 @@ chunk1 nm d = do
 	PipeCrc32.reset nm
 	State.putN nm $ OnDemand.RequestBytes 4
 	cn <- Pipe.await
-	trace ("chunk1: yield Begin: " ++ show cn) (Pipe.yield $ Begin n cn)
+--	trace ("chunk1: yield Begin: " ++ show cn) (Pipe.yield $ Begin n cn)
+	Pipe.yield $ Begin n cn
 	for_ (split d n) \n' -> do
 		State.putN nm $ OnDemand.RequestBytes n'
 		Pipe.yield . Body =<< Pipe.await
@@ -109,7 +110,8 @@ chunk1 nm d = do
 	when (c1 /= c0) $ Except.throw @String
 		$ "corrupted -- crc32 mismatch: " ++
 			showHex (Crc32.toWord c0) "" ++ " " ++ showHex (Crc32.toWord c1) ""
-	trace ("chunk1: yield End: " ++ show cn) $ Pipe.yield End
+--	trace ("chunk1: yield End: " ++ show cn) $ Pipe.yield End
+	Pipe.yield End
 	pure $ cn /= "IEND"
 	where
 	split n = fix \go -> \case

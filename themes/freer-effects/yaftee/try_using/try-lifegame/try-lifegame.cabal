@@ -28,6 +28,7 @@ library
       Control.Monad.Yaftee.Pipe.Png.Chunk
       Control.Monad.Yaftee.Pipe.Png.ChunkDecode
       Control.Monad.Yaftee.Pipe.Png.ChunkEncode
+      Control.Monad.Yaftee.Pipe.Png.ChunkEncode.Old
       Control.Monad.Yaftee.Pipe.Png.Filter
       Control.Monad.Yaftee.Pipe.Png.Header
       Control.Monad.Yaftee.Pipe.Png.Header.Read
