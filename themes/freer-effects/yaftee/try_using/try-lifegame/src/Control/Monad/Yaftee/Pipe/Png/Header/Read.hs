@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.Decode.Header (
+module Control.Monad.Yaftee.Pipe.Png.Header.Read (
 	read
 	) where
 

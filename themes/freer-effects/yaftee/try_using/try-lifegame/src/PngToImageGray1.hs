@@ -20,8 +20,8 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.Tools qualified as Buffer
-import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
-import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
+import Control.Monad.Yaftee.Pipe.Png.Filter qualified as Unfilter
+import Control.Monad.Yaftee.Pipe.Png.ChunkDecode qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except

@@ -7,7 +7,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.Encode.Chunk (
+module Control.Monad.Yaftee.Pipe.Png.ChunkEncode (
 	chunksSt, Chunk(..)
 	) where
 

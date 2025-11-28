@@ -45,8 +45,8 @@ import Control.Monad.Yaftee.Pipe.Tools qualified as Buffer
 
 import Data.Word
 import Data.ByteString.FingerTree.Bits qualified as BSF
-import Control.Monad.Yaftee.Pipe.Png.Palette qualified as Palette
-import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
+import Data.Png.Palette qualified as Palette
+import Control.Monad.Yaftee.Pipe.Png.Filter qualified as Unfilter
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 import Data.Image.Gray1 qualified as Gray1
@@ -56,7 +56,7 @@ import FctlImage.Gray1 qualified as FctlImage1
 import FctlImageBody.Gray1Words qualified as W
 import Tools
 
-import Control.Monad.Yaftee.Pipe.Png.Encode.Chunk
+import Control.Monad.Yaftee.Pipe.Png.ChunkEncode
 
 import Data.Apng
 

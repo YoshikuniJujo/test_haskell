@@ -15,7 +15,7 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
-import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
+import Control.Monad.Yaftee.Pipe.Png.Header qualified as Png
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.State qualified as State
@@ -30,7 +30,7 @@ import Lifegame.Words qualified as Lifegame
 
 import PngToImageGray1
 import Data.Word.Crc32 qualified as Crc32
-import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
+import Control.Monad.Yaftee.Pipe.Png.ChunkDecode qualified as Chunk
 
 import System.File.Png.Gray1.NoInterlace qualified as Png
 

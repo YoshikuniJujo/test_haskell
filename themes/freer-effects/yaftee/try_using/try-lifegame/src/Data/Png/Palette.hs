@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.Palette (Palette(..), encodePalette) where
+module Data.Png.Palette (Palette(..), encodePalette) where
 
 import Data.Vector qualified as V
 import Data.Word

@@ -26,12 +26,11 @@ source-repository head
 library
   exposed-modules:
       Control.Monad.Yaftee.Pipe.Png.Chunk
-      Control.Monad.Yaftee.Pipe.Png.Decode
-      Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
-      Control.Monad.Yaftee.Pipe.Png.Decode.Header
-      Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter
-      Control.Monad.Yaftee.Pipe.Png.Encode.Chunk
-      Control.Monad.Yaftee.Pipe.Png.Palette
+      Control.Monad.Yaftee.Pipe.Png.ChunkDecode
+      Control.Monad.Yaftee.Pipe.Png.ChunkEncode
+      Control.Monad.Yaftee.Pipe.Png.Filter
+      Control.Monad.Yaftee.Pipe.Png.Header
+      Control.Monad.Yaftee.Pipe.Png.Header.Read
       Data.Adam7
       Data.Apng
       Data.Image.Gray
@@ -41,6 +40,7 @@ library
       Data.Png.Filters
       Data.Png.Header
       Data.Png.Header.Data
+      Data.Png.Palette
       Fctl
       FctlImage
       FctlImage.Gray1

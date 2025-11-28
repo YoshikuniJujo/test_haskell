@@ -104,8 +104,7 @@ packages:
     hackage: zlib-core-0.1.0.1
 snapshots:
 - completed:
-    sha256: 92becf9417de918f477cc79583b70700cbead6c5028fc4c4415f04fab5fb5354
-    size: 726332
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/20.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/20.yaml
+    sha256: 4bfcb84093e337a28ea1bc1649874301c3d3a2590aaabce096fcf809060e98f5
+    size: 711769
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/28.yaml
+  original: nightly-2025-11-28

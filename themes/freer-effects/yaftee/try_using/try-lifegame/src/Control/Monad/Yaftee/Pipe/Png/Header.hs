@@ -8,7 +8,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.Decode (
+module Control.Monad.Yaftee.Pipe.Png.Header (
 
 	-- * DECODE HEADER
 
@@ -21,7 +21,7 @@ import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
-import Control.Monad.Yaftee.Pipe.Png.Decode.Header qualified as Header
+import Control.Monad.Yaftee.Pipe.Png.Header.Read qualified as Header
 import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as ChunkNew
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
