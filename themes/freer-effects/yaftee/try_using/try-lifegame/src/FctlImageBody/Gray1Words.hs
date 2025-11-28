@@ -4,7 +4,7 @@
 
 module FctlImageBody.Gray1Words (BodyGray1(..)) where
 
-import Control.Monad.Yaftee.Pipe.Png.Encode qualified as PngE
+import Data.Png.Datable qualified as PngE
 import Fctl
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF

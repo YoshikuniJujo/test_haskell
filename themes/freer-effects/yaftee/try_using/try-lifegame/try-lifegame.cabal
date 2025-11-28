@@ -31,7 +31,6 @@ library
       Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
       Control.Monad.Yaftee.Pipe.Png.Decode.Header
       Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter
-      Control.Monad.Yaftee.Pipe.Png.Encode
       Control.Monad.Yaftee.Pipe.Png.Encode.Chunk
       Control.Monad.Yaftee.Pipe.Png.Palette
       Data.Adam7
@@ -39,6 +38,7 @@ library
       Data.Image.Gray
       Data.Image.Gray1
       Data.Lifegame.Glider
+      Data.Png.Datable
       Data.Png.Filters
       Data.Png.Header
       Data.Png.Header.Data

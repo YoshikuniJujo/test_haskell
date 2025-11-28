@@ -8,7 +8,10 @@
 
 module Control.Monad.Yaftee.Pipe.Buffer (
 
-	run, format, format', Monoid(..)
+	run,
+	format,
+	format',
+	Monoid(..)
 
 	) where
 
@@ -30,8 +33,7 @@ run = flip (State.runN @nm) (Monoid mempty)
 format :: forall nm -> (
 	Semigroup m,
 	U.Member Pipe.P es, U.Member (State.Named nm (Monoid m)) es ) =>
-	(Int -> m -> Maybe (m, m)) ->
-	m -> [Int] -> Eff.E es m m ()
+	(Int -> m -> Maybe (m, m)) -> m -> [Int] -> Eff.E es m m ()
 format nm sp bs0 ns0 = do
 	State.putN nm $ Monoid bs0
 	($ ns0) $ fix \go -> \case

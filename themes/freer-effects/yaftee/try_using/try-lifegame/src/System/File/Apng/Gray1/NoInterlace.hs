@@ -40,7 +40,7 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
 import Fctl
 
-import Control.Monad.Yaftee.Pipe.Png.Encode qualified as Encode
+import Data.Png.Datable qualified as Encode
 import Control.Monad.Yaftee.Pipe.Buffer qualified as Buffer
 
 import Data.Word

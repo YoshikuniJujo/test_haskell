@@ -21,6 +21,7 @@ Control.Monad.Yaftee.Pipe
 			+ Data.Png.Filters
 			+ Data.Png.Header
 				+ Data.Png.Header.Data
+			+ Data.Png.Datable
 	+ Fctl
 	+ FctlImage
 		+ FctlImage.Gray1

@@ -38,6 +38,8 @@ import Data.Image.Gray1 qualified as ImageG1
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
+import Debug.Trace
+
 runPngToImageGray1 ::
 	forall nm m es i o r . (HFunctor.Loose (U.U es), Monoid m) =>
 	Eff.E (	PngToImageGray1States nm m `Append` es) i o r ->
@@ -71,7 +73,7 @@ pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
 		"123" <- Pipe.await
 		Pipe.yield "OKOKIMOK"
 	Pipe.=$= do
-		Buffer.format nm BSF.splitAt' "" rs
+		trace (show rs) $ Buffer.format nm BSF.splitAt' "" rs
 		fix \go -> do
 			x <- Pipe.await
 			when (x /= "OKOKIMOK") $ go
