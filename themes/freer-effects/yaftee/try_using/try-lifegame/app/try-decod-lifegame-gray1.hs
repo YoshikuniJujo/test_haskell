@@ -23,7 +23,6 @@ import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Data.ByteString.FingerTree qualified as BSF
-import Data.Image.Gray1 qualified as ImageG1
 import System.IO
 import System.Environment
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
@@ -52,17 +51,15 @@ main = do
 	h <- openFile fp ReadMode
 	ibd <- PipeZ.cByteArrayMalloc 64
 	obd <- PipeZ.cByteArrayMalloc 64
-	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
+	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode . Fail.run
 		. runPngToImageGray1 @"foobar" @BSF.ByteString
-		. Chunk.chunkRun_ @"foobar" . Pipe.run
+		. Chunk.chunkRun_' @"foobar" . Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. (`Except.catch` IO.print @Zlib.ReturnCode)
 		. void $ PipeBS.hGet 32 h
 		Pipe.=$= pngToImageGray1 "foobar" hdr ibd obd
 		Pipe.=$= (Pipe.await >>=) \img -> Eff.effBase do
 			let	brd = Lifegame.gray1ToBoard img
-				img' n = Lifegame.boardToGray1' n brd
-			ImageG1.printAsAscii $ img' 3
 			Png.write fpo (Lifegame.boardToGray1' (read sz) brd)
 	PipeZ.cByteArrayFree ibd
 	PipeZ.cByteArrayFree obd

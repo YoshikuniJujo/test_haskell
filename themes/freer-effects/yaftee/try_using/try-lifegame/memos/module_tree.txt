@@ -1,8 +1,5 @@
 Control.Monad.Yaftee.Pipe
 	+ Control.Monad.Yaftee.Pipe.Buffer
-	+ Control.Monad.Yaftee.Pipe.BytesCrc32
-	+ Control.Monad.Yaftee.Pipe.Apng
-		+ Control.Monad.Yaftee.Pipe.Apng.Decode
 	+ Control.Monad.Yaftee.Pipe.Png
 		+ Control.Monad.Yaftee.Pipe.Png.Pallet
 		+ Control.Monad.Yaftee.Pipe.Png.Decode
@@ -19,13 +16,13 @@ Control.Monad.Yaftee.Pipe
 		+ Data.Image
 			+ Data.Image.Gray
 			+ Data.Image.Gray1
-			+ Data.Image.Simple
 		+ Data.Lifegame
 			+ Data.Lifegame.Glyder
 		+ Data.Png
 			+ Data.Png.Filters
 			+ Data.Png.Header
 				+ Data.Png.Header.Data
+	+ Fctl
 	+ FctlImage
 		+ FctlImage.Gray1
 	+ FctlImageBody
@@ -37,5 +34,5 @@ Control.Monad.Yaftee.Pipe
 			+ System.File.Png.Gray1
 				+ System.File.Png.Gray1.NoInterlace
 			+ System.File.Png.Lifegame
-		+ System.File.Apng
+		+ System.File.Apng.Gray1.NoInterlacke
 	+ Tools

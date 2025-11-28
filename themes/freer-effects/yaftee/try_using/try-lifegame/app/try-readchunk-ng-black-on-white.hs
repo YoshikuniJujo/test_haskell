@@ -15,9 +15,8 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
-import Control.Monad.Yaftee.Pipe.BytesCrc32 qualified as Bytes
+import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as ChunkNew
-import Control.Monad.Yaftee.Pipe.Png.Chunk.Old qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Png.Encode.Chunk qualified as EnChunk
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
@@ -41,6 +40,7 @@ import Tools
 
 import Control.Monad.Yaftee.Pipe.Png.Palette qualified as Palette
 import Data.Vector qualified as V
+import Data.Word.Crc32 qualified as Crc32
 
 main :: IO ()
 main = do
@@ -54,32 +54,33 @@ main = do
 		de = read de_ :: Ratio Word16
 
 	hh <- openFile fp ReadMode
-	((), Just (wdt, hgt)) <- Eff.runM
+	(_, Just (wdt, hgt)) <- Eff.runM
 		. (flip (State.run @_ @(Maybe (Word32, Word32))) Nothing)
-		. Bytes.bytesRun_ @"foobar"
+		. (flip (State.runN @"foobar") Crc32.initial)
+		. OnDemand.run @"foobar"
 		. flip (State.runN @"foobar") ("" :: BSF.ByteString)
 		. Except.run @String . Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 hh
 		Pipe.=$= PipeT.convert BSF.fromStrict
-		Pipe.=$= Chunk.decode "foobar"
+		Pipe.=$= ChunkNew.decode "foobar" 50
 		Pipe.=$= do
 			IO.print =<< Pipe.await
 			State.put =<< headerToSize <$> chunkBody "foobar"
 	hClose hh
 
---	hs <- (`openFile` ReadMode) `mapM` fps
 	ho <- openFile fpo WriteMode
 	void . Eff.runM
-		. Bytes.bytesRun_ @"foobar"
 		. ChunkNew.encodeRun_ @"foo"
+		. (flip (State.runN @"foobar") Crc32.initial)
+		. OnDemand.run @"foobar"
 		. flip (State.runN @"foobar") ("" :: BSF.ByteString)
 		. flip (State.runN @"foobar") (replicate (n - 1) d ++ [de])
 		. Except.run @String . Fail.run . Pipe.run
 		. (`Fail.catch` IO.putStrLn) . (`Except.catch` IO.putStrLn)
 		. void $ ((\fp' -> Eff.effBase (openFile fp' ReadMode) >>= \h -> PipeBS.hGet 32 h >> Eff.effBase (hClose h)) `mapM_` fps)
 		Pipe.=$= PipeT.convert BSF.fromStrict
-		Pipe.=$= replicateM_ n (Chunk.decode "foobar")
+		Pipe.=$= replicateM_ n (ChunkNew.decode "foobar" 60)
 		Pipe.=$= do
 			Pipe.yield \sn -> (EnChunk.Chunk "IHDR"
 				. BSF.fromStrict
@@ -90,7 +91,7 @@ main = do
 				. Apng.encodeActl . actl $ fromIntegral n, sn)
 
 			do	
-				Chunk.Begin "IHDR" <- Pipe.await
+				ChunkNew.Begin _ "IHDR" <- Pipe.await
 				_bd <- chunkBody "foobar"
 				Just d' <- pop "foobar"
 				Pipe.yield \sn -> (
@@ -98,20 +99,20 @@ main = do
 						(Apng.encodeFctl' sn $ fctl wdt hgt d'), -- $ read d),
 					sn + 1 )
 				doWhile_ do
-					Chunk.Begin cnm <- Pipe.await
+					ChunkNew.Begin _ cnm <- Pipe.await
 					case cnm of
 						"IDAT" -> do
 							bd <- chunkBody "foobar"
 							Pipe.yield \sn -> (EnChunk.Chunk cnm bd, sn)
 							pure True
 						"IEND" -> do
-							Chunk.End <- Pipe.await
+							ChunkNew.End <- Pipe.await
 							pure False
 						_ -> pure True
 
 			doWhile_ $ Pipe.awaitMaybe >>= \case
 				Nothing -> pure False
-				Just (Chunk.Begin "IHDR") -> do	
+				Just (ChunkNew.Begin _ "IHDR") -> do	
 					_bd <- chunkBody "foobar"
 					Just d' <- pop "foobar"
 					Pipe.yield \sn -> (
@@ -119,14 +120,14 @@ main = do
 							(Apng.encodeFctl' sn $ fctl wdt hgt d'), -- $ read d),
 						sn + 1 )
 					doWhile_ do
-						Chunk.Begin cnm <- Pipe.await
+						ChunkNew.Begin _ cnm <- Pipe.await
 						case cnm of
 							"IDAT" -> do
 								bd <- chunkBody "foobar"
 								Pipe.yield \sn -> (fdatChunk sn bd, sn + 1)
 								pure True
 							"IEND" -> do
-								Chunk.End <- Pipe.await
+								ChunkNew.End <- Pipe.await
 								pure False
 							_ -> pure True
 					pure True
@@ -137,7 +138,6 @@ main = do
 		Pipe.=$= EnChunk.chunksSt 0
 		Pipe.=$= PipeT.convert BSF.toStrict
 		Pipe.=$= PipeBS.hPutStr ho
---	hClose `mapM_` hs;
 	hClose ho
 
 headerToSize :: BSF.ByteString -> Maybe (Word32, Word32)
@@ -148,10 +148,10 @@ headerToSize hdr = do
 
 chunkBody :: forall nm -> (
 	U.Member Pipe.P es, U.Member (State.Named nm BSF.ByteString) es,
-	U.Member (Except.E String) es ) => Eff.E es Chunk.C o BSF.ByteString
+	U.Member (Except.E String) es ) => Eff.E es ChunkNew.C o BSF.ByteString
 chunkBody nm = Pipe.await >>= \case
-	Chunk.Body bd -> State.modifyN nm (<> bd) >> chunkBody nm
-	Chunk.End -> State.getN nm <* State.putN @BSF.ByteString nm ""
+	ChunkNew.Body bd -> State.modifyN nm (<> bd) >> chunkBody nm
+	ChunkNew.End -> State.getN nm <* State.putN @BSF.ByteString nm ""
 	_ -> Except.throw @String "chunkBody: not Body"
 
 header :: Word32 -> Word32 -> Header.Header

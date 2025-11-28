@@ -25,6 +25,7 @@ import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
+import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.TypeLevel.List
@@ -48,9 +49,10 @@ type PngToImageGray1States nm m = '[
 	State.Named nm (Buffer.Monoid m) ]
 
 pngToImageGray1 :: forall nm -> (
-	U.Member Pipe.P es, Chunk.ChunkMembers nm es,
+	U.Member Pipe.P es, Chunk.ChunkMembers' nm es,
 	PngToImageGray1Members nm es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member Fail.F es,
 	U.Base IO.I es ) =>
 	Header.Header ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
@@ -61,13 +63,29 @@ pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
 		bs <- Pipe.await
 		cnk <- State.getN @Chunk.Chunk nm
 		when ("IDAT" `Chunk.isChunkName` cnk) $ Pipe.yield bs
-	Pipe.=$= PipeZ.inflate nm IO (Zlib.WindowBitsZlib 15) ibd obd
-	Pipe.=$= Buffer.format nm BSF.splitAt' "" rs
-	Pipe.=$= Unfilter.pngUnfilter' hdr
-	Pipe.=$= (Pipe.yield =<< ImageG1.generateFromBytesM
-		(fromIntegral $ Header.headerWidth hdr)
-		(fromIntegral $ Header.headerHeight hdr)
-		Pipe.await)
+		when ("IEND" `Chunk.isChunkName` cnk) do
+			"" <- Pipe.await
+			Pipe.yield ""
+	Pipe.=$= do
+		_ <- PipeZ.inflate nm IO (Zlib.WindowBitsZlib 15) ibd obd
+		"" <- Pipe.await
+		"" <- Pipe.await
+		Pipe.yield ""
+	Pipe.=$= do
+		Buffer.format nm BSF.splitAt' "" rs
+		"" <- Pipe.await
+		Pipe.yield ""
+	Pipe.=$= do
+		Unfilter.pngUnfilter' hdr
+		"" <- Pipe.await
+		Pipe.yield []
+	Pipe.=$= do
+		(Pipe.yield =<< ImageG1.generateFromBytesM
+			(fromIntegral $ Header.headerWidth hdr)
+			(fromIntegral $ Header.headerHeight hdr)
+			Pipe.await)
+		[] <- Pipe.await
+		pure ()
 	where rs = (+ 1) <$> Header.headerToRows hdr
 
 type PngToImageGray1Members nm es = (

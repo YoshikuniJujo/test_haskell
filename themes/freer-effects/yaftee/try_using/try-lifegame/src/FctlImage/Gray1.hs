@@ -1,9 +1,10 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module FctlImage.Gray1 where
+module FctlImage.Gray1 (
+	fromImages, toFctlImage, firstImage, G
+	) where
 
-import Control.Monad.Yaftee.Pipe.Apng.Decode qualified as Decode
 import Data.Vector qualified as V
 import Data.Ratio
 import Data.Word

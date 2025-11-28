@@ -33,6 +33,8 @@ chunksSt :: (
 	a -> Eff.E es (a -> (Chunk, a)) BSF.ByteString ()
 chunksSt st0 = void $ chunkToChunkSt st0 Pipe.=$= Chunk.encode "foo"
 
+chunkToChunkSt :: U.Member Pipe.P es =>
+	a -> Eff.E es (a -> (Chunk, a)) Chunk.C r
 chunkToChunkSt st0 = fvr st0 \st -> Pipe.await >>= \f -> do
 	let	(Chunk cnm cbd, st') = f st
 	st' <$ do

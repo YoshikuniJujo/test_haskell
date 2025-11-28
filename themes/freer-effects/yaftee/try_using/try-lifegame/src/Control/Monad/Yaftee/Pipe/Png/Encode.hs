@@ -21,9 +21,7 @@ module Control.Monad.Yaftee.Pipe.Png.Encode (
 
 	pipeDat, Datable(..),
 
-	Rgbas(..),
-
-	toDat
+	Rgbas(..)
 
 	) where
 
@@ -47,7 +45,6 @@ import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Color
-import Data.Png qualified as Png
 import Data.Png.Header qualified as Header
 import Data.Png.Header.Data qualified as Header
 
@@ -99,7 +96,7 @@ encodeGray8 nm m hdr ibe obe =
 		Pipe.=$= encodeRaw nm m hdr Nothing ibe obe
 
 encodeGray1 :: forall nm m -> (
-	PrimBase m, RealFrac d, U.Member Pipe.P es,
+	PrimBase m, U.Member Pipe.P es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
 	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es,
@@ -270,8 +267,11 @@ encodeRawCalc nm m hdr w h mplt ibe obe = void $
 			Pipe.yield Chunk {
 				chunkName = "IEND", chunkBody = "" }
 		Pipe.=$= do
-			Pipe.yield Png.fileHeader
+			Pipe.yield fileHeader
 			PipeT.convert chunkToByteString
+
+fileHeader :: BSF.ByteString
+fileHeader = "\x89PNG\r\n\SUB\n"
 
 data Chunk = Chunk {
 	chunkName :: BSF.ByteString,

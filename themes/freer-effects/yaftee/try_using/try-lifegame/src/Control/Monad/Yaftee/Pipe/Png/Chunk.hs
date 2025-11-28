@@ -57,6 +57,8 @@ import Data.TypeLevel.List
 
 import Numeric
 
+import Debug.Trace
+
 decode :: forall nm -> (
 	U.Member Pipe.P es, OnDemand.Members nm es,
 	U.Member (State.Named nm Crc32.C) es, U.Member (Except.E String) es ) =>
@@ -64,7 +66,8 @@ decode :: forall nm -> (
 decode nm n = void $ OnDemand.onDemand nm Pipe.=$= PipeCrc32.crc32 nm Pipe.=$= do
 	State.putN nm $ OnDemand.RequestBytes 8
 	fh <- Pipe.await
-	when (fh /= fileHeader) $ Except.throw @String "Not PNG file"
+	when (fh /= fileHeader) . Except.throw @String
+		$ "Not PNG file: " ++ show fh
 	chunks nm n
 
 hDecode :: forall nm -> (
@@ -95,7 +98,7 @@ chunk1 nm d = do
 	PipeCrc32.reset nm
 	State.putN nm $ OnDemand.RequestBytes 4
 	cn <- Pipe.await
-	Pipe.yield $ Begin n cn
+	trace ("chunk1: yield Begin" ++ show cn) (Pipe.yield $ Begin n cn)
 	for_ (split d n) \n' -> do
 		State.putN nm $ OnDemand.RequestBytes n'
 		Pipe.yield . Body =<< Pipe.await
@@ -106,7 +109,7 @@ chunk1 nm d = do
 	when (c1 /= c0) $ Except.throw @String
 		$ "corrupted -- crc32 mismatch: " ++
 			showHex (Crc32.toWord c0) "" ++ " " ++ showHex (Crc32.toWord c1) ""
-	Pipe.yield End
+	trace ("chunk1: yield End: " ++ show cn) $ Pipe.yield End
 	pure $ cn /= "IEND"
 	where
 	split n = fix \go -> \case

@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
 module Lifegame.Words (
 
@@ -35,7 +35,6 @@ import GHC.Generics
 
 import Control.Arrow
 import Control.DeepSeq
-import Data.Traversable
 import Data.Bits
 import Data.Maybe
 import Data.Either
@@ -86,10 +85,6 @@ addShape bd xo yo bss = generate w h \x y ->
 addShapeAscii :: Board -> Int -> Int -> [String] -> Board
 addShapeAscii bd xo yo = addShape bd xo yo . (((== '*') <$>) <$>)
 
-putLife :: Board -> Int -> Int -> Board
-putLife bd lx ly = generate (boardWidth bd) (boardHeight bd) \x y ->
-	read bd x y || (x, y) == (lx, ly)
-
 read :: Board -> Int -> Int -> Bool
 read Board { boardWidth = w, boardHeight = h, boardBody = bd } x y =
 	testBit (bd V.! i) bi
@@ -109,7 +104,7 @@ boardLivesBottom n bd@Board { boardWidth = w, boardHeight = h } =
 	[ (x, y) | x <- [0 .. w - 1], y <- [h - n .. h - 1], read bd x y ]
 
 boardLivesTop :: Int -> Board -> [(Int, Int)]
-boardLivesTop n bd@Board { boardWidth = w, boardHeight = h } =
+boardLivesTop n bd@Board { boardWidth = w, boardHeight = _h } =
 	[ (x, y) | x <- [0 .. w - 1], y <- [0 .. n - 1], read bd x y ]
 
 removeAreas :: Board -> [(Int, Int, Int, Int)] -> Board
@@ -194,10 +189,6 @@ rows Board { boardWidth = w, boardHeight = h, boardBody = bd } =
 	(<$> [0 .. h - 1]) \y -> (<$> [0 .. (w - 1) `div` 8]) \x ->
 		bd V.! (y * ((w - 1) `div` 8 + 1) + x)
 
-rowsClipped :: Clipped -> [[Word8]]
-rowsClipped Clipped { clippedWidth = w, clippedHeight = h, clippedBody = bd } =
-	rowsBody w h bd
-
 rowsBody :: Int -> Int -> V.Vector Word8 -> [[Word8]]
 rowsBody w h bd = (<$> [0 .. h - 1]) \y -> (<$> [0 .. (w - 1) `div` 8]) \x ->
 	bd V.! (y * ((w - 1) `div` 8 + 1) + x)
@@ -225,7 +216,7 @@ boolsToLives :: Int -> Int -> [[Bool]] -> [(Int, Int)]
 boolsToLives xo yo bs = go xo yo bs
 	where
 	go _ _ [] = []
-	go x y ([] : rs) = go xo (y + 1) rs
+	go _x y ([] : rs) = go xo (y + 1) rs
 	go x y ((lf : lvs) : rs) = bool id ((x, y) :) lf $ go (x + 1) y (lvs : rs)
 
 printPatternAsAscii :: Pattern -> IO ()
@@ -266,7 +257,7 @@ clipBody' w h bd xo yo cw ch = V.generate
 
 clipBodyFun ::
 	Int -> Int -> V.Vector Word8 -> Int -> Int -> Int -> Int -> Int -> Word8
-clipBodyFun w h bd cxo cyo cw ch i = if (cxow + xw) < (ww - 1)
+clipBodyFun w _h bd cxo cyo cw _ch i = if (cxow + xw) < (ww - 1)
 	then combine cxob
 		(bd V.! (((cyo + y) * ww) + cxow + xw))
 		(bd V.! (((cyo + y) * ww) + cxow + xw + 1))
@@ -281,7 +272,7 @@ clipBodyFun w h bd cxo cyo cw ch i = if (cxow + xw) < (ww - 1)
 
 clipBodyFun' ::
 	Int -> Int -> V.Vector Word8 -> Int -> Int -> Int -> Int -> Int -> Word8
-clipBodyFun' w h bd cxo cyo cw ch i
+clipBodyFun' w h bd cxo cyo cw _ch i
 	| (cxow + xw) < (- 1) || (cxow + xw) >= ww = 0
 	| (cyo + y) < 0 || (cyo + y) >= h = 0
 	| (cxow + xw) < 0 = combine cxob 0 (bd V.! (((cyo + y) * ww) + cxow + xw + 1))
@@ -372,7 +363,7 @@ checkBottomEdge Board { boardWidth = w, boardHeight = h, boardBody = bd } =
 	w' = (w - 1) `div` 8 + 1
 
 checkTopEdge :: Board -> Bool
-checkTopEdge Board { boardWidth = w, boardHeight = h, boardBody = bd } =
+checkTopEdge Board { boardWidth = w, boardHeight = _h, boardBody = bd } =
 	any (/= 0) $ (\x -> bd V.! x) <$> [0 .. w' - 1]
 	where
 	w' = (w - 1) `div` 8 + 1

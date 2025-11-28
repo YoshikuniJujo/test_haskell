@@ -4,15 +4,16 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.Decode.Header where
+module Control.Monad.Yaftee.Pipe.Png.Decode.Header (
+	read
+	) where
 
+import Prelude hiding (read)
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.State qualified as State
-import Control.Monad.Yaftee.Except qualified as Except
 import Control.HigherOpenUnion qualified as U
-import Data.Png.Header
 import Data.Png.Header.Data
 
 import Data.Word.Word8 qualified as BSF
@@ -21,8 +22,7 @@ import Data.ByteString.FingerTree qualified as BSF
 read :: forall nm -> (
 	U.Member Pipe.P es,
 	OnDemand.Members nm es,
-	U.Member (State.Named nm Header) es,
-	U.Member (Except.E String) es ) =>
+	U.Member (State.Named nm Header) es ) =>
 	(Header -> Eff.E es BSF.ByteString o ()) ->
 		Eff.E es BSF.ByteString o ()
 read nm proc = do
@@ -48,6 +48,3 @@ read nm proc = do
 			headerInterlaceMethod = im }
 	proc hdr
 	State.putN nm hdr
-
-msgNotRight :: String
-msgNotRight = "not right"

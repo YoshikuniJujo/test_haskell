@@ -1,8 +1,8 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
-module Main where
+module Main (main) where
 
 import Control.Monad
 import Data.Ratio
@@ -56,7 +56,7 @@ readLifegame src = case words <$> src of
 				nm,
 				read rt, read w, read h, read xo, read yo, read drp, read fn,
 				read dly, head <$> shp, gls)
-			(shp, egls) -> error $ "bad: " ++ show egls
+			(_shp, egls) -> error $ "bad: " ++ show egls
 
 	_ -> error "bad"
 

@@ -12,20 +12,12 @@ module Main (main) where
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
-import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand
-	qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.MonoTraversable.Crc32 qualified as PipeCrc32
 import Control.Monad.Yaftee.Pipe.Png.Chunk
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import System.IO
 import System.Environment
-
-import Control.Monad.Yaftee.State qualified as St
-import Data.TypeLevel.List
-import Data.Word.Crc32 qualified as Crc32
-import Data.HigherFunctor qualified as F
-import Control.HigherOpenUnion qualified as U
 
 main :: IO ()
 main = do

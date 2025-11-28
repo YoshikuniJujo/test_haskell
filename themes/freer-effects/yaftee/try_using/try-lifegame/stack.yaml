@@ -47,7 +47,7 @@ extra-deps:
   - yaftee-conduit-0.1.0.0
   - yaftee-conduit-mono-traversable-0.1.0.1
   - yaftee-conduit-bytestring-0.1.0.1
-  - yaftee-conduit-bytestring-ft-0.1.0.0
+  - yaftee-conduit-bytestring-ft-0.1.0.1
   - higher-order-freer-monad-0.1.0.0
   - higher-order-open-union-0.1.0.1
   - freer-base-classes-0.1.0.0

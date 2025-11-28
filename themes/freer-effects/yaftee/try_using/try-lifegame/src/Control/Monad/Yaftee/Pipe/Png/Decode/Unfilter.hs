@@ -100,18 +100,17 @@ pngFilter :: (
 pngFilter _ _ [] = pure ()
 pngFilter hdr bs0 ((w, h) : ss) = void do
 	let	bpp = Header.headerToBpp hdr
-		rbs = Header.headerToRowBytes hdr
 		bd = fromIntegral $ Header.headerBitDepth hdr
 		bs0' = filter bpp (replicate ((w * bd) `div'` 8 * Header.sampleNum' hdr) 0) bs0
 	Pipe.yield bs0'
 	filterAll bpp (BSF.unpack bs0) (h - 1)
 	when (not $ null ss) do
-		bs0' <- Pipe.await
-		pngFilter hdr bs0' ss
+		bs0'' <- Pipe.await
+		pngFilter hdr bs0'' ss
 
 filterAll :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 	Int -> [Word8] -> Int -> Eff.E es BSF.ByteString [Word8] ()
-filterAll bpp prior 0 = pure ()
+filterAll _bpp _prior 0 = pure ()
 filterAll bpp prior n = Pipe.awaitMaybe >>= \case
 	Nothing -> pure ()
 	Just BSF.Empty -> pure ()

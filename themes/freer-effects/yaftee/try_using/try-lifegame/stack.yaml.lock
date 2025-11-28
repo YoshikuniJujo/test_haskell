@@ -47,12 +47,12 @@ packages:
   original:
     hackage: yaftee-conduit-bytestring-0.1.0.1
 - completed:
-    hackage: yaftee-conduit-bytestring-ft-0.1.0.0@sha256:181184f321ea2bb2a79484f8fd90b77594a05bbc4019f3ffd5b2675fa8daadc5,2489
+    hackage: yaftee-conduit-bytestring-ft-0.1.0.1@sha256:7efd6b94a83e5ec1683595aef500e2c192292c50674fe50d0ffb98638c8f7f5a,2489
     pantry-tree:
-      sha256: fa8d87e31777138acbd776e3df6c8d2efc137ff865d5aa840e5f80dbdca1eed9
+      sha256: c399689504845c07d2ccf258e9d7f1e72390c895d7e725fd1e10019bd69f2bb5
       size: 527
   original:
-    hackage: yaftee-conduit-bytestring-ft-0.1.0.0
+    hackage: yaftee-conduit-bytestring-ft-0.1.0.1
 - completed:
     hackage: higher-order-freer-monad-0.1.0.0@sha256:cb577292506e6f906528813f339966874c7c7a23a76cc4b5eabdd600f2843c2d,2038
     pantry-tree:

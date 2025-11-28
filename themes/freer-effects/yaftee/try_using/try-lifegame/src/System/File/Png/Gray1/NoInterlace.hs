@@ -28,7 +28,6 @@ import Control.HigherOpenUnion qualified as U
 import Data.Foldable
 import Data.Bool
 import Data.ByteString.FingerTree qualified as BSF
-import Data.Png qualified as Png
 import Data.Png.Header qualified as Header
 import Data.Png.Header.Data qualified as Header
 
@@ -202,12 +201,15 @@ makeChunks hdr mplt = void $ do
 			Chunk { chunkName = "IEND", chunkBody = "" },
 			sn )
 	Pipe.=$= do
-		Pipe.yield Png.fileHeader
+		Pipe.yield fileHeader
 		forever' 0 \sn -> do
 			f <- Pipe.await
 			let	(c, sn') = f sn
 			Pipe.yield $ chunkToByteString c
 			pure sn'
+
+fileHeader :: BSF.ByteString
+fileHeader = "\x89PNG\r\n\SUB\n"
 
 forever' :: Monad m => a -> (a -> m a) -> m a
 forever' st act = act st >>= (`forever'` act)

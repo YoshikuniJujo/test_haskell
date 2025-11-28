@@ -121,6 +121,14 @@ fctl w h d = Apng.Fctl {
 fdatChunk :: Word32 -> BSF.ByteString -> EnChunk.Chunk
 fdatChunk sn bd = EnChunk.Chunk "fdAT" $ BSF.fromBitsBE' sn <> bd
 
+mkChunks :: (
+	Integral a,
+	U.Member Pipe.P es,
+	U.Member (State.Named "foobar" BSF.ByteString) es,
+	U.Member (State.Named "foobar" [Ratio Word16]) es,
+	U.Member (Except.E String) es, U.Member Fail.F es
+	) =>
+	Word32 -> Word32 -> a -> Eff.E es ChunkNew.C (Word32 -> (EnChunk.Chunk, Word32)) ()
 mkChunks wdt hgt n = do
 	Pipe.yield \sn -> (EnChunk.Chunk "IHDR" . BSF.fromStrict
 		. Header.encodeHeader $ header wdt hgt, sn)

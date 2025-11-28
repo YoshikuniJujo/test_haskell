@@ -2,10 +2,10 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module FctlImageBody.Gray1Words where
+module FctlImageBody.Gray1Words (BodyGray1(..)) where
 
 import Control.Monad.Yaftee.Pipe.Png.Encode qualified as PngE
-import Control.Monad.Yaftee.Pipe.Apng.Decode
+import Fctl
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Apng

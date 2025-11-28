@@ -14,7 +14,6 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
-import Control.Monad.Yaftee.Pipe.BytesCrc32 qualified as Bytes
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.Pipe.Png.Decode qualified as Png
 import Control.Monad.Yaftee.State qualified as State
@@ -42,7 +41,7 @@ import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 
 main :: IO ()
 main = do
-	dr : d_ : de_ : fpo : _ <- getArgs
+	dr : d_ : _de_ : fpo : _ <- getArgs
 
 	fps@(fp0 : _) <- ((dr </>) <$>)
 		. L.sort . filter (not . ("." `L.isSuffixOf`)) <$> getDirectoryContents dr
@@ -69,9 +68,9 @@ main = do
 	ibd <- PipeZ.cByteArrayMalloc 64
 	obd <- PipeZ.cByteArrayMalloc 64
 	void . Eff.runM
-		. Chunk.chunkRun_ @"foobar"
+		. Chunk.chunkRun_' @"foobar"
 		. runPngToImageGray1 @"foobar" @BSF.ByteString
-		. Except.run @String . Except.run @Zlib.ReturnCode . Pipe.run
+		. Except.run @String . Except.run @Zlib.ReturnCode . Fail.run . Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. void $ for_ fps (\fp ->
 			do
@@ -79,8 +78,13 @@ main = do
 				PipeBS.hGet 32 h
 				Eff.effBase $ hClose h
 			Pipe.=$= do
-				pngToImageGray1 "foobar" hdr ibd obd
-				Bytes.flush "foobar")
+				pngToImageGray1 "foobar" hdr ibd obd )
+--				State.putN "foobar" OnDemand.RequestFlush
+--				"" <- Pipe.await
+--				"" <- Pipe.await
+--				"" <- Pipe.await
+--				pure ())
+--				OnDemand.flush "foobar")
 
 		Pipe.=$= (Pipe.yield =<< replicateM n Pipe.await)
 		Pipe.=$= PipeT.convert ((Lifegame.boardToGray1' 10 . Lifegame.gray1ToBoard) <$>)

@@ -5,7 +5,7 @@
 module Data.Image.Gray1 (
 
 	G(..), generate,
-	generateFromBytesM, diff, unconsRow, printAsAscii
+	generateFromBytesM, diff, unconsRow
 
 	) where
 
@@ -16,11 +16,6 @@ import Data.Bool
 import Data.Word
 
 data G = G { width :: Int, height :: Int, body :: V.Vector Word8 } deriving Show
-
-rows :: G -> [[Word8]]
-rows G { width = w, height = h, body = bd } =
-	(<$> [0 .. h - 1]) \y -> (<$> [0 .. (w - 1) `div` 8]) \x ->
-		bd V.! (y * ((w - 1) `div` 8 + 1) + x)
 
 rows' :: G -> [V.Vector Word8]
 rows' G { width = w, body = bd } = go bd
@@ -51,8 +46,10 @@ boolsToWord bls = go 0 bls'
 generateFromBytesM :: Monad m => Int -> Int -> m [Word8] -> m G
 generateFromBytesM w h f = do
 	bd <- V.unfoldrExactNM (((w - 1) `div` 8 + 1) * h)
-		(\case	[] -> f >>= \(w : ws) -> pure (w, ws)
-			w : ws -> pure (w, ws)) []
+		(\case	[] -> f >>= \case
+				[] -> error "generateFromBytesM"
+				(w' : ws) -> pure (w', ws)
+			w'' : ws -> pure (w'', ws)) []
 	pure G { width = w, height = h, body = bd }
 
 diff :: G -> G -> Maybe (Word32, Word32, G)
@@ -129,35 +126,3 @@ takeR n v = V.drop (V.length v - n) v
 
 dropR :: Int -> V.Vector a -> V.Vector a
 dropR n v = V.take (V.length v - n) v
-
-printAsAscii :: G -> IO ()
-printAsAscii = (putStrLn `mapM_`) . toAscii
-
-toAscii :: G -> [String]
-toAscii g = (take (width g) . concat . (wordToAscii <$>) <$>) $ rows g
-
-wordToAscii :: Word8 -> String
-wordToAscii w = bool '.' '*' . testBit w <$> [7, 6 .. 0]
-
-sample0, sample1, sample2 :: G
-sample0 = G {
-	width = 16, height = 5,
-	body = V.generate (2 * 5) fromIntegral }
-
-sample1 = G {
-	width = 15, height = 5,
-	body = V.generate (2 * 5) fromIntegral }
-
-sample2 = G {
-	width = 17, height = 5,
-	body = V.generate (3 * 5) fromIntegral }
-
-fromAscii :: [String] -> G
-fromAscii asc = generate w h (\x y -> asc !! y !! x == '*')
-	where
-	w = length $ head asc
-	h = length asc
-
-sep :: Int -> [a] -> [[a]]
-sep _ [] = []
-sep n xs = take n xs : sep n (drop n xs)

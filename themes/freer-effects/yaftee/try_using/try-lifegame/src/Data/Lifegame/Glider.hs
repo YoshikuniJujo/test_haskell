@@ -1,6 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
 module Data.Lifegame.Glider (
 	G(..), Shape(..), LeftRight(..), UpDown(..), add, addGs,
@@ -231,7 +231,7 @@ data Change a = NG | OK | Changed a deriving Show
 
 removeBottomGliders' :: Board -> Maybe Board
 removeBottomGliders' brd = case removeBottomGliders brd of
-	NG -> Nothing; OK -> Just brd; Changed brd -> Just brd
+	NG -> Nothing; OK -> Just brd; Changed brd' -> Just brd'
 
 removeBottomGliders :: Board -> Change Board
 removeBottomGliders brd
@@ -247,7 +247,7 @@ isBottomGlider brd ((_, y), _) = y == boardHeight brd - 3
 
 removeTopGliders' :: Board -> Maybe Board
 removeTopGliders' brd = case removeTopGliders brd of
-	NG -> Nothing; OK -> Just brd; Changed brd -> Just brd
+	NG -> Nothing; OK -> Just brd; Changed brd' -> Just brd'
 
 removeTopGliders :: Board -> Change Board
 removeTopGliders brd
