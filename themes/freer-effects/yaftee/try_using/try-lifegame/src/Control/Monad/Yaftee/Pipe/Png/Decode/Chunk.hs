@@ -67,16 +67,17 @@ chunkAfter :: forall nm -> (
 	U.Member Fail.F es
 	) =>
 	Eff.E es ChunkNew.C BSF.ByteString ()
-chunkAfter nm = forever do
-	ChunkNew.Begin _ cnm <- Pipe.await
-	State.putN nm $ Chunk True cnm
-	Pipe.yield ""
-	State.putN nm $ Chunk False cnm
-	fix \go -> Pipe.await >>= \case
-		ChunkNew.Body bd -> Pipe.yield bd >> go
-		ChunkNew.End -> Pipe.yield ""
-		_ -> Except.throw @String "chunkAfter: bad"
-	pure ()
+chunkAfter nm = forever $ Pipe.await >>= \case
+	ChunkNew.Begin _ cnm -> do
+		State.putN nm $ Chunk True cnm
+		Pipe.yield ""
+		State.putN nm $ Chunk False cnm
+		fix \go -> Pipe.await >>= \case
+			ChunkNew.Body bd -> Pipe.yield bd >> go
+			ChunkNew.End -> pure ()
+			ChunkNew.EndOfTheWorld -> Pipe.yield "ENDOFTHEWORLD"
+			_ -> Except.throw @String "chunkAfter: bad"
+	ChunkNew.EndOfTheWorld -> Pipe.yield "ENDOFTHEWORLD"
 
 seqFromString :: String -> BSF.ByteString
 seqFromString = BSF.pack . (fromIntegral . ord <$>)

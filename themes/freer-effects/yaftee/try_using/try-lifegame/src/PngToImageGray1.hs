@@ -14,6 +14,7 @@ module PngToImageGray1 (
 	PngToImageGray1Members ) where
 
 import Control.Monad
+import Control.Monad.Fix
 import Control.Monad.ST
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
@@ -37,6 +38,8 @@ import Data.Png.Header.Data qualified as Header
 import Data.Image.Gray1 qualified as ImageG1
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
+
+import Debug.Trace
 
 runPngToImageGray1 ::
 	forall nm m es i o r . (HFunctor.Loose (U.U es), Monoid m) =>
@@ -64,16 +67,17 @@ pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
 		cnk <- State.getN @Chunk.Chunk nm
 		when ("IDAT" `Chunk.isChunkName` cnk) $ Pipe.yield bs
 		when ("IEND" `Chunk.isChunkName` cnk) do
-			"" <- Pipe.await
-			Pipe.yield ""
+			"ENDOFTHEWORLD" <- Pipe.await
+			Pipe.yield "123"
 	Pipe.=$= do
 		_ <- PipeZ.inflate nm IO (Zlib.WindowBitsZlib 15) ibd obd
-		"" <- Pipe.await
-		"" <- Pipe.await
-		Pipe.yield ""
+		"123" <- Pipe.await
+		Pipe.yield "OKOKIMOK"
 	Pipe.=$= do
 		Buffer.format nm BSF.splitAt' "" rs
-		"" <- Pipe.await
+		fix \go -> do
+			x <- Pipe.await
+			when (x /= "OKOKIMOK") $ go
 		Pipe.yield ""
 	Pipe.=$= do
 		Unfilter.pngUnfilter' hdr

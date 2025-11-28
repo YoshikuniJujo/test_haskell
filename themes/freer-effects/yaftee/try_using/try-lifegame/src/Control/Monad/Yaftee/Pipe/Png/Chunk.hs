@@ -86,7 +86,7 @@ chunks :: forall nm -> (
 	Int -> Eff.E es BSF.ByteString C ()
 chunks nm d = fix \go -> do
 	b <- chunk1 nm d
-	when b go
+	if b then go else Pipe.yield EndOfTheWorld
 
 chunk1 :: forall nm -> (
 	U.Member Pipe.P es, OnDemand.Members nm es,
@@ -98,7 +98,7 @@ chunk1 nm d = do
 	PipeCrc32.reset nm
 	State.putN nm $ OnDemand.RequestBytes 4
 	cn <- Pipe.await
-	trace ("chunk1: yield Begin" ++ show cn) (Pipe.yield $ Begin n cn)
+	trace ("chunk1: yield Begin: " ++ show cn) (Pipe.yield $ Begin n cn)
 	for_ (split d n) \n' -> do
 		State.putN nm $ OnDemand.RequestBytes n'
 		Pipe.yield . Body =<< Pipe.await
@@ -117,7 +117,9 @@ chunk1 nm d = do
 		m | n < m -> n : go (m - n) | otherwise -> [m]
 
 data C	= Begin Int BSF.ByteString
-	| Body BSF.ByteString | End deriving Show
+	| Body BSF.ByteString | End
+	| EndOfTheWorld
+	deriving Show
 
 fileHeader :: BSF.ByteString
 fileHeader = "\137PNG\r\n\SUB\n"

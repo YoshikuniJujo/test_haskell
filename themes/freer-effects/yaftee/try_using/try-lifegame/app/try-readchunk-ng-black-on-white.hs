@@ -112,6 +112,7 @@ main = do
 
 			doWhile_ $ Pipe.awaitMaybe >>= \case
 				Nothing -> pure False
+				Just ChunkNew.EndOfTheWorld -> pure True
 				Just (ChunkNew.Begin _ "IHDR") -> do	
 					_bd <- chunkBody "foobar"
 					Just d' <- pop "foobar"

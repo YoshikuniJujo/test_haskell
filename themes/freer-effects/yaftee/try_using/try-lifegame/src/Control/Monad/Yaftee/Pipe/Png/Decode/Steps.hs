@@ -24,11 +24,4 @@ chunk :: forall nm -> (
 	U.Member (Except.E String) es, U.Member Fail.F es
 	) =>
 	Eff.E es BSF.ByteString BSF.ByteString ()
-chunk nm =
-{-
-	do	fhdr <- Chunk.readBytes nm 8
-		when (fhdr /= fileHeader)
-			. Except.throw @String
-			$ "chunk: File header error: " <> show fhdr
-			-}
-		Chunk.chunk' nm 500
+chunk nm = Chunk.chunk' nm 500

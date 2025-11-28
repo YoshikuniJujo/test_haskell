@@ -71,6 +71,7 @@ main = do
 		. Chunk.chunkRun_' @"foobar"
 		. runPngToImageGray1 @"foobar" @BSF.ByteString
 		. Except.run @String . Except.run @Zlib.ReturnCode . Fail.run . Pipe.run
+		. (`Fail.catch` IO.putStrLn)
 		. (`Except.catch` IO.putStrLn)
 		. void $ for_ fps (\fp ->
 			do
@@ -78,12 +79,12 @@ main = do
 				PipeBS.hGet 32 h
 				Eff.effBase $ hClose h
 			Pipe.=$= do
-				pngToImageGray1 "foobar" hdr ibd obd )
---				State.putN "foobar" OnDemand.RequestFlush
+				pngToImageGray1 "foobar" hdr ibd obd
+				State.putN "foobar" OnDemand.RequestFlush
+				"" <- Pipe.await
 --				"" <- Pipe.await
 --				"" <- Pipe.await
---				"" <- Pipe.await
---				pure ())
+				pure ())
 --				OnDemand.flush "foobar")
 
 		Pipe.=$= (Pipe.yield =<< replicateM n Pipe.await)
