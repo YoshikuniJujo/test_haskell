@@ -36,7 +36,7 @@ import System.IO
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
 import Data.Png.Datable qualified as Encode
-import Control.Monad.Yaftee.Pipe.Monoid.Divide qualified as Buffer
+import Control.Monad.Yaftee.Pipe.Tools qualified as Buffer
 
 import Data.Word
 import Data.Word.Crc32 qualified as Crc32
@@ -105,12 +105,12 @@ hWritePngGray1' ::
 hWritePngGray1' ho hdr (fctl, img) ibe obe = do
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
 		. Fail.run
-		. Buffer.run @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
+		. Buffer.devideRun @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
 		. Pipe.run $ hWritePngPipeGray1' ho hdr fctl img ibe obe
 
 hWritePngPipeGray1' :: (
 	U.Member Pipe.P es,
-	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named "barbaz" (Buffer.Devide BSF.ByteString)) es,
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
@@ -136,7 +136,7 @@ fromGrayImage1' img = case Gray1.unconsRow img of
 encodeApngGray1 :: (
 	Encode.Datable a,
 	U.Member Pipe.P es,
-	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named "barbaz" (Buffer.Devide BSF.ByteString)) es,
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
 	U.Member (Except.E String) es,
 	U.Member (Except.E Zlib.ReturnCode) es,
@@ -159,7 +159,7 @@ encodeRawCalcGray1 :: forall nm m -> (
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
-	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Devide BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
 	U.Base (U.FromFirst m) es
 	) =>
@@ -232,7 +232,7 @@ pipeDat :: forall nm m -> (
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
-	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Devide BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
 	U.Base (U.FromFirst m) es
 	) =>

@@ -1,5 +1,4 @@
 Control.Monad.Yaftee.Pipe
-	+ Control.Monad.Yaftee.Pipe.Buffer
 	+ Control.Monad.Yaftee.Pipe.Png
 		+ Control.Monad.Yaftee.Pipe.Png.Pallet
 		+ Control.Monad.Yaftee.Pipe.Png.Decode

@@ -41,7 +41,7 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Fctl
 
 import Data.Png.Datable qualified as Encode
-import Control.Monad.Yaftee.Pipe.Monoid.Divide qualified as Buffer
+import Control.Monad.Yaftee.Pipe.Tools qualified as Buffer
 
 import Data.Word
 import Data.ByteString.FingerTree.Bits qualified as BSF
@@ -131,7 +131,7 @@ hWritePngGray1 ::
 hWritePngGray1 ho hdr fn np (fctls, imgs) ibe obe = do
 	void . Eff.runM . ChunkNew.encodeRun_ @"foo" . Except.run @String . Except.run @Zlib.ReturnCode
 		. Fail.run
-		. Buffer.run @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
+		. Buffer.devideRun @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
 		. Pipe.run $ hWritePngPipeGray1 ho hdr fn np fctls imgs ibe obe
 
 hWritePngGray1' ::
@@ -140,13 +140,13 @@ hWritePngGray1' ::
 hWritePngGray1' ho hdr fn np (fctls, imgs) ibe obe = do
 	void . Eff.runM . ChunkNew.encodeRun_ @"foo" . Except.run @String . Except.run @Zlib.ReturnCode
 		. Fail.run
-		. Buffer.run @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
+		. Buffer.devideRun @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
 		. Pipe.run $ hWritePngPipeGray1' ho hdr fn np fctls imgs ibe obe
 
 hWritePngPipeGray1 :: (
 	U.Member Pipe.P es,
 	U.Member (State.Named "foo" Crc32.C) es,
-	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named "barbaz" (Buffer.Devide BSF.ByteString)) es,
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
@@ -164,7 +164,7 @@ hWritePngPipeGray1 ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrLn
 hWritePngPipeGray1' :: (
 	U.Member Pipe.P es,
 	U.Member (State.Named "foo" Crc32.C) es,
-	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named "barbaz" (Buffer.Devide BSF.ByteString)) es,
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
@@ -222,7 +222,7 @@ encodeApngGray1 :: (
 	Fctlable a, Encode.Datable a,
 	U.Member Pipe.P es,
 	U.Member (State.Named "foo" Crc32.C) es,
-	U.Member (State.Named "barbaz" (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named "barbaz" (Buffer.Devide BSF.ByteString)) es,
 	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
 	U.Member (Except.E String) es,
 	U.Member (Except.E Zlib.ReturnCode) es,
@@ -248,7 +248,7 @@ encodeRawCalcGray1 :: forall nm m -> (
 	U.Member Pipe.P es,
 	U.Member (State.Named "foo" Crc32.C) es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
-	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Devide BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
 	U.Member U.Fail es,
 	U.Base (U.FromFirst m) es
@@ -316,7 +316,7 @@ pipeDat :: forall nm m -> (
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
-	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Devide BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
 	U.Base (U.FromFirst m) es
 	) =>

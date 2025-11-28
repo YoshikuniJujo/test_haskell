@@ -19,7 +19,7 @@ import Control.Monad.ST
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
-import Control.Monad.Yaftee.Pipe.Monoid.Divide qualified as Buffer
+import Control.Monad.Yaftee.Pipe.Tools qualified as Buffer
 import Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter qualified as Unfilter
 import Control.Monad.Yaftee.Pipe.Png.Decode.Chunk qualified as Chunk
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
@@ -43,12 +43,12 @@ import Debug.Trace
 runPngToImageGray1 ::
 	forall nm m es i o r . (HFunctor.Loose (U.U es), Monoid m) =>
 	Eff.E (	PngToImageGray1States nm m `Append` es) i o r ->
-	Eff.E es i o (r, Buffer.Monoid m)
-runPngToImageGray1 = Buffer.run . PipeZ.run
+	Eff.E es i o (r, Buffer.Devide m)
+runPngToImageGray1 = Buffer.devideRun . PipeZ.run
 
 type PngToImageGray1States nm m = '[
 	State.Named nm (Maybe PipeZ.ByteString),
-	State.Named nm (Buffer.Monoid m) ]
+	State.Named nm (Buffer.Devide m) ]
 
 pngToImageGray1 :: forall nm -> (
 	U.Member Pipe.P es, Chunk.ChunkMembers' nm es,
@@ -92,5 +92,5 @@ pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
 	where rs = (+ 1) <$> Header.headerToRows hdr
 
 type PngToImageGray1Members nm es = (
-	U.Member (State.Named nm (Buffer.Monoid BSF.ByteString)) es,
+	U.Member (State.Named nm (Buffer.Devide BSF.ByteString)) es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es )
