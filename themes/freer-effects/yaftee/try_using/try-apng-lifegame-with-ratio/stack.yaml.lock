@@ -3,7 +3,105 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/topics/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: zlib-yaftee-0.1.0.0@sha256:a8d326c708f39228db82f52d41b7def01093a4dcc98409d813d3ca9bbbebd144,2270
+    pantry-tree:
+      sha256: 5e89baec57d2ab79c6e28da650550b2e3e6e43d78e89dc5db7ae0013af39a973
+      size: 385
+  original:
+    hackage: zlib-yaftee-0.1.0.0
+- completed:
+    hackage: yaftee-0.1.0.0@sha256:777a4d5c12382210e9c7d97ce1d716b04df96dc1a1b6701b2c86c6e1c1e65fcb,1943
+    pantry-tree:
+      sha256: faae28ff3c9b23f30b6c4d56c76c07eb879b3e158af3b74b39c66ef6187e0519
+      size: 372
+  original:
+    hackage: yaftee-0.1.0.0
+- completed:
+    hackage: yaftee-basic-monads-0.1.0.0@sha256:6ac2b56a59177bc7896f459d8caa0594e00dc315d5a647daedb2a5a579b98d55,2382
+    pantry-tree:
+      sha256: 4fe88b20bee7ebce1c073cca9696996b44598f9cf2f542710be210fe4c6151ef
+      size: 978
+  original:
+    hackage: yaftee-basic-monads-0.1.0.0
+- completed:
+    hackage: yaftee-conduit-0.1.0.1@sha256:3beea84517654889ae6c2cfa889c344a47d5aab589841cd85ea2c565f19820ed,2237
+    pantry-tree:
+      sha256: 9c0f1ae4ae5d102e084aa9557703d3c9d359cf7d6aea37407d2e2e802368cdff
+      size: 616
+  original:
+    hackage: yaftee-conduit-0.1.0.1
+- completed:
+    hackage: yaftee-conduit-mono-traversable-0.1.0.1@sha256:a700f88e67b862c2335dbe1397134b2136481d9e04e3b6da8963911229399349,2428
+    pantry-tree:
+      sha256: b2cd19a3af9e49499c8702ad9678d901eb6b008be97e834213cb6798b188171a
+      size: 509
+  original:
+    hackage: yaftee-conduit-mono-traversable-0.1.0.1
+- completed:
+    hackage: yaftee-conduit-bytestring-0.1.0.1@sha256:c9c63711bdb6b943c5f61bb840f78de3a72cd309a1dac84525cdd90f0862ed0a,3035
+    pantry-tree:
+      sha256: 43a57fc7a959abc3a17e3951c499b45a06ffadcd3be61c18ddf9ac72b352981f
+      size: 1325
+  original:
+    hackage: yaftee-conduit-bytestring-0.1.0.1
+- completed:
+    hackage: yaftee-conduit-bytestring-ft-0.1.0.1@sha256:7efd6b94a83e5ec1683595aef500e2c192292c50674fe50d0ffb98638c8f7f5a,2489
+    pantry-tree:
+      sha256: c399689504845c07d2ccf258e9d7f1e72390c895d7e725fd1e10019bd69f2bb5
+      size: 527
+  original:
+    hackage: yaftee-conduit-bytestring-ft-0.1.0.1
+- completed:
+    hackage: higher-order-freer-monad-0.1.0.0@sha256:cb577292506e6f906528813f339966874c7c7a23a76cc4b5eabdd600f2843c2d,2038
+    pantry-tree:
+      sha256: a5733f3e7b315da2f2f898201da69dee0fdbe10a37d0686a4bcc381f13bf869a
+      size: 392
+  original:
+    hackage: higher-order-freer-monad-0.1.0.0
+- completed:
+    hackage: higher-order-open-union-0.1.0.1@sha256:d58ef8d765a72af539b26c52fc3187c479f326f5ef6769244c3e7614336f0bdd,2024
+    pantry-tree:
+      sha256: 342311eacbd28872cd17200aeaf1b3c74aedb5ba0edf3abb91635f66797fe0b5
+      size: 515
+  original:
+    hackage: higher-order-open-union-0.1.0.1
+- completed:
+    hackage: freer-base-classes-0.1.0.0@sha256:38e4853293416518606ea78699a57025b3595a8fbec36e8a26cce49e18fa1daf,1895
+    pantry-tree:
+      sha256: ea291a883003d80cdc2bcc4e3589e495ae1559e96e8368fe94ea724078f01476
+      size: 463
+  original:
+    hackage: freer-base-classes-0.1.0.0
+- completed:
+    hackage: ftcqueue-0.1.0.1@sha256:2fdb84a50d3281b622112cd8a4573b5a087043d598e5e47377e1bbc504472d2a,1706
+    pantry-tree:
+      sha256: 1704d5ac9522c7f2800a663b3e837d1069720a7f1821595a3d668a46609631b9
+      size: 363
+  original:
+    hackage: ftcqueue-0.1.0.1
+- completed:
+    hackage: bytestring-ft-0.1.0.0@sha256:b20eeafdedbe1f031bef47e721398d4b340140046dae09ac68622ea5e8e895a5,2083
+    pantry-tree:
+      sha256: 8323140812e8ad3a40258a4e56599bc1244893ea55f45103c3887454f59db932
+      size: 705
+  original:
+    hackage: bytestring-ft-0.1.0.0
+- completed:
+    hackage: bitarray-bs-0.1.0.0@sha256:381c747669e6eee3950d2f091432f02ce5be531c155cbae83a7e12ed2487be98,1884
+    pantry-tree:
+      sha256: a18ab03c2e292c193eb3501e39c95849274695fd90c9d801b4b442aa34022876
+      size: 522
+  original:
+    hackage: bitarray-bs-0.1.0.0
+- completed:
+    hackage: zlib-core-0.1.0.1@sha256:16764eb0801becc31feca5fe57be100d957a37e45a497448a4a29e77d57b6a53,2243
+    pantry-tree:
+      sha256: 527a9d115e1a43166f9cee6d12ad012e407d049d7a1ed7ec1e7ae6799f898dfa
+      size: 804
+  original:
+    hackage: zlib-core-0.1.0.1
 snapshots:
 - completed:
     sha256: 4b787f53036611a03edbf438dd5412daa03fb3da5d938ae8865ec471fe3f9632

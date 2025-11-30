@@ -39,8 +39,22 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
-# extra-deps: []
+
+extra-deps:
+  - zlib-yaftee-0.1.0.0
+  - yaftee-0.1.0.0
+  - yaftee-basic-monads-0.1.0.0
+  - yaftee-conduit-0.1.0.1
+  - yaftee-conduit-mono-traversable-0.1.0.1
+  - yaftee-conduit-bytestring-0.1.0.1
+  - yaftee-conduit-bytestring-ft-0.1.0.1
+  - higher-order-freer-monad-0.1.0.0
+  - higher-order-open-union-0.1.0.1
+  - freer-base-classes-0.1.0.0
+  - ftcqueue-0.1.0.1
+  - bytestring-ft-0.1.0.0
+  - bitarray-bs-0.1.0.0
+  - zlib-core-0.1.0.1
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

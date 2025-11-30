@@ -25,7 +25,35 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Monad.Yaftee.Pipe.Apng.Decode
+      Control.Monad.Yaftee.Pipe.Buffer
+      Control.Monad.Yaftee.Pipe.BytesCrc32
+      Control.Monad.Yaftee.Pipe.Png.Decode
+      Control.Monad.Yaftee.Pipe.Png.Decode.Chunk
+      Control.Monad.Yaftee.Pipe.Png.Decode.Header
+      Control.Monad.Yaftee.Pipe.Png.Decode.Steps
+      Control.Monad.Yaftee.Pipe.Png.Decode.Unfilter
+      Control.Monad.Yaftee.Pipe.Png.Encode
+      Control.Monad.Yaftee.Pipe.Png.Encode.Chunk
+      Control.Monad.Yaftee.Pipe.Png.Palette
+      Control.Monad.Yaftee.Pipe.PngNg.Decode.Chunk
+      Data.Adam7
+      Data.Apng
+      Data.Image.Gray
+      Data.Image.Gray1
+      Data.Image.Simple
+      Data.Png
+      Data.Png.Filters
+      Data.Png.Header
+      Data.Png.Header.Data
+      FctlImage
+      FctlImage.Gray1
+      FctlImageBody.Gray1Words
       Lib
+      Lifegame.Words
+      PngToImageGray1
+      System.File.Apng.Gray1.NoInterlace
+      Tools
   other-modules:
       Paths_try_apng_lifegame_with_ratio
   autogen-modules:
@@ -35,6 +63,58 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , bytestring-ft
+    , containers
+    , deepseq
+    , directory
+    , filepath
+    , higher-order-open-union
+    , mono-traversable
+    , primitive
+    , tools-yj
+    , typelevel-tools-yj
+    , union-color
+    , vector
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
+    , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
+    , yaftee-conduit-mono-traversable
+    , zlib-core
+    , zlib-yaftee
+  default-language: Haskell2010
+
+executable try-apng-lifegame-with-ratio
+  main-is: try-apng-lifegame-with-ratio.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , bytestring-ft
+    , containers
+    , deepseq
+    , directory
+    , filepath
+    , higher-order-open-union
+    , mono-traversable
+    , primitive
+    , tools-yj
+    , try-apng-lifegame-with-ratio
+    , typelevel-tools-yj
+    , union-color
+    , vector
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
+    , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
+    , yaftee-conduit-mono-traversable
+    , zlib-core
+    , zlib-yaftee
   default-language: Haskell2010
 
 executable try-apng-lifegame-with-ratio-exe
@@ -48,7 +128,28 @@ executable try-apng-lifegame-with-ratio-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , bytestring-ft
+    , containers
+    , deepseq
+    , directory
+    , filepath
+    , higher-order-open-union
+    , mono-traversable
+    , primitive
+    , tools-yj
     , try-apng-lifegame-with-ratio
+    , typelevel-tools-yj
+    , union-color
+    , vector
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
+    , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
+    , yaftee-conduit-mono-traversable
+    , zlib-core
+    , zlib-yaftee
   default-language: Haskell2010
 
 test-suite try-apng-lifegame-with-ratio-test
@@ -63,5 +164,26 @@ test-suite try-apng-lifegame-with-ratio-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , bytestring-ft
+    , containers
+    , deepseq
+    , directory
+    , filepath
+    , higher-order-open-union
+    , mono-traversable
+    , primitive
+    , tools-yj
     , try-apng-lifegame-with-ratio
+    , typelevel-tools-yj
+    , union-color
+    , vector
+    , yaftee
+    , yaftee-basic-monads
+    , yaftee-conduit
+    , yaftee-conduit-bytestring
+    , yaftee-conduit-bytestring-ft
+    , yaftee-conduit-mono-traversable
+    , zlib-core
+    , zlib-yaftee
   default-language: Haskell2010

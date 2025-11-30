@@ -21,6 +21,27 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- deepseq
+- primitive
+- mono-traversable
+- containers
+- vector
+- bytestring
+- zlib-yaftee
+- directory
+- filepath
+- yaftee
+- yaftee-basic-monads
+- yaftee-conduit
+- yaftee-conduit-mono-traversable
+- yaftee-conduit-bytestring
+- yaftee-conduit-bytestring-ft
+- higher-order-open-union
+- zlib-core
+- bytestring-ft
+- union-color
+- tools-yj
+- typelevel-tools-yj
 
 ghc-options:
 - -Wall
@@ -40,6 +61,16 @@ executables:
   try-apng-lifegame-with-ratio-exe:
     main:                Main.hs
     source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-apng-lifegame-with-ratio
+  try-apng-lifegame-with-ratio:
+    main:                try-apng-lifegame-with-ratio.hs
+    source-dirs:         app
+    other-modules:       []
     ghc-options:
     - -threaded
     - -rtsopts
