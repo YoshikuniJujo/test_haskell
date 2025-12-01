@@ -64,6 +64,7 @@ library
       Instance.OverlappingError
       InstanceAll
       IORef
+      Jouisha
       LambdaCube
       Lens.LensR
       Lib
