@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      AtCoder
       CEnum.Sample
       CEnum.SampleType
       Class.Default
