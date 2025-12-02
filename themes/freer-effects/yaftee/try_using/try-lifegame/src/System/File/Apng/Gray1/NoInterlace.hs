@@ -57,7 +57,6 @@ import FctlImageBody.Gray1Words qualified as W
 import Tools
 
 import Control.Monad.Yaftee.Pipe.Png.ChunkEncode
-import Control.Monad.Yaftee.Pipe.Png.ChunkEncode.Old qualified as Old
 
 import Data.Apng
 
@@ -310,8 +309,7 @@ makeChunks hdr fn np mplt = void $ do
 		Pipe.yield \sn -> (
 			Chunk { chunkName = "IEND", chunkBody = "" },
 			sn )
---	Pipe.=$= chunksSt 0
-	Pipe.=$= Old.chunks 0
+	Pipe.=$= chunksSt 0
 
 pipeDat :: forall nm m -> (
 	Encode.Datable a,
