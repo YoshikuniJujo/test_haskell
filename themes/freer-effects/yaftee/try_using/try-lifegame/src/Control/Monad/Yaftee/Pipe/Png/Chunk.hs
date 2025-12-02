@@ -3,6 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -15,15 +16,11 @@ module Control.Monad.Yaftee.Pipe.Png.Chunk (
 
 	-- * DECODE
 
-	decode, hDecode,
+	decode, hDecode, decodeRun_, DecodeStates,
 
 	-- * ENCODE
 
-	encode, hEncode, encodeRun_,
-
-	-- * OTHERS
-
-	isName
+	encode, hEncode, encodeRun_, EncodeStates
 
 	) where
 
@@ -35,7 +32,6 @@ import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand
 	qualified as OnDemand
--- import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.Crc32
 import Control.Monad.Yaftee.Pipe.MonoTraversable.Crc32
 	qualified as PipeCrc32
 import Control.Monad.Yaftee.State qualified as State
@@ -57,7 +53,6 @@ import Data.TypeLevel.List
 
 import Numeric
 
-import Debug.Trace
 
 decode :: forall nm -> (
 	U.Member Pipe.P es, OnDemand.Members nm es,
@@ -118,6 +113,13 @@ chunk1 nm d = do
 		0 -> []
 		m | n < m -> n : go (m - n) | otherwise -> [m]
 
+decodeRun_ ::
+	F.Loose (U.U es) =>
+	Eff.E (DecodeStates nm `Append` es) i o r -> Eff.E es i o ()
+decodeRun_ = void . (`State.runN` Crc32.initial)
+
+type DecodeStates nm = '[State.Named nm Crc32.C]
+
 data C	= Begin Int BSF.ByteString
 	| Body BSF.ByteString | End
 	| EndOfTheWorld
@@ -131,19 +133,19 @@ type instance Element C = Word8
 instance MonoFoldable C where
 	ofoldMap f = \case
 		Begin _ bs -> ofoldMap f bs
-		Body bs -> ofoldMap f bs; End -> mempty
+		Body bs -> ofoldMap f bs; _ -> mempty
 	ofoldr o v = \case
 		Begin _ bs -> ofoldr o v bs
-		Body bs -> ofoldr o v bs; End -> v
+		Body bs -> ofoldr o v bs; _ -> v
 	ofoldl' o v = \case
 		Begin _ bs -> ofoldl' o v bs
-		Body bs -> ofoldl' o v bs; End -> v
+		Body bs -> ofoldl' o v bs; _ -> v
 	ofoldr1Ex o = \case
 		Begin _ bs -> ofoldr1Ex o bs
-		Body bs -> ofoldr1Ex o bs; End -> error "instance MonoFoldable C: bad"
+		Body bs -> ofoldr1Ex o bs; _ -> error "instance MonoFoldable C: bad"
 	ofoldl1Ex' o = \case
 		Begin _ bs -> ofoldl1Ex' o bs
-		Body bs -> ofoldl1Ex' o bs; End -> error "instance MonoFoldable C: bad"
+		Body bs -> ofoldl1Ex' o bs; _ -> error "instance MonoFoldable C: bad"
 
 encode :: forall nm -> (
 	U.Member Pipe.P es, U.Member (State.Named nm Crc32.C) es,
@@ -188,7 +190,3 @@ encodeRun_ :: forall nm es i o r .
 encodeRun_ = void . OnDemand.run @nm . PipeCrc32.run @nm
 
 type EncodeStates nm = State.Named nm Crc32.C ': OnDemand.States nm
-
-isName :: BSF.ByteString -> C -> Bool
-isName nm0 (Begin _ nm) = nm == nm0
-isName _ _ = False

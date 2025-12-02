@@ -25,7 +25,6 @@ import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
-import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.HigherOpenUnion qualified as U
 import Data.TypeLevel.List
 import Data.HigherFunctor qualified as HFunctor
@@ -40,7 +39,7 @@ chunkRun_' :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E es i o ()
 chunkRun_' = void
 	. OnDemand.run
-	. (`State.runN` Crc32.initial)
+	. ChunkNew.decodeRun_
 	. (`State.runN` Chunk False (seqFromString "IHDR"))
 
 type ChunkStates' nm =
@@ -50,8 +49,7 @@ type ChunkStates' nm =
 chunk' :: forall nm -> (
 	U.Member Pipe.P es,
 	ChunkMembers' nm es,
-	U.Member (Except.E String) es, U.Member Fail.F es
-	) =>
+	U.Member (Except.E String) es ) =>
 	Int -> Eff.E es BSF.ByteString BSF.ByteString ()
 chunk' nm n = void $ ChunkNew.decode nm n Pipe.=$= chunkAfter nm
 
@@ -63,9 +61,7 @@ type ChunkMembers' nm es = (
 chunkAfter :: forall nm -> (
 	U.Member Pipe.P es,
 	U.Member (State.Named nm Chunk) es,
-	U.Member (Except.E String) es,
-	U.Member Fail.F es
-	) =>
+	U.Member (Except.E String) es ) =>
 	Eff.E es ChunkNew.C BSF.ByteString ()
 chunkAfter nm = forever $ Pipe.await >>= \case
 	ChunkNew.Begin _ cnm -> do
@@ -78,6 +74,7 @@ chunkAfter nm = forever $ Pipe.await >>= \case
 			ChunkNew.EndOfTheWorld -> Pipe.yield "ENDOFTHEWORLD"
 			_ -> Except.throw @String "chunkAfter: bad"
 	ChunkNew.EndOfTheWorld -> Pipe.yield "ENDOFTHEWORLD"
+	_ -> error "bad"
 
 seqFromString :: String -> BSF.ByteString
 seqFromString = BSF.pack . (fromIntegral . ord <$>)
