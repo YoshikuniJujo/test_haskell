@@ -18,7 +18,6 @@ import Data.ByteString.FingerTree qualified as BSF
 import Data.Png.Header qualified as Header
 import Data.Png.Header.Data qualified as Header
 import Data.Png.Filters qualified as Filters
-
 import Tools
 
 filter :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
@@ -28,8 +27,10 @@ filter _ _ [] = pure ()
 filter hdr bs0 ((w, h) : ss) = void do
 	let	bpp = Header.headerToBpp hdr
 		bd = fromIntegral $ Header.headerBitDepth hdr
-		bs0' = Filters.filter bpp (replicate ((w * bd) `div'` 8 * Header.sampleNum' hdr) 0) bs0
-	Pipe.yield bs0'
+	Pipe.yield
+		$ Filters.filter bpp
+			(replicate ((w * bd) `div'` 8 * Header.sampleNum' hdr) 0)
+			bs0
 	filterAll bpp (BSF.unpack bs0) (h - 1)
 	when (not $ null ss) do
 		bs0'' <- Pipe.await
