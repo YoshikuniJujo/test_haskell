@@ -25,7 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Control.Monad.Yaftee.Pipe.Png.Chunk
       Control.Monad.Yaftee.Pipe.Png.ChunkDecode
       Control.Monad.Yaftee.Pipe.Png.ChunkEncode
       Control.Monad.Yaftee.Pipe.Png.Filter
@@ -68,6 +67,7 @@ library
     , mono-traversable
     , primitive
     , tools-yj
+    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -99,6 +99,7 @@ executable try-apng-lifegame-with-ratio
     , primitive
     , tools-yj
     , try-lifegame
+    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -130,6 +131,7 @@ executable try-chunk
     , primitive
     , tools-yj
     , try-lifegame
+    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -161,6 +163,7 @@ executable try-decod-lifegame-gray1
     , primitive
     , tools-yj
     , try-lifegame
+    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -192,6 +195,7 @@ executable try-lifegame-exe
     , primitive
     , tools-yj
     , try-lifegame
+    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -223,6 +227,7 @@ executable try-lifegame-ng
     , primitive
     , tools-yj
     , try-lifegame
+    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -254,6 +259,7 @@ executable try-lifegame-ng-remove-glider
     , primitive
     , tools-yj
     , try-lifegame
+    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -285,6 +291,7 @@ executable try-readchunk-ng
     , primitive
     , tools-yj
     , try-lifegame
+    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -316,6 +323,7 @@ executable try-readchunk-ng-black-on-white
     , primitive
     , tools-yj
     , try-lifegame
+    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -352,6 +360,7 @@ test-suite try-lifegame-test
     , primitive
     , tools-yj
     , try-lifegame
+    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector

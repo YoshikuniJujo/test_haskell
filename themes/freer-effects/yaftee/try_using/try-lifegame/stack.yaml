@@ -55,6 +55,10 @@ extra-deps:
   - bytestring-ft-0.1.0.0
   - bitarray-bs-0.1.0.0
   - zlib-core-0.1.0.1
+  - git: https://github.com/YoshikuniJujo/test_haskell
+    commit: cc2026933d16754d5e18011b9ae652f766155213
+    subdirs:
+      - themes/freer-effects/yaftee/try-png-chunk-yaftee
 
 # Override default flag values for project packages and extra-deps
 # flags: {}
