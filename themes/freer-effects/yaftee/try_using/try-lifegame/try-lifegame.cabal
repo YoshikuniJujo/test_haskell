@@ -65,9 +65,9 @@ library
     , filepath
     , higher-order-open-union
     , mono-traversable
+    , png-chunk-yaftee
     , primitive
     , tools-yj
-    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -96,10 +96,10 @@ executable try-apng-lifegame-with-ratio
     , filepath
     , higher-order-open-union
     , mono-traversable
+    , png-chunk-yaftee
     , primitive
     , tools-yj
     , try-lifegame
-    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -128,10 +128,10 @@ executable try-chunk
     , filepath
     , higher-order-open-union
     , mono-traversable
+    , png-chunk-yaftee
     , primitive
     , tools-yj
     , try-lifegame
-    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -160,10 +160,10 @@ executable try-decod-lifegame-gray1
     , filepath
     , higher-order-open-union
     , mono-traversable
+    , png-chunk-yaftee
     , primitive
     , tools-yj
     , try-lifegame
-    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -192,10 +192,10 @@ executable try-lifegame-exe
     , filepath
     , higher-order-open-union
     , mono-traversable
+    , png-chunk-yaftee
     , primitive
     , tools-yj
     , try-lifegame
-    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -224,10 +224,10 @@ executable try-lifegame-ng
     , filepath
     , higher-order-open-union
     , mono-traversable
+    , png-chunk-yaftee
     , primitive
     , tools-yj
     , try-lifegame
-    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -256,10 +256,10 @@ executable try-lifegame-ng-remove-glider
     , filepath
     , higher-order-open-union
     , mono-traversable
+    , png-chunk-yaftee
     , primitive
     , tools-yj
     , try-lifegame
-    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -288,10 +288,10 @@ executable try-readchunk-ng
     , filepath
     , higher-order-open-union
     , mono-traversable
+    , png-chunk-yaftee
     , primitive
     , tools-yj
     , try-lifegame
-    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -320,10 +320,10 @@ executable try-readchunk-ng-black-on-white
     , filepath
     , higher-order-open-union
     , mono-traversable
+    , png-chunk-yaftee
     , primitive
     , tools-yj
     , try-lifegame
-    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector
@@ -357,10 +357,10 @@ test-suite try-lifegame-test
     , filepath
     , higher-order-open-union
     , mono-traversable
+    , png-chunk-yaftee
     , primitive
     , tools-yj
     , try-lifegame
-    , try-png-chunk-yaftee
     , typelevel-tools-yj
     , union-color
     , vector

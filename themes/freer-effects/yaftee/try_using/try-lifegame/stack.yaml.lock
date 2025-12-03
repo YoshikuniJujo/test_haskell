@@ -103,18 +103,12 @@ packages:
   original:
     hackage: zlib-core-0.1.0.1
 - completed:
-    commit: cc2026933d16754d5e18011b9ae652f766155213
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-png-chunk-yaftee
+    hackage: png-chunk-yaftee-0.1.0.0@sha256:4db9cfdb6c3e115095ab6f16968c3e4f1868dd91046474c02a7b778f61ed204f,2634
     pantry-tree:
-      sha256: 4776d19425c9a34611f281a0d5201960b4a8a1ebf00e3ee8cdc0d57428b8088b
-      size: 705
-    subdir: themes/freer-effects/yaftee/try-png-chunk-yaftee
-    version: 0.1.0.0
+      sha256: 4a1271ab86311e5184fe9e56f2ae6175f4dded9e6f5de1fa21f1e1190c12f008
+      size: 393
   original:
-    commit: cc2026933d16754d5e18011b9ae652f766155213
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: themes/freer-effects/yaftee/try-png-chunk-yaftee
+    hackage: png-chunk-yaftee-0.1.0.0
 snapshots:
 - completed:
     sha256: 4bfcb84093e337a28ea1bc1649874301c3d3a2590aaabce096fcf809060e98f5

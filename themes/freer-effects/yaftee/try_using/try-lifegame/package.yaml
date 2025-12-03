@@ -42,7 +42,7 @@ dependencies:
 - union-color
 - tools-yj
 - typelevel-tools-yj
-- try-png-chunk-yaftee
+- png-chunk-yaftee
 
 ghc-options:
 - -Wall
