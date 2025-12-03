@@ -16,12 +16,11 @@ module Control.Monad.Yaftee.Pipe.Png.Header (
 
 	) where
 
-import Prelude hiding (Monoid)
+import Prelude hiding (Monoid, read)
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
-import Control.Monad.Yaftee.Pipe.Png.Header.Read qualified as Header
 import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as ChunkNew
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
@@ -33,6 +32,8 @@ import Data.ByteString.FingerTree qualified as BSF
 import Data.Png.Header.Data qualified as Header
 
 import Data.Word.Crc32 qualified as Crc32
+import Data.Png.Header.Data
+import Data.Word.Word8 qualified as BSF
 
 data ColorType = Rgb | Rgba deriving Show
 data BitDepth = BitDepth8 | BitDepth16 deriving Show
@@ -62,8 +63,38 @@ decodeHeader' nm nm' = void $
 		ChunkNew.Body x <- Pipe.await
 		ChunkNew.End <- Pipe.await
 		when (cnm == "IHDR" || cnm == "IDAT") $ Pipe.yield x
-	Pipe.=$= OnDemand.onDemand nm' Pipe.=$= Header.read nm' (const $ pure ())
+	Pipe.=$= OnDemand.onDemand nm' Pipe.=$= read nm' (const $ pure ())
 
 type MembersHeader' nm es = (
 	OnDemand.Members nm es,
 	U.Member (State.Named nm Header.Header) es )
+
+read :: forall nm -> (
+	U.Member Pipe.P es,
+	OnDemand.Members nm es,
+	U.Member (State.Named nm Header) es ) =>
+	(Header -> Eff.E es BSF.ByteString o ()) ->
+		Eff.E es BSF.ByteString o ()
+read nm proc = do
+	State.putN nm $ OnDemand.RequestBytes 4
+	w <- BSF.toBitsBE <$> Pipe.await
+	h <- BSF.toBitsBE <$> Pipe.await
+	State.putN nm $ OnDemand.RequestBytes 1
+	bd <- BSF.toBitsBE <$> Pipe.await
+	State.putN nm $ OnDemand.RequestBytes 1
+	ct <- BSF.toBitsBE <$> Pipe.await
+	State.putN nm $ OnDemand.RequestBytes 1
+	cm <- BSF.toBitsBE <$> Pipe.await
+	State.putN nm $ OnDemand.RequestBytes 1
+	fm <- BSF.toBitsBE <$> Pipe.await
+	State.putN nm $ OnDemand.RequestBytes 1
+	im <- BSF.toBitsBE <$> Pipe.await
+	let	hdr = Header {
+			headerWidth = w, headerHeight = h,
+			headerBitDepth = bd,
+			headerColorType = ct,
+			headerCompressionMethod = cm,
+			headerFilterMethod = fm,
+			headerInterlaceMethod = im }
+	proc hdr
+	State.putN nm hdr
