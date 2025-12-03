@@ -53,7 +53,7 @@ main = do
 	obd <- PipeZ.cByteArrayMalloc 64
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode . Fail.run
 		. runPngToImageGray1 @"foobar" @BSF.ByteString
-		. Chunk.chunkRun_' @"foobar" . Pipe.run
+		. Chunk.run_ @"foobar" . Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. (`Except.catch` IO.print @Zlib.ReturnCode)
 		. void $ PipeBS.hGet 32 h

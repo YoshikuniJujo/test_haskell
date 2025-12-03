@@ -51,7 +51,7 @@ type PngToImageGray1States nm m = '[
 	State.Named nm (Buffer.Devide m) ]
 
 pngToImageGray1 :: forall nm -> (
-	U.Member Pipe.P es, Chunk.ChunkMembers' nm es,
+	U.Member Pipe.P es, Chunk.Members nm es,
 	PngToImageGray1Members nm es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member Fail.F es,
@@ -60,12 +60,12 @@ pngToImageGray1 :: forall nm -> (
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es BS.ByteString ImageG1.G ()
 pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
-	Pipe.=$= Chunk.chunk' nm 500
+	Pipe.=$= Chunk.decode nm 500
 	Pipe.=$= forever do
 		bs <- Pipe.await
 		cnk <- State.getN @Chunk.Chunk nm
-		when ("IDAT" `Chunk.isChunkName` cnk) $ Pipe.yield bs
-		when ("IEND" `Chunk.isChunkName` cnk) do
+		when ("IDAT" `Chunk.isNameOf` cnk) $ Pipe.yield bs
+		when ("IEND" `Chunk.isNameOf` cnk) do
 			"ENDOFTHEWORLD" <- Pipe.await
 			Pipe.yield "123"
 	Pipe.=$= do

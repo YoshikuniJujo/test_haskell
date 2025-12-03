@@ -68,7 +68,7 @@ main = do
 	ibd <- PipeZ.cByteArrayMalloc 64
 	obd <- PipeZ.cByteArrayMalloc 64
 	void . Eff.runM
-		. Chunk.chunkRun_' @"foobar"
+		. Chunk.run_ @"foobar"
 		. runPngToImageGray1 @"foobar" @BSF.ByteString
 		. Except.run @String . Except.run @Zlib.ReturnCode . Fail.run . Pipe.run
 		. (`Fail.catch` IO.putStrLn)
