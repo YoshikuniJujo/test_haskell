@@ -1,0 +1,70 @@
+name:                try-png-chunk-yaftee
+version:             0.1.0.0
+github:              "YoshikuniJujo/try-png-chunk-yaftee"
+license:             BSD-3-Clause
+author:              "Yoshikuni Jujo"
+maintainer:          "yoshikuni.jujo@gmail.com"
+copyright:           "(c) 2025 Yoshikuni Jujo"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-png-chunk-yaftee#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- mono-traversable
+- yaftee
+- yaftee-basic-monads
+- yaftee-conduit
+- yaftee-conduit-mono-traversable
+- yaftee-conduit-bytestring
+- yaftee-conduit-bytestring-ft
+- higher-order-open-union
+- bytestring-ft
+- tools-yj
+- typelevel-tools-yj
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+
+executables:
+  try-png-chunk-yaftee-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-png-chunk-yaftee
+
+tests:
+  try-png-chunk-yaftee-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-png-chunk-yaftee
