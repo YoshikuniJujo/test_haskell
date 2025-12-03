@@ -79,7 +79,7 @@ pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
 			when (x /= "OKOKIMOK") $ go
 		Pipe.yield ""
 	Pipe.=$= do
-		Unfilter.pngUnfilter' hdr
+		Unfilter.unfilter hdr
 		"" <- Pipe.await
 		Pipe.yield []
 	Pipe.=$= do

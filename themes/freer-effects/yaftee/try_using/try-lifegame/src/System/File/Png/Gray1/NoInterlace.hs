@@ -247,7 +247,7 @@ pipeDat nm m iorf hdr w h ibe obe = void $
 	Pipe.=$= PipeT.convert (Encode.toDat hdr)
 	Pipe.=$= do
 		bs0 <- Pipe.await
-		Unfilter.pngFilter hdr bs0 $ Header.calcSizes hdr w h
+		Unfilter.filter hdr bs0 $ Header.calcSizes hdr w h
 	Pipe.=$= PipeT.convert BSF.pack
 	Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
 --	Pipe.=$= Buffer.devide nm BSF.splitAt' "" 1000
