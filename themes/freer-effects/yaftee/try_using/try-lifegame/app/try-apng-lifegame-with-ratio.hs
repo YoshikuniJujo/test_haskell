@@ -37,7 +37,7 @@ import System.File.Apng.Gray1.NoInterlace
 import Lifegame.Words qualified as Lifegame
 
 import Data.Word.Crc32 qualified as Crc32
-import Control.Monad.Yaftee.Pipe.Png.ChunkDecode qualified as Chunk
+import Lifegame.Png.Chunk.Decode qualified as Chunk
 
 main :: IO ()
 main = do

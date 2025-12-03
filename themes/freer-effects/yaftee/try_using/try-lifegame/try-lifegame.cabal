@@ -25,7 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Control.Monad.Yaftee.Pipe.Png.ChunkDecode
       Control.Monad.Yaftee.Pipe.Png.ChunkEncode
       Control.Monad.Yaftee.Pipe.Png.Filter
       Control.Monad.Yaftee.Pipe.Png.Header
@@ -42,6 +41,7 @@ library
       FctlImage
       FctlImage.Gray1
       FctlImageBody.Gray1Words
+      Lifegame.Png.Chunk.Decode
       Lifegame.Words
       PngToImageGray1
       System.File.Apng.Gray1.NoInterlace

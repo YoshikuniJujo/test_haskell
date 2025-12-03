@@ -30,7 +30,7 @@ import Lifegame.Words qualified as Lifegame
 
 import PngToImageGray1
 import Data.Word.Crc32 qualified as Crc32
-import Control.Monad.Yaftee.Pipe.Png.ChunkDecode qualified as Chunk
+import Lifegame.Png.Chunk.Decode qualified as Chunk
 
 import System.File.Png.Gray1.NoInterlace qualified as Png
 

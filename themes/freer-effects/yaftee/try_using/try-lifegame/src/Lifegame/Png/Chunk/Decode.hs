@@ -10,7 +10,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.ChunkDecode (
+module Lifegame.Png.Chunk.Decode (
 
 	-- * RUN AND DECODE
 
