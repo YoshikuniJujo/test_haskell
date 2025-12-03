@@ -56,7 +56,7 @@ import FctlImage.Gray1 qualified as FctlImage1
 import FctlImageBody.Gray1Words qualified as W
 import Tools
 
-import Control.Monad.Yaftee.Pipe.Png.ChunkEncode
+import Lifegame.Png.Chunk.Encode
 
 import Data.Apng
 

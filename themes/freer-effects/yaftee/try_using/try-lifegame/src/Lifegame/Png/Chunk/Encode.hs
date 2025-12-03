@@ -7,18 +7,16 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.ChunkEncode (encode, Chunk(..)) where
+module Lifegame.Png.Chunk.Encode (encode, Chunk(..)) where
 
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as Chunk
-import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.HigherOpenUnion qualified as U
 import Data.MonoTraversable
-import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree qualified as BSF
 
 encode :: forall nm -> (

@@ -17,7 +17,7 @@ import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as ChunkNew
-import Control.Monad.Yaftee.Pipe.Png.ChunkEncode qualified as EnChunk
+import Lifegame.Png.Chunk.Encode qualified as EnChunk
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
