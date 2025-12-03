@@ -12,7 +12,6 @@ module Main (main) where
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
-import Control.Monad.Yaftee.Pipe.MonoTraversable.Crc32 qualified as PipeCrc32
 import Control.Monad.Yaftee.Pipe.Png.Chunk
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
@@ -24,7 +23,7 @@ main = do
 	fp : fpo : _ <- getArgs
 	h <- openFile fp ReadMode
 	ho <- openFile fpo WriteMode
-	void . Eff.runM . encodeRun_ @"foo" . PipeCrc32.run @"bar"
+	void . Eff.runM . encodeRun_ @"bar" . decodeRun_ @"foo"
 		. Except.run @String . Fail.run . Pipe.run
 		$ hDecode "foo" h 32 50 Pipe.=$= hEncode "bar" ho
 	hClose ho; hClose h

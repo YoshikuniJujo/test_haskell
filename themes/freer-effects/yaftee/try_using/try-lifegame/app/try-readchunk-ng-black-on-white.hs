@@ -136,7 +136,7 @@ main = do
 
 			Pipe.yield \sn -> (EnChunk.Chunk "IEND" "", sn)
 
-		Pipe.=$= EnChunk.chunksSt 0
+		Pipe.=$= EnChunk.encode "foo" 0
 		Pipe.=$= PipeT.convert BSF.toStrict
 		Pipe.=$= PipeBS.hPutStr ho
 	hClose ho

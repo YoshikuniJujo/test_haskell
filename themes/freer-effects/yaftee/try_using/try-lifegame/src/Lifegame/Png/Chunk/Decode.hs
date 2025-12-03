@@ -41,11 +41,9 @@ import Data.ByteString.FingerTree qualified as BSF
 run_ :: forall nm es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (States nm `Append` es) i o r -> Eff.E es i o ()
 run_ = void
-	. OnDemand.run . Chunk.decodeRun_ . (`State.runN` Chunk False ("IHDR"))
+	. Chunk.decodeRun_ . (`State.runN` Chunk False ("IHDR"))
 
-type States nm =
-	'[State.Named nm Chunk, State.Named nm Crc32.C] `Append`
-	OnDemand.States nm
+type States nm = State.Named nm Chunk ': Chunk.DecodeStates nm
 
 decode :: forall nm -> (
 	Members nm es, U.Member Pipe.P es,

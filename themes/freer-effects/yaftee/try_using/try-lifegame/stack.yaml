@@ -55,7 +55,7 @@ extra-deps:
   - bytestring-ft-0.1.0.0
   - bitarray-bs-0.1.0.0
   - zlib-core-0.1.0.1
-  - png-chunk-yaftee-0.1.0.0
+  - png-chunk-yaftee-0.1.0.3
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

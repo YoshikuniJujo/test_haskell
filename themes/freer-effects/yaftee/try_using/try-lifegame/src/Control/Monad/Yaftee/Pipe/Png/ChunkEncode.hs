@@ -7,9 +7,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.ChunkEncode (
-	chunksSt, Chunk(..)
-	) where
+module Control.Monad.Yaftee.Pipe.Png.ChunkEncode (encode, Chunk(..)) where
 
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -27,18 +25,15 @@ import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as Chunk
 data Chunk = Chunk { chunkName :: BSF.ByteString, chunkBody :: BSF.ByteString }
 	deriving Show
 
-chunksSt :: (
-	U.Member Pipe.P es, U.Member (State.Named "foo" Crc32.C) es,
+encode :: forall nm -> (
+	U.Member Pipe.P es, Chunk.EncodeMembers nm es, -- U.Member (State.Named nm Crc32.C) es,
 	U.Member (Except.E String) es, U.Member Fail.F es ) =>
 	a -> Eff.E es (a -> (Chunk, a)) BSF.ByteString ()
-chunksSt st0 = void $ chunkToChunkSt st0 Pipe.=$= Chunk.encode "foo"
+encode nm st0 = void $ convert st0 Pipe.=$= Chunk.encode nm
 
-chunkToChunkSt :: U.Member Pipe.P es =>
-	a -> Eff.E es (a -> (Chunk, a)) Chunk.C r
-chunkToChunkSt st0 = fvr st0 \st -> Pipe.await >>= \f -> do
-	let	(Chunk cnm cbd, st') = f st
-	st' <$ do
-		Pipe.yield $ Chunk.Begin (olength cbd) cnm
-		Pipe.yield $ Chunk.Body cbd
-		Pipe.yield $ Chunk.End
+convert :: U.Member Pipe.P es => a -> Eff.E es (a -> (Chunk, a)) Chunk.C r
+convert st0 =
+	fvr st0 \st -> Pipe.await >>= \f -> let (Chunk nm bd, st') = f st in
+	st' <$ mapM_ Pipe.yield
+		[Chunk.Begin (olength bd) nm, Chunk.Body bd, Chunk.End]
 	where fvr st a = a st >>= (`fvr` a)

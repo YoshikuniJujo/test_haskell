@@ -103,12 +103,12 @@ packages:
   original:
     hackage: zlib-core-0.1.0.1
 - completed:
-    hackage: png-chunk-yaftee-0.1.0.0@sha256:4db9cfdb6c3e115095ab6f16968c3e4f1868dd91046474c02a7b778f61ed204f,2634
+    hackage: png-chunk-yaftee-0.1.0.3@sha256:55c17a35840886d6044f35664086afd151305b2249cfe38148ac189c1d1f3309,2634
     pantry-tree:
-      sha256: 4a1271ab86311e5184fe9e56f2ae6175f4dded9e6f5de1fa21f1e1190c12f008
+      sha256: 8cfe09a520e9c6f55678894886f4927d52c007fd3d0192541c51b989d8ab6029
       size: 393
   original:
-    hackage: png-chunk-yaftee-0.1.0.0
+    hackage: png-chunk-yaftee-0.1.0.3
 snapshots:
 - completed:
     sha256: 4bfcb84093e337a28ea1bc1649874301c3d3a2590aaabce096fcf809060e98f5

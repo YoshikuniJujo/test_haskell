@@ -51,7 +51,7 @@ main = do
 	hh <- openFile fp ReadMode
 	((), Just (wdt, hgt)) <- Eff.runM
 		. (flip (State.run @_ @(Maybe (Word32, Word32))) Nothing)
-		. ChunkNew.encodeRun_ @"foobar"
+		. ChunkNew.decodeRun_ @"foobar"
 		. flip (State.runN @"foobar") ("" :: BSF.ByteString)
 		. Except.run @String . Pipe.run
 		. (`Except.catch` IO.putStrLn)
@@ -67,7 +67,7 @@ main = do
 	ho <- openFile fpo WriteMode
 	void . Eff.runM
 --		. Bytes.bytesRun_ @"foobar"
-		. ChunkNew.encodeRun_ @"foobar"
+		. ChunkNew.decodeRun_ @"foobar"
 		. ChunkNew.encodeRun_ @"foo"
 		. flip (State.runN @"foobar") ("" :: BSF.ByteString)
 		. flip (State.runN @"foobar") (replicate (n - 1) d ++ [de])
@@ -77,7 +77,7 @@ main = do
 		Pipe.=$= PipeT.convert BSF.fromStrict
 		Pipe.=$= replicateM_ n (ChunkNew.decode "foobar" 50)
 		Pipe.=$= mkChunks wdt hgt n
-		Pipe.=$= EnChunk.chunksSt 0
+		Pipe.=$= EnChunk.encode "foo" 0
 		Pipe.=$= PipeT.convert BSF.toStrict
 		Pipe.=$= PipeBS.hPutStr ho
 --	hClose `mapM_` hs;

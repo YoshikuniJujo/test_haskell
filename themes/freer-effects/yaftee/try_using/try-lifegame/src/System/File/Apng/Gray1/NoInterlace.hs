@@ -309,7 +309,7 @@ makeChunks hdr fn np mplt = void $ do
 		Pipe.yield \sn -> (
 			Chunk { chunkName = "IEND", chunkBody = "" },
 			sn )
-	Pipe.=$= chunksSt 0
+	Pipe.=$= encode "foo" 0
 
 pipeDat :: forall nm m -> (
 	Encode.Datable a,
