@@ -282,22 +282,22 @@ makeChunks hdr fn np mplt = void $ do
 		let	bd'' = Header.encodeHeader hdr
 		Pipe.yield $ \sn -> (
 			Chunk {
-				chunkName = "IHDR",
-				chunkBody = BSF.fromStrict bd'' },
+				name = "IHDR",
+				body = BSF.fromStrict bd'' },
 				sn )
 
 		case mplt of
 			Nothing -> pure ()
 			Just plt -> Pipe.yield $ \sn -> (
 				Chunk {
-					chunkName = "PLTE",
-					chunkBody = Palette.encodePalette plt },
+					name = "PLTE",
+					body = Palette.encodePalette plt },
 				sn )
 
 		Pipe.yield $ \sn -> (
 			Chunk {
-				chunkName = "acTL",
-				chunkBody = encodeActl $ Actl (fromIntegral fn) np },
+				name = "acTL",
+				body = encodeActl $ Actl (fromIntegral fn) np },
 			sn )
 
 		bd0 <- Pipe.await
@@ -307,7 +307,7 @@ makeChunks hdr fn np mplt = void $ do
 			Just bd -> (>> go) $ Pipe.yield bd -- \sn -> (bd, sn)
 
 		Pipe.yield \sn -> (
-			Chunk { chunkName = "IEND", chunkBody = "" },
+			Chunk { name = "IEND", body = "" },
 			sn )
 	Pipe.=$= encode "foo" 0
 
