@@ -63,21 +63,21 @@ import Data.Apng
 import Data.Word.Crc32 qualified as Crc32
 import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as ChunkNew
 
-writeApngGray1' :: FilePath -> Header.Header -> Int -> Word32 -> [(Gray.G, Ratio Word16)] -> IO ()
+writeApngGray1' :: FilePath -> Header.H -> Int -> Word32 -> [(Gray.G, Ratio Word16)] -> IO ()
 writeApngGray1' fp hdr fn np = writeApngGray1 fp hdr fn np . FctlImage.fromImagesGray
 
-writeApngGray1Foo' :: FilePath -> Header.Header -> Int -> Word32 -> [(Gray1.G, Ratio Word16)] -> IO ()
+writeApngGray1Foo' :: FilePath -> Header.H -> Int -> Word32 -> [(Gray1.G, Ratio Word16)] -> IO ()
 writeApngGray1Foo' fp hdr fn np imgs = do
 	writeApngGray1Foo fp hdr fn np $ FctlImage1.fromImages imgs
 --	print $ FctlImage1.fromImages imgs
 
-writeApngGray1 :: FilePath -> Header.Header -> Int -> Word32 -> [FctlImage.GrayI] -> IO ()
+writeApngGray1 :: FilePath -> Header.H -> Int -> Word32 -> [FctlImage.GrayI] -> IO ()
 writeApngGray1 fp hdr fn np = writePngGray1'' fp hdr fn np . (FctlImage.toFctlImageGray <$>)
 
-writeApngGray1Foo :: FilePath -> Header.Header -> Int -> Word32 -> [FctlImage1.G] -> IO ()
+writeApngGray1Foo :: FilePath -> Header.H -> Int -> Word32 -> [FctlImage1.G] -> IO ()
 writeApngGray1Foo fp hdr fn np = writePngGray1Foo'' fp hdr fn np . (FctlImage1.toFctlImage <$>)
 
-writePngGray1'' :: FilePath -> Header.Header -> Int -> Word32 -> [(Fctl, Gray.G)] -> IO ()
+writePngGray1'' :: FilePath -> Header.H -> Int -> Word32 -> [(Fctl, Gray.G)] -> IO ()
 writePngGray1'' fpp hdr fn np fctlsimgs = do
 	checkHeader hdr
 	putStrLn "writePngGray'' begin"
@@ -97,7 +97,7 @@ writePngGray1'' fpp hdr fn np fctlsimgs = do
 	hClose ho
 	print hdr
 
-writePngGray1Foo'' :: FilePath -> Header.Header -> Int -> Word32 -> [(Fctl, Gray1.G)] -> IO ()
+writePngGray1Foo'' :: FilePath -> Header.H -> Int -> Word32 -> [(Fctl, Gray1.G)] -> IO ()
 writePngGray1Foo'' fpp hdr fn np fctlsimgs = do
 	checkHeader hdr
 	putStrLn "writePngGray'' begin"
@@ -117,7 +117,7 @@ writePngGray1Foo'' fpp hdr fn np fctlsimgs = do
 	hClose ho
 	print hdr
 
-checkHeader :: Header.Header -> IO ()
+checkHeader :: Header.H -> IO ()
 checkHeader hdr
 	| Header.headerBitDepth hdr == 1,
 		Header.headerColorType hdr == Header.ColorTypeGrayscale,
@@ -126,7 +126,7 @@ checkHeader hdr
 	| otherwise = error "not implemented for such header"
 
 hWritePngGray1 ::
-	Handle -> Header.Header -> Int -> Word32 -> ([Fctl], [Gray.G]) ->
+	Handle -> Header.H -> Int -> Word32 -> ([Fctl], [Gray.G]) ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
 hWritePngGray1 ho hdr fn np (fctls, imgs) ibe obe = do
 	void . Eff.runM . ChunkNew.encodeRun_ @"foo" . Except.run @String . Except.run @Zlib.ReturnCode
@@ -135,7 +135,7 @@ hWritePngGray1 ho hdr fn np (fctls, imgs) ibe obe = do
 		. Pipe.run $ hWritePngPipeGray1 ho hdr fn np fctls imgs ibe obe
 
 hWritePngGray1' ::
-	Handle -> Header.Header -> Int -> Word32 -> ([Fctl], [Gray1.G]) ->
+	Handle -> Header.H -> Int -> Word32 -> ([Fctl], [Gray1.G]) ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
 hWritePngGray1' ho hdr fn np (fctls, imgs) ibe obe = do
 	void . Eff.runM . ChunkNew.encodeRun_ @"foo" . Except.run @String . Except.run @Zlib.ReturnCode
@@ -151,7 +151,7 @@ hWritePngPipeGray1 :: (
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
 	U.Base IO.I es ) =>
-	Handle -> Header.Header -> Int -> Word32 -> [Fctl] -> [Gray.G] ->
+	Handle -> Header.H -> Int -> Word32 -> [Fctl] -> [Gray.G] ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es i o ()
 hWritePngPipeGray1 ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrLn)
@@ -169,7 +169,7 @@ hWritePngPipeGray1' :: (
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
 	U.Base IO.I es ) =>
-	Handle -> Header.Header -> Int -> Word32 -> [Fctl] -> [Gray1.G] ->
+	Handle -> Header.H -> Int -> Word32 -> [Fctl] -> [Gray1.G] ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es i o ()
 hWritePngPipeGray1' ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrLn)
@@ -181,7 +181,7 @@ hWritePngPipeGray1' ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrL
 
 fromFctlImagesGray1 :: forall m -> (
 	PrimMonad m, U.Member Pipe.P es, U.Base (U.FromFirst IO) es ) =>
-	Header.Header -> [Fctl] -> [Gray.G] -> Eff.E es i W.BodyGray1 ()
+	Header.H -> [Fctl] -> [Gray.G] -> Eff.E es i W.BodyGray1 ()
 fromFctlImagesGray1 _ _ [] [] = pure ()
 fromFctlImagesGray1 m hdr (fctl : fctls) (img : imgs) = do
 	Pipe.yield $ W.BodyGray1Fctl fctl
@@ -202,7 +202,7 @@ fromGrayImage1 m fctl img = \case
 
 fromFctlImagesGray1' :: (
 	U.Member Pipe.P es, U.Member U.Fail es, U.Base (U.FromFirst IO) es ) =>
-	Header.Header -> [Fctl] -> [Gray1.G] -> Eff.E es i W.BodyGray1 ()
+	Header.H -> [Fctl] -> [Gray1.G] -> Eff.E es i W.BodyGray1 ()
 fromFctlImagesGray1' _ [] [] = pure ()
 fromFctlImagesGray1' hdr (fctl : fctls) (img : imgs) = do
 	Pipe.yield $ W.BodyGray1Fctl fctl
@@ -228,7 +228,7 @@ encodeApngGray1 :: (
 	U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
 	U.Base (U.FromFirst IO) es ) =>
-	Header.Header -> Int -> Word32 -> [Fctl] ->
+	Header.H -> Int -> Word32 -> [Fctl] ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es a BSF.ByteString ()
 encodeApngGray1 _ _ _ [] _ _ = pure ()
@@ -253,7 +253,7 @@ encodeRawCalcGray1 :: forall nm m -> (
 	U.Member U.Fail es,
 	U.Base (U.FromFirst m) es
 	) =>
-	Header.Header -> Int -> Word32 ->
+	Header.H -> Int -> Word32 ->
 	[(Word32, Word32)] -> Maybe Palette.Palette ->
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
 	Eff.E es a BSF.ByteString ()
@@ -275,7 +275,7 @@ makeChunks :: (
 	U.Member (State.Named "foo" Crc32.C) es,
 	U.Member (Except.E String) es, U.Member Fail.F es
 	) =>
-	Header.Header -> a -> Word32 -> Maybe Palette.Palette ->
+	Header.H -> a -> Word32 -> Maybe Palette.Palette ->
 	Eff.E es (b -> (Chunk, b)) BSF.ByteString ()
 makeChunks hdr fn np mplt = void $ do
 -- MAKE CHUNKS
@@ -321,7 +321,7 @@ pipeDat :: forall nm m -> (
 	U.Base (U.FromFirst m) es
 	) =>
 	Bool ->
-	Header.Header -> Word32 -> Word32 ->
+	Header.H -> Word32 -> Word32 ->
 	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
 	Eff.E es a (Word32 -> (Chunk, Word32)) ()
 pipeDat nm m iorf hdr w h ibe obe = void $

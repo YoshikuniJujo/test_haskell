@@ -36,7 +36,6 @@ import PngToImageGray1
 import System.File.Apng.Gray1.NoInterlace
 import Lifegame.Words qualified as Lifegame
 
-import Data.Word.Crc32 qualified as Crc32
 import Lifegame.Png.Chunk.Decode qualified as Chunk
 
 main :: IO ()
@@ -48,14 +47,12 @@ main = do
 
 	hh <- openFile fp0 ReadMode
 
-	Right hdr <- Eff.runM . Except.run @String . Png.runHeader' @"barbaz"
-		. flip (State.runN @"foobar") Crc32.initial
-		. OnDemand.run @"foobar"
+	Right hdr <- Eff.runM . Except.run @String . Png.run @"foobar" @"barbaz"
 		. Fail.run
 		. Pipe.run . (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 hh
 		Pipe.=$= PipeT.convert BSF.fromStrict
-		Pipe.=$= Png.decodeHeader' "foobar" "barbaz"
+		Pipe.=$= Png.decode "foobar" "barbaz"
 	hClose hh
 
 	let	n = length fps
@@ -95,7 +92,7 @@ main = do
 			Eff.effBase $ writeApngGray1Foo' fpo hdr n 0 fs
 	putStrLn ""
 	print hdr
-	print Header.Header {
+	print Header.H {
 		Header.headerWidth = 20, Header.headerHeight = 11,
 		Header.headerBitDepth = 1,
 		Header.headerColorType = Header.ColorTypeGrayscale,

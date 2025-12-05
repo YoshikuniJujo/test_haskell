@@ -27,24 +27,24 @@ import Tools
 
 import Data.Png.Header.Data
 
-headerToRows :: Header -> [Int]
-headerToRows h@Header { headerInterlaceMethod = InterlaceMethodNon } =
+headerToRows :: H -> [Int]
+headerToRows h@H { headerInterlaceMethod = InterlaceMethodNon } =
 	replicate (fromIntegral $ headerHeight h)
 		((fromIntegral (headerWidth h) * fromIntegral (headerBitDepth h)) `div'` 8 * sampleNum' h)
-headerToRows h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
+headerToRows h@H { headerInterlaceMethod = InterlaceMethodAdam7 } =
 	map ((* sampleNum' h) . (`div'` 8) . (* fromIntegral (headerBitDepth h)))
 		$ interlacePixelNums
 			(fromIntegral (headerWidth h))
 			(fromIntegral $ headerHeight h)
 headerToRows h = error $ "headerToRows: " ++ show h
 
-sampleNum' :: Integral n => Header -> n
+sampleNum' :: Integral n => H -> n
 sampleNum' = sampleNum . headerColorType
 
-calcSizes :: Header -> Word32 -> Word32 -> [(Int, Int)]
-calcSizes Header { headerInterlaceMethod = InterlaceMethodNon } w h =
+calcSizes :: H -> Word32 -> Word32 -> [(Int, Int)]
+calcSizes H { headerInterlaceMethod = InterlaceMethodNon } w h =
 	[(fromIntegral w, fromIntegral h)]
-calcSizes Header { headerInterlaceMethod = InterlaceMethodAdam7 } w h =
+calcSizes H { headerInterlaceMethod = InterlaceMethodAdam7 } w h =
 	adam7Sizes	(fromIntegral w)
 			(fromIntegral h)
 calcSizes _ _ _ = error "bad"
@@ -68,16 +68,16 @@ interlacePixelNums w h =
 	replicate (h `div'` 2) (w `div` 2) ++
 	replicate (h `div` 2) w ++ [0]
 
-headerToBpp :: Integral n => Header -> n
+headerToBpp :: Integral n => H -> n
 headerToBpp hdr =
 	(fromIntegral (headerBitDepth hdr) *
 		sampleNum (headerColorType hdr) - 1) `div` 8 + 1
 
-rowBytes :: Integral n => Header -> n -> n
+rowBytes :: Integral n => H -> n -> n
 rowBytes hdr w = (w * bd) `div` 8 * sampleNum' hdr
 	where bd = fromIntegral $ headerBitDepth hdr
 
-headerToRowBytes :: Integral n => Header -> n
+headerToRowBytes :: Integral n => H -> n
 headerToRowBytes hdr =
 	(fromIntegral (headerWidth hdr) * fromIntegral (headerBitDepth hdr) *
 		sampleNum (headerColorType hdr) - 1) `div` 8 + 1
@@ -90,9 +90,9 @@ sampleNum ColorTypeAlpha = 2
 sampleNum ColorTypeColorAlpha = 4
 sampleNum _ = error "not allowed color type"
 
-calcPoss' :: Header -> Word32 -> Word32 -> [[(Int, Int)]]
-calcPoss' Header { headerInterlaceMethod = InterlaceMethodNon } w h =
+calcPoss' :: H -> Word32 -> Word32 -> [[(Int, Int)]]
+calcPoss' H { headerInterlaceMethod = InterlaceMethodNon } w h =
 	(\y -> (, y) <$> [0 .. fromIntegral $ w - 1]) <$> [0 .. fromIntegral $ h - 1]
-calcPoss' Header { headerInterlaceMethod = InterlaceMethodAdam7 } _ _ =
+calcPoss' H { headerInterlaceMethod = InterlaceMethodAdam7 } _ _ =
 	error "not implemented"
 calcPoss' _ _ _ = error "bad"

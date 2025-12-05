@@ -8,7 +8,7 @@ module Data.Png.Header.Data (
 
 	-- * HEADER
 
-	Header(..), header0, encodeHeader,
+	H(..), header0, encodeHeader,
 
 	-- * COLOR TYPE
 
@@ -46,7 +46,7 @@ import Data.Word
 import Data.ByteString qualified as BS
 import Data.ByteString.ToolsYj qualified as BS
 
-data Header = Header {
+data H = H {
 	headerWidth :: Word32,
 	headerHeight :: Word32,
 	headerBitDepth :: Word8,
@@ -56,8 +56,8 @@ data Header = Header {
 	headerInterlaceMethod :: InterlaceMethod }
 	deriving Show
 
-encodeHeader :: Header -> BS.ByteString
-encodeHeader Header {
+encodeHeader :: H -> BS.ByteString
+encodeHeader H {
 	headerWidth = wdt, headerHeight = hgt,
 	headerBitDepth = bd, headerColorType = ColorType ct,
 	headerCompressionMethod = CompressionMethod cm,
@@ -65,8 +65,8 @@ encodeHeader Header {
 	headerInterlaceMethod = InterlaceMethod im } =
 	BS.fromBitsBE' wdt <> BS.fromBitsBE' hgt <> BS.pack [bd, ct, cm, fm, im]
 
-header0 :: Header
-header0 = Header {
+header0 :: H
+header0 = H {
 	headerWidth = 0,
 	headerHeight = 0,
 	headerBitDepth = 0,

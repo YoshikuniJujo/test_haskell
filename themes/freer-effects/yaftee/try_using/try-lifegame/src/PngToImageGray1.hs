@@ -56,7 +56,7 @@ pngToImageGray1 :: forall nm -> (
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member Fail.F es,
 	U.Base IO.I es ) =>
-	Header.Header ->
+	Header.H ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es BS.ByteString ImageG1.G ()
 pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict

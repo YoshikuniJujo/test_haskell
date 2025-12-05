@@ -15,10 +15,8 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
-import Control.Monad.Yaftee.Pipe.Png.Header qualified as Png
+import Control.Monad.Yaftee.Pipe.Png.Header qualified as Header
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
-import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
-import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
@@ -29,7 +27,6 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Lifegame.Words qualified as Lifegame
 
 import PngToImageGray1
-import Data.Word.Crc32 qualified as Crc32
 import Lifegame.Png.Chunk.Decode qualified as Chunk
 
 import System.File.Png.Gray1.NoInterlace qualified as Png
@@ -38,15 +35,13 @@ main :: IO ()
 main = do
 	fp : sz : fpo : _ <- getArgs
 	hh <- openFile fp ReadMode
-	Right hdr <- Eff.runM . Except.run @String . Png.runHeader' @"barbaz"
-		. OnDemand.run @"foobar"
-		. flip (State.runN @"foobar") Crc32.initial
+	Right hdr <- Eff.runM . Except.run @String . Header.run @"foobar" @"barbaz"
 		. Fail.run
 		. Pipe.run
 		. (`Except.catch` IO.putStrLn)
 		. void $ PipeBS.hGet 32 hh
 		Pipe.=$= PipeT.convert BSF.fromStrict
-		Pipe.=$= Png.decodeHeader' "foobar" "barbaz"
+		Pipe.=$= Header.decode "foobar" "barbaz"
 	hClose hh
 	h <- openFile fp ReadMode
 	ibd <- PipeZ.cByteArrayMalloc 64

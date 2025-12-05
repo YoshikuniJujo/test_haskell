@@ -22,11 +22,11 @@ import Data.Png.Filter qualified as Filter
 type Size = (Int, Int)
 
 filter :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
-	Header.Header -> [Size] -> Eff.E es BSF.ByteString [Word8] ()
+	Header.H -> [Size] -> Eff.E es BSF.ByteString [Word8] ()
 filter hdr ss = (\bs -> filterRaw hdr bs ss) =<< Pipe.await
 
 filterRaw :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
-	Header.Header ->
+	Header.H ->
 	BSF.ByteString -> [Size] -> Eff.E es BSF.ByteString [Word8] ()
 filterRaw _ _ [] = pure ()
 filterRaw hdr r0 ((w, h) : ss) = void do
@@ -47,7 +47,7 @@ filterTail bpp pr n = Pipe.awaitMaybe >>= \case
 		filterTail bpp (BSF.unpack bs) (n - 1)
 
 unfilter :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
-	Header.Header -> Eff.E es BSF.ByteString [Word8] ()
+	Header.H -> Eff.E es BSF.ByteString [Word8] ()
 unfilter hdr = void $ Pipe.await >>= \bs ->
 	(>>) <$> Pipe.yield <*> unfilterTail bpp =<< either Except.throw pure
 		(Filter.unfilter bpp (replicate rbs 0) bs)

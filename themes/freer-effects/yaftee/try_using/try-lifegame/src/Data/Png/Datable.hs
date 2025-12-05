@@ -19,4 +19,4 @@ import Data.Png.Header.Data qualified as Header
 class Datable a where
 	isDat :: a -> Bool
 	endDat :: a -> Bool
-	toDat :: Header.Header -> a -> BSF.ByteString
+	toDat :: Header.H -> a -> BSF.ByteString

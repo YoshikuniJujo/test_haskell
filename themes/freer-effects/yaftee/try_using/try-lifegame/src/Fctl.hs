@@ -31,5 +31,5 @@ data BodyGray
 
 class Fctlable a where getFctl :: a -> Maybe Fctl
 
-fctlPoss' :: Header.Header -> Fctl -> [[(Int, Int)]]
+fctlPoss' :: Header.H -> Fctl -> [[(Int, Int)]]
 fctlPoss' hdr fctl = Header.calcPoss' hdr (fctlWidth fctl) (fctlHeight fctl)
