@@ -42,7 +42,7 @@ import Data.Word
 import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Png.Palette qualified as Palette
-import Control.Monad.Yaftee.Pipe.Png.Filter qualified as Filter
+import Lifegame.Png.Filter qualified as Filter
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 import Data.Image.Gray1 qualified as Gray1

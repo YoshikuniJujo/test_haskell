@@ -5,11 +5,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.Filter (
-
-	filter, unfilter, Size
-
-	) where
+module Lifegame.Png.Filter (filter, unfilter, Size) where
 
 import Prelude hiding (filter)
 import Control.Monad
@@ -43,34 +39,23 @@ filterRaw hdr r0 ((w, h) : ss) = void do
 
 filterTail :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 	Int -> [Word8] -> Int -> Eff.E es BSF.ByteString [Word8] ()
-filterTail _bpp _prior 0 = pure ()
-filterTail bpp prior n = Pipe.awaitMaybe >>= \case
+filterTail _ _ 0 = pure ()
+filterTail bpp pr n = Pipe.awaitMaybe >>= \case
 	Nothing -> pure (); Just BSF.Empty -> pure ()
 	Just bs -> do
-		Pipe.yield $ Filter.filter bpp prior bs
+		Pipe.yield $ Filter.filter bpp pr bs
 		filterTail bpp (BSF.unpack bs) (n - 1)
 
-unfilter :: (
-	U.Member Pipe.P es,
-	U.Member (Except.E String) es ) =>
+unfilter :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 	Header.Header -> Eff.E es BSF.ByteString [Word8] ()
-unfilter hdr = void do
-	bs <- Pipe.await
-	let	bpp = Header.headerToBpp hdr
-		rbs = Header.headerToRowBytes hdr
-	bs' <- either Except.throw pure
-		$ Filter.unfilter bpp (replicate rbs 0) bs
-	Pipe.yield bs'
-	unfilterAll bpp bs'
+unfilter hdr = void $ Pipe.await >>= \bs ->
+	(>>) <$> Pipe.yield <*> unfilterTail bpp =<< either Except.throw pure
+		(Filter.unfilter bpp (replicate rbs 0) bs)
+	where bpp = Header.headerToBpp hdr; rbs = Header.headerToRowBytes hdr
 
-unfilterAll :: (
-	U.Member Pipe.P es,
-	U.Member (Except.E String) es ) =>
+unfilterTail :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 	Int -> [Word8] -> Eff.E es BSF.ByteString [Word8] ()
-unfilterAll bpp prior = Pipe.awaitMaybe >>= \case
-	Nothing -> pure ()
-	Just BSF.Empty -> pure ()
-	Just bs -> do
-		bs' <- either Except.throw pure $ Filter.unfilter bpp prior bs
-		Pipe.yield bs'
-		unfilterAll bpp bs'
+unfilterTail bpp prior = Pipe.awaitMaybe >>= \case
+	Nothing -> pure (); Just BSF.Empty -> pure ()
+	Just bs -> (>>) <$> Pipe.yield <*> unfilterTail bpp
+		=<< either Except.throw pure (Filter.unfilter bpp prior bs)
