@@ -71,13 +71,9 @@ read nm = do
 	h <- BSF.toBitsBE <$> Pipe.await
 	State.putN nm $ OnDemand.RequestBytes 1
 	bd <- BSF.toBitsBE <$> Pipe.await
-	State.putN nm $ OnDemand.RequestBytes 1
 	ct <- BSF.toBitsBE <$> Pipe.await
-	State.putN nm $ OnDemand.RequestBytes 1
 	cm <- BSF.toBitsBE <$> Pipe.await
-	State.putN nm $ OnDemand.RequestBytes 1
 	fm <- BSF.toBitsBE <$> Pipe.await
-	State.putN nm $ OnDemand.RequestBytes 1
 	im <- BSF.toBitsBE <$> Pipe.await
 	let	hdr = Header.H {
 			Header.headerWidth = w, Header.headerHeight = h,
