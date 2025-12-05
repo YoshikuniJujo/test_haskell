@@ -42,7 +42,7 @@ import Data.Word
 import Data.Word.Crc32 qualified as Crc32
 import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Png.Palette qualified as Palette
-import Control.Monad.Yaftee.Pipe.Png.Filter qualified as Unfilter
+import Control.Monad.Yaftee.Pipe.Png.Filter qualified as Filter
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 import Data.Image.Gray1 qualified as Gray1
@@ -245,9 +245,7 @@ pipeDat nm m iorf hdr w h ibe obe = void $
 		x <- Pipe.await
 		if Encode.endDat x then pure () else Pipe.yield x >> go)
 	Pipe.=$= PipeT.convert (Encode.toDat hdr)
-	Pipe.=$= do
-		bs0 <- Pipe.await
-		Unfilter.filter hdr bs0 $ Header.calcSizes hdr w h
+	Pipe.=$= Filter.filter hdr (Header.calcSizes hdr w h)
 	Pipe.=$= PipeT.convert BSF.pack
 	Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
 --	Pipe.=$= Buffer.devide nm BSF.splitAt' "" 1000

@@ -10,6 +10,7 @@ module Data.Png.Header (
 	sampleNum',
 
 	headerToRowBytes,
+	rowBytes,
 
 	headerToRows,
 
@@ -20,10 +21,7 @@ module Data.Png.Header (
 	) where
 
 
-import Data.Bits
-import Data.List qualified as L
 import Data.Word
-import Data.Color
 
 import Tools
 
@@ -40,7 +38,7 @@ headerToRows h@Header { headerInterlaceMethod = InterlaceMethodAdam7 } =
 			(fromIntegral $ headerHeight h)
 headerToRows h = error $ "headerToRows: " ++ show h
 
-sampleNum' :: Header -> Int
+sampleNum' :: Integral n => Header -> n
 sampleNum' = sampleNum . headerColorType
 
 calcSizes :: Header -> Word32 -> Word32 -> [(Int, Int)]
@@ -75,6 +73,10 @@ headerToBpp hdr =
 	(fromIntegral (headerBitDepth hdr) *
 		sampleNum (headerColorType hdr) - 1) `div` 8 + 1
 
+rowBytes :: Integral n => Header -> n -> n
+rowBytes hdr w = (w * bd) `div` 8 * sampleNum' hdr
+	where bd = fromIntegral $ headerBitDepth hdr
+
 headerToRowBytes :: Integral n => Header -> n
 headerToRowBytes hdr =
 	(fromIntegral (headerWidth hdr) * fromIntegral (headerBitDepth hdr) *
@@ -87,19 +89,6 @@ sampleNum ColorTypePalette = 1
 sampleNum ColorTypeAlpha = 2
 sampleNum ColorTypeColorAlpha = 4
 sampleNum _ = error "not allowed color type"
-
-headerToPoss :: Header -> [(Int, Int)]
-headerToPoss hdr = calcPoss hdr (headerWidth hdr) (headerHeight hdr)
-
-calcPoss :: Header -> Word32 -> Word32 -> [(Int, Int)]
-calcPoss Header { headerInterlaceMethod = InterlaceMethodNon } w h =
-	[ (fromIntegral x, fromIntegral y) | y <- [0 .. h - 1], x <- [0 .. w - 1] ]
-calcPoss Header { headerInterlaceMethod = InterlaceMethodAdam7 } _ _ =
-	error "not implemented"
-calcPoss _ _ _ = error "bad"
-
-headerToPoss' :: Header -> [[(Int, Int)]]
-headerToPoss' hdr = calcPoss' hdr (headerWidth hdr) (headerHeight hdr)
 
 calcPoss' :: Header -> Word32 -> Word32 -> [[(Int, Int)]]
 calcPoss' Header { headerInterlaceMethod = InterlaceMethodNon } w h =

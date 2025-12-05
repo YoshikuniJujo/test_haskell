@@ -1,11 +1,15 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.Filter (filter, unfilter) where
+module Control.Monad.Yaftee.Pipe.Png.Filter (
+
+	filter, unfilter, Size
+
+	) where
 
 import Prelude hiding (filter)
 import Control.Monad
@@ -17,35 +21,34 @@ import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png.Header qualified as Header
 import Data.Png.Header.Data qualified as Header
-import Data.Png.Filters qualified as Filters
-import Tools
+import Data.Png.Filter qualified as Filter
+
+type Size = (Int, Int)
 
 filter :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
-	Header.Header ->
-	BSF.ByteString -> [(Int, Int)] -> Eff.E es BSF.ByteString [Word8] ()
-filter _ _ [] = pure ()
-filter hdr bs0 ((w, h) : ss) = void do
-	let	bpp = Header.headerToBpp hdr
-		bd = fromIntegral $ Header.headerBitDepth hdr
-	Pipe.yield
-		$ Filters.filter bpp
-			(replicate ((w * bd) `div'` 8 * Header.sampleNum' hdr) 0)
-			bs0
-	filterAll bpp (BSF.unpack bs0) (h - 1)
-	when (not $ null ss) do
-		bs0'' <- Pipe.await
-		filter hdr bs0'' ss
+	Header.Header -> [Size] -> Eff.E es BSF.ByteString [Word8] ()
+filter hdr ss = (\bs -> filterRaw hdr bs ss) =<< Pipe.await
 
-filterAll :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
+filterRaw :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
+	Header.Header ->
+	BSF.ByteString -> [Size] -> Eff.E es BSF.ByteString [Word8] ()
+filterRaw _ _ [] = pure ()
+filterRaw hdr r0 ((w, h) : ss) = void do
+	Pipe.yield $ Filter.filter bpp (Header.rowBytes hdr w `replicate` 0) r0
+	filterTail bpp (BSF.unpack r0) (h - 1)
+	case ss of
+		[] -> pure ()
+		_ -> (\bs -> filterRaw hdr bs ss) =<< Pipe.await
+	where bpp = Header.headerToBpp hdr
+
+filterTail :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 	Int -> [Word8] -> Int -> Eff.E es BSF.ByteString [Word8] ()
-filterAll _bpp _prior 0 = pure ()
-filterAll bpp prior n = Pipe.awaitMaybe >>= \case
-	Nothing -> pure ()
-	Just BSF.Empty -> pure ()
+filterTail _bpp _prior 0 = pure ()
+filterTail bpp prior n = Pipe.awaitMaybe >>= \case
+	Nothing -> pure (); Just BSF.Empty -> pure ()
 	Just bs -> do
-		let	bs' = Filters.filter bpp prior bs
-		Pipe.yield bs'
-		filterAll bpp (BSF.unpack bs) (n - 1)
+		Pipe.yield $ Filter.filter bpp prior bs
+		filterTail bpp (BSF.unpack bs) (n - 1)
 
 unfilter :: (
 	U.Member Pipe.P es,
@@ -56,7 +59,7 @@ unfilter hdr = void do
 	let	bpp = Header.headerToBpp hdr
 		rbs = Header.headerToRowBytes hdr
 	bs' <- either Except.throw pure
-		$ Filters.unfilter bpp (replicate rbs 0) bs
+		$ Filter.unfilter bpp (replicate rbs 0) bs
 	Pipe.yield bs'
 	unfilterAll bpp bs'
 
@@ -68,6 +71,6 @@ unfilterAll bpp prior = Pipe.awaitMaybe >>= \case
 	Nothing -> pure ()
 	Just BSF.Empty -> pure ()
 	Just bs -> do
-		bs' <- either Except.throw pure $ Filters.unfilter bpp prior bs
+		bs' <- either Except.throw pure $ Filter.unfilter bpp prior bs
 		Pipe.yield bs'
 		unfilterAll bpp bs'

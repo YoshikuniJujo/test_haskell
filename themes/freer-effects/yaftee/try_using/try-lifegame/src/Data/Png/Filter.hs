@@ -4,7 +4,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Png.Filters (filter, unfilter) where
+module Data.Png.Filter (filter, unfilter) where
 
 import Prelude hiding (filter)
 import Control.Arrow
