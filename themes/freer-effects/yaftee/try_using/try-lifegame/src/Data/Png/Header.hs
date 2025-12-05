@@ -74,7 +74,7 @@ headerToBpp hdr =
 		sampleNum (headerColorType hdr) - 1) `div` 8 + 1
 
 rowBytes :: Integral n => H -> n -> n
-rowBytes hdr w = (w * bd) `div` 8 * sampleNum' hdr
+rowBytes hdr w = ((w * bd - 1) * sampleNum' hdr - 1) `div` 8 + 1
 	where bd = fromIntegral $ headerBitDepth hdr
 
 headerToRowBytes :: Integral n => H -> n
