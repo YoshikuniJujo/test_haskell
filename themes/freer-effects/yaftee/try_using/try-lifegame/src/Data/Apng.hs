@@ -17,7 +17,7 @@ module Data.Apng (
 
 	Fctl(..), encodeFctl,
 
-	Fctl'(..),
+	Fctl'(..), DisposeOp, BlendOp,
 
 	-- ** Dispose Op
 
