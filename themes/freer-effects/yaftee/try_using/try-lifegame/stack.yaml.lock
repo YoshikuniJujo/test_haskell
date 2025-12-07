@@ -111,7 +111,7 @@ packages:
     hackage: png-chunk-yaftee-0.1.0.3
 snapshots:
 - completed:
-    sha256: 4bfcb84093e337a28ea1bc1649874301c3d3a2590aaabce096fcf809060e98f5
-    size: 711769
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/11/28.yaml
-  original: nightly-2025-11-28
+    sha256: ba618431c4d0fbf15bad4e1ebf7ef7dfe414657cd24d1c3f7fc972e73a9f3a93
+    size: 712610
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/12/7.yaml
+  original: nightly-2025-12-07
