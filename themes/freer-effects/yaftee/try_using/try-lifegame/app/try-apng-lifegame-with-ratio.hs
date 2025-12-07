@@ -15,7 +15,6 @@ import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
 import Control.Monad.Yaftee.Pipe.ByteString.FingerTree.OnDemand qualified as OnDemand
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
-import Control.Monad.Yaftee.Pipe.Png.Header qualified as Png
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
@@ -36,6 +35,7 @@ import PngToImageGray1
 import System.File.Apng.Gray1.NoInterlace
 import Lifegame.Words qualified as Lifegame
 
+import Lifegame.Png.Header qualified as Png
 import Lifegame.Png.Chunk.Decode qualified as Chunk
 
 main :: IO ()

@@ -8,7 +8,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Yaftee.Pipe.Png.Header (
+module Lifegame.Png.Header (
 
 	-- * RUN
 
@@ -62,8 +62,7 @@ type Members nm nm' es = (
 	U.Member (State.Named nm' Header.H) es )
 
 read :: forall nm -> (
-	U.Member Pipe.P es,
-	OnDemand.Members nm es,
+	U.Member Pipe.P es, OnDemand.Members nm es,
 	U.Member (State.Named nm Header.H) es ) => Eff.E es BSF.ByteString o ()
 read nm = do
 	State.putN nm $ OnDemand.RequestBytes 4
@@ -75,11 +74,9 @@ read nm = do
 	cm <- BSF.toBitsBE <$> Pipe.await
 	fm <- BSF.toBitsBE <$> Pipe.await
 	im <- BSF.toBitsBE <$> Pipe.await
-	let	hdr = Header.H {
-			Header.headerWidth = w, Header.headerHeight = h,
-			Header.headerBitDepth = bd,
-			Header.headerColorType = ct,
-			Header.headerCompressionMethod = cm,
-			Header.headerFilterMethod = fm,
-			Header.headerInterlaceMethod = im }
-	State.putN nm hdr
+	State.putN nm Header.H {
+		Header.headerWidth = w, Header.headerHeight = h,
+		Header.headerBitDepth = bd, Header.headerColorType = ct,
+		Header.headerCompressionMethod = cm,
+		Header.headerFilterMethod = fm,
+		Header.headerInterlaceMethod = im }

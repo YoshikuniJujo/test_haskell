@@ -15,7 +15,6 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
-import Control.Monad.Yaftee.Pipe.Png.Header qualified as Header
 import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
@@ -27,6 +26,7 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Lifegame.Words qualified as Lifegame
 
 import PngToImageGray1
+import Lifegame.Png.Header qualified as Header
 import Lifegame.Png.Chunk.Decode qualified as Chunk
 
 import System.File.Png.Gray1.NoInterlace qualified as Png
