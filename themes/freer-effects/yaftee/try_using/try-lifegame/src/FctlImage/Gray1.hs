@@ -23,7 +23,6 @@ data G = G {
 toFctlImage :: G -> (Decode.Fctl, Gray1.G)
 toFctlImage g = (
 	Decode.Fctl {
-		Decode.fctlSequenceNumber = 0,
 		Decode.fctlWidth = w, Decode.fctlHeight = h,
 		Decode.fctlXOffset = xo, Decode.fctlYOffset = yo,
 		Decode.fctlDelayNum = dn, Decode.fctlDelayDen = dd,

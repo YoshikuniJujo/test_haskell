@@ -96,7 +96,7 @@ main = do
 				Just d' <- pop "foobar"
 				Pipe.yield \sn -> (
 					EnChunk.Chunk "fcTL"
-						(Apng.encodeFctl' sn $ fctl wdt hgt d'), -- $ read d),
+						(Apng.encodeFctl sn $ fctl wdt hgt d'),
 					sn + 1 )
 				doWhile_ do
 					ChunkNew.Begin _ cnm <- Pipe.await
@@ -118,7 +118,7 @@ main = do
 					Just d' <- pop "foobar"
 					Pipe.yield \sn -> (
 						EnChunk.Chunk "fcTL"
-							(Apng.encodeFctl' sn $ fctl wdt hgt d'), -- $ read d),
+							(Apng.encodeFctl sn $ fctl wdt hgt d'),
 						sn + 1 )
 					doWhile_ do
 						ChunkNew.Begin _ cnm <- Pipe.await
@@ -169,7 +169,6 @@ actl fn = Apng.Actl { Apng.actlFrames = fn, Apng.actlPlays = 0 }
 
 fctl :: Word32 -> Word32 -> Ratio Word16 -> Apng.Fctl
 fctl w h d = Apng.Fctl {
-	Apng.fctlSequenceNumber = 0,
 	Apng.fctlWidth = w, Apng.fctlHeight = h,
 	Apng.fctlXOffset = 0, Apng.fctlYOffset = 0,
 	Apng.fctlDelayNum = numerator d, Apng.fctlDelayDen = denominator d,

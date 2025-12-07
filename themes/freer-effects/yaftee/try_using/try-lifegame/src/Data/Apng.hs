@@ -9,35 +9,49 @@
 
 module Data.Apng (
 
+	-- * ACTL
+
 	Actl(..), encodeActl,
-	Fctl(..), encodeFctl, encodeFctl',
+
+	-- * FCTL
+
+	Fctl(..), encodeFctl,
+
+	Fctl'(..),
+
+	-- ** Dispose Op
 
 	disposeOpNone, disposeOpBackground, disposeOpPrevious,
+
+	-- ** Blend Op
+
 	blendOpSource, blendOpOver
 
 	) where
 
+import Data.Ratio
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
 
 data Fctl = Fctl {
-	fctlSequenceNumber :: Word32,
 	fctlWidth :: Word32, fctlHeight :: Word32,
 	fctlXOffset :: Word32, fctlYOffset :: Word32,
 	fctlDelayNum :: Word16, fctlDelayDen :: Word16,
 	fctlDisposeOp :: Word8, fctlBlendOp :: Word8 } deriving Show
 
-encodeFctl :: Fctl -> BSF.ByteString
-encodeFctl c =
-	BSF.fromBitsBE' (fctlSequenceNumber c) <>
-	BSF.fromBitsBE' (fctlWidth c) <> BSF.fromBitsBE' (fctlHeight c) <>
-	BSF.fromBitsBE' (fctlXOffset c) <> BSF.fromBitsBE' (fctlYOffset c) <>
-	BSF.fromBitsBE' (fctlDelayNum c) <> BSF.fromBitsBE' (fctlDelayDen c) <>
-	BSF.fromBitsBE' (fctlDisposeOp c) <> BSF.fromBitsBE' (fctlBlendOp c)
+data Fctl' = Fctl' {
+	fctlWidth' :: Word32, fctlHeight' :: Word32,
+	fctlXOffset' :: Word32, fctlYOffset' :: Word32,
+	fctlDelay :: Ratio Word16,
+	fctlDisposeOp' :: DisposeOp, fctlBlendOp' :: BlendOp } deriving Show
 
-encodeFctl' :: Word32 -> Fctl -> BSF.ByteString
-encodeFctl' sn c =
+newtype DisposeOp = DesposeOp Word8 deriving Show
+
+newtype BlendOp = BlendOp Word8 deriving Show
+
+encodeFctl :: Word32 -> Fctl -> BSF.ByteString
+encodeFctl sn c =
 	BSF.fromBitsBE' sn <>
 	BSF.fromBitsBE' (fctlWidth c) <> BSF.fromBitsBE' (fctlHeight c) <>
 	BSF.fromBitsBE' (fctlXOffset c) <> BSF.fromBitsBE' (fctlYOffset c) <>

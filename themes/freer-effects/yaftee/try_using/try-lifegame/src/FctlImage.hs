@@ -26,7 +26,6 @@ data GrayI = GrayI {
 toFctlImageGray :: GrayI -> (Decode.Fctl, Gray.G)
 toFctlImageGray g = (
 	Decode.Fctl {
-		Decode.fctlSequenceNumber = 0,
 		Decode.fctlWidth = w, Decode.fctlHeight = h,
 		Decode.fctlXOffset = xo, Decode.fctlYOffset = yo,
 		Decode.fctlDelayNum = dn, Decode.fctlDelayDen = dd,
