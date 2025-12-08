@@ -71,7 +71,7 @@ mkHeader w h = Header.H {
 writeApngGray1Foo :: FilePath -> Header.H -> FctlImage1.G -> IO ()
 writeApngGray1Foo fp hdr = writePngGray1Foo'' fp hdr . FctlImage1.toFctlImage
 
-writePngGray1Foo'' :: FilePath -> Header.H -> (Fctl, Gray1.G) -> IO ()
+writePngGray1Foo'' :: FilePath -> Header.H -> (Fctl', Gray1.G) -> IO ()
 writePngGray1Foo'' fpp hdr fctlsimg = do
 	checkHeader hdr
 	putStrLn "writePngGray'' begin"
@@ -100,7 +100,7 @@ checkHeader hdr
 	| otherwise = error "not implemented for such header"
 
 hWritePngGray1' ::
-	Handle -> Header.H -> (Fctl, Gray1.G) ->
+	Handle -> Header.H -> (Fctl', Gray1.G) ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
 hWritePngGray1' ho hdr (fctl, img) ibe obe = do
 	void . Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
@@ -115,7 +115,7 @@ hWritePngPipeGray1' :: (
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
 	U.Base IO.I es ) =>
-	Handle -> Header.H -> Fctl -> Gray1.G ->
+	Handle -> Header.H -> Fctl' -> Gray1.G ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es i o ()
 hWritePngPipeGray1' ho hdr fctl img ibe obe = (`Except.catch` IO.putStrLn)
@@ -141,18 +141,18 @@ encodeApngGray1 :: (
 	U.Member (Except.E String) es,
 	U.Member (Except.E Zlib.ReturnCode) es,
 	U.Base (U.FromFirst IO) es ) =>
-	Header.H -> Fctl ->
+	Header.H -> Fctl' ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es a BSF.ByteString ()
 encodeApngGray1 hdr fctl ibe obe =
 	encodeRawCalcGray1 "barbaz" IO hdr {
-		Header.headerWidth = fctlWidth fctl,
-		Header.headerHeight = fctlHeight fctl }
+		Header.headerWidth = fctlWidth' fctl,
+		Header.headerHeight = fctlHeight' fctl }
 		(fctlToSize fctl)
 		Nothing ibe obe
 
-fctlToSize :: Fctl -> (Word32, Word32)
-fctlToSize c = (fctlWidth c, fctlHeight c)
+fctlToSize :: Fctl' -> (Word32, Word32)
+fctlToSize c = (fctlWidth' c, fctlHeight' c)
 
 encodeRawCalcGray1 :: forall nm m -> (
 	Encode.Datable a,

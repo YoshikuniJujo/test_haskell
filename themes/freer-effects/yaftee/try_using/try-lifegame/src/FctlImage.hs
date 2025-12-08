@@ -23,13 +23,13 @@ data GrayI = GrayI {
 	grayIDisposeOp :: Word8, grayIBlendOp :: Word8,
 	grayIImage :: V.Vector Word8 }
 
-toFctlImageGray :: GrayI -> (Decode.Fctl, Gray.G)
+toFctlImageGray :: GrayI -> (Decode.Fctl', Gray.G)
 toFctlImageGray g = (
-	Decode.Fctl {
-		Decode.fctlWidth = w, Decode.fctlHeight = h,
-		Decode.fctlXOffset = xo, Decode.fctlYOffset = yo,
-		Decode.fctlDelayNum = dn, Decode.fctlDelayDen = dd,
-		Decode.fctlDisposeOp = dop, Decode.fctlBlendOp = bop },
+	Decode.Fctl' {
+		Decode.fctlWidth' = w, Decode.fctlHeight' = h,
+		Decode.fctlXOffset' = xo, Decode.fctlYOffset' = yo,
+		Decode.fctlDelay = dn % dd,
+		Decode.fctlDisposeOp' = Decode.DisposeOp dop, Decode.fctlBlendOp' = Decode.BlendOp bop },
 	Gray.G {
 		Gray.grayWidth = fromIntegral w,
 		Gray.grayHeight = fromIntegral h,

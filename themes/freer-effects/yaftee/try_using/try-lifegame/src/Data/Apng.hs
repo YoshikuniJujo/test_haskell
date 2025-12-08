@@ -16,13 +16,8 @@ module Data.Apng (
 
 	-- * FCTL
 
-	Fctl(..),
-
 	Fctl'(..), Fctlable'(..), encodeFctl',
-
-	fctlToFctl', fctl'ToFctl,
-
-	fctlPoss,
+	fctlPoss',
 
 	-- ** Dispose Op
 
@@ -31,13 +26,11 @@ module Data.Apng (
 	pattern DisposeOpNone, pattern DisposeOpBackground,
 	pattern DisposeOpPrevious,
 
-	disposeOpNone, disposeOpBackground, disposeOpPrevious,
-
 	-- ** Blend Op
 
 	BlendOp(..),
 
-	blendOpSource, blendOpOver
+	pattern BlendOpSource, pattern BlendOpOver,
 
 	) where
 
@@ -53,14 +46,6 @@ data Fctl = Fctl {
 	fctlXOffset :: Word32, fctlYOffset :: Word32,
 	fctlDelayNum :: Word16, fctlDelayDen :: Word16,
 	fctlDisposeOp :: Word8, fctlBlendOp :: Word8 } deriving Show
-
-fctlToFctl' :: Fctl -> Fctl'
-fctlToFctl' f = Fctl' {
-	fctlWidth' = fctlWidth f, fctlHeight' = fctlHeight f,
-	fctlXOffset' = fctlXOffset f, fctlYOffset' = fctlYOffset f,
-	fctlDelay = fctlDelayNum f % fctlDelayDen f,
-	fctlDisposeOp' = DisposeOp $ fctlDisposeOp f,
-	fctlBlendOp' = BlendOp $ fctlBlendOp f }
 
 fctl'ToFctl :: Fctl' -> Fctl
 fctl'ToFctl f = Fctl {
@@ -99,18 +84,17 @@ data Actl = Actl {
 encodeActl :: Actl -> BSF.ByteString
 encodeActl c = BSF.fromBitsBE' (actlFrames c) <> BSF.fromBitsBE' (actlPlays c)
 
-disposeOpNone, disposeOpBackground, disposeOpPrevious :: Word8
-disposeOpNone = 0; disposeOpBackground = 1; disposeOpPrevious = 2
-
-blendOpSource, blendOpOver :: Word8
-blendOpSource = 0; blendOpOver = 1
+pattern BlendOpSource, BlendOpOver :: BlendOp
+pattern BlendOpSource = BlendOp 0
+pattern BlendOpOver = BlendOp 1
 
 pattern DisposeOpNone, DisposeOpBackground, DisposeOpPrevious :: DisposeOp
 pattern DisposeOpNone = DisposeOp 0
 pattern DisposeOpBackground = DisposeOp 1
 pattern DisposeOpPrevious = DisposeOp 2
 
-fctlPoss :: Header.H -> Fctl -> [[(Int, Int)]]
-fctlPoss hdr fctl = Header.calcPoss' hdr (fctlWidth fctl) (fctlHeight fctl)
+fctlPoss' :: Header.H -> Fctl' -> [[(Int, Int)]]
+fctlPoss' hdr fctl = Header.calcPoss' hdr (fctlWidth fctl') (fctlHeight fctl')
+	where fctl' = fctl'ToFctl fctl
 
 class Fctlable' a where getFctl' :: a -> Maybe Fctl'

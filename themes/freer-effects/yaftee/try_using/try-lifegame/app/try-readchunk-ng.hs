@@ -109,13 +109,13 @@ header w h = Header.H {
 actl :: Word32 -> Apng.Actl
 actl fn = Apng.Actl { Apng.actlFrames = fn, Apng.actlPlays = 0 }
 
-fctl :: Word32 -> Word32 -> Ratio Word16 -> Apng.Fctl
-fctl w h d = Apng.Fctl {
-	Apng.fctlWidth = w, Apng.fctlHeight = h,
-	Apng.fctlXOffset = 0, Apng.fctlYOffset = 0,
-	Apng.fctlDelayNum = numerator d, Apng.fctlDelayDen = denominator d,
-	Apng.fctlDisposeOp = Apng.disposeOpNone,
-	Apng.fctlBlendOp = Apng.blendOpSource }
+fctl :: Word32 -> Word32 -> Ratio Word16 -> Apng.Fctl'
+fctl w h d = Apng.Fctl' {
+	Apng.fctlWidth' = w, Apng.fctlHeight' = h,
+	Apng.fctlXOffset' = 0, Apng.fctlYOffset' = 0,
+	Apng.fctlDelay = d,
+	Apng.fctlDisposeOp' = Apng.DisposeOpNone,
+	Apng.fctlBlendOp' = Apng.BlendOpSource }
 
 fdatChunk :: Word32 -> BSF.ByteString -> EnChunk.Chunk
 fdatChunk sn bd = EnChunk.Chunk "fdAT" $ BSF.fromBitsBE' sn <> bd
@@ -138,7 +138,7 @@ mkChunks wdt hgt n = do
 	_bd <- chunkBody "foobar"
 	Just d' <- pop "foobar"
 	Pipe.yield \sn -> (
-		EnChunk.Chunk "fcTL" (Apng.encodeFctl' sn . Apng.fctlToFctl' $ fctl wdt hgt d'),
+		EnChunk.Chunk "fcTL" (Apng.encodeFctl' sn $ fctl wdt hgt d'),
 		sn + 1 )
 	doWhile_ do
 		ChunkNew.Begin _ cnm <- Pipe.await
@@ -157,7 +157,7 @@ mkChunks wdt hgt n = do
 			Just d'' <- pop "foobar"
 			Pipe.yield \sn -> (
 				EnChunk.Chunk "fcTL" (
-					Apng.encodeFctl' sn . Apng.fctlToFctl' $ fctl wdt hgt d''),
+					Apng.encodeFctl' sn $ fctl wdt hgt d''),
 					sn + 1 )
 			doWhile_ do
 				ChunkNew.Begin _ cnm <- Pipe.await
