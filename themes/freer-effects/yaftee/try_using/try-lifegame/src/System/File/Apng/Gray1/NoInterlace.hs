@@ -261,11 +261,11 @@ encodeRawCalcGray1 _ _ _ _ _ [] _ _ _ = pure ()
 encodeRawCalcGray1 nm m hdr fn np ((w0, h0) : sz) mplt ibe obe = void $
 -- MAKE IDAT
 	do	Just fctl <- getFctl <$> Pipe.await
-		Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl sn fctl, sn + 1)
+		Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn $ fctlToFctl' fctl, sn + 1)
 		pipeDat nm m False hdr w0 h0 ibe obe
 		for_ (take (fn - 1) sz) \(w, h) -> do
 			Just fctl' <- getFctl <$> Pipe.await
-			Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl sn fctl', sn + 1)
+			Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn $ fctlToFctl' fctl', sn + 1)
 			pipeDat nm m True hdr w h ibe obe
 	Pipe.=$= makeChunks hdr fn np mplt
 

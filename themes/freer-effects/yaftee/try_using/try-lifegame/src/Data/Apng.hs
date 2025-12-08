@@ -5,6 +5,7 @@
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Apng (
@@ -15,11 +16,18 @@ module Data.Apng (
 
 	-- * FCTL
 
-	Fctl(..), encodeFctl,
+	Fctl(..),
 
-	Fctl'(..), DisposeOp, BlendOp,
+	Fctl'(..), BlendOp, encodeFctl',
+
+	fctlToFctl', fctl'ToFctl,
 
 	-- ** Dispose Op
+
+	DisposeOp,
+
+	pattern DisposeOpNone, pattern DisposeOpBackground,
+	pattern DisposeOpPrevious,
 
 	disposeOpNone, disposeOpBackground, disposeOpPrevious,
 
@@ -40,15 +48,32 @@ data Fctl = Fctl {
 	fctlDelayNum :: Word16, fctlDelayDen :: Word16,
 	fctlDisposeOp :: Word8, fctlBlendOp :: Word8 } deriving Show
 
+fctlToFctl' :: Fctl -> Fctl'
+fctlToFctl' f = Fctl' {
+	fctlWidth' = fctlWidth f, fctlHeight' = fctlHeight f,
+	fctlXOffset' = fctlXOffset f, fctlYOffset' = fctlYOffset f,
+	fctlDelay = fctlDelayNum f % fctlDelayDen f,
+	fctlDisposeOp' = DisposeOp $ fctlDisposeOp f,
+	fctlBlendOp' = BlendOp $ fctlBlendOp f }
+
+fctl'ToFctl :: Fctl' -> Fctl
+fctl'ToFctl f = Fctl {
+	fctlWidth = fctlWidth' f, fctlHeight = fctlHeight' f,
+	fctlXOffset = fctlXOffset' f, fctlYOffset = fctlYOffset' f,
+	fctlDelayNum = numerator $ fctlDelay f,
+	fctlDelayDen = denominator $ fctlDelay f,
+	fctlDisposeOp = unDisposeOp $ fctlDisposeOp' f,
+	fctlBlendOp = unBlendOp $ fctlBlendOp' f }
+
 data Fctl' = Fctl' {
 	fctlWidth' :: Word32, fctlHeight' :: Word32,
 	fctlXOffset' :: Word32, fctlYOffset' :: Word32,
 	fctlDelay :: Ratio Word16,
 	fctlDisposeOp' :: DisposeOp, fctlBlendOp' :: BlendOp } deriving Show
 
-newtype DisposeOp = DesposeOp Word8 deriving Show
+newtype DisposeOp = DisposeOp { unDisposeOp :: Word8 } deriving Show
 
-newtype BlendOp = BlendOp Word8 deriving Show
+newtype BlendOp = BlendOp { unBlendOp :: Word8 } deriving Show
 
 encodeFctl :: Word32 -> Fctl -> BSF.ByteString
 encodeFctl sn c =
@@ -57,6 +82,9 @@ encodeFctl sn c =
 	BSF.fromBitsBE' (fctlXOffset c) <> BSF.fromBitsBE' (fctlYOffset c) <>
 	BSF.fromBitsBE' (fctlDelayNum c) <> BSF.fromBitsBE' (fctlDelayDen c) <>
 	BSF.fromBitsBE' (fctlDisposeOp c) <> BSF.fromBitsBE' (fctlBlendOp c)
+
+encodeFctl' :: Word32 -> Fctl' -> BSF.ByteString
+encodeFctl' sn = encodeFctl sn . fctl'ToFctl
 
 data Actl = Actl {
 	actlFrames :: Word32,
@@ -70,3 +98,8 @@ disposeOpNone = 0; disposeOpBackground = 1; disposeOpPrevious = 2
 
 blendOpSource, blendOpOver :: Word8
 blendOpSource = 0; blendOpOver = 1
+
+pattern DisposeOpNone, DisposeOpBackground, DisposeOpPrevious :: DisposeOp
+pattern DisposeOpNone = DisposeOp 0
+pattern DisposeOpBackground = DisposeOp 1
+pattern DisposeOpPrevious = DisposeOp 2

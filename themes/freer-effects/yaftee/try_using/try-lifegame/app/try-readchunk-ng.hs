@@ -138,7 +138,7 @@ mkChunks wdt hgt n = do
 	_bd <- chunkBody "foobar"
 	Just d' <- pop "foobar"
 	Pipe.yield \sn -> (
-		EnChunk.Chunk "fcTL" (Apng.encodeFctl sn $ fctl wdt hgt d'),
+		EnChunk.Chunk "fcTL" (Apng.encodeFctl' sn . Apng.fctlToFctl' $ fctl wdt hgt d'),
 		sn + 1 )
 	doWhile_ do
 		ChunkNew.Begin _ cnm <- Pipe.await
@@ -157,7 +157,7 @@ mkChunks wdt hgt n = do
 			Just d'' <- pop "foobar"
 			Pipe.yield \sn -> (
 				EnChunk.Chunk "fcTL" (
-					Apng.encodeFctl sn $ fctl wdt hgt d''),
+					Apng.encodeFctl' sn . Apng.fctlToFctl' $ fctl wdt hgt d''),
 					sn + 1 )
 			doWhile_ do
 				ChunkNew.Begin _ cnm <- Pipe.await
