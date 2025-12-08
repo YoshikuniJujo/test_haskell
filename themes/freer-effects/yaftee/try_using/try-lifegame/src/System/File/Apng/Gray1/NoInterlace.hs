@@ -38,8 +38,6 @@ import System.IO
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
-import Fctl
-
 import Data.Png.Datable qualified as Encode
 import Control.Monad.Yaftee.Pipe.Tools qualified as Buffer
 
@@ -185,7 +183,7 @@ fromFctlImagesGray1 :: forall m -> (
 fromFctlImagesGray1 _ _ [] [] = pure ()
 fromFctlImagesGray1 m hdr (fctl : fctls) (img : imgs) = do
 	Pipe.yield $ W.BodyGray1Fctl fctl
-	fromGrayImage1 m fctl img (fctlPoss' hdr fctl)
+	fromGrayImage1 m fctl img (fctlPoss hdr fctl)
 	fromFctlImagesGray1 m hdr fctls imgs
 fromFctlImagesGray1 _ _ _ _ = error "bad"
 
@@ -219,7 +217,7 @@ fromGrayImage1' img = case Gray1.unconsRow img of
 		fromGrayImage1' img'
 
 encodeApngGray1 :: (
-	Fctlable a, Encode.Datable a,
+	Fctlable' a, Encode.Datable a,
 	U.Member Pipe.P es,
 	U.Member (State.Named "foo" Crc32.C) es,
 	U.Member (State.Named "barbaz" (Buffer.Devide BSF.ByteString)) es,
@@ -243,7 +241,7 @@ fctlToSize :: Fctl -> (Word32, Word32)
 fctlToSize c = (fctlWidth c, fctlHeight c)
 
 encodeRawCalcGray1 :: forall nm m -> (
-	Fctlable a, Encode.Datable a,
+	Fctlable' a, Encode.Datable a,
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Member (State.Named "foo" Crc32.C) es,
@@ -260,12 +258,12 @@ encodeRawCalcGray1 :: forall nm m -> (
 encodeRawCalcGray1 _ _ _ _ _ [] _ _ _ = pure ()
 encodeRawCalcGray1 nm m hdr fn np ((w0, h0) : sz) mplt ibe obe = void $
 -- MAKE IDAT
-	do	Just fctl <- getFctl <$> Pipe.await
-		Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn $ fctlToFctl' fctl, sn + 1)
+	do	Just fctl <- getFctl' <$> Pipe.await
+		Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn fctl, sn + 1)
 		pipeDat nm m False hdr w0 h0 ibe obe
 		for_ (take (fn - 1) sz) \(w, h) -> do
-			Just fctl' <- getFctl <$> Pipe.await
-			Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn $ fctlToFctl' fctl', sn + 1)
+			Just fctl' <- getFctl' <$> Pipe.await
+			Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn fctl', sn + 1)
 			pipeDat nm m True hdr w h ibe obe
 	Pipe.=$= makeChunks hdr fn np mplt
 

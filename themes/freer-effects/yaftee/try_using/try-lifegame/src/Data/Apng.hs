@@ -18,13 +18,15 @@ module Data.Apng (
 
 	Fctl(..),
 
-	Fctl'(..), BlendOp, encodeFctl',
+	Fctl'(..), Fctlable'(..), encodeFctl',
 
 	fctlToFctl', fctl'ToFctl,
 
+	fctlPoss,
+
 	-- ** Dispose Op
 
-	DisposeOp,
+	DisposeOp(..),
 
 	pattern DisposeOpNone, pattern DisposeOpBackground,
 	pattern DisposeOpPrevious,
@@ -32,6 +34,8 @@ module Data.Apng (
 	disposeOpNone, disposeOpBackground, disposeOpPrevious,
 
 	-- ** Blend Op
+
+	BlendOp(..),
 
 	blendOpSource, blendOpOver
 
@@ -41,6 +45,8 @@ import Data.Ratio
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
+import Data.Png.Header qualified as Header
+import Data.Png.Header.Data qualified as Header
 
 data Fctl = Fctl {
 	fctlWidth :: Word32, fctlHeight :: Word32,
@@ -103,3 +109,8 @@ pattern DisposeOpNone, DisposeOpBackground, DisposeOpPrevious :: DisposeOp
 pattern DisposeOpNone = DisposeOp 0
 pattern DisposeOpBackground = DisposeOp 1
 pattern DisposeOpPrevious = DisposeOp 2
+
+fctlPoss :: Header.H -> Fctl -> [[(Int, Int)]]
+fctlPoss hdr fctl = Header.calcPoss' hdr (fctlWidth fctl) (fctlHeight fctl)
+
+class Fctlable' a where getFctl' :: a -> Maybe Fctl'

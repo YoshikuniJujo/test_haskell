@@ -34,7 +34,6 @@ library
       Data.Png.Header
       Data.Png.Header.Data
       Data.Png.Palette
-      Fctl
       FctlImage
       FctlImage.Gray1
       FctlImageBody.Gray1Words
