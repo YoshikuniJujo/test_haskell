@@ -30,7 +30,7 @@ import System.FilePath
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
-import PngToImageGray1
+import Lifegame.PngToImageGray1
 
 import System.File.Apng.Gray1.NoInterlace
 import Lifegame.Words qualified as Lifegame

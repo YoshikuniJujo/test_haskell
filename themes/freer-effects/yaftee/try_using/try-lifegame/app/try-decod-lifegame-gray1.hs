@@ -25,7 +25,7 @@ import System.Environment
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Lifegame.Words qualified as Lifegame
 
-import PngToImageGray1
+import Lifegame.PngToImageGray1
 import Lifegame.Png.Header qualified as Header
 import Lifegame.Png.Chunk.Decode qualified as Chunk
 

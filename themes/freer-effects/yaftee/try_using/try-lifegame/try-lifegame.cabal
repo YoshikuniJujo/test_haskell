@@ -37,8 +37,8 @@ library
       Lifegame.Png.Chunk.Encode
       Lifegame.Png.Filter
       Lifegame.Png.Header
+      Lifegame.PngToImageGray1
       Lifegame.Words
-      PngToImageGray1
       System.File.Apng.Gray1.NoInterlace
       System.File.Png.Gray1.NoInterlace
   other-modules:

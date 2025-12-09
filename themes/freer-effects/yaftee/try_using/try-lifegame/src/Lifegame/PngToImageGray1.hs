@@ -8,7 +8,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module PngToImageGray1 (
+module Lifegame.PngToImageGray1 (
 
 	runPngToImageGray1,
 	pngToImageGray1,
