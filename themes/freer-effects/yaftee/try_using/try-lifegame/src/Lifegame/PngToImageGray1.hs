@@ -35,7 +35,6 @@ import Data.HigherFunctor qualified as HFunctor
 import Data.ByteString qualified as BS
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png.Header qualified as Header
-import Data.Png.Header.Data qualified as Header
 import Data.Image.Gray1 qualified as ImageG1
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib

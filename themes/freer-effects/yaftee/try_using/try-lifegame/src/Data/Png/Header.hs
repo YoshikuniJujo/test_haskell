@@ -15,8 +15,9 @@ module Data.Png.Header (
 	headerToRows,
 
 	calcSizes,
-	calcPoss'
+	calcPoss',
 
+	module Data.Png.Header.Data
 
 	) where
 

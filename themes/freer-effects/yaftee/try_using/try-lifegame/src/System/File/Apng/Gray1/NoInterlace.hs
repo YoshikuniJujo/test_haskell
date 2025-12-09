@@ -9,10 +9,6 @@
 
 module System.File.Apng.Gray1.NoInterlace (
 
---	writeApngGray1,
-
---	writeApngGray1',
-
 	writeApngGray1Foo'
 
 	) where
@@ -36,7 +32,6 @@ import Data.Ratio
 import Data.Bool
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png.Header qualified as Header
-import Data.Png.Header.Data qualified as Header
 
 import System.IO
 

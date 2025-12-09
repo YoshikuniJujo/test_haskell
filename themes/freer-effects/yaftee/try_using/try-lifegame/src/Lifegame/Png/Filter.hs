@@ -16,7 +16,6 @@ import Control.HigherOpenUnion qualified as U
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png.Header qualified as Header
-import Data.Png.Header.Data qualified as Header
 import Data.Png.Filter qualified as Filter
 
 type Size = (Int, Int)

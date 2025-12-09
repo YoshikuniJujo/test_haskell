@@ -43,8 +43,16 @@ import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Png.Header qualified as Header
-import Data.Png.Header.Data qualified as Header
 import Data.Png.Datable qualified as PngE
+
+-- ACTL
+
+data Actl = Actl { actlFrames :: Word32, actlPlays :: Word32 } deriving Show
+
+encodeActl :: Actl -> BSF.ByteString
+encodeActl c = BSF.fromBitsBE' (actlFrames c) <> BSF.fromBitsBE' (actlPlays c)
+
+-- FCTL
 
 data Fctl = Fctl {
 	fctlWidth :: Word32, fctlHeight :: Word32,
@@ -52,9 +60,7 @@ data Fctl = Fctl {
 	fctlDelay :: Ratio Word16,
 	fctlDisposeOp :: DisposeOp, fctlBlendOp :: BlendOp } deriving Show
 
-newtype DisposeOp = DisposeOp { unDisposeOp :: Word8 } deriving Show
-
-newtype BlendOp = BlendOp { unBlendOp :: Word8 } deriving Show
+class Fctlable a where getFctl :: a -> Maybe Fctl
 
 encodeFctl :: Word32 -> Fctl -> BSF.ByteString
 encodeFctl sn f =
@@ -69,26 +75,27 @@ encodeFctl sn f =
 	dn = numerator $ fctlDelay f; dd = denominator $ fctlDelay f
 	dop = unDisposeOp $ fctlDisposeOp f; bop = unBlendOp $ fctlBlendOp f
 
-data Actl = Actl {
-	actlFrames :: Word32,
-	actlPlays :: Word32 } deriving Show
+fctlPoss :: Header.H -> Fctl -> [[(Int, Int)]]
+fctlPoss hdr fctl = Header.calcPoss' hdr (fctlWidth fctl) (fctlHeight fctl)
 
-encodeActl :: Actl -> BSF.ByteString
-encodeActl c = BSF.fromBitsBE' (actlFrames c) <> BSF.fromBitsBE' (actlPlays c)
+-- Dispose Op
 
-pattern BlendOpSource, BlendOpOver :: BlendOp
-pattern BlendOpSource = BlendOp 0
-pattern BlendOpOver = BlendOp 1
+newtype DisposeOp = DisposeOp { unDisposeOp :: Word8 } deriving Show
 
 pattern DisposeOpNone, DisposeOpBackground, DisposeOpPrevious :: DisposeOp
 pattern DisposeOpNone = DisposeOp 0
 pattern DisposeOpBackground = DisposeOp 1
 pattern DisposeOpPrevious = DisposeOp 2
 
-fctlPoss :: Header.H -> Fctl -> [[(Int, Int)]]
-fctlPoss hdr fctl = Header.calcPoss' hdr (fctlWidth fctl) (fctlHeight fctl)
+-- Blend Op
 
-class Fctlable a where getFctl :: a -> Maybe Fctl
+newtype BlendOp = BlendOp { unBlendOp :: Word8 } deriving Show
+
+pattern BlendOpSource, BlendOpOver :: BlendOp
+pattern BlendOpSource = BlendOp 0
+pattern BlendOpOver = BlendOp 1
+
+-- FCTL PIXEL GRAY1
 
 data FctlPixelsGray1 = FctlPixelsGray1Fctl Fctl | FctlPixelsGray1Pixels [Word8] deriving Show
 
