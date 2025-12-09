@@ -41,21 +41,6 @@ import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Png.Header qualified as Header
 import Data.Png.Header.Data qualified as Header
 
-data Fctl = Fctl {
-	fctlWidth :: Word32, fctlHeight :: Word32,
-	fctlXOffset :: Word32, fctlYOffset :: Word32,
-	fctlDelayNum :: Word16, fctlDelayDen :: Word16,
-	fctlDisposeOp :: Word8, fctlBlendOp :: Word8 } deriving Show
-
-fctl'ToFctl :: Fctl' -> Fctl
-fctl'ToFctl f = Fctl {
-	fctlWidth = fctlWidth' f, fctlHeight = fctlHeight' f,
-	fctlXOffset = fctlXOffset' f, fctlYOffset = fctlYOffset' f,
-	fctlDelayNum = numerator $ fctlDelay f,
-	fctlDelayDen = denominator $ fctlDelay f,
-	fctlDisposeOp = unDisposeOp $ fctlDisposeOp' f,
-	fctlBlendOp = unBlendOp $ fctlBlendOp' f }
-
 data Fctl' = Fctl' {
 	fctlWidth' :: Word32, fctlHeight' :: Word32,
 	fctlXOffset' :: Word32, fctlYOffset' :: Word32,
@@ -66,16 +51,18 @@ newtype DisposeOp = DisposeOp { unDisposeOp :: Word8 } deriving Show
 
 newtype BlendOp = BlendOp { unBlendOp :: Word8 } deriving Show
 
-encodeFctl :: Word32 -> Fctl -> BSF.ByteString
-encodeFctl sn c =
-	BSF.fromBitsBE' sn <>
-	BSF.fromBitsBE' (fctlWidth c) <> BSF.fromBitsBE' (fctlHeight c) <>
-	BSF.fromBitsBE' (fctlXOffset c) <> BSF.fromBitsBE' (fctlYOffset c) <>
-	BSF.fromBitsBE' (fctlDelayNum c) <> BSF.fromBitsBE' (fctlDelayDen c) <>
-	BSF.fromBitsBE' (fctlDisposeOp c) <> BSF.fromBitsBE' (fctlBlendOp c)
-
 encodeFctl' :: Word32 -> Fctl' -> BSF.ByteString
-encodeFctl' sn = encodeFctl sn . fctl'ToFctl
+encodeFctl' sn f =
+	BSF.fromBitsBE' sn <>
+	BSF.fromBitsBE' w <> BSF.fromBitsBE' h <>
+	BSF.fromBitsBE' xo <> BSF.fromBitsBE' yo <>
+	BSF.fromBitsBE' dn <> BSF.fromBitsBE' dd <>
+	BSF.fromBitsBE' dop <> BSF.fromBitsBE' bop
+	where
+	w = fctlWidth' f; h = fctlHeight' f
+	xo = fctlXOffset' f; yo = fctlYOffset' f
+	dn = numerator $ fctlDelay f; dd = denominator $ fctlDelay f
+	dop = unDisposeOp $ fctlDisposeOp' f; bop = unBlendOp $ fctlBlendOp' f
 
 data Actl = Actl {
 	actlFrames :: Word32,
@@ -94,7 +81,6 @@ pattern DisposeOpBackground = DisposeOp 1
 pattern DisposeOpPrevious = DisposeOp 2
 
 fctlPoss' :: Header.H -> Fctl' -> [[(Int, Int)]]
-fctlPoss' hdr fctl = Header.calcPoss' hdr (fctlWidth fctl') (fctlHeight fctl')
-	where fctl' = fctl'ToFctl fctl
+fctlPoss' hdr fctl = Header.calcPoss' hdr (fctlWidth' fctl) (fctlHeight' fctl)
 
 class Fctlable' a where getFctl' :: a -> Maybe Fctl'

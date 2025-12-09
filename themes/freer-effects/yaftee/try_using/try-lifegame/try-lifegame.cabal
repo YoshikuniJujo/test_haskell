@@ -27,7 +27,6 @@ library
   exposed-modules:
       Data.Apng
       Data.Image.Gray1
-      Data.Lifegame.Glider
       Data.Png.Datable
       Data.Png.Filter
       Data.Png.Header
@@ -35,6 +34,7 @@ library
       Data.Png.Palette
       FctlImage.Gray1
       FctlImageBody.Gray1Words
+      Lifegame.Glider
       Lifegame.Png.Chunk.Decode
       Lifegame.Png.Chunk.Encode
       Lifegame.Png.Filter

@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
-module Data.Lifegame.Glider (
+module Lifegame.Glider (
 	G(..), Shape(..), LeftRight(..), UpDown(..), add, addGs,
 
 	readGliders,

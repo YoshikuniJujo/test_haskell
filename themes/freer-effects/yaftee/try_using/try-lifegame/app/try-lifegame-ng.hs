@@ -14,7 +14,7 @@ import System.FilePath
 import System.File.Png.Gray1.NoInterlace qualified as Png
 import Lifegame.Words qualified as Lg
 
-import Data.Lifegame.Glider qualified as Glider
+import Lifegame.Glider qualified as Glider
 
 rootDir :: IO FilePath
 rootDir = (</> ".yoshj/lifegame") <$>  getHomeDirectory

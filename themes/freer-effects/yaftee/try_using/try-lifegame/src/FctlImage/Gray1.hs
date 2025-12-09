@@ -8,7 +8,7 @@ module FctlImage.Gray1 (
 import Data.Vector qualified as V
 import Data.Ratio
 import Data.Word
-import Data.Apng qualified as Decode
+import Data.Apng qualified as Apng
 
 import Data.Image.Gray1 qualified as Gray1
 
@@ -20,13 +20,13 @@ data G = G {
 	image :: V.Vector Word8 }
 	deriving Show
 
-toFctlImage :: G -> (Decode.Fctl', Gray1.G)
+toFctlImage :: G -> (Apng.Fctl', Gray1.G)
 toFctlImage g = (
-	Decode.Fctl' {
-		Decode.fctlWidth' = w, Decode.fctlHeight' = h,
-		Decode.fctlXOffset' = xo, Decode.fctlYOffset' = yo,
-		Decode.fctlDelay = dn % dd,
-		Decode.fctlDisposeOp' = Decode.DisposeOp dop, Decode.fctlBlendOp' = Decode.BlendOp bop },
+	Apng.Fctl' {
+		Apng.fctlWidth' = w, Apng.fctlHeight' = h,
+		Apng.fctlXOffset' = xo, Apng.fctlYOffset' = yo,
+		Apng.fctlDelay = dn % dd,
+		Apng.fctlDisposeOp' = Apng.DisposeOp dop, Apng.fctlBlendOp' = Apng.BlendOp bop },
 	Gray1.G {
 		Gray1.width = fromIntegral w, Gray1.height = fromIntegral h,
 		Gray1.body = bd } )
