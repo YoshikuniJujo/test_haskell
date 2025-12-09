@@ -43,7 +43,7 @@ import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Png.Header qualified as Header
-import Data.Png.Datable qualified as PngE
+import Data.Png.Datable qualified as Datable
 
 -- ACTL
 
@@ -97,12 +97,13 @@ pattern BlendOpOver = BlendOp 1
 
 -- FCTL PIXEL GRAY1
 
-data FctlPixelsGray1 = FctlPixelsGray1Fctl Fctl | FctlPixelsGray1Pixels [Word8] deriving Show
+data FctlPixelsGray1
+	= FctlPixelsGray1Fctl Fctl | FctlPixelsGray1Pixels [Word8] deriving Show
 
 instance Fctlable FctlPixelsGray1 where
 	getFctl = \case FctlPixelsGray1Fctl f -> Just f; _ -> Nothing
 
-instance PngE.Datable FctlPixelsGray1 where
+instance Datable.Datable FctlPixelsGray1 where
 	isDat = \case FctlPixelsGray1Pixels _ -> True; _ -> False
 	endDat _ = False
 	toDat _hdr = \case
