@@ -9,9 +9,11 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module PngToImageGray1 (
-	runPngToImageGray1, PngToImageGray1States,
+
+	runPngToImageGray1,
 	pngToImageGray1,
-	PngToImageGray1Members ) where
+
+	) where
 
 import Control.Monad
 import Control.Monad.Fix
