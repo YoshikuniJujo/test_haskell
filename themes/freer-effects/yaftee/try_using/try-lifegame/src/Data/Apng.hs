@@ -32,6 +32,10 @@ module Data.Apng (
 
 	pattern BlendOpSource, pattern BlendOpOver,
 
+	-- * OTHERS
+
+	BodyGray1(..)
+
 	) where
 
 import Data.Ratio
@@ -40,6 +44,7 @@ import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
 import Data.Png.Header qualified as Header
 import Data.Png.Header.Data qualified as Header
+import Data.Png.Datable qualified as PngE
 
 data Fctl = Fctl {
 	fctlWidth :: Word32, fctlHeight :: Word32,
@@ -84,3 +89,15 @@ fctlPoss :: Header.H -> Fctl -> [[(Int, Int)]]
 fctlPoss hdr fctl = Header.calcPoss' hdr (fctlWidth fctl) (fctlHeight fctl)
 
 class Fctlable a where getFctl :: a -> Maybe Fctl
+
+data BodyGray1 = BodyGray1Fctl Fctl | BodyGray1Pixels [Word8] deriving Show
+
+instance Fctlable BodyGray1 where
+	getFctl = \case BodyGray1Fctl f -> Just f; _ -> Nothing
+
+instance PngE.Datable BodyGray1 where
+	isDat = \case BodyGray1Pixels _ -> True; _ -> False
+	endDat _ = False
+	toDat _hdr = \case
+		BodyGray1Pixels bs -> BSF.pack bs
+		_ -> error "bad"

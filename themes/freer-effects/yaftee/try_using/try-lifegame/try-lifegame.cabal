@@ -33,7 +33,6 @@ library
       Data.Png.Header.Data
       Data.Png.Palette
       FctlImage.Gray1
-      FctlImageBody.Gray1Words
       Lifegame.Glider
       Lifegame.Png.Chunk.Decode
       Lifegame.Png.Chunk.Encode
@@ -43,7 +42,6 @@ library
       PngToImageGray1
       System.File.Apng.Gray1.NoInterlace
       System.File.Png.Gray1.NoInterlace
-      Tools
   other-modules:
       Paths_try_lifegame
   autogen-modules:

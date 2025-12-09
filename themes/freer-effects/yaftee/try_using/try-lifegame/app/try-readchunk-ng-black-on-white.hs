@@ -36,8 +36,6 @@ import System.Environment
 import System.Directory
 import System.FilePath
 
-import Tools
-
 import Data.Png.Palette qualified as Palette
 import Data.Vector qualified as V
 import Data.Word.Crc32 qualified as Crc32
@@ -180,3 +178,6 @@ fdatChunk sn bd = EnChunk.Chunk "fdAT" $ BSF.fromBitsBE' sn <> bd
 
 blackOnWhite :: Palette.Palette
 blackOnWhite = Palette.Palette (V.fromList [(191, 191, 191), (0, 0, 0)])
+
+pop :: forall nm -> (U.Member (State.Named nm [a]) es) => Eff.E es i o (Maybe a)
+pop nm = State.getsModifyN nm \case [] -> Nothing; x : xs -> Just (x, xs)

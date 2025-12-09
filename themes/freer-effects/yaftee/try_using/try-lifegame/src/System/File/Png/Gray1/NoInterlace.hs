@@ -48,7 +48,6 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 import Data.Image.Gray1 qualified as Gray1
 
 import FctlImage.Gray1 qualified as FctlImage1
-import FctlImageBody.Gray1Words qualified as W
 
 import Data.Apng
 
@@ -126,11 +125,11 @@ hWritePngPipeGray1' ho hdr fctl img ibe obe = (`Except.catch` IO.putStrLn)
 		Pipe.=$= PipeBS.hPutStr ho
 
 fromGrayImage1' :: (U.Member Pipe.P es, U.Member U.Fail es) =>
-	Gray1.G -> Eff.E es i W.BodyGray1 ()
+	Gray1.G -> Eff.E es i BodyGray1 ()
 fromGrayImage1' img = case Gray1.unconsRow img of
 	Nothing -> pure ()
 	Just (r, img') -> do
-		Pipe.yield . W.BodyGray1Pixels $ toList r
+		Pipe.yield . BodyGray1Pixels $ toList r
 		fromGrayImage1' img'
 
 encodeApngGray1 :: (

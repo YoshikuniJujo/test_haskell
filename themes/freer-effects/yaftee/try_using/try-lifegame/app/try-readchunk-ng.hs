@@ -35,8 +35,6 @@ import System.Environment
 import System.Directory
 import System.FilePath
 
-import Tools
-
 main :: IO ()
 main = do
 	dr : d_ : de_ : fpo : _ <- getArgs
@@ -173,3 +171,6 @@ mkChunks wdt hgt n = do
 			pure True
 		_ -> Except.throw @String "bad"
 	Pipe.yield \sn -> (EnChunk.Chunk "IEND" "", sn)
+
+pop :: forall nm -> (U.Member (State.Named nm [a]) es) => Eff.E es i o (Maybe a)
+pop nm = State.getsModifyN nm \case [] -> Nothing; x : xs -> Just (x, xs)

@@ -23,8 +23,6 @@ module Data.Png.Header (
 
 import Data.Word
 
-import Tools
-
 import Data.Png.Header.Data
 
 headerToRows :: H -> [Int]
@@ -96,3 +94,6 @@ calcPoss' H { headerInterlaceMethod = InterlaceMethodNon } w h =
 calcPoss' H { headerInterlaceMethod = InterlaceMethodAdam7 } _ _ =
 	error "not implemented"
 calcPoss' _ _ _ = error "bad"
+
+div' :: Integral n => n -> n -> n
+m `div'`n = (m - 1) `div` n + 1
