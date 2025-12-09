@@ -72,7 +72,7 @@ writeApngGray1Foo' fp hdr fn np imgs = do
 writeApngGray1Foo :: FilePath -> Header.H -> Int -> Word32 -> [FctlImage1.G] -> IO ()
 writeApngGray1Foo fp hdr fn np = writePngGray1Foo'' fp hdr fn np . (FctlImage1.toFctlImage <$>)
 
-writePngGray1Foo'' :: FilePath -> Header.H -> Int -> Word32 -> [(Fctl', Gray1.G)] -> IO ()
+writePngGray1Foo'' :: FilePath -> Header.H -> Int -> Word32 -> [(Fctl, Gray1.G)] -> IO ()
 writePngGray1Foo'' fpp hdr fn np fctlsimgs = do
 	checkHeader hdr
 	putStrLn "writePngGray'' begin"
@@ -101,7 +101,7 @@ checkHeader hdr
 	| otherwise = error "not implemented for such header"
 
 hWritePngGray1' ::
-	Handle -> Header.H -> Int -> Word32 -> ([Fctl'], [Gray1.G]) ->
+	Handle -> Header.H -> Int -> Word32 -> ([Fctl], [Gray1.G]) ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
 hWritePngGray1' ho hdr fn np (fctls, imgs) ibe obe = do
 	void . Eff.runM . ChunkNew.encodeRun_ @"foo" . Except.run @String . Except.run @Zlib.ReturnCode
@@ -117,7 +117,7 @@ hWritePngPipeGray1' :: (
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
 	U.Base IO.I es ) =>
-	Handle -> Header.H -> Int -> Word32 -> [Fctl'] -> [Gray1.G] ->
+	Handle -> Header.H -> Int -> Word32 -> [Fctl] -> [Gray1.G] ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es i o ()
 hWritePngPipeGray1' ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrLn)
@@ -129,7 +129,7 @@ hWritePngPipeGray1' ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrL
 
 fromFctlImagesGray1' :: (
 	U.Member Pipe.P es, U.Member U.Fail es, U.Base (U.FromFirst IO) es ) =>
-	Header.H -> [Fctl'] -> [Gray1.G] -> Eff.E es i W.BodyGray1 ()
+	Header.H -> [Fctl] -> [Gray1.G] -> Eff.E es i W.BodyGray1 ()
 fromFctlImagesGray1' _ [] [] = pure ()
 fromFctlImagesGray1' hdr (fctl : fctls) (img : imgs) = do
 	Pipe.yield $ W.BodyGray1Fctl fctl
@@ -146,7 +146,7 @@ fromGrayImage1' img = case Gray1.unconsRow img of
 		fromGrayImage1' img'
 
 encodeApngGray1 :: (
-	Fctlable' a, Encode.Datable a,
+	Fctlable a, Encode.Datable a,
 	U.Member Pipe.P es,
 	U.Member (State.Named "foo" Crc32.C) es,
 	U.Member (State.Named "barbaz" (Buffer.Devide BSF.ByteString)) es,
@@ -155,22 +155,22 @@ encodeApngGray1 :: (
 	U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member U.Fail es,
 	U.Base (U.FromFirst IO) es ) =>
-	Header.H -> Int -> Word32 -> [Fctl'] ->
+	Header.H -> Int -> Word32 -> [Fctl] ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es a BSF.ByteString ()
 encodeApngGray1 _ _ _ [] _ _ = pure ()
 encodeApngGray1 hdr fn pn fctls@(fctl : _) ibe obe =
 	encodeRawCalcGray1 "barbaz" IO hdr {
-		Header.headerWidth = fctlWidth' fctl,
-		Header.headerHeight = fctlHeight' fctl } fn pn
+		Header.headerWidth = fctlWidth fctl,
+		Header.headerHeight = fctlHeight fctl } fn pn
 		(fctlToSize <$> fctls)
 		Nothing ibe obe
 
-fctlToSize :: Fctl' -> (Word32, Word32)
-fctlToSize c = (fctlWidth' c, fctlHeight' c)
+fctlToSize :: Fctl -> (Word32, Word32)
+fctlToSize c = (fctlWidth c, fctlHeight c)
 
 encodeRawCalcGray1 :: forall nm m -> (
-	Fctlable' a, Encode.Datable a,
+	Fctlable a, Encode.Datable a,
 	PrimBase m,
 	U.Member Pipe.P es,
 	U.Member (State.Named "foo" Crc32.C) es,
@@ -187,12 +187,12 @@ encodeRawCalcGray1 :: forall nm m -> (
 encodeRawCalcGray1 _ _ _ _ _ [] _ _ _ = pure ()
 encodeRawCalcGray1 nm m hdr fn np ((w0, h0) : sz) mplt ibe obe = void $
 -- MAKE IDAT
-	do	Just fctl <- getFctl' <$> Pipe.await
-		Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn fctl, sn + 1)
+	do	Just fctl <- getFctl <$> Pipe.await
+		Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl sn fctl, sn + 1)
 		pipeDat nm m False hdr w0 h0 ibe obe
 		for_ (take (fn - 1) sz) \(w, h) -> do
-			Just fctl' <- getFctl' <$> Pipe.await
-			Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl' sn fctl', sn + 1)
+			Just fctl' <- getFctl <$> Pipe.await
+			Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl sn fctl', sn + 1)
 			pipeDat nm m True hdr w h ibe obe
 	Pipe.=$= makeChunks hdr fn np mplt
 

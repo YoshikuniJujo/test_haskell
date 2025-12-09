@@ -20,13 +20,13 @@ data G = G {
 	image :: V.Vector Word8 }
 	deriving Show
 
-toFctlImage :: G -> (Apng.Fctl', Gray1.G)
+toFctlImage :: G -> (Apng.Fctl, Gray1.G)
 toFctlImage g = (
-	Apng.Fctl' {
-		Apng.fctlWidth' = w, Apng.fctlHeight' = h,
-		Apng.fctlXOffset' = xo, Apng.fctlYOffset' = yo,
+	Apng.Fctl {
+		Apng.fctlWidth = w, Apng.fctlHeight = h,
+		Apng.fctlXOffset = xo, Apng.fctlYOffset = yo,
 		Apng.fctlDelay = dn % dd,
-		Apng.fctlDisposeOp' = Apng.DisposeOp dop, Apng.fctlBlendOp' = Apng.BlendOp bop },
+		Apng.fctlDisposeOp = Apng.DisposeOp dop, Apng.fctlBlendOp = Apng.BlendOp bop },
 	Gray1.G {
 		Gray1.width = fromIntegral w, Gray1.height = fromIntegral h,
 		Gray1.body = bd } )
