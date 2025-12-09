@@ -26,7 +26,6 @@ source-repository head
 library
   exposed-modules:
       Data.Apng
-      Data.Image.Gray
       Data.Image.Gray1
       Data.Lifegame.Glider
       Data.Png.Datable
@@ -34,7 +33,6 @@ library
       Data.Png.Header
       Data.Png.Header.Data
       Data.Png.Palette
-      FctlImage
       FctlImage.Gray1
       FctlImageBody.Gray1Words
       Lifegame.Png.Chunk.Decode
