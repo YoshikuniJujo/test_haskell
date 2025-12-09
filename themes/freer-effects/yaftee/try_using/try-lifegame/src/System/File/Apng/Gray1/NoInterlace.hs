@@ -127,20 +127,20 @@ hWritePngPipeGray1' ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrL
 
 fromFctlImagesGray1' :: (
 	U.Member Pipe.P es, U.Member U.Fail es, U.Base (U.FromFirst IO) es ) =>
-	Header.H -> [Fctl] -> [Gray1.G] -> Eff.E es i BodyGray1 ()
+	Header.H -> [Fctl] -> [Gray1.G] -> Eff.E es i FctlPixelsGray1 ()
 fromFctlImagesGray1' _ [] [] = pure ()
 fromFctlImagesGray1' hdr (fctl : fctls) (img : imgs) = do
-	Pipe.yield $ BodyGray1Fctl fctl
+	Pipe.yield $ FctlPixelsGray1Fctl fctl
 	fromGrayImage1' img
 	fromFctlImagesGray1' hdr fctls imgs
 fromFctlImagesGray1' _ _ _ = error "bad"
 
 fromGrayImage1' :: (U.Member Pipe.P es, U.Member U.Fail es) =>
-	Gray1.G -> Eff.E es i BodyGray1 ()
+	Gray1.G -> Eff.E es i FctlPixelsGray1 ()
 fromGrayImage1' img = case Gray1.unconsRow img of
 	Nothing -> pure ()
 	Just (r, img') -> do
-		Pipe.yield . BodyGray1Pixels $ toList r
+		Pipe.yield . FctlPixelsGray1Pixels $ toList r
 		fromGrayImage1' img'
 
 encodeApngGray1 :: (

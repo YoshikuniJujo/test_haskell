@@ -32,9 +32,9 @@ module Data.Apng (
 
 	pattern BlendOpSource, pattern BlendOpOver,
 
-	-- * OTHERS
+	-- * FCTL PIXELS GRAY 1
 
-	BodyGray1(..)
+	FctlPixelsGray1(..)
 
 	) where
 
@@ -90,14 +90,14 @@ fctlPoss hdr fctl = Header.calcPoss' hdr (fctlWidth fctl) (fctlHeight fctl)
 
 class Fctlable a where getFctl :: a -> Maybe Fctl
 
-data BodyGray1 = BodyGray1Fctl Fctl | BodyGray1Pixels [Word8] deriving Show
+data FctlPixelsGray1 = FctlPixelsGray1Fctl Fctl | FctlPixelsGray1Pixels [Word8] deriving Show
 
-instance Fctlable BodyGray1 where
-	getFctl = \case BodyGray1Fctl f -> Just f; _ -> Nothing
+instance Fctlable FctlPixelsGray1 where
+	getFctl = \case FctlPixelsGray1Fctl f -> Just f; _ -> Nothing
 
-instance PngE.Datable BodyGray1 where
-	isDat = \case BodyGray1Pixels _ -> True; _ -> False
+instance PngE.Datable FctlPixelsGray1 where
+	isDat = \case FctlPixelsGray1Pixels _ -> True; _ -> False
 	endDat _ = False
 	toDat _hdr = \case
-		BodyGray1Pixels bs -> BSF.pack bs
+		FctlPixelsGray1Pixels bs -> BSF.pack bs
 		_ -> error "bad"
