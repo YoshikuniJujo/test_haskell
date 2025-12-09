@@ -32,7 +32,6 @@ library
       Data.Png.Header
       Data.Png.Header.Data
       Data.Png.Palette
-      FctlImage.Gray1
       Lifegame.Glider
       Lifegame.Png.Chunk.Decode
       Lifegame.Png.Chunk.Encode

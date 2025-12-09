@@ -53,22 +53,22 @@ import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
 import Data.Image.Gray1 qualified as Gray1
 
-import FctlImage.Gray1 qualified as FctlImage1
-
 import Lifegame.Png.Chunk.Encode
 
 import Data.Apng
+import Data.Apng qualified as Apng
+import Data.Vector qualified as V
 
 import Data.Word.Crc32 qualified as Crc32
 import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as ChunkNew
 
 writeApngGray1Foo' :: FilePath -> Header.H -> Int -> Word32 -> [(Gray1.G, Ratio Word16)] -> IO ()
 writeApngGray1Foo' fp hdr fn np imgs = do
-	writeApngGray1Foo fp hdr fn np $ FctlImage1.fromImages imgs
---	print $ FctlImage1.fromImages imgs
+	writeApngGray1Foo fp hdr fn np $ fromImages imgs
+--	print $ fromImages imgs
 
-writeApngGray1Foo :: FilePath -> Header.H -> Int -> Word32 -> [FctlImage1.G] -> IO ()
-writeApngGray1Foo fp hdr fn np = writePngGray1Foo'' fp hdr fn np . (FctlImage1.toFctlImage <$>)
+writeApngGray1Foo :: FilePath -> Header.H -> Int -> Word32 -> [G] -> IO ()
+writeApngGray1Foo fp hdr fn np = writePngGray1Foo'' fp hdr fn np . (toFctlImage <$>)
 
 writePngGray1Foo'' :: FilePath -> Header.H -> Int -> Word32 -> [(Fctl, Gray1.G)] -> IO ()
 writePngGray1Foo'' fpp hdr fn np fctlsimgs = do
@@ -269,3 +269,58 @@ sampleOptions = PipeZ.DeflateOptions {
 	PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
 	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
 	PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
+
+data G = G {
+	width :: Word32, height :: Word32,
+	xOffset :: Word32, yOffset :: Word32,
+	delay :: Ratio Word16,
+	disposeOp :: Apng.DisposeOp, blendOp :: Apng.BlendOp,
+	image :: V.Vector Word8 }
+	deriving Show
+
+toFctlImage :: G -> (Apng.Fctl, Gray1.G)
+toFctlImage g = (
+	Apng.Fctl {
+		Apng.fctlWidth = w, Apng.fctlHeight = h,
+		Apng.fctlXOffset = xo, Apng.fctlYOffset = yo,
+		Apng.fctlDelay = d,
+		Apng.fctlDisposeOp = dop, Apng.fctlBlendOp = bop },
+	Gray1.G {
+		Gray1.width = fromIntegral w, Gray1.height = fromIntegral h,
+		Gray1.body = bd } )
+	where
+	G {	width = w, height = h, xOffset = xo, yOffset = yo,
+		delay = d, disposeOp = dop, blendOp = bop,
+		image = bd } = g
+
+fromImages :: [(Gray1.G, Ratio Word16)] -> [G]
+fromImages [] = error "no images"
+fromImages ida@((i0, d0) : _) =
+	firstImage i0 d0 : go 0 ida
+	where
+	go _ [] = error "no images"
+	go _ [_] = []
+	go d ((i1, _) : ids@((i2, d2) : _)) =
+		case fromDiff i1 i2 (d + d2) of
+			Nothing -> go (d + d2) ids
+			Just g -> g : go 0 ids
+
+firstImage :: Gray1.G -> Ratio Word16 -> G
+firstImage Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd } dly =
+	G {
+		width = fromIntegral w, height = fromIntegral h,
+		xOffset = 0, yOffset = 0,
+		delay = dly,
+		disposeOp = Apng.DisposeOpNone, blendOp = Apng.BlendOpSource, image = bd }
+
+fromDiff :: Gray1.G -> Gray1.G -> Ratio Word16 -> Maybe G
+fromDiff p c dly = do
+	(xo, yo, Gray1.G {
+		Gray1.width = w, Gray1.height = h, Gray1.body = bd }) <-
+		Gray1.diff p c
+	pure G {
+		width = fromIntegral w, height = fromIntegral h,
+		xOffset = xo, yOffset = yo,
+		delay = dly,
+		disposeOp = Apng.DisposeOpNone, blendOp = Apng.BlendOpSource,
+		image = bd }
