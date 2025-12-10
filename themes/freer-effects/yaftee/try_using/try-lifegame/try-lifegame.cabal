@@ -27,10 +27,9 @@ library
   exposed-modules:
       Data.Apng
       Data.Image.Gray1
-      Data.Png.Datable
+      Data.Png
       Data.Png.Filter
       Data.Png.Header
-      Data.Png.Header.Data
       Data.Png.Palette
       Lifegame.Glider
       Lifegame.Png.Chunk.Decode

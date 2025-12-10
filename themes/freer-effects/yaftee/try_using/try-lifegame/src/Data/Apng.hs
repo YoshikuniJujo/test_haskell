@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
@@ -42,8 +42,8 @@ import Data.Ratio
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
+import Data.Png qualified as Datable
 import Data.Png.Header qualified as Header
-import Data.Png.Datable qualified as Datable
 
 -- ACTL
 
@@ -76,7 +76,7 @@ encodeFctl sn f =
 	dop = unDisposeOp $ fctlDisposeOp f; bop = unBlendOp $ fctlBlendOp f
 
 fctlPoss :: Header.H -> Fctl -> [[(Int, Int)]]
-fctlPoss hdr fctl = Header.calcPoss' hdr (fctlWidth fctl) (fctlHeight fctl)
+fctlPoss hdr fctl = calcPoss hdr (fctlWidth fctl) (fctlHeight fctl)
 
 -- Dispose Op
 
@@ -108,3 +108,10 @@ instance Datable.Datable FctlPixelsGray1 where
 	endDat _ = False
 	toDat _hdr = \case
 		FctlPixelsGray1Pixels bs -> BSF.pack bs; _ -> error "bad"
+
+calcPoss :: Header.H -> Word32 -> Word32 -> [[(Int, Int)]]
+calcPoss Header.H { Header.headerInterlaceMethod = Header.InterlaceMethodNon } w h =
+	(\y -> (, y) <$> [0 .. fromIntegral $ w - 1]) <$> [0 .. fromIntegral $ h - 1]
+calcPoss Header.H { Header.headerInterlaceMethod = Header.InterlaceMethodAdam7 } _ _ =
+	error "not implemented"
+calcPoss _ _ _ = error "bad"

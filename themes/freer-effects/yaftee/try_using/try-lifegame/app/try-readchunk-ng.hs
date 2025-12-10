@@ -28,7 +28,7 @@ import Data.Word
 import Data.Word.Word8 qualified as Word8
 import Data.ByteString.FingerTree qualified as BSF
 import Data.ByteString.FingerTree.Bits qualified as BSF
-import Data.Png.Header.Data qualified as Header
+import Data.Png.Header qualified as Header
 import Data.Apng qualified as Apng
 import System.IO
 import System.Environment

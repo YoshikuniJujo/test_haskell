@@ -29,12 +29,12 @@ filterRaw :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 	BSF.ByteString -> [Size] -> Eff.E es BSF.ByteString [Word8] ()
 filterRaw _ _ [] = pure ()
 filterRaw hdr r0 ((w, h) : ss) = void do
-	Pipe.yield $ Filter.filter bpp (Header.rowBytes hdr w `replicate` 0) r0
+	Pipe.yield $ Filter.filter bpp (rowBytes hdr w `replicate` 0) r0
 	filterTail bpp (BSF.unpack r0) (h - 1)
 	case ss of
 		[] -> pure ()
 		_ -> (\bs -> filterRaw hdr bs ss) =<< Pipe.await
-	where bpp = Header.headerToBpp hdr
+	where bpp = headerToBytesPerPixel hdr
 
 filterTail :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 	Int -> [Word8] -> Int -> Eff.E es BSF.ByteString [Word8] ()
@@ -50,7 +50,7 @@ unfilter :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 unfilter hdr = void $ Pipe.await >>= \bs ->
 	(>>) <$> Pipe.yield <*> unfilterTail bpp =<< either Except.throw pure
 		(Filter.unfilter bpp (replicate rbs 0) bs)
-	where bpp = Header.headerToBpp hdr; rbs = Header.headerToRowBytes hdr
+	where bpp = headerToBytesPerPixel hdr; rbs = headerToRowBytes hdr
 
 unfilterTail :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 	Int -> [Word8] -> Eff.E es BSF.ByteString [Word8] ()
@@ -58,3 +58,20 @@ unfilterTail bpp prior = Pipe.awaitMaybe >>= \case
 	Nothing -> pure (); Just BSF.Empty -> pure ()
 	Just bs -> (>>) <$> Pipe.yield <*> unfilterTail bpp
 		=<< either Except.throw pure (Filter.unfilter bpp prior bs)
+
+headerToBytesPerPixel :: Integral n => Header.H -> n
+headerToBytesPerPixel hdr =
+	(fromIntegral (Header.headerBitDepth hdr) *
+		Header.sampleNum (Header.headerColorType hdr) - 1) `div` 8 + 1
+
+headerToRowBytes :: Integral n => Header.H -> n
+headerToRowBytes hdr =
+	(fromIntegral (Header.headerWidth hdr) * fromIntegral (Header.headerBitDepth hdr) *
+		Header.sampleNum (Header.headerColorType hdr) - 1) `div` 8 + 1
+
+rowBytes :: Integral n => Header.H -> n -> n
+rowBytes hdr wdt = ((wdt * bd - 1) * sampleNum' hdr - 1) `div` 8 + 1
+	where bd = fromIntegral $ Header.headerBitDepth hdr
+
+sampleNum' :: Integral n => Header.H -> n
+sampleNum' = Header.sampleNum . Header.headerColorType

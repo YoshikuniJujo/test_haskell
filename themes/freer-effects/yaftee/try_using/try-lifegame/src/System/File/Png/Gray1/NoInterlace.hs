@@ -29,13 +29,12 @@ import Data.Foldable
 import Data.Bool
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png.Header qualified as Header
-import Data.Png.Header.Data qualified as Header
 
 import System.IO
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
-import Data.Png.Datable qualified as Encode
+import Data.Png qualified as Encode
 import Control.Monad.Yaftee.Pipe.Tools qualified as Buffer
 
 import Data.Word
@@ -246,7 +245,7 @@ pipeDat nm m iorf hdr w h ibe obe = void $
 		x <- Pipe.await
 		if Encode.endDat x then pure () else Pipe.yield x >> go)
 	Pipe.=$= PipeT.convert (Encode.toDat hdr)
-	Pipe.=$= Filter.filter hdr (Header.calcSizes hdr w h)
+	Pipe.=$= Filter.filter hdr (calcSizes hdr w h)
 	Pipe.=$= PipeT.convert BSF.pack
 	Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
 --	Pipe.=$= Buffer.devide nm BSF.splitAt' "" 1000
@@ -292,3 +291,22 @@ firstImage Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd } dly =
 		xOffset = 0, yOffset = 0,
 		delay = dly,
 		disposeOp = Apng.DisposeOpNone, blendOp = Apng.BlendOpSource, image = bd }
+
+calcSizes :: Header.H -> Word32 -> Word32 -> [(Int, Int)]
+calcSizes Header.H { Header.headerInterlaceMethod = Header.InterlaceMethodNon } w h =
+	[(fromIntegral w, fromIntegral h)]
+calcSizes Header.H { Header.headerInterlaceMethod = Header.InterlaceMethodAdam7 } w h =
+	adam7Sizes (fromIntegral w) (fromIntegral h)
+calcSizes _ _ _ = error "bad"
+
+adam7Sizes :: Int -> Int -> [(Int, Int)]
+adam7Sizes w h = [
+	(w `div'` 8, h `div'` 8),
+	(w `div'` 4 `div` 2, h `div'` 8),
+	(w `div'` 4, h `div'` 4 `div` 2),
+	(w `div'` 2 `div` 2, h `div'` 4),
+	(w `div'` 2, h `div'` 2 `div` 2),
+	(w `div` 2, h `div'` 2), (w, h `div` 2) ]
+
+div' :: Integral n => n -> n -> n
+m `div'`n = (m - 1) `div` n + 1

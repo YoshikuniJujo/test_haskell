@@ -7,14 +7,14 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Png.Datable (
+module Data.Png (
 
 	Datable(..),
 
 	) where
 
 import Data.ByteString.FingerTree qualified as BSF
-import Data.Png.Header.Data qualified as Header
+import Data.Png.Header qualified as Header
 
 class Datable a where
 	isDat :: a -> Bool

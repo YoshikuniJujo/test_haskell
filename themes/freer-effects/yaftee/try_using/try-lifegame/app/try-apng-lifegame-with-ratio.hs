@@ -22,7 +22,7 @@ import Control.Monad.Yaftee.IO qualified as IO
 import Data.Foldable
 import Data.List qualified as L
 import Data.ByteString.FingerTree qualified as BSF
-import Data.Png.Header.Data qualified as Header
+import Data.Png.Header qualified as Header
 import System.IO
 import System.Environment
 import System.Directory

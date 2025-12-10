@@ -6,80 +6,125 @@
 
 module Data.Png.Header (
 
-	headerToBpp,
-	sampleNum',
+	-- * HEADER
 
-	headerToRowBytes,
-	rowBytes,
+	H(..), header0, encodeHeader, sampleNum,
 
-	headerToRows,
+	-- * COLOR TYPE
 
-	calcSizes,
-	calcPoss',
+	ColorType,
+	pattern ColorTypeColor,
+	pattern ColorTypeColorUsed,
+	pattern ColorTypePalette,
+	pattern ColorTypeAlpha,
+	pattern ColorTypeGrayscale,
+	pattern ColorTypeColorAlpha,
+	pattern ColorTypePaletteUsed,
+	pattern ColorTypeAlphaChannelUsed,
 
-	module Data.Png.Header.Data
+	-- * COMPRESSION METHOD
+
+	CompressionMethod,
+	pattern CompressionMethodDeflate,
+
+	-- * FILTER METHOD
+
+	FilterMethod,
+	pattern FilterMethodDefaultFilter,
+
+	-- * INTERLACE METHOD
+
+	InterlaceMethod,
+	pattern InterlaceMethodNon,
+	pattern InterlaceMethodAdam7,
 
 	) where
 
 
+import Data.Bits
 import Data.Word
+import Data.ByteString qualified as BS
+import Data.ByteString.ToolsYj qualified as BS
 
-import Data.Png.Header.Data
+data H = H {
+	headerWidth :: Word32,
+	headerHeight :: Word32,
+	headerBitDepth :: Word8,
+	headerColorType :: ColorType,
+	headerCompressionMethod :: CompressionMethod,
+	headerFilterMethod :: FilterMethod,
+	headerInterlaceMethod :: InterlaceMethod }
+	deriving Show
 
-headerToRows :: H -> [Int]
-headerToRows h@H { headerInterlaceMethod = InterlaceMethodNon } =
-	replicate (fromIntegral $ headerHeight h)
-		((fromIntegral (headerWidth h) * fromIntegral (headerBitDepth h)) `div'` 8 * sampleNum' h)
-headerToRows h@H { headerInterlaceMethod = InterlaceMethodAdam7 } =
-	map ((* sampleNum' h) . (`div'` 8) . (* fromIntegral (headerBitDepth h)))
-		$ interlacePixelNums
-			(fromIntegral (headerWidth h))
-			(fromIntegral $ headerHeight h)
-headerToRows h = error $ "headerToRows: " ++ show h
+encodeHeader :: H -> BS.ByteString
+encodeHeader H {
+	headerWidth = wdt, headerHeight = hgt,
+	headerBitDepth = bd, headerColorType = ColorType ct,
+	headerCompressionMethod = CompressionMethod cm,
+	headerFilterMethod = FilterMethod fm,
+	headerInterlaceMethod = InterlaceMethod im } =
+	BS.fromBitsBE' wdt <> BS.fromBitsBE' hgt <> BS.pack [bd, ct, cm, fm, im]
 
-sampleNum' :: Integral n => H -> n
-sampleNum' = sampleNum . headerColorType
+header0 :: H
+header0 = H {
+	headerWidth = 0,
+	headerHeight = 0,
+	headerBitDepth = 0,
+	headerColorType = ColorType 0,
+	headerCompressionMethod = CompressionMethod 0,
+	headerFilterMethod = FilterMethod 0,
+	headerInterlaceMethod = InterlaceMethod 0 }
 
-calcSizes :: H -> Word32 -> Word32 -> [(Int, Int)]
-calcSizes H { headerInterlaceMethod = InterlaceMethodNon } w h =
-	[(fromIntegral w, fromIntegral h)]
-calcSizes H { headerInterlaceMethod = InterlaceMethodAdam7 } w h =
-	adam7Sizes	(fromIntegral w)
-			(fromIntegral h)
-calcSizes _ _ _ = error "bad"
+newtype ColorType = ColorType Word8 deriving (Eq, Bits)
 
-adam7Sizes :: Int -> Int -> [(Int, Int)]
-adam7Sizes w h = [
-	(w `div'` 8, h `div'` 8),
-	(w `div'` 4 `div` 2, h `div'` 8),
-	(w `div'` 4, h `div'` 4 `div` 2),
-	(w `div'` 2 `div` 2, h `div'` 4),
-	(w `div'` 2, h `div'` 2 `div` 2),
-	(w `div` 2, h `div'` 2), (w, h `div` 2) ]
+pattern ColorTypePaletteUsed, ColorTypeColorUsed, ColorTypeAlphaChannelUsed ::
+	ColorType
+pattern ColorTypePaletteUsed = ColorType 1
+pattern ColorTypeColorUsed = ColorType 2
+pattern ColorTypeAlphaChannelUsed = ColorType 4
 
-interlacePixelNums :: Int -> Int -> [Int]
-interlacePixelNums w h =
-	replicate (h `div'` 8) (w `div'` 8) ++
-	replicate (h `div'` 8) (w `div'` 4 `div` 2) ++
-	replicate (h `div'` 4 `div` 2) (w `div'` 4) ++
-	replicate (h `div'` 4) (w `div'` 2 `div` 2) ++
-	replicate (h `div'` 2 `div` 2) (w `div'` 2) ++
-	replicate (h `div'` 2) (w `div` 2) ++
-	replicate (h `div` 2) w ++ [0]
+pattern ColorTypeGrayscale, ColorTypePalette, ColorTypeColorAlpha,
+	ColorTypeColor, ColorTypeAlpha :: ColorType
+pattern ColorTypeGrayscale = ColorType 0
+pattern ColorTypeColor = ColorType 2
+pattern ColorTypePalette = ColorType 3
+pattern ColorTypeAlpha = ColorType 4
+pattern ColorTypeColorAlpha = ColorType 6
 
-headerToBpp :: Integral n => H -> n
-headerToBpp hdr =
-	(fromIntegral (headerBitDepth hdr) *
-		sampleNum (headerColorType hdr) - 1) `div` 8 + 1
+instance Show ColorType where
+	show ColorTypePaletteUsed  = "ColorTypePaletteUsed"
+	show ColorTypeColorUsed = "ColorTypeColorUsed"
+	show ColorTypeAlphaChannelUsed = "ColorTypeAlphaChannelUsed"
+	show (ColorType n) = "(ColorType " ++ show n ++ ")"
 
-rowBytes :: Integral n => H -> n -> n
-rowBytes hdr w = ((w * bd - 1) * sampleNum' hdr - 1) `div` 8 + 1
-	where bd = fromIntegral $ headerBitDepth hdr
+newtype CompressionMethod = CompressionMethod Word8 deriving (Eq, Bits)
 
-headerToRowBytes :: Integral n => H -> n
-headerToRowBytes hdr =
-	(fromIntegral (headerWidth hdr) * fromIntegral (headerBitDepth hdr) *
-		sampleNum (headerColorType hdr) - 1) `div` 8 + 1
+pattern CompressionMethodDeflate :: CompressionMethod
+pattern CompressionMethodDeflate = CompressionMethod 0
+
+instance Show CompressionMethod where
+	show CompressionMethodDeflate = "CompressionMethodDeflate"
+	show (CompressionMethod n) = "(CompressionMethod " ++ show n ++ ")"
+
+newtype FilterMethod = FilterMethod Word8 deriving (Eq, Bits)
+
+pattern FilterMethodDefaultFilter :: FilterMethod
+pattern FilterMethodDefaultFilter = FilterMethod 0
+
+instance Show FilterMethod where
+	show FilterMethodDefaultFilter = "FilterMethodDefaultFilter"
+	show (FilterMethod n) = "(FilterMethod " ++ show n ++ ")"
+
+newtype InterlaceMethod = InterlaceMethod Word8 deriving (Eq, Bits)
+
+pattern InterlaceMethodNon, InterlaceMethodAdam7 :: InterlaceMethod
+pattern InterlaceMethodNon = InterlaceMethod 0
+pattern InterlaceMethodAdam7 = InterlaceMethod 1
+
+instance Show InterlaceMethod where
+	show InterlaceMethodNon = "InterlaceMethodNon"
+	show InterlaceMethodAdam7 = "InterlaceMethodAdam7"
+	show (InterlaceMethod n) = "(InterlaceMethod " ++ show n ++ ")"
 
 sampleNum :: Num n => ColorType -> n
 sampleNum ColorTypeGrayscale = 1
@@ -88,13 +133,3 @@ sampleNum ColorTypePalette = 1
 sampleNum ColorTypeAlpha = 2
 sampleNum ColorTypeColorAlpha = 4
 sampleNum _ = error "not allowed color type"
-
-calcPoss' :: H -> Word32 -> Word32 -> [[(Int, Int)]]
-calcPoss' H { headerInterlaceMethod = InterlaceMethodNon } w h =
-	(\y -> (, y) <$> [0 .. fromIntegral $ w - 1]) <$> [0 .. fromIntegral $ h - 1]
-calcPoss' H { headerInterlaceMethod = InterlaceMethodAdam7 } _ _ =
-	error "not implemented"
-calcPoss' _ _ _ = error "bad"
-
-div' :: Integral n => n -> n -> n
-m `div'`n = (m - 1) `div` n + 1

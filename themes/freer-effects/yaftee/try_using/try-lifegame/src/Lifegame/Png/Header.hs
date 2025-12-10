@@ -34,7 +34,7 @@ import Data.TypeLevel.List
 import Data.HigherFunctor qualified as HFunctor
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Word.Word8 qualified as BSF
-import Data.Png.Header.Data qualified as Header
+import Data.Png.Header qualified as Header
 
 run :: forall nm nm' es i o r . HFunctor.Loose (U.U es) =>
 	Eff.E (States nm nm' `Append` es) i o r -> Eff.E es i o Header.H
