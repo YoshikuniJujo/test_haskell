@@ -48,10 +48,12 @@ fltrAvr (L.uncons -> u) (BSF.uncons -> l) (BSF.uncons -> c) = case (u, l, c) of
 	(_, Nothing, _) -> error "never occur"
 	(Nothing, _, Nothing) -> []
 	(Just (v, us), Just (m, ls), Just (c', cs)) ->
-		c' - avr v m : fltrAvr us (ls `BSF.snoc` c') cs
+		c' - average v m : fltrAvr us (ls `BSF.snoc` c') cs
 	_ -> error $ "never occur: fltrAvr: case _: " ++
 		show u ++ " " ++ show l ++ " " ++ show c
-	where avr x y = fromIntegral $ (toInt x + toInt y) `div` 2
+
+average :: Integral n => n -> n -> n
+average x y = fromIntegral $ (toInt x + toInt y) `div` 2
 
 fltrPth :: BSF.ByteString -> [Word8] -> BSF.ByteString -> [Word8] -> [Word8]
 fltrPth (BSF.uncons -> ul) (L.uncons -> u) (BSF.uncons -> l) (L.uncons -> c) =
@@ -67,67 +69,58 @@ fltrPth (BSF.uncons -> ul) (L.uncons -> u) (BSF.uncons -> l) (L.uncons -> c) =
 -- UNFILTER
 
 unfilter :: Int -> [Word8] -> BSF.ByteString -> Either String [Word8]
-unfilter bpp prior (BSF.uncons -> filtered) = case filtered of
+unfilter bpp pr (BSF.uncons -> fltrd) = case fltrd of
 	Nothing -> Left "empty line"
 	Just (ft, fs) -> case ft of
 		0 -> Right $ otoList fs
-		1 -> Right $ unfilterSub (BSF.replicate bpp 0) (otoList fs)
-		2 -> Right $ unfilterUp prior fs
-		3 -> Right $ unfilterAverage prior (BSF.replicate bpp 0) fs
-		4 -> Right $ unfilterPaeth (BSF.replicate bpp 0) (otoList prior) (BSF.replicate bpp 0) (otoList fs)
+		1 -> Right $ unfltrSub zs (otoList fs)
+		2 -> Right $ unfltrUp pr fs
+		3 -> Right $ unfltrAvr pr zs fs
+		4 -> Right $ unfltrPth zs (otoList pr) zs (otoList fs)
 		_ -> Left $ "unknown filter type: " ++ show ft ++ " " ++ show fs
+	where zs = BSF.replicate bpp 0
 
-unfilterSub :: BSF.ByteString -> [Word8] -> [Word8]
-unfilterSub (BSF.uncons -> raw) (L.uncons -> sub) = case (raw, sub) of
-	(Nothing, _) -> error "never occur"
-	(_, Nothing) -> []
-	(Just (r, rs), Just (s, ss)) ->
-		r' : unfilterSub (rs `BSF.snoc` r') ss
-		where r' = r + s
+unfltrSub :: BSF.ByteString -> [Word8] -> [Word8]
+unfltrSub (BSF.uncons -> l) (L.uncons -> sub) = case (l, sub) of
+	(Nothing, _) -> error "never occur"; (_, Nothing) -> []
+	(Just (m, ls), Just (s, ss)) -> let c = m + s in
+		c : unfltrSub (ls `BSF.snoc` c) ss
 
-unfilterUp :: [Word8] -> BSF.ByteString -> [Word8]
-unfilterUp = curry $ uncurry (zipWith (+)) . (id *** otoList)
+unfltrUp :: [Word8] -> BSF.ByteString -> [Word8]
+unfltrUp = curry $ uncurry (zipWith (+)) . (id *** otoList)
 
-unfilterAverage ::
-	[Word8] -> BSF.ByteString -> BSF.ByteString -> [Word8]
-unfilterAverage (L.uncons -> prior) (BSF.uncons -> raw) (BSF.uncons -> avr) =
-	case (prior, raw, avr) of
-		(_, Nothing, _) -> error "never occur"
+unfltrAvr :: [Word8] -> BSF.ByteString -> BSF.ByteString -> [Word8]
+unfltrAvr (L.uncons -> u) (BSF.uncons -> l) (BSF.uncons -> avr) =
+	case (u, l, avr) of
+		(_, Nothing, _) -> error "never occur";
 		(Nothing, _, Nothing) -> []
-		(Just (p, ps), Just (r, rs), Just (a, as)) ->
-			r' : unfilterAverage ps (rs `BSF.snoc` r') as
-			where
-			r' = fromIntegral ((fromIntegral p + fromIntegral r) `div` 2 :: Int) + a
+		(Just (v, us), Just (m, ls), Just (a, as)) ->
+			c : unfltrAvr us (ls `BSF.snoc` c) as
+			where c = average v m + a
 		_ -> error "never occur"
 
-unfilterPaeth :: BSF.ByteString -> [Word8] -> BSF.ByteString -> [Word8] -> [Word8]
-unfilterPaeth (BSF.uncons -> priorRaw)
-	(L.uncons -> prior) (BSF.uncons -> raw) (L.uncons -> paeth) =
-	case (priorRaw, prior, raw, paeth) of
+unfltrPth :: BSF.ByteString -> [Word8] -> BSF.ByteString -> [Word8] -> [Word8]
+unfltrPth (BSF.uncons -> ul) (L.uncons -> u) (BSF.uncons -> l) (L.uncons -> p) =
+	case (ul, u, l, p) of
 		(Nothing, _, _, _) -> error "never occur"
 		(_, _, Nothing, _) -> error "never occur"
 		(_, Nothing, _, Nothing) -> []
-		(Just (pr, prs), Just (p, ps), Just (r, rs), Just (a, as)) ->
-			r' : unfilterPaeth
-				(prs BSF.:> p) ps (rs BSF.:> r') as
-			where
-			r' = a + paethPredictor r p pr
+		(Just (vm, uls), Just (v, us), Just (m, ls), Just (p', ps)) ->
+			c : unfltrPth (uls BSF.:> v) us (ls BSF.:> c) ps
+			where c = p' + paethPredictor m v vm
 		_ -> error "never occur"
 
 -- PAETH PREDICTOR
 
 paethPredictor :: Word8 -> Word8 -> Word8 -> Word8
-paethPredictor (id &&& fromIntegral -> (a, a'))
-	(id &&& fromIntegral -> (b, b')) (id &&& fromIntegral -> (c, c'))
-	-- a = left, b = above, c = upper left
-	| pa <= pb && pa <= pc = a
-	| pb <= pc = b
-	| otherwise = c
+paethPredictor (id &&& fromIntegral -> (l, l'))
+	(id &&& fromIntegral -> (u, u')) (id &&& fromIntegral -> (ul, ul'))
+	| pl <= pu && pl <= pul = l
+	| pu <= pul = u
+	| otherwise = ul
 	where
-	p = a' + b' - c' :: Int
-	pa = abs $ p - a'
-	pb = abs $ p - b'
-	pc = abs $ p - c'
+	p = l' + u' - ul' :: Int
+	pl = abs $ p - l'; pu = abs $ p - u'; pul = abs $ p - ul'
 
 -- OTHERS
 
