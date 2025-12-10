@@ -17,6 +17,55 @@ import Data.Word
 import Data.Int
 import Data.ByteString.FingerTree qualified as BSF
 
+-- FILTER
+
+filter :: Int -> [Word8] -> BSF.ByteString -> [Word8]
+filter bpp pr raw =
+	minimumBy (compare `on` calc) . rights $ filter' bpp pr raw <$> [0 .. 4]
+
+calc :: [Word8] -> Int
+calc = sum . ((^ (2 :: Int)) . fromIntegral . fromIntegral @_ @Int8 <$>)
+
+filter' :: Int -> [Word8] -> BSF.ByteString -> Word8 -> Either String [Word8]
+filter' bpp pr raw = let zs = BSF.replicate bpp 0 in \case
+	0 -> Right $ 0 : otoList raw
+	1 -> Right $ 1 : fltrSub zs (otoList raw)
+	2 -> Right $ 2 : fltrUp pr raw
+	3 -> Right $ 3 : fltrAvr pr zs raw
+	4 -> Right $ 4 : fltrPth zs (otoList pr) zs (otoList raw)
+	n -> Left $ "unknown filter type: " ++ show n
+
+fltrSub :: BSF.ByteString -> [Word8] -> [Word8]
+fltrSub (BSF.uncons -> l) (L.uncons -> c) = case (l, c) of
+	(Nothing, _) -> error "never occur"; (_, Nothing) -> []
+	(Just (m, ls), Just (c', cs)) -> c' - m : fltrSub (ls `BSF.snoc` c') cs
+
+fltrUp :: [Word8] -> BSF.ByteString -> [Word8]
+fltrUp = curry $ uncurry (zipWith subtract) . (id *** otoList)
+
+fltrAvr :: [Word8] -> BSF.ByteString -> BSF.ByteString -> [Word8]
+fltrAvr (L.uncons -> u) (BSF.uncons -> l) (BSF.uncons -> c) = case (u, l, c) of
+	(_, Nothing, _) -> error "never occur"
+	(Nothing, _, Nothing) -> []
+	(Just (v, us), Just (m, ls), Just (c', cs)) ->
+		c' - avr v m : fltrAvr us (ls `BSF.snoc` c') cs
+	_ -> error $ "never occur: fltrAvr: case _: " ++
+		show u ++ " " ++ show l ++ " " ++ show c
+	where avr x y = fromIntegral $ (toInt x + toInt y) `div` 2
+
+fltrPth :: BSF.ByteString -> [Word8] -> BSF.ByteString -> [Word8] -> [Word8]
+fltrPth (BSF.uncons -> ul) (L.uncons -> u) (BSF.uncons -> l) (L.uncons -> c) =
+	case (ul, u, l, c) of
+		(Nothing, _, _, _) -> error "fltrPth: never occur"
+		(_, _, Nothing, _) -> error "fltrPth: never occur"
+		(_, Nothing, _, Nothing) -> []
+		(Just (vm, uls), Just (v, us), Just (m, ls), Just (c', cs)) ->
+			c' - paethPredictor m v vm :
+				fltrPth (uls BSF.:> v) us (ls BSF.:> c') cs
+		_ -> error "fltrPth: never occur"
+
+-- UNFILTER
+
 unfilter :: Int -> [Word8] -> BSF.ByteString -> Either String [Word8]
 unfilter bpp prior (BSF.uncons -> filtered) = case filtered of
 	Nothing -> Left "empty line"
@@ -28,23 +77,6 @@ unfilter bpp prior (BSF.uncons -> filtered) = case filtered of
 		4 -> Right $ unfilterPaeth (BSF.replicate bpp 0) (otoList prior) (BSF.replicate bpp 0) (otoList fs)
 		_ -> Left $ "unknown filter type: " ++ show ft ++ " " ++ show fs
 
-filter :: Int -> [Word8] -> BSF.ByteString -> [Word8]
-filter bpp prior raw = minimumBy (compare `on` calc) . rights $ filter' bpp prior raw <$> [0 .. 4]
-
-filter' :: Int -> [Word8] -> BSF.ByteString -> Word8 -> Either String [Word8]
-filter' bpp prior raw = \case
-	0 -> Right $ 0 : BSF.unpack raw
-	1 -> Right $ 1 : filterSub (BSF.replicate bpp 0) (otoList raw)
-	2 -> Right $ 2 : filterUp prior raw
-	3 -> Right $ 3 : filterAverage prior (BSF.replicate bpp 0) raw
-	4 -> Right $ 4 : filterPaeth
-		(BSF.replicate bpp 0) (otoList prior)
-		(BSF.replicate bpp 0) (otoList raw)
-	ft -> Left $ "unknown filter type: " ++ show ft
-
-calc :: [Word8] -> Int
-calc = sum . ((^ (2 :: Int)) . fromIntegral . fromIntegral @_ @Int8 <$>)
-
 unfilterSub :: BSF.ByteString -> [Word8] -> [Word8]
 unfilterSub (BSF.uncons -> raw) (L.uncons -> sub) = case (raw, sub) of
 	(Nothing, _) -> error "never occur"
@@ -53,24 +85,13 @@ unfilterSub (BSF.uncons -> raw) (L.uncons -> sub) = case (raw, sub) of
 		r' : unfilterSub (rs `BSF.snoc` r') ss
 		where r' = r + s
 
-filterSub :: BSF.ByteString -> [Word8] -> [Word8]
-filterSub (BSF.uncons -> pr) (L.uncons -> cr) = case (pr, cr) of
-	(Nothing, _) -> error "never occur"
-	(_, Nothing) -> []
-	(Just (r, rs), Just (s, ss)) ->
-		r' : filterSub (rs `BSF.snoc` s) ss
-		where r' = s - r
-
 unfilterUp :: [Word8] -> BSF.ByteString -> [Word8]
 unfilterUp = curry $ uncurry (zipWith (+)) . (id *** otoList)
 
-filterUp :: [Word8] -> BSF.ByteString -> [Word8]
-filterUp = curry $ uncurry (zipWith subtract) . (id *** otoList)
-
 unfilterAverage ::
 	[Word8] -> BSF.ByteString -> BSF.ByteString -> [Word8]
-unfilterAverage (L.uncons -> prior) (BSF.uncons -> raw) (BSF.uncons -> average) =
-	case (prior, raw, average) of
+unfilterAverage (L.uncons -> prior) (BSF.uncons -> raw) (BSF.uncons -> avr) =
+	case (prior, raw, avr) of
 		(_, Nothing, _) -> error "never occur"
 		(Nothing, _, Nothing) -> []
 		(Just (p, ps), Just (r, rs), Just (a, as)) ->
@@ -78,18 +99,6 @@ unfilterAverage (L.uncons -> prior) (BSF.uncons -> raw) (BSF.uncons -> average) 
 			where
 			r' = fromIntegral ((fromIntegral p + fromIntegral r) `div` 2 :: Int) + a
 		_ -> error "never occur"
-
-filterAverage ::
-	[Word8] -> BSF.ByteString -> BSF.ByteString -> [Word8]
-filterAverage (L.uncons -> up) (BSF.uncons -> lft) (BSF.uncons -> cr) =
-	case (up, lft, cr) of
-		(_, Nothing, _) -> error "never occur"
-		(Nothing, _, Nothing) -> []
-		(Just (u, us), Just (l, ls), Just (c, cs)) ->
-			r : filterAverage us (ls `BSF.snoc` c) cs
-			where
-			r = c - fromIntegral ((fromIntegral u + fromIntegral l) `div` 2 :: Int)
-		_ -> error $ "never occur: filterAverage _: " ++ show up ++ " " ++ show lft ++ " " ++ show cr
 
 unfilterPaeth :: BSF.ByteString -> [Word8] -> BSF.ByteString -> [Word8] -> [Word8]
 unfilterPaeth (BSF.uncons -> priorRaw)
@@ -105,19 +114,7 @@ unfilterPaeth (BSF.uncons -> priorRaw)
 			r' = a + paethPredictor r p pr
 		_ -> error "never occur"
 
-filterPaeth :: BSF.ByteString -> [Word8] -> BSF.ByteString -> [Word8] -> [Word8]
-filterPaeth (BSF.uncons -> uplft)
-	(L.uncons -> up) (BSF.uncons -> lft) (L.uncons -> cr) =
-	case (uplft, up, lft, cr) of
-		(Nothing, _, _, _) -> error "never occur"
-		(_, _, Nothing, _) -> error "never occur"
-		(_, Nothing, _, Nothing) -> []
-		(Just (ul, uls), Just (u, us), Just (l, ls), Just (c, cs)) ->
-			r : filterPaeth
-				(uls BSF.:> u) us (ls BSF.:> c) cs
-			where
-			r = c - paethPredictor l u ul
-		_ -> error "never occur"
+-- PAETH PREDICTOR
 
 paethPredictor :: Word8 -> Word8 -> Word8 -> Word8
 paethPredictor (id &&& fromIntegral -> (a, a'))
@@ -131,3 +128,8 @@ paethPredictor (id &&& fromIntegral -> (a, a'))
 	pa = abs $ p - a'
 	pb = abs $ p - b'
 	pc = abs $ p - c'
+
+-- OTHERS
+
+toInt :: Integral n => n -> Int
+toInt = fromIntegral
