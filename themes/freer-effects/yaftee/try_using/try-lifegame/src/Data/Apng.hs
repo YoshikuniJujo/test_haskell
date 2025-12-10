@@ -107,5 +107,4 @@ instance Datable.Datable FctlPixelsGray1 where
 	isDat = \case FctlPixelsGray1Pixels _ -> True; _ -> False
 	endDat _ = False
 	toDat _hdr = \case
-		FctlPixelsGray1Pixels bs -> BSF.pack bs
-		_ -> error "bad"
+		FctlPixelsGray1Pixels bs -> BSF.pack bs; _ -> error "bad"
