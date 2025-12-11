@@ -115,9 +115,7 @@ unfltrPth (BSF.uncons -> ul) (L.uncons -> u) (BSF.uncons -> l) (L.uncons -> p) =
 paethPredictor :: Word8 -> Word8 -> Word8 -> Word8
 paethPredictor (id &&& fromIntegral -> (l, l'))
 	(id &&& fromIntegral -> (u, u')) (id &&& fromIntegral -> (ul, ul'))
-	| pl <= pu && pl <= pul = l
-	| pu <= pul = u
-	| otherwise = ul
+	| pl <= pu && pl <= pul = l | pu <= pul = u | otherwise = ul
 	where
 	p = l' + u' - ul' :: Int
 	pl = abs $ p - l'; pu = abs $ p - u'; pul = abs $ p - ul'
