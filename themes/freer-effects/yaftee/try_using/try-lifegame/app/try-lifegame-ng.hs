@@ -52,7 +52,7 @@ readLifegame src = case words <$> src of
 		["frame-number:", fn] :
 		["delay:", dly] :
 		["shape:"] : shpgls -> case span (not.null) shpgls of
-			(shp, Glider.readGliders -> Just gls) -> (
+			(shp, Glider.readGs -> Just gls) -> (
 				nm,
 				read rt, read w, read h, read xo, read yo, read drp, read fn,
 				read dly, head <$> shp, gls)

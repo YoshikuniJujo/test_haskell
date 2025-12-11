@@ -1,23 +1,23 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
 module Lifegame.Glider (
-	G(..), Shape(..), LeftRight(..), UpDown(..), add, addGs,
 
-	readGliders,
+	-- * DATA TYPE
 
-	shape0, shape1, shape2, shape3, printShape,
+	G,
 
-	Independent(..), independentToPattern,
+	-- * ADD GLIDERS
 
-	matchIndependent, allIndependent,
-	searchIndependent, searchIndependentBottom,
-	searchIndependentLives, searchIndependentLives', searchIndependentLives'',
+	addGs,
 
-	searchIndependentLivesBottom, checkBottomEdgeG,
+	-- * READ GLIDERS
 
-	removeBottomGliders, removeBottomGliders',
+	readGs,
+
+	-- * BOARD OF EACH GENERATION
 
 	boards'
 
@@ -26,36 +26,25 @@ module Lifegame.Glider (
 import Prelude hiding (Either(..))
 import Control.Arrow
 import Data.List qualified as L
+import Text.Read
 import Lifegame.Words
 
-import Text.Read
+-- DATA TYPE
 
 data G = G { shape :: Shape, leftRight :: LeftRight, upDown :: UpDown }
 	deriving (Show, Eq, Ord)
 
-data Shape = Shape0 | Shape1 | Shape2 | Shape3 deriving (Show, Read, Enum, Eq, Ord)
+data Shape =
+	Shape0 | Shape1 | Shape2 | Shape3 deriving (Show, Read, Enum, Eq, Ord)
 data LeftRight = Left | Right deriving (Show, Read, Enum, Eq, Ord)
 data UpDown = Up | Down deriving (Show, Read, Enum, Eq, Ord)
-
--- Left, Right, Top, Bottom
--- Left, Right, Up, Down
-
-addGs :: Board -> [(G, (Int, Int))] -> Board
-addGs = foldl addGlider
-
-addGlider :: Board -> (G, (Int, Int)) -> Board
-addGlider bd (gd, (x, y)) = add bd x y gd
-
-add :: Board -> Int -> Int -> G -> Board
-add bd x y gld = addShapeAscii bd x y (rotate lr ud sp)
-	where
-	sp = shapeAsAscii $ shape gld
-	lr = leftRight gld
-	ud = upDown gld
 
 shapeAsAscii :: Shape -> [String]
 shapeAsAscii = \case
 	Shape0 -> shape0; Shape1 -> shape1; Shape2 -> shape2; Shape3 -> shape3
+	where
+	shape0 = ["*..", ".**", "**."]; shape1 = [".*.", "..*", "***"]
+	shape2 = ["*.*", ".**", ".*."]; shape3 = ["..*", "*.*", ".**"]
 
 rotate :: LeftRight -> UpDown -> [String] -> [String]
 rotate Left Up sp = reverse $ reverse <$> sp
@@ -63,148 +52,50 @@ rotate Left Down sp = flipXY $ reverse sp
 rotate Right Up sp = reverse $ flipXY sp
 rotate Right Down sp = sp
 
-rotateShapeAsAscii :: Shape -> LeftRight -> UpDown -> [String]
-rotateShapeAsAscii sp lr ud = rotate lr ud $ shapeAsAscii sp
-
 flipXY :: [String] -> [String]
-flipXY sp = (\x -> (!! x) <$> sp) <$> [0 .. w - 1]
-	where
-	w = length $ head sp
+flipXY sp = (\x -> (!! x) <$> sp) <$> [0 .. w - 1] where w = length $ head sp
 
-shape0, shape1, shape2, shape3 :: [String]
-shape0 = ["*..", ".**", "**."]
-shape1 = [".*.", "..*", "***"]
-shape2 = ["*.*", ".**", ".*."]
-shape3 = ["..*", "*.*", ".**"]
+-- ADD GLIDERS
 
-printShape :: [String] -> IO ()
-printShape = (putStrLn `mapM_`)
+addGs :: Board -> [(G, (Int, Int))] -> Board
+addGs = foldl $ uncurry . flip . uncurry . add1
 
-readGliders :: [[String]] -> Maybe [(G, (Int, Int))]
-readGliders [] = Just []
-readGliders src = do
-	let	src' = dropWhile null src
-	(g1, src'') <- readGlider1 src'
-	(g1 :) <$> readGliders src''
+add1 :: Board -> Int -> Int -> G -> Board
+add1 bd x y g = addShapeAscii bd x y $ rotate lr ud sp
+	where sp = shapeAsAscii $ shape g; lr = leftRight g; ud = upDown g
 
-readGlider1 :: [[String]] -> Maybe ((G, (Int, Int)), [[String]])
-readGlider1 (
-	["shape:", spn] :
-	["x-offset:", xo_] :
-	["y-offset:", yo_] :
-	["left-right:", lr_] :
-	["up-down:", ud_] : rst) = do
+-- READ GLIDERS
+
+readGs :: [[String]] -> Maybe [(G, (Int, Int))]
+readGs (dropWhile null -> []) = Just []
+readGs (dropWhile null -> src) = uncurry (<$>) . ((:) *** readGs) =<< read1 src
+
+read1 :: [[String]] -> Maybe ((G, (Int, Int)), [[String]])
+read1 (	["shape:", spn] :
+	["x-offset:", xo_] : ["y-offset:", yo_] :
+	["left-right:", lr_] : ["up-down:", ud_] : rst) = do
 	sp <- readMaybe $ "Shape" ++ spn
-	xo <- readMaybe xo_
-	yo <- readMaybe yo_
-	lr <- readMaybe lr_
-	ud <- readMaybe ud_
+	xo <- readMaybe xo_; yo <- readMaybe yo_
+	lr <- readMaybe lr_; ud <- readMaybe ud_
 	pure ((G sp lr ud, (xo, yo)), rst)
-readGlider1 _ = Nothing
+read1 _ = Nothing
 
-data Independent = Independent {
-	independentShape :: Shape,
-	independentLeftRight :: LeftRight,
-	independentUpDown :: UpDown }
-	deriving (Show, Eq, Ord)
+-- BOARD OF EACH GENERATION
 
-independentToPattern :: Independent -> Pattern
-independentToPattern Independent {
-	independentShape = sp,
-	independentLeftRight = lr,
-	independentUpDown = ud } =
-	asciiToPattern 11 11 4 4 $ rotateShapeAsAscii sp lr ud
+boards' :: Board -> [Board]
+boards' b = (b :) . maybe [] boards' $ removeTopGs =<< removeBttGs (boardNext b)
 
-matchIndependent :: Independent -> Board -> [((Int, Int), G)]
-matchIndependent ind brd =
-	uncurry (independentPosToGlider ind) <$>
-		matchBoard' (independentToPattern ind) brd
+-- Remove Top Gliders
 
-matchIndependentLives :: Independent -> Board -> [((Int, Int), G)]
-matchIndependentLives ind brd =
-	uncurry (independentPosToGlider ind) <$>
-		matchBoardLives (independentToPattern ind) brd
-
-matchIndependentLives' :: Independent -> Board -> ([(Int, Int)], [((Int, Int), G)])
-matchIndependentLives' ind brd =
-	second ((uncurry $ independentPosToGlider ind) <$>) $
-		matchBoardLives' (independentToPattern ind) brd
-
-matchMultiIndependentLives :: [Independent] -> Board -> ([(Int, Int)], [((Int, Int), G)])
-matchMultiIndependentLives inds brd = second ((uncurry independentToG) <$>) $
-	multiMatchBoardLives
-		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
-
-matchMultiIndependentLivesBottom :: Int -> [Independent] -> Board -> ([(Int, Int)], [((Int, Int), G)])
-matchMultiIndependentLivesBottom n inds brd = second ((uncurry independentToG) <$>) $
-	multiMatchBoardLivesBottom n
-		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
-
-matchMultiIndependentLivesTop :: Int -> [Independent] -> Board -> ([(Int, Int)], [((Int, Int), G)])
-matchMultiIndependentLivesTop n inds brd = second ((uncurry independentToG) <$>) $
-	multiMatchBoardLivesTop n
-		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
-
-independentToG :: Independent -> (Int, Int) -> ((Int, Int), G)
-independentToG ind = uncurry $ independentPosToGlider ind
-
-matchIndependentBottom :: Int -> Independent -> Board -> [((Int, Int), G)]
-matchIndependentBottom n ind brd =
-	uncurry (independentPosToGlider ind) <$>
-		matchBoardBottom n (independentToPattern ind) brd
-
-independentPosToGlider :: Independent -> Int -> Int -> ((Int, Int), G)
-independentPosToGlider
-	Independent {
-		independentShape = sp,
-		independentLeftRight = lr,
-		independentUpDown = ud } x y = ((x + 4, y + 4), G sp lr ud)
-
-allIndependent :: [Independent]
-allIndependent = concat . concat $
-	(<$> [Shape0 ..]) \sp -> (<$> [Left ..]) \lr -> (<$> [Up ..]) \ud ->
-		Independent sp lr ud
-
-searchIndependent :: Board -> [((Int, Int), G)]
-searchIndependent bd = concat $ (`matchIndependent` bd) <$> allIndependent
-
-searchIndependentLives :: Board -> [((Int, Int), G)]
-searchIndependentLives bd = concat $ (`matchIndependentLives` bd) <$> allIndependent
-
-searchIndependentLives' :: Board -> ([(Int, Int)], [((Int, Int), G)])
-searchIndependentLives' bd =
-	first (L.nub . L.sort) . concat2 $ (`matchIndependentLives'` bd) <$> allIndependent
-
-searchIndependentLives'' :: Board -> ([(Int, Int)], [((Int, Int), G)])
-searchIndependentLives'' = matchMultiIndependentLives allIndependent
-
-searchIndependentLivesBottom :: Int -> Board -> ([(Int, Int)], [((Int, Int), G)])
-searchIndependentLivesBottom n = matchMultiIndependentLivesBottom n allIndependent
-
-searchIndependentLivesTop :: Int -> Board -> ([(Int, Int)], [((Int, Int), G)])
-searchIndependentLivesTop n = matchMultiIndependentLivesTop n allIndependent
-
-concat2 :: [([a], [b])] -> ([a], [b])
-concat2 [] = ([], [])
-concat2 ((xs, ys) : xsyss) =
-	let (xss, yss) = concat2 xsyss in (xs ++ xss, ys ++ yss)
-
-searchIndependentBottom :: Int -> Board -> [((Int, Int), G)]
-searchIndependentBottom n bd =
-	concat $ (\ind -> matchIndependentBottom n ind bd) <$> allIndependent
-
-checkBottomEdgeG :: [(Int, Int)] -> [((Int, Int), G)] -> Bool
-checkBottomEdgeG [] gls = not $ checkRightDownToLeftDown $ L.sort gls
-checkBottomEdgeG _ _ = False
-
-checkRightDownToLeftDown :: [((Int, Int), G)] -> Bool
-checkRightDownToLeftDown [] = False
-checkRightDownToLeftDown ((_, g) : gs)
-	| checkDirection Right Down g = checkLeftDown gs
-	| otherwise = checkRightDownToLeftDown gs
-
-checkLeftDown :: [((Int, Int), G)] -> Bool
-checkLeftDown = any (checkDirection Left Down . snd)
+removeTopGs :: Board -> Maybe Board
+removeTopGs brd
+	| checkTopEdge brd = let
+		(lvs, gls) = searchIndependentLivesTop 7 brd in
+		if checkTopEdgeG lvs gls
+		then Just $ removeGliders brd (filter (isTopGlider brd) gls)
+		else Nothing
+	| otherwise = Just brd
+	where isTopGlider _ ((_, y), _) = y == 0
 
 checkTopEdgeG :: [(Int, Int)] -> [((Int, Int), G)] -> Bool
 checkTopEdgeG [] gls = not $ checkRightUpToLeftUp $ L.sort gls
@@ -219,18 +110,18 @@ checkRightUpToLeftUp ((_, g) : gs)
 checkLeftUp :: [((Int, Int), G)] -> Bool
 checkLeftUp = any (checkDirection Left Up . snd)
 
-checkDirection :: LeftRight -> UpDown -> G -> Bool
-checkDirection lr0 ud0 G { leftRight = lr, upDown = ud } =
-	lr == lr0 && ud == ud0
+searchIndependentLivesTop :: Int -> Board -> ([(Int, Int)], [((Int, Int), G)])
+searchIndependentLivesTop n = matchMultiIndependentLivesTop n allIndependent
 
-removeGliders :: Board -> [((Int, Int), G)] -> Board
-removeGliders bd gls = removeAreas bd (toArea <$> gls)
-	where toArea ((xo, yo), _) = (xo, yo, 3, 3)
+matchMultiIndependentLivesTop :: Int -> [Independent] -> Board -> ([(Int, Int)], [((Int, Int), G)])
+matchMultiIndependentLivesTop n inds brd = second ((uncurry independentToG) <$>) $
+	multiMatchBoardLivesTop n
+		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
 
-data Change a = NG | OK | Changed a deriving Show
+-- Remove Bottom Gliders
 
-removeBottomGliders' :: Board -> Maybe Board
-removeBottomGliders' brd = case removeBottomGliders brd of
+removeBttGs :: Board -> Maybe Board
+removeBttGs brd = case removeBottomGliders brd of
 	NG -> Nothing; OK -> Just brd; Changed brd' -> Just brd'
 
 removeBottomGliders :: Board -> Change Board
@@ -242,27 +133,68 @@ removeBottomGliders brd
 		else NG
 	| otherwise = OK
 
+checkBottomEdgeG :: [(Int, Int)] -> [((Int, Int), G)] -> Bool
+checkBottomEdgeG [] gls = not $ checkRightDownToLeftDown $ L.sort gls
+checkBottomEdgeG _ _ = False
+
+checkRightDownToLeftDown :: [((Int, Int), G)] -> Bool
+checkRightDownToLeftDown [] = False
+checkRightDownToLeftDown ((_, g) : gs)
+	| checkDirection Right Down g = checkLeftDown gs
+	| otherwise = checkRightDownToLeftDown gs
+
+checkLeftDown :: [((Int, Int), G)] -> Bool
+checkLeftDown = any (checkDirection Left Down . snd)
+
 isBottomGlider :: Board -> ((Int, Int), G) -> Bool
 isBottomGlider brd ((_, y), _) = y == boardHeight brd - 3
 
-removeTopGliders' :: Board -> Maybe Board
-removeTopGliders' brd = case removeTopGliders brd of
-	NG -> Nothing; OK -> Just brd; Changed brd' -> Just brd'
+matchMultiIndependentLivesBottom :: Int -> [Independent] -> Board -> ([(Int, Int)], [((Int, Int), G)])
+matchMultiIndependentLivesBottom n inds brd = second ((uncurry independentToG) <$>) $
+	multiMatchBoardLivesBottom n
+		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
 
-removeTopGliders :: Board -> Change Board
-removeTopGliders brd
-	| checkTopEdge brd = let
-		(lvs, gls) = searchIndependentLivesTop 7 brd in
-		if checkTopEdgeG lvs gls
-		then Changed $ removeGliders brd (filter (isTopGlider brd) gls)
-		else NG
-	| otherwise = OK
+searchIndependentLivesBottom :: Int -> Board -> ([(Int, Int)], [((Int, Int), G)])
+searchIndependentLivesBottom n = matchMultiIndependentLivesBottom n allIndependent
 
-isTopGlider :: Board -> ((Int, Int), G) -> Bool
-isTopGlider _ ((_, y), _) = y == 0
+-- Remove Gliders
 
-boards' :: Board -> [Board]
-boards' brd = brd :
-	case removeTopGliders' =<< removeBottomGliders' (boardNext brd) of
-		Nothing -> []
-		Just brd' -> boards' brd'
+removeGliders :: Board -> [((Int, Int), G)] -> Board
+removeGliders bd gls = removeAreas bd (toArea <$> gls)
+	where toArea ((xo, yo), _) = (xo, yo, 3, 3)
+
+checkDirection :: LeftRight -> UpDown -> G -> Bool
+checkDirection lr0 ud0 G { leftRight = lr, upDown = ud } =
+	lr == lr0 && ud == ud0
+
+data Change a = NG | OK | Changed a deriving Show
+
+-- Independent
+
+data Independent = Independent {
+	independentShape :: Shape,
+	independentLeftRight :: LeftRight,
+	independentUpDown :: UpDown }
+	deriving (Show, Eq, Ord)
+
+independentToPattern :: Independent -> Pattern
+independentToPattern Independent {
+	independentShape = sp,
+	independentLeftRight = lr,
+	independentUpDown = ud } =
+	asciiToPattern 11 11 4 4 . rotate lr ud $ shapeAsAscii sp
+
+independentToG :: Independent -> (Int, Int) -> ((Int, Int), G)
+independentToG ind = uncurry $ independentPosToGlider ind
+
+independentPosToGlider :: Independent -> Int -> Int -> ((Int, Int), G)
+independentPosToGlider
+	Independent {
+		independentShape = sp,
+		independentLeftRight = lr,
+		independentUpDown = ud } x y = ((x + 4, y + 4), G sp lr ud)
+
+allIndependent :: [Independent]
+allIndependent = concat . concat $
+	(<$> [Shape0 ..]) \sp -> (<$> [Left ..]) \lr -> (<$> [Up ..]) \ud ->
+		Independent sp lr ud

@@ -5,26 +5,33 @@
 
 module Lifegame.Words (
 
-	Board, emptyBoard, boardHeight, boardWidth,
+	Board,
 
-	boards, boardNext, boardLives, boardLivesBottom, boardLivesTop,
+	boardHeight,
 
-	boardToGray1, boardToGray1', gray1ToBoard,
+	boards,
 
-	putShapeAscii, addShapeAscii, printAsAscii,
+	boardNext,
 
-	Pattern, asciiToPattern, printPatternAsAscii,
+	boardToGray1,
 
-	match, matchLife, matchBoard, matchBoard',
-	matchBoardLives, matchBoardLives', matchBoardBottom,
+	boardToGray1',
 
-	multiMatchBoardLives,
-	multiMatchBoardLivesBottom, multiMatchBoardLivesTop,
+	gray1ToBoard,
 
-	Clipped, clip, clip', printClippedAsAscii,
+	putShapeAscii,
 
-	checkBottomEdge, checkTopEdge,
+	addShapeAscii,
 
+	Pattern,
+
+	asciiToPattern,
+
+	multiMatchBoardLivesBottom,
+	multiMatchBoardLivesTop,
+
+	checkBottomEdge,
+	checkTopEdge,
 	removeAreas
 
 	) where
@@ -52,9 +59,6 @@ instance NFData Board
 
 boards :: Board -> [Board]
 boards = iterate next
-
-emptyBoard :: Int -> Int -> Board
-emptyBoard w h = generate w h \_ _ -> False
 
 next, boardNext :: Board -> Board
 next bd = generate (boardWidth bd) (boardHeight bd) (calc bd)
@@ -94,10 +98,6 @@ read Board { boardWidth = w, boardHeight = h, boardBody = bd } x y =
 	w' = (w - 1) `div` 8 + 1
 	x' = x `mod` w
 	y' = y `mod` h
-
-boardLives :: Board -> [(Int, Int)]
-boardLives bd@Board { boardWidth = w, boardHeight = h } =
-	[ (x, y) | x <- [0 .. w - 1], y <- [0 .. h - 1], read bd x y ]
 
 boardLivesBottom :: Int -> Board -> [(Int, Int)]
 boardLivesBottom n bd@Board { boardWidth = w, boardHeight = h } =
@@ -168,34 +168,6 @@ putShapeBody w h xo yo bss = generateBody w h \x y ->
 putShapeAscii :: Int -> Int -> Int -> Int -> [String] -> Board
 putShapeAscii w h xo yo = putShape w h xo yo . (((== '*') <$>) <$>)
 
-printAsAscii :: Board -> IO ()
-printAsAscii = (putStrLn `mapM_`) . boardToAscii
-
-printClippedAsAscii :: Clipped -> IO ()
-printClippedAsAscii = (putStrLn `mapM_`) . clippedToAscii
-
-boardToAscii :: Board -> [String]
-boardToAscii b = (take (boardWidth b) . concat . (wordToAscii <$>) <$>) $ rows b
-
-clippedToAscii :: Clipped -> [String]
-clippedToAscii Clipped { clippedWidth = w, clippedHeight = h, clippedBody = bd } =
-	bodyToAscii w h bd
-
-bodyToAscii :: Int -> Int -> V.Vector Word8 -> [String]
-bodyToAscii w h b = (take w . concat . (wordToAscii <$>) <$>) $ rowsBody w h b
-
-rows :: Board -> [[Word8]]
-rows Board { boardWidth = w, boardHeight = h, boardBody = bd } =
-	(<$> [0 .. h - 1]) \y -> (<$> [0 .. (w - 1) `div` 8]) \x ->
-		bd V.! (y * ((w - 1) `div` 8 + 1) + x)
-
-rowsBody :: Int -> Int -> V.Vector Word8 -> [[Word8]]
-rowsBody w h bd = (<$> [0 .. h - 1]) \y -> (<$> [0 .. (w - 1) `div` 8]) \x ->
-	bd V.! (y * ((w - 1) `div` 8 + 1) + x)
-
-wordToAscii :: Word8 -> String
-wordToAscii w = bool '.' '*' . testBit w <$> [7, 6 .. 0]
-
 data Pattern = Pattern {
 	patternLives :: [(Int, Int)],
 	patternWidth :: Int,
@@ -219,23 +191,9 @@ boolsToLives xo yo bs = go xo yo bs
 	go _x y ([] : rs) = go xo (y + 1) rs
 	go x y ((lf : lvs) : rs) = bool id ((x, y) :) lf $ go (x + 1) y (lvs : rs)
 
-printPatternAsAscii :: Pattern -> IO ()
-printPatternAsAscii = (putStrLn `mapM_`) . patternToAscii
-
-patternToAscii :: Pattern -> [String]
-patternToAscii
-	Pattern { patternWidth = w, patternHeight = h, patternBody = bd } =
-	bodyToAscii w h bd
-
 data Clipped = Clipped {
 	clippedWidth :: Int, clippedHeight :: Int, clippedBody :: V.Vector Word8 }
 	deriving (Generic, Eq, Show)
-
-clip :: Board -> Int -> Int -> Int -> Int -> Clipped
-clip Board { boardWidth = bw, boardHeight = bh, boardBody = bbd } cxo cyo cw ch =
-	Clipped {
-		clippedWidth = cw, clippedHeight = ch,
-		clippedBody = clipBody bw bh bbd cxo cyo cw ch }
 
 clip' :: Board -> Int -> Int -> Int -> Int -> Clipped
 clip' Board { boardWidth = bw, boardHeight = bh, boardBody = bbd } cxo cyo cw ch =
@@ -243,32 +201,11 @@ clip' Board { boardWidth = bw, boardHeight = bh, boardBody = bbd } cxo cyo cw ch
 		clippedWidth = cw, clippedHeight = ch,
 		clippedBody = clipBody' bw bh bbd cxo cyo cw ch }
 
-clipBody ::
-	Int -> Int -> V.Vector Word8 ->
-	Int -> Int -> Int -> Int -> V.Vector Word8
-clipBody w h bd xo yo cw ch = V.generate
-	(((cw - 1) `div` 8 + 1) * ch) (clipBodyFun w h bd xo yo cw ch)
-
 clipBody' ::
 	Int -> Int -> V.Vector Word8 ->
 	Int -> Int -> Int -> Int -> V.Vector Word8
 clipBody' w h bd xo yo cw ch = V.generate
 	(((cw - 1) `div` 8 + 1) * ch) (clipBodyFun' w h bd xo yo cw ch)
-
-clipBodyFun ::
-	Int -> Int -> V.Vector Word8 -> Int -> Int -> Int -> Int -> Int -> Word8
-clipBodyFun w _h bd cxo cyo cw _ch i = if (cxow + xw) < (ww - 1)
-	then combine cxob
-		(bd V.! (((cyo + y) * ww) + cxow + xw))
-		(bd V.! (((cyo + y) * ww) + cxow + xw + 1))
-	else combine cxob (bd V.! (((cyo + y) * ww) + cxow + xw)) 0
-	where
-	xw = i `mod` cww
-	y = i `div` cww
-	ww = (w - 1) `div` 8 + 1
-	cww = (cw - 1) `div` 8 + 1
-	cxow = cxo `div` 8
-	cxob = cxo `mod` 8
 
 clipBodyFun' ::
 	Int -> Int -> V.Vector Word8 -> Int -> Int -> Int -> Int -> Int -> Word8
@@ -306,13 +243,6 @@ matchLife pttn@Pattern { patternLives = lvs0 } bx by brd = go lvs0
 	go ((px, py) : lvs) =
 		bool (go lvs) (Just (px, py)) $ match px py pttn bx by brd
 
-matchLife' :: Pattern -> Int -> Int -> Board -> Either (Int, Int) (Int, Int)
-matchLife' pttn@Pattern { patternLives = lvs0 } bx by brd = go lvs0
-	where
-	go [] = Left (bx, by)
-	go ((px, py) : lvs) =
-		bool (go lvs) (Right (px, py)) $ match px py pttn bx by brd
-
 match :: Int -> Int -> Pattern -> Int -> Int -> Board -> Bool
 match px py pttn bx by brd = matchClipped pttn $ clip' brd xo yo cw ch
 	where
@@ -321,30 +251,6 @@ match px py pttn bx by brd = matchClipped pttn $ clip' brd xo yo cw ch
 matchClipped :: Pattern -> Clipped -> Bool
 matchClipped Pattern { patternBody = pbd } Clipped { clippedBody = cbd } =
 	pbd == cbd
-
-matchBoard' :: Pattern -> Board -> [(Int, Int)]
-matchBoard' pttn brd@Board { boardWidth = w, boardHeight = h } =
-	L.nub . L.sort . catMaybes . concat
-		$ (<$> [0 .. h - 1]) \y -> (<$> [0 .. w - 1]) \x ->
-			(\(px, py) -> (x - px, y - py)) <$> matchLife pttn x y brd
-
-matchBoard :: Pattern -> Board -> [((Int, Int), (Int, Int))]
-matchBoard pttn brd@Board { boardWidth = w, boardHeight = h } = catMaybes . concat
-	$ (<$> [0 .. h - 1]) \y -> (<$> [0 .. w - 1]) \x ->
-		((x, y) ,) <$> matchLife pttn x y brd
-
-matchBoardLives :: Pattern -> Board -> [(Int, Int)]
-matchBoardLives pttn brd = L.nub . L.sort . catMaybes
-	$ (<$> boardLives brd) \(x, y) -> (\(px, py) -> (x - px, y - py)) <$> matchLife pttn x y brd
-
-matchBoardLives' :: Pattern -> Board -> ([(Int, Int)], [(Int, Int)])
-matchBoardLives' pttn brd = second (L.nub . L.sort) . partitionEithers
-	$ (<$> boardLives brd) \(x, y) -> (\(px, py) -> (x - px, y - py)) <$> matchLife' pttn x y brd
-
-multiMatchBoardLives :: Ord a =>
-	[(a, Pattern)] -> Board -> ([(Int, Int)], [(a, (Int, Int))])
-multiMatchBoardLives pttns brd = second (L.nub . L.sort) . partitionEithers
-	$ (<$> boardLives brd) \(x, y) -> (\(i, (px, py)) -> (i, (x - px, y - py))) <$> multiMatchLife pttns x y brd
 
 multiMatchBoardLivesBottom :: Ord a => Int ->
 	[(a, Pattern)] -> Board -> ([(Int, Int)], [(a, (Int, Int))])
@@ -367,9 +273,3 @@ checkTopEdge Board { boardWidth = w, boardHeight = _h, boardBody = bd } =
 	any (/= 0) $ (\x -> bd V.! x) <$> [0 .. w' - 1]
 	where
 	w' = (w - 1) `div` 8 + 1
-
-matchBoardBottom :: Int -> Pattern -> Board -> [(Int, Int)]
-matchBoardBottom n pttn brd@Board { boardWidth = w, boardHeight = h } =
-	L.nub . L.sort . catMaybes . concat
-		$ (<$> [h - n .. h - 1]) \y -> (<$> [0 .. w - 1]) \x ->
-			(\(px, py) -> (x - px, y - py)) <$> matchLife pttn x y brd
