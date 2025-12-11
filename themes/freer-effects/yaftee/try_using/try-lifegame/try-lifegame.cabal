@@ -30,7 +30,6 @@ library
       Data.Png
       Data.Png.Filter
       Data.Png.Header
-      Data.Png.Palette
       Lifegame.Glider
       Lifegame.Png.Chunk.Decode
       Lifegame.Png.Chunk.Encode

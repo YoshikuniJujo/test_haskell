@@ -36,7 +36,7 @@ import System.Environment
 import System.Directory
 import System.FilePath
 
-import Data.Png.Palette qualified as Palette
+import Data.Png qualified as Palette
 import Data.Vector qualified as V
 import Data.Word.Crc32 qualified as Crc32
 
