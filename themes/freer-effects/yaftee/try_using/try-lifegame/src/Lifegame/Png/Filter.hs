@@ -21,11 +21,11 @@ import Data.Png.Filter qualified as Filter
 type Size = (Int, Int)
 
 filter :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
-	Header.H -> [Size] -> Eff.E es BSF.ByteString [Word8] ()
+	Header.Header -> [Size] -> Eff.E es BSF.ByteString [Word8] ()
 filter hdr ss = (\bs -> filterRaw hdr bs ss) =<< Pipe.await
 
 filterRaw :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
-	Header.H ->
+	Header.Header ->
 	BSF.ByteString -> [Size] -> Eff.E es BSF.ByteString [Word8] ()
 filterRaw _ _ [] = pure ()
 filterRaw hdr r0 ((w, h) : ss) = void do
@@ -46,7 +46,7 @@ filterTail bpp pr n = Pipe.awaitMaybe >>= \case
 		filterTail bpp (BSF.unpack bs) (n - 1)
 
 unfilter :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
-	Header.H -> Eff.E es BSF.ByteString [Word8] ()
+	Header.Header -> Eff.E es BSF.ByteString [Word8] ()
 unfilter hdr = void $ Pipe.await >>= \bs ->
 	(>>) <$> Pipe.yield <*> unfilterTail bpp =<< either Except.throw pure
 		(Filter.unfilter bpp (replicate rbs 0) bs)
@@ -59,19 +59,19 @@ unfilterTail bpp prior = Pipe.awaitMaybe >>= \case
 	Just bs -> (>>) <$> Pipe.yield <*> unfilterTail bpp
 		=<< either Except.throw pure (Filter.unfilter bpp prior bs)
 
-headerToBytesPerPixel :: Integral n => Header.H -> n
+headerToBytesPerPixel :: Integral n => Header.Header -> n
 headerToBytesPerPixel hdr =
 	(fromIntegral (Header.headerBitDepth hdr) *
-		Header.sampleNum (Header.headerColorType hdr) - 1) `div` 8 + 1
+		Header.colorTypeSampleNum (Header.headerColorType hdr) - 1) `div` 8 + 1
 
-headerToRowBytes :: Integral n => Header.H -> n
+headerToRowBytes :: Integral n => Header.Header -> n
 headerToRowBytes hdr =
 	(fromIntegral (Header.headerWidth hdr) * fromIntegral (Header.headerBitDepth hdr) *
-		Header.sampleNum (Header.headerColorType hdr) - 1) `div` 8 + 1
+		Header.colorTypeSampleNum (Header.headerColorType hdr) - 1) `div` 8 + 1
 
-rowBytes :: Integral n => Header.H -> n -> n
+rowBytes :: Integral n => Header.Header -> n -> n
 rowBytes hdr wdt = ((wdt * bd - 1) * sampleNum' hdr - 1) `div` 8 + 1
 	where bd = fromIntegral $ Header.headerBitDepth hdr
 
-sampleNum' :: Integral n => Header.H -> n
-sampleNum' = Header.sampleNum . Header.headerColorType
+sampleNum' :: Integral n => Header.Header -> n
+sampleNum' = Header.colorTypeSampleNum . Header.headerColorType

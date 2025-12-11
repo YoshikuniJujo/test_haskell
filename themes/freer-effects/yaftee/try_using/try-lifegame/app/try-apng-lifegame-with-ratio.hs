@@ -92,7 +92,7 @@ main = do
 			Eff.effBase $ writeApngGray1Foo' fpo hdr n 0 fs
 	putStrLn ""
 	print hdr
-	print Header.H {
+	print Header.Header {
 		Header.headerWidth = 20, Header.headerHeight = 11,
 		Header.headerBitDepth = 1,
 		Header.headerColorType = Header.ColorTypeGrayscale,

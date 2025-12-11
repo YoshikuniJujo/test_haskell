@@ -57,7 +57,7 @@ pngToImageGray1 :: forall nm -> (
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
 	U.Member Fail.F es,
 	U.Base IO.I es ) =>
-	Header.H ->
+	Header.Header ->
 	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
 	Eff.E es BS.ByteString ImageG1.G ()
 pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
@@ -96,11 +96,11 @@ type PngToImageGray1Members nm es = (
 	U.Member (State.Named nm (Buffer.Devide BSF.ByteString)) es,
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es )
 
-headerToRows :: Header.H -> [Int]
-headerToRows h@Header.H { Header.headerInterlaceMethod = Header.InterlaceMethodNon } =
+headerToRows :: Header.Header -> [Int]
+headerToRows h@Header.Header { Header.headerInterlaceMethod = Header.InterlaceMethodNon } =
 	replicate (fromIntegral $ Header.headerHeight h)
 		((fromIntegral (Header.headerWidth h) * fromIntegral (Header.headerBitDepth h)) `div'` 8 * sampleNum' h)
-headerToRows h@Header.H { Header.headerInterlaceMethod = Header.InterlaceMethodAdam7 } =
+headerToRows h@Header.Header { Header.headerInterlaceMethod = Header.InterlaceMethodAdam7 } =
 	map ((* sampleNum' h) . (`div'` 8) . (* fromIntegral (Header.headerBitDepth h)))
 		$ interlacePixelNums
 			(fromIntegral (Header.headerWidth h))
@@ -110,8 +110,8 @@ headerToRows h = error $ "headerToRows: " ++ show h
 div' :: Integral n => n -> n -> n
 m `div'`n = (m - 1) `div` n + 1
 
-sampleNum' :: Integral n => Header.H -> n
-sampleNum' = Header.sampleNum . Header.headerColorType
+sampleNum' :: Integral n => Header.Header -> n
+sampleNum' = Header.colorTypeSampleNum . Header.headerColorType
 
 interlacePixelNums :: Int -> Int -> [Int]
 interlacePixelNums w h =

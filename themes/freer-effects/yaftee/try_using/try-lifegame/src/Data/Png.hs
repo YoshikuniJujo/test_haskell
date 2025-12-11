@@ -24,4 +24,4 @@ import Data.Png.Filter
 
 class Datable a where
 	isDat :: a -> Bool; endDat :: a -> Bool
-	toDat :: Data.Png.Header.H -> a -> BSF.ByteString
+	toDat :: Data.Png.Header.Header -> a -> BSF.ByteString

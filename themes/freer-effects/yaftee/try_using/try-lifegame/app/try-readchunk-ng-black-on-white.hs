@@ -153,8 +153,8 @@ chunkBody nm = Pipe.await >>= \case
 	ChunkNew.End -> State.getN nm <* State.putN @BSF.ByteString nm ""
 	_ -> Except.throw @String "chunkBody: not Body"
 
-header :: Word32 -> Word32 -> Header.H
-header w h = Header.H {
+header :: Word32 -> Word32 -> Header.Header
+header w h = Header.Header {
 	Header.headerWidth = w, Header.headerHeight = h,
 	Header.headerBitDepth = 1,
 	Header.headerColorType = Header.ColorTypePalette,
