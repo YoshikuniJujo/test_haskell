@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
@@ -51,17 +51,34 @@ data B = B { width :: Int, height :: Int, body :: V.Vector Word8 }
 
 instance NFData B
 
+read :: B -> Int -> Int -> Bool
+read B { width = w, height = h, body = bd } x y =
+	testBit (bd V.! (w' * y' + (x' `div` 8))) $ 7 - x' `mod` 8
+	where w' = (w - 1) `div` 8 + 1; x' = x `mod` w; y' = y `mod` h
+
+generate :: Int -> Int -> (Int -> Int -> Bool) -> B
+generate w h px = B { width = w, height = h, body = generateBody w h px }
+
+generateBody :: Int -> Int -> (Int -> Int -> Bool) -> V.Vector Word8
+generateBody w h px = V.generate (w' * h) \i ->
+	boolsToWord $ (<$> [0 .. 7]) \x -> px' (i `mod` w' * 8 + x) (i `div` w')
+	where
+	px' x y	| x >= w = False | otherwise = px x y
+	w' = (w - 1) `div` 8 + 1
+
+boolsToWord :: [Bool] -> Word8
+boolsToWord bls = go 0 $ bls ++ replicate (8 - length bls) False
+	where go r = \case
+		[] -> r; b : bs -> go (bool id (`setBit` 0) b $ r `shiftL` 1) bs
+
 checkTopEdge :: B -> Bool
 checkTopEdge B { width = w, height = _h, body = bd } =
-	any (/= 0) $ (\x -> bd V.! x) <$> [0 .. w' - 1]
-	where
-	w' = (w - 1) `div` 8 + 1
+	any (/= 0) $ (bd V.!) <$> [0 .. (w - 1) `div` 8]
 
 checkBottomEdge :: B -> Bool
 checkBottomEdge B { width = w, height = h, body = bd } =
-	any (/= 0) $ (\x -> bd V.! ((h - 1) * w' + x)) <$> [0 .. w' - 1]
-	where
-	w' = (w - 1) `div` 8 + 1
+	any (/= 0) $ ((bd V.!) . (btt +)) <$> [0 .. w' - 1]
+	where btt = (h - 1) * w'; w' = (w - 1) `div` 8 + 1
 
 -- GENERATIONS
 
@@ -112,16 +129,6 @@ addShape bd xo yo bss = generate w h \x y ->
 	w = width bd
 	h = height bd
 
-read :: B -> Int -> Int -> Bool
-read B { width = w, height = h, body = bd } x y =
-	testBit (bd V.! i) bi
-	where
-	i = w' * y' + (x' `div` 8)
-	bi = 7 - x' `mod` 8
-	w' = (w - 1) `div` 8 + 1
-	x' = x `mod` w
-	y' = y `mod` h
-
 putShapeAscii :: Int -> Int -> Int -> Int -> [String] -> B
 putShapeAscii w h xo yo = putShape w h xo yo . (((== '*') <$>) <$>)
 
@@ -132,27 +139,6 @@ boardLivesBottom n bd@B { width = w, height = h } =
 boardLivesTop :: Int -> B -> [(Int, Int)]
 boardLivesTop n bd@B { width = w, height = _h } =
 	[ (x, y) | x <- [0 .. w - 1], y <- [0 .. n - 1], read bd x y ]
-
-generate :: Int -> Int -> (Int -> Int -> Bool) -> B
-generate w h px = B {
-	width = w, height = h,
-	body = generateBody w h px }
-
-generateBody :: Int -> Int -> (Int -> Int -> Bool) -> V.Vector Word8
-generateBody w h px = V.generate (w' * h) \i ->
-		boolsToWord $ (<$> [0 .. 7]) \dx ->
-			px' (i `mod` w' * 8 + dx) (i `div` w')
-	where
-	px' x y	| x >= w = False
-		| otherwise = px x y
-	w' = (w - 1) `div` 8 + 1
-
-boolsToWord :: [Bool] -> Word8
-boolsToWord bls = go 0 bls'
-	where
-	go r [] = r
-	go r (b : bs') = go (bool id (`setBit` 0) b $ r `shiftL` 1) bs'
-	bls' = bls ++ replicate (8 - length bls) False
 
 putShape :: Int -> Int -> Int -> Int -> [[Bool]] -> B
 putShape w h xo yo bss = generate w h \x y ->
