@@ -12,7 +12,7 @@ import System.Directory
 import System.FilePath
 
 import System.File.Png.Gray1.NoInterlace qualified as Png
-import Lifegame.Words qualified as Lg
+import Lifegame.Board qualified as Lg
 
 import Lifegame.Glider qualified as Glider
 
@@ -33,9 +33,9 @@ main = do
 	print nm
 	putStrLn szost
 	let	b0 = Glider.addGs (Lg.putShapeAscii w h xo yo shp) gls
-		bs = take cf $ drop ff $ Lg.boards b0
+		bs = take cf $ drop ff $ Lg.generations b0
 		fps = (szostd </>) . boardName <$> [ff .. ff + cf]
-		imgs = Lg.boardToGray1 <$> bs
+		imgs = Lg.toGray1 <$> bs
 --	Img.printAsAscii `mapM_` imgs
 	zipWithM_ Png.write fps imgs
 

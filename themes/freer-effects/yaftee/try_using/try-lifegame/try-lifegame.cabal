@@ -30,13 +30,13 @@ library
       Data.Png
       Data.Png.Filter
       Data.Png.Header
+      Lifegame.Board
       Lifegame.Glider
       Lifegame.Png.Chunk.Decode
       Lifegame.Png.Chunk.Encode
       Lifegame.Png.Filter
       Lifegame.Png.Header
       Lifegame.PngToImageGray1
-      Lifegame.Words
       System.File.Apng.Gray1.NoInterlace
       System.File.Png.Gray1.NoInterlace
   other-modules:

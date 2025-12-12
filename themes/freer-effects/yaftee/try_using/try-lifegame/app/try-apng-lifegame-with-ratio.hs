@@ -33,7 +33,7 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Lifegame.PngToImageGray1
 
 import System.File.Apng.Gray1.NoInterlace
-import Lifegame.Words qualified as Lifegame
+import Lifegame.Board qualified as Lifegame
 
 import Lifegame.Png.Header qualified as Png
 import Lifegame.Png.Chunk.Decode qualified as Chunk
@@ -85,7 +85,7 @@ main = do
 --				OnDemand.flush "foobar")
 
 		Pipe.=$= (Pipe.yield =<< replicateM n Pipe.await)
-		Pipe.=$= PipeT.convert ((Lifegame.boardToGray1' 10 . Lifegame.gray1ToBoard) <$>)
+		Pipe.=$= PipeT.convert ((Lifegame.enlargeToGray1 10 . Lifegame.fromGray1) <$>)
 		Pipe.=$= PipeT.convert ((, read d_) <$>)
 		Pipe.=$= do
 			fs <- Pipe.await

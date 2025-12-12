@@ -23,7 +23,7 @@ import Data.ByteString.FingerTree qualified as BSF
 import System.IO
 import System.Environment
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
-import Lifegame.Words qualified as Lifegame
+import Lifegame.Board qualified as Lifegame
 
 import Lifegame.PngToImageGray1
 import Lifegame.Png.Header qualified as Header
@@ -54,8 +54,8 @@ main = do
 		. void $ PipeBS.hGet 32 h
 		Pipe.=$= pngToImageGray1 "foobar" hdr ibd obd
 		Pipe.=$= (Pipe.await >>=) \img -> Eff.effBase do
-			let	brd = Lifegame.gray1ToBoard img
-			Png.write fpo (Lifegame.boardToGray1' (read sz) brd)
+			let	brd = Lifegame.fromGray1 img
+			Png.write fpo (Lifegame.enlargeToGray1 (read sz) brd)
 	PipeZ.cByteArrayFree ibd
 	PipeZ.cByteArrayFree obd
 	hClose h

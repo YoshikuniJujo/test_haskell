@@ -27,7 +27,7 @@ import Prelude hiding (Either(..))
 import Control.Arrow
 import Data.List qualified as L
 import Text.Read
-import Lifegame.Words
+import Lifegame.Board
 
 -- DATA TYPE
 
@@ -57,10 +57,10 @@ flipXY sp = (\x -> (!! x) <$> sp) <$> [0 .. w - 1] where w = length $ head sp
 
 -- ADD GLIDERS
 
-addGs :: Board -> [(G, (Int, Int))] -> Board
+addGs :: B -> [(G, (Int, Int))] -> B
 addGs = foldl $ uncurry . flip . uncurry . add1
 
-add1 :: Board -> Int -> Int -> G -> Board
+add1 :: B -> Int -> Int -> G -> B
 add1 bd x y g = addShapeAscii bd x y $ rotate lr ud sp
 	where sp = shapeAsAscii $ shape g; lr = leftRight g; ud = upDown g
 
@@ -82,12 +82,12 @@ read1 _ = Nothing
 
 -- BOARD OF EACH GENERATION
 
-boards' :: Board -> [Board]
-boards' b = (b :) . maybe [] boards' $ removeTopGs =<< removeBttGs (boardNext b)
+boards' :: B -> [B]
+boards' b = (b :) . maybe [] boards' $ removeTopGs =<< removeBttGs (next b)
 
 -- Remove Top Gliders
 
-removeTopGs :: Board -> Maybe Board
+removeTopGs :: B -> Maybe B
 removeTopGs brd
 	| checkTopEdge brd = let
 		(lvs, gls) = searchIndependentLivesTop 7 brd in
@@ -110,21 +110,21 @@ checkRightUpToLeftUp ((_, g) : gs)
 checkLeftUp :: [((Int, Int), G)] -> Bool
 checkLeftUp = any (checkDirection Left Up . snd)
 
-searchIndependentLivesTop :: Int -> Board -> ([(Int, Int)], [((Int, Int), G)])
+searchIndependentLivesTop :: Int -> B -> ([(Int, Int)], [((Int, Int), G)])
 searchIndependentLivesTop n = matchMultiIndependentLivesTop n allIndependent
 
-matchMultiIndependentLivesTop :: Int -> [Independent] -> Board -> ([(Int, Int)], [((Int, Int), G)])
+matchMultiIndependentLivesTop :: Int -> [Independent] -> B -> ([(Int, Int)], [((Int, Int), G)])
 matchMultiIndependentLivesTop n inds brd = second ((uncurry independentToG) <$>) $
-	multiMatchBoardLivesTop n
+	multiMatchLivesTop n
 		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
 
 -- Remove Bottom Gliders
 
-removeBttGs :: Board -> Maybe Board
+removeBttGs :: B -> Maybe B
 removeBttGs brd = case removeBottomGliders brd of
 	NG -> Nothing; OK -> Just brd; Changed brd' -> Just brd'
 
-removeBottomGliders :: Board -> Change Board
+removeBottomGliders :: B -> Change B
 removeBottomGliders brd
 	| checkBottomEdge brd = let
 		(lvs, gls) = searchIndependentLivesBottom 7 brd in
@@ -146,22 +146,22 @@ checkRightDownToLeftDown ((_, g) : gs)
 checkLeftDown :: [((Int, Int), G)] -> Bool
 checkLeftDown = any (checkDirection Left Down . snd)
 
-isBottomGlider :: Board -> ((Int, Int), G) -> Bool
-isBottomGlider brd ((_, y), _) = y == boardHeight brd - 3
+isBottomGlider :: B -> ((Int, Int), G) -> Bool
+isBottomGlider brd ((_, y), _) = y == height brd - 3
 
-matchMultiIndependentLivesBottom :: Int -> [Independent] -> Board -> ([(Int, Int)], [((Int, Int), G)])
+matchMultiIndependentLivesBottom :: Int -> [Independent] -> B -> ([(Int, Int)], [((Int, Int), G)])
 matchMultiIndependentLivesBottom n inds brd = second ((uncurry independentToG) <$>) $
-	multiMatchBoardLivesBottom n
+	multiMatchLivesBottom n
 		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
 
-searchIndependentLivesBottom :: Int -> Board -> ([(Int, Int)], [((Int, Int), G)])
+searchIndependentLivesBottom :: Int -> B -> ([(Int, Int)], [((Int, Int), G)])
 searchIndependentLivesBottom n = matchMultiIndependentLivesBottom n allIndependent
 
 -- Remove Gliders
 
-removeGliders :: Board -> [((Int, Int), G)] -> Board
-removeGliders bd gls = removeAreas bd (toArea <$> gls)
-	where toArea ((xo, yo), _) = (xo, yo, 3, 3)
+removeGliders :: B -> [((Int, Int), G)] -> B
+removeGliders bd gls = clear bd (toArea <$> gls)
+	where toArea ((xo, yo), _) = (Area xo yo 3 3)
 
 checkDirection :: LeftRight -> UpDown -> G -> Bool
 checkDirection lr0 ud0 G { leftRight = lr, upDown = ud } =
