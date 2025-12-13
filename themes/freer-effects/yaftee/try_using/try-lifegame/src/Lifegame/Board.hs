@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
 
@@ -55,7 +56,7 @@ instance NFData B
 read :: B -> Int -> Int -> Bool
 read B { width = w, height = h, body = bd } x y =
 	testBit (bd V.! (w' * y' + (x' `div` 8))) $ 7 - x' `mod` 8
-	where w' = (w - 1) `div` 8 + 1; x' = x `mod` w; y' = y `mod` h
+	where w' = w `div'` 8; x' = x `mod` w; y' = y `mod` h
 
 generate :: Int -> Int -> (Int -> Int -> Bool) -> B
 generate w h px = B { width = w, height = h, body = generateBody w h px }
@@ -65,7 +66,7 @@ generateBody w h px = V.generate (w' * h) \i ->
 	boolsToWord $ (<$> [0 .. 7]) \x -> px' (i `mod` w' * 8 + x) (i `div` w')
 	where
 	px' x y	| x >= w = False | otherwise = px x y
-	w' = (w - 1) `div` 8 + 1
+	w' = w `div'` 8
 
 boolsToWord :: [Bool] -> Word8
 boolsToWord bls = go 0 $ bls ++ replicate (8 - length bls) False
@@ -216,23 +217,25 @@ Pattern { pttBody = pb } `eq` Clipped { clpBody = cb } = pb == cb
 clip :: B -> Int -> Int -> Int -> Int -> Clipped
 clip B { width = bw, height = bh, body = bbd } cxo cyo cw ch = Clipped {
 	clpWidth = cw, clpHeight = ch,
-	clpBody = V.generate (((cw - 1) `div` 8 + 1) * ch)
-		(clipBodyFun bw bh bbd cxo cyo cw ch) }
+	clpBody = V.generate (cw `div'` 8 * ch)
+		(clipPixel bw bh bbd cxo cyo cw ch) }
 
-clipBodyFun ::
+clipPixel ::
 	Int -> Int -> V.Vector Word8 -> Int -> Int -> Int -> Int -> Int -> Word8
-clipBodyFun w h bd cxo cyo cw _ch i
-	| cxow + xw < - 1 || ww <= cxow + xw || cyo + y < 0 || h <= cyo + y = 0
-	| cxow + xw < 0 = combine cxob 0 (bd V.! (((cyo + y) * ww) + cxow + xw + 1))
-	| cxow + xw < ww - 1 = combine cxob
-		(bd V.! (((cyo + y) * ww) + cxow + xw))
-		(bd V.! (((cyo + y) * ww) + cxow + xw + 1))
-	| otherwise = combine cxob (bd V.! (((cyo + y) * ww) + cxow + xw)) 0
+clipPixel bw bh bd cxo cyo cw _ch i
+	| xw < - 1 || bww <= xw || y < 0 || bh <= y = 0
+	| xw < 0 = combine 0 (bd V.! (j + 1))
+	| xw < bww - 1 = combine (bd V.! j) (bd V.! (j + 1))
+	| otherwise = combine (bd V.! j) 0
 	where
-	ww = (w - 1) `div` 8 + 1
-	xw = i `mod` cww; y = i `div` cww; cww = (cw - 1) `div` 8 + 1
-	(cxow, cxob) = cxo `divMod` 8
-	combine n b1 b2 = b1 `shiftL` n .|. b2 `shiftR` (8 - n)
+	j = (y * bww) + xw
+	bww = bw `div'` 8
+	combine b1 b2 = b1 `shiftL` cxob .|. b2 `shiftR` (8 - cxob)
+	(xw, cxob) = (+ ixw) `first` (cxo `divMod` 8)
+	(y, ixw) = (cyo +) `first` (i `divMod` (cw `div'` 8))
+
+div' :: Integral n => n -> n -> n
+a `div'` b = (a - 1) `div` b + 1
 
 -- CLEAR
 
