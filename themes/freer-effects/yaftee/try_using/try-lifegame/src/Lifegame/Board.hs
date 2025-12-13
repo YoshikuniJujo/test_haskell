@@ -206,37 +206,32 @@ boolsToPattern w h xo yo bs = Pattern {
 
 -- Clip
 
-data Clipped = Clipped {
-	clippedWidth :: Int, clippedHeight :: Int, clippedBody :: V.Vector Word8 }
+data Clipped =
+	Clipped { clpWidth :: Int, clpHeight :: Int, clpBody :: V.Vector Word8 }
 	deriving (Generic, Eq, Show)
 
 eq :: Pattern -> Clipped -> Bool
-Pattern { pttBody = pb } `eq` Clipped { clippedBody = cb } = pb == cb
+Pattern { pttBody = pb } `eq` Clipped { clpBody = cb } = pb == cb
 
 clip :: B -> Int -> Int -> Int -> Int -> Clipped
-clip B { width = bw, height = bh, body = bbd } cxo cyo cw ch =
-	Clipped {
-		clippedWidth = cw, clippedHeight = ch,
-		clippedBody = V.generate
-			(((cw - 1) `div` 8 + 1) * ch) (clipBodyFun bw bh bbd cxo cyo cw ch) }
+clip B { width = bw, height = bh, body = bbd } cxo cyo cw ch = Clipped {
+	clpWidth = cw, clpHeight = ch,
+	clpBody = V.generate (((cw - 1) `div` 8 + 1) * ch)
+		(clipBodyFun bw bh bbd cxo cyo cw ch) }
 
 clipBodyFun ::
 	Int -> Int -> V.Vector Word8 -> Int -> Int -> Int -> Int -> Int -> Word8
 clipBodyFun w h bd cxo cyo cw _ch i
-	| (cxow + xw) < (- 1) || (cxow + xw) >= ww = 0
-	| (cyo + y) < 0 || (cyo + y) >= h = 0
-	| (cxow + xw) < 0 = combine cxob 0 (bd V.! (((cyo + y) * ww) + cxow + xw + 1))
-	| (cxow + xw) < (ww - 1) = combine cxob
+	| cxow + xw < - 1 || ww <= cxow + xw || cyo + y < 0 || h <= cyo + y = 0
+	| cxow + xw < 0 = combine cxob 0 (bd V.! (((cyo + y) * ww) + cxow + xw + 1))
+	| cxow + xw < ww - 1 = combine cxob
 		(bd V.! (((cyo + y) * ww) + cxow + xw))
 		(bd V.! (((cyo + y) * ww) + cxow + xw + 1))
 	| otherwise = combine cxob (bd V.! (((cyo + y) * ww) + cxow + xw)) 0
 	where
-	xw = i `mod` cww
-	y = i `div` cww
 	ww = (w - 1) `div` 8 + 1
-	cww = (cw - 1) `div` 8 + 1
-	cxow = cxo `div` 8
-	cxob = cxo `mod` 8
+	xw = i `mod` cww; y = i `div` cww; cww = (cw - 1) `div` 8 + 1
+	(cxow, cxob) = cxo `divMod` 8
 	combine n b1 b2 = b1 `shiftL` n .|. b2 `shiftR` (8 - n)
 
 -- CLEAR
