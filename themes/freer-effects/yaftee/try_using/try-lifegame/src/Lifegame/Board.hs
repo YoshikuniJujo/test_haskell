@@ -89,16 +89,13 @@ next :: B -> B
 next bd = generate (width bd) (height bd) (calc bd)
 
 calc :: B -> Int -> Int -> Bool
-calc p cx cy
-	| not l && length (filter id ls) == 3 = True
-	| l && 2 <= length (filter id ls) && length (filter id ls) <= 3 = True
+calc p x y
+	| not l && ns == 3 = True | l && 2 <= ns && ns <= 3 = True
 	| otherwise = False
 	where
-	ps = [ (x, y) |
-		x <- [cx - 1 .. cx + 1], y <- [cy - 1 .. cy + 1],
-		(x, y) /= (cx, cy) ]
-	l = read p cx cy
-	ls = (\(x, y) -> read p x y) <$> ps
+	l = read p x y
+	ns = length . filter id $ (uncurry $ read p) <$> [ (z, w) |
+		z <- [x - 1 .. x + 1], w <- [y - 1 .. y + 1], (z, w) /= (x, y) ]
 
 -- CONVERSION BETWEEN BOARD AND GRAY1
 
@@ -116,66 +113,30 @@ fromGray1 Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd } =
 
 -- PUT/ADD SHAPE
 
+putShapeAscii :: Int -> Int -> Int -> Int -> [String] -> B
+putShapeAscii w h xo yo = putShape w h xo yo . (((== '*') <$>) <$>)
+
+putShape :: Int -> Int -> Int -> Int -> [[Bool]] -> B
+putShape w h xo yo = generate w h . putShapePixel xo yo
+
+putShapePixel :: Int -> Int -> [[Bool]] -> Int -> Int -> Bool
+putShapePixel xo yo bss x y
+	|	xo <= x && x < xo + (length $ head bss) &&
+		yo <= y && y < yo + (length bss) = bss !! (y - yo) !! (x - xo)
+	| otherwise = False
+
 addShapeAscii :: B -> Int -> Int -> [String] -> B
 addShapeAscii bd xo yo = addShape bd xo yo . (((== '*') <$>) <$>)
 
 addShape :: B -> Int -> Int -> [[Bool]] -> B
-addShape bd xo yo bss = generate w h \x y ->
-	if	xo <= x && x < xo + (length $ head bss) &&
-		yo <= y && y < yo + (length bss)
-	then	bss !! (y - yo) !! (x - xo)
-	else	read bd x y
-	where
-	w = width bd
-	h = height bd
+addShape bd xo yo =
+	generate (width bd) (height bd) . addShapePixel bd xo yo
 
-putShapeAscii :: Int -> Int -> Int -> Int -> [String] -> B
-putShapeAscii w h xo yo = putShape w h xo yo . (((== '*') <$>) <$>)
-
-boardLivesBottom :: Int -> B -> [(Int, Int)]
-boardLivesBottom n bd@B { width = w, height = h } =
-	[ (x, y) | x <- [0 .. w - 1], y <- [h - n .. h - 1], read bd x y ]
-
-boardLivesTop :: Int -> B -> [(Int, Int)]
-boardLivesTop n bd@B { width = w, height = _h } =
-	[ (x, y) | x <- [0 .. w - 1], y <- [0 .. n - 1], read bd x y ]
-
-putShape :: Int -> Int -> Int -> Int -> [[Bool]] -> B
-putShape w h xo yo bss = generate w h \x y ->
-	if	xo <= x && x < xo + (length $ head bss) &&
-		yo <= y && y < yo + (length bss)
-	then	bss !! (y - yo) !! (x - xo)
-	else	False
-
-putShapeBody :: Int -> Int -> Int -> Int -> [[Bool]] -> V.Vector Word8
-putShapeBody w h xo yo bss = generateBody w h \x y ->
-	if	xo <= x && x < xo + (length $ head bss) &&
-		yo <= y && y < yo + (length bss)
-	then	bss !! (y - yo) !! (x - xo)
-	else	False
-
-data Pattern = Pattern {
-	patternLives :: [(Int, Int)],
-	patternWidth :: Int,
-	patternHeight :: Int,
-	patternBody :: V.Vector Word8 }
-	deriving Show
-
-asciiToPattern :: Int -> Int -> Int -> Int -> [String] -> Pattern
-asciiToPattern w h xo yo = boolsToPattern w h xo yo . (((== '*') <$>) <$>)
-
-boolsToPattern :: Int -> Int -> Int -> Int -> [[Bool]] -> Pattern
-boolsToPattern w h xo yo bs = Pattern {
-	patternLives = boolsToLives xo yo bs,
-	patternWidth = w, patternHeight = h,
-	patternBody = putShapeBody w h xo yo bs }
-
-boolsToLives :: Int -> Int -> [[Bool]] -> [(Int, Int)]
-boolsToLives xo yo bs = go xo yo bs
-	where
-	go _ _ [] = []
-	go _x y ([] : rs) = go xo (y + 1) rs
-	go x y ((lf : lvs) : rs) = bool id ((x, y) :) lf $ go (x + 1) y (lvs : rs)
+addShapePixel :: B -> Int -> Int -> [[Bool]] -> Int -> Int -> Bool
+addShapePixel bd xo yo bss x y
+	|	xo <= x && x < xo + (length $ head bss) &&
+		yo <= y && y < yo + (length bss) = bss !! (y - yo) !! (x - xo)
+	| otherwise = read bd x y
 
 -- MATCHING
 
@@ -188,6 +149,14 @@ multiMatchLivesBottom :: Ord a => Int ->
 	[(a, Pattern)] -> B -> ([(Int, Int)], [(a, (Int, Int))])
 multiMatchLivesBottom n pttns brd = second (L.nub . L.sort) . partitionEithers
 	$ (<$> boardLivesBottom n brd) \(x, y) -> (\(i, (px, py)) -> (i, (x - px, y - py))) <$> multiMatchLife pttns x y brd
+
+boardLivesBottom :: Int -> B -> [(Int, Int)]
+boardLivesBottom n bd@B { width = w, height = h } =
+	[ (x, y) | x <- [0 .. w - 1], y <- [h - n .. h - 1], read bd x y ]
+
+boardLivesTop :: Int -> B -> [(Int, Int)]
+boardLivesTop n bd@B { width = w, height = _h } =
+	[ (x, y) | x <- [0 .. w - 1], y <- [0 .. n - 1], read bd x y ]
 
 multiMatchLife :: [(a, Pattern)] -> Int -> Int -> B -> Either (Int, Int) (a, (Int, Int))
 multiMatchLife pttns bx by brd = maybe (Left (bx, by)) Right . listToMaybe . catMaybes $
@@ -240,20 +209,42 @@ clipBodyFun' w h bd cxo cyo cw _ch i
 combine :: Int -> Word8 -> Word8 -> Word8
 combine n b1 b2 = b1 `shiftL` n .|. b2 `shiftR` (8 - n)
 
+data Pattern = Pattern {
+	patternLives :: [(Int, Int)],
+	patternWidth :: Int,
+	patternHeight :: Int,
+	patternBody :: V.Vector Word8 }
+	deriving Show
+
+asciiToPattern :: Int -> Int -> Int -> Int -> [String] -> Pattern
+asciiToPattern w h xo yo = boolsToPattern w h xo yo . (((== '*') <$>) <$>)
+
+boolsToPattern :: Int -> Int -> Int -> Int -> [[Bool]] -> Pattern
+boolsToPattern w h xo yo bs = Pattern {
+	patternLives = boolsToLives xo yo bs,
+	patternWidth = w, patternHeight = h,
+	patternBody = putShapeBody w h xo yo bs }
+
+putShapeBody :: Int -> Int -> Int -> Int -> [[Bool]] -> V.Vector Word8
+putShapeBody w h xo yo = generateBody w h . putShapePixel xo yo
+
+boolsToLives :: Int -> Int -> [[Bool]] -> [(Int, Int)]
+boolsToLives xo yo bs = go xo yo bs
+	where
+	go _ _ [] = []
+	go _x y ([] : rs) = go xo (y + 1) rs
+	go x y ((lf : lvs) : rs) = bool id ((x, y) :) lf $ go (x + 1) y (lvs : rs)
+
 -- CLEAR
 
-data Area = Area {
-	areaLeft :: Int, areaTop :: Int,
-	areaWidth :: Int, areaHeight :: Int }
+data Area =
+	Area { arLeft :: Int, arTop :: Int, arWidth :: Int, arHeight :: Int }
 	deriving Show
 
 clear :: B -> [Area] -> B
 clear brd@B { width = w, height = h } ars =
-	generate w h \x y ->
-		read brd x y && not (insideAreas ars x y)
-
-inside :: Area -> Int -> Int -> Bool
-inside (Area l u w h) x y = l <= x && x < l + w && u <= y && y < u + h
+	generate w h \x y -> read brd x y && not (insideAreas ars x y)
 
 insideAreas :: [Area] -> Int -> Int -> Bool
-insideAreas ars x y = any (\ar -> inside ar x y) ars
+insideAreas ars x y = any inside ars
+	where inside (Area l u w h) = l <= x && x < l + w && u <= y && y < u + h
