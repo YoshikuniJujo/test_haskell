@@ -115,8 +115,7 @@ searchIndependentLivesTop n = matchMultiIndependentLivesTop n allIndependent
 
 matchMultiIndependentLivesTop :: Int -> [Independent] -> B -> ([(Int, Int)], [((Int, Int), G)])
 matchMultiIndependentLivesTop n inds brd = second ((uncurry independentToG) <$>) $
-	multiMatchLivesTop n
-		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
+	multiMatchTop n ((\ind -> (ind, independentToPattern ind)) <$> inds) brd
 
 -- Remove Bottom Gliders
 
@@ -151,8 +150,7 @@ isBottomGlider brd ((_, y), _) = y == height brd - 3
 
 matchMultiIndependentLivesBottom :: Int -> [Independent] -> B -> ([(Int, Int)], [((Int, Int), G)])
 matchMultiIndependentLivesBottom n inds brd = second ((uncurry independentToG) <$>) $
-	multiMatchLivesBottom n
-		((\ind -> (ind, independentToPattern ind)) <$> inds) brd
+	multiMatchBtt n ((\ind -> (ind, independentToPattern ind)) <$> inds) brd
 
 searchIndependentLivesBottom :: Int -> B -> ([(Int, Int)], [((Int, Int), G)])
 searchIndependentLivesBottom n = matchMultiIndependentLivesBottom n allIndependent

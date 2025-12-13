@@ -23,7 +23,7 @@ module Lifegame.Board (
 
 	-- * MATCHING
 
-	multiMatchLivesTop, multiMatchLivesBottom, Pattern, asciiToPattern,
+	multiMatchTop, multiMatchBtt, Pattern, asciiToPattern,
 
 	-- * CLEAR
 
@@ -36,6 +36,7 @@ import GHC.Generics
 import Control.Arrow
 import Control.DeepSeq
 import Data.Bits
+import Data.Function
 import Data.Maybe
 import Data.Either
 import Data.List qualified as L
@@ -140,57 +141,88 @@ addShapePixel bd xo yo bss x y
 
 -- MATCHING
 
-multiMatchLivesTop :: Ord a => Int ->
-	[(a, Pattern)] -> B -> ([(Int, Int)], [(a, (Int, Int))])
-multiMatchLivesTop n pttns brd = second (L.nub . L.sort) . partitionEithers
-	$ (<$> boardLivesTop n brd) \(x, y) -> (\(i, (px, py)) -> (i, (x - px, y - py))) <$> multiMatchLife pttns x y brd
+-- Top
 
-multiMatchLivesBottom :: Ord a => Int ->
+multiMatchTop :: Ord a =>
+	Int -> [(a, Pattern)] -> B -> ([(Int, Int)], [(a, (Int, Int))])
+multiMatchTop n ptts bd = second (L.nub . L.sort) . partitionEithers
+	$ (<$> boardLivesTop n bd) \l@(x, y) ->
+		(\(i, p) -> (i, l `sub` p)) <$> multiMatch ptts x y bd
+
+boardLivesTop :: Int -> B -> [(Int, Int)]
+boardLivesTop n bd@B { width = w } =
+	[ (x, y) | x <- [0 .. w - 1], y <- [0 .. n - 1], read bd x y ]
+
+-- Bottom
+
+multiMatchBtt :: Ord a => Int ->
 	[(a, Pattern)] -> B -> ([(Int, Int)], [(a, (Int, Int))])
-multiMatchLivesBottom n pttns brd = second (L.nub . L.sort) . partitionEithers
-	$ (<$> boardLivesBottom n brd) \(x, y) -> (\(i, (px, py)) -> (i, (x - px, y - py))) <$> multiMatchLife pttns x y brd
+multiMatchBtt n ptts bd = second (L.nub . L.sort) . partitionEithers
+	$ (<$> boardLivesBottom n bd) \l@(x, y) ->
+		(\(i, p) -> (i, l `sub` p)) <$> multiMatch ptts x y bd
 
 boardLivesBottom :: Int -> B -> [(Int, Int)]
 boardLivesBottom n bd@B { width = w, height = h } =
 	[ (x, y) | x <- [0 .. w - 1], y <- [h - n .. h - 1], read bd x y ]
 
-boardLivesTop :: Int -> B -> [(Int, Int)]
-boardLivesTop n bd@B { width = w, height = _h } =
-	[ (x, y) | x <- [0 .. w - 1], y <- [0 .. n - 1], read bd x y ]
+-- Common
 
-multiMatchLife :: [(a, Pattern)] -> Int -> Int -> B -> Either (Int, Int) (a, (Int, Int))
-multiMatchLife pttns bx by brd = maybe (Left (bx, by)) Right . listToMaybe . catMaybes $
-	(\(x, pttn) -> (x ,) <$> matchLife pttn bx by brd) <$> pttns
+multiMatch ::
+	[(a, Pattern)] -> Int -> Int -> B -> Either (Int, Int) (a, (Int, Int))
+multiMatch ptts bx by bd = maybe (Left (bx, by)) Right . listToMaybe . catMaybes
+	$ (\(i, ptt) -> (i ,) <$> matchAll ptt bx by bd) <$> ptts
 
-matchLife :: Pattern -> Int -> Int -> B -> Maybe (Int, Int)
-matchLife pttn@Pattern { patternLives = lvs0 } bx by brd = go lvs0
-	where
-	go [] = Nothing
-	go ((px, py) : lvs) =
-		bool (go lvs) (Just (px, py)) $ match px py pttn bx by brd
+matchAll :: Pattern -> Int -> Int -> B -> Maybe (Int, Int)
+matchAll ptt@Pattern { pttLives = pls0 } bx by bd = ($ pls0) $ fix \go -> \case
+		[] -> Nothing
+		(px, py) : pls ->
+			bool (go pls) (Just (px, py)) $ match px py ptt bx by bd
 
 match :: Int -> Int -> Pattern -> Int -> Int -> B -> Bool
-match px py pttn@Pattern { patternWidth = pw, patternHeight = ph } bx by brd =
-	matchClipped pttn $ clip brd (bx - px) (by - py) pw ph
+match px py ptt@Pattern { pttWidth = pw, pttHeight = ph } bx by bd =
+	ptt `eq` clip bd (bx - px) (by - py) pw ph
 
-matchClipped :: Pattern -> Clipped -> Bool
-matchClipped Pattern { patternBody = pbd } Clipped { clippedBody = cbd } =
-	pbd == cbd
+sub :: Num n => (n, n) -> (n, n) -> (n, n)
+sub (x, y) (x0, y0) = (x - x0, y - y0)
+
+-- Pattern
+
+data Pattern = Pattern {
+	pttLives :: [(Int, Int)], pttWidth :: Int, pttHeight :: Int,
+	pttBody :: V.Vector Word8 }
+	deriving Show
+
+asciiToPattern :: Int -> Int -> Int -> Int -> [String] -> Pattern
+asciiToPattern w h xo yo = boolsToPattern w h xo yo . (((== '*') <$>) <$>)
+
+boolsToPattern :: Int -> Int -> Int -> Int -> [[Bool]] -> Pattern
+boolsToPattern w h xo yo bs = Pattern {
+	pttLives = b2ls xo yo bs, pttWidth = w, pttHeight = h,
+	pttBody = generateBody w h $ putShapePixel xo yo bs }
+	where b2ls x y = \case
+		[] -> []; [] : rs -> b2ls xo (y + 1) rs
+		(lf : lvs) : rs ->
+			bool id ((x, y) :) lf $ b2ls (x + 1) y (lvs : rs)
+
+-- Clip
+
+data Clipped = Clipped {
+	clippedWidth :: Int, clippedHeight :: Int, clippedBody :: V.Vector Word8 }
+	deriving (Generic, Eq, Show)
+
+eq :: Pattern -> Clipped -> Bool
+Pattern { pttBody = pb } `eq` Clipped { clippedBody = cb } = pb == cb
 
 clip :: B -> Int -> Int -> Int -> Int -> Clipped
 clip B { width = bw, height = bh, body = bbd } cxo cyo cw ch =
 	Clipped {
 		clippedWidth = cw, clippedHeight = ch,
 		clippedBody = V.generate
-			(((cw - 1) `div` 8 + 1) * ch) (clipBodyFun' bw bh bbd cxo cyo cw ch) }
+			(((cw - 1) `div` 8 + 1) * ch) (clipBodyFun bw bh bbd cxo cyo cw ch) }
 
-data Clipped = Clipped {
-	clippedWidth :: Int, clippedHeight :: Int, clippedBody :: V.Vector Word8 }
-	deriving (Generic, Eq, Show)
-
-clipBodyFun' ::
+clipBodyFun ::
 	Int -> Int -> V.Vector Word8 -> Int -> Int -> Int -> Int -> Int -> Word8
-clipBodyFun' w h bd cxo cyo cw _ch i
+clipBodyFun w h bd cxo cyo cw _ch i
 	| (cxow + xw) < (- 1) || (cxow + xw) >= ww = 0
 	| (cyo + y) < 0 || (cyo + y) >= h = 0
 	| (cxow + xw) < 0 = combine cxob 0 (bd V.! (((cyo + y) * ww) + cxow + xw + 1))
@@ -205,45 +237,17 @@ clipBodyFun' w h bd cxo cyo cw _ch i
 	cww = (cw - 1) `div` 8 + 1
 	cxow = cxo `div` 8
 	cxob = cxo `mod` 8
-
-combine :: Int -> Word8 -> Word8 -> Word8
-combine n b1 b2 = b1 `shiftL` n .|. b2 `shiftR` (8 - n)
-
-data Pattern = Pattern {
-	patternLives :: [(Int, Int)],
-	patternWidth :: Int,
-	patternHeight :: Int,
-	patternBody :: V.Vector Word8 }
-	deriving Show
-
-asciiToPattern :: Int -> Int -> Int -> Int -> [String] -> Pattern
-asciiToPattern w h xo yo = boolsToPattern w h xo yo . (((== '*') <$>) <$>)
-
-boolsToPattern :: Int -> Int -> Int -> Int -> [[Bool]] -> Pattern
-boolsToPattern w h xo yo bs = Pattern {
-	patternLives = boolsToLives xo yo bs,
-	patternWidth = w, patternHeight = h,
-	patternBody = putShapeBody w h xo yo bs }
-
-putShapeBody :: Int -> Int -> Int -> Int -> [[Bool]] -> V.Vector Word8
-putShapeBody w h xo yo = generateBody w h . putShapePixel xo yo
-
-boolsToLives :: Int -> Int -> [[Bool]] -> [(Int, Int)]
-boolsToLives xo yo bs = go xo yo bs
-	where
-	go _ _ [] = []
-	go _x y ([] : rs) = go xo (y + 1) rs
-	go x y ((lf : lvs) : rs) = bool id ((x, y) :) lf $ go (x + 1) y (lvs : rs)
+	combine n b1 b2 = b1 `shiftL` n .|. b2 `shiftR` (8 - n)
 
 -- CLEAR
-
-data Area =
-	Area { arLeft :: Int, arTop :: Int, arWidth :: Int, arHeight :: Int }
-	deriving Show
 
 clear :: B -> [Area] -> B
 clear brd@B { width = w, height = h } ars =
 	generate w h \x y -> read brd x y && not (insideAreas ars x y)
+
+data Area =
+	Area { arLeft :: Int, arTop :: Int, arWidth :: Int, arHeight :: Int }
+	deriving Show
 
 insideAreas :: [Area] -> Int -> Int -> Bool
 insideAreas ars x y = any inside ars
