@@ -55,14 +55,17 @@ rotate Right Down sp = sp
 flipXY :: [String] -> [String]
 flipXY sp = (\x -> (!! x) <$> sp) <$> [0 .. w - 1] where w = length $ head sp
 
+isDirectionOf :: (LeftRight, UpDown) -> G -> Bool
+(h0, v0) `isDirectionOf` G { leftRight = h, upDown = v } = h == h0 && v == v0
+
 -- ADD GLIDERS
 
 addGs :: B -> [(G, (Int, Int))] -> B
 addGs = foldl $ uncurry . flip . uncurry . add1
 
 add1 :: B -> Int -> Int -> G -> B
-add1 bd x y g = addShapeAscii bd x y $ rotate lr ud sp
-	where sp = shapeAsAscii $ shape g; lr = leftRight g; ud = upDown g
+add1 bd x y g = addShapeAscii bd x y
+	. rotate (leftRight g) (upDown g) . shapeAsAscii $ shape g
 
 -- READ GLIDERS
 
@@ -88,27 +91,13 @@ boards' b = (b :) . maybe [] boards' $ removeTopGs =<< removeBttGs (next b)
 -- Remove Top Gliders
 
 removeTopGs :: B -> Maybe B
-removeTopGs brd
-	| checkTopEdge brd = let
-		(lvs, gls) = searchIndependentLivesTop 7 brd in
+removeTopGs bd
+	| checkTopEdge bd = let (lvs, gls) = searchIndependentLivesTop 7 bd in
 		if checkTopEdgeG lvs gls
-		then Just $ removeGliders brd (filter (isTopGlider brd) gls)
-		else Nothing
-	| otherwise = Just brd
-	where isTopGlider _ ((_, y), _) = y == 0
-
-checkTopEdgeG :: [(Int, Int)] -> [((Int, Int), G)] -> Bool
-checkTopEdgeG [] gls = not $ checkRightUpToLeftUp $ L.sort gls
-checkTopEdgeG _ _ = False
-
-checkRightUpToLeftUp :: [((Int, Int), G)] -> Bool
-checkRightUpToLeftUp [] = False
-checkRightUpToLeftUp ((_, g) : gs)
-	| checkDirection Right Up g = checkLeftUp gs
-	| otherwise = checkRightUpToLeftUp gs
-
-checkLeftUp :: [((Int, Int), G)] -> Bool
-checkLeftUp = any (checkDirection Left Up . snd)
+			then Just $ removeGliders bd (filter isTopGlider gls)
+			else Nothing
+	| otherwise = Just bd
+	where isTopGlider ((_, y), _) = y == 0
 
 searchIndependentLivesTop :: Int -> B -> ([(Int, Int)], [((Int, Int), G)])
 searchIndependentLivesTop n = matchMultiIndependentLivesTop n allIndependent
@@ -116,6 +105,17 @@ searchIndependentLivesTop n = matchMultiIndependentLivesTop n allIndependent
 matchMultiIndependentLivesTop :: Int -> [Independent] -> B -> ([(Int, Int)], [((Int, Int), G)])
 matchMultiIndependentLivesTop n inds brd = second ((uncurry independentToG) <$>) $
 	multiMatchTop n ((\ind -> (ind, independentToPattern ind)) <$> inds) brd
+
+checkTopEdgeG :: [(Int, Int)] -> [((Int, Int), G)] -> Bool
+checkTopEdgeG [] gls = not . checkRightUpToLeftUp $ L.sort gls
+checkTopEdgeG _ _ = False
+
+checkRightUpToLeftUp :: [((Int, Int), G)] -> Bool
+checkRightUpToLeftUp [] = False
+checkRightUpToLeftUp ((_, g) : gs)
+	| (Right, Up) `isDirectionOf` g =
+		any (((Left, Up) `isDirectionOf`) . snd) gs
+	| otherwise = checkRightUpToLeftUp gs
 
 -- Remove Bottom Gliders
 
@@ -139,11 +139,11 @@ checkBottomEdgeG _ _ = False
 checkRightDownToLeftDown :: [((Int, Int), G)] -> Bool
 checkRightDownToLeftDown [] = False
 checkRightDownToLeftDown ((_, g) : gs)
-	| checkDirection Right Down g = checkLeftDown gs
+	| (Right, Down) `isDirectionOf` g = checkLeftDown gs
 	| otherwise = checkRightDownToLeftDown gs
 
 checkLeftDown :: [((Int, Int), G)] -> Bool
-checkLeftDown = any (checkDirection Left Down . snd)
+checkLeftDown = any (((Left, Down) `isDirectionOf`) . snd)
 
 isBottomGlider :: B -> ((Int, Int), G) -> Bool
 isBottomGlider brd ((_, y), _) = y == height brd - 3
@@ -160,10 +160,6 @@ searchIndependentLivesBottom n = matchMultiIndependentLivesBottom n allIndepende
 removeGliders :: B -> [((Int, Int), G)] -> B
 removeGliders bd gls = clear bd (toArea <$> gls)
 	where toArea ((xo, yo), _) = (Area xo yo 3 3)
-
-checkDirection :: LeftRight -> UpDown -> G -> Bool
-checkDirection lr0 ud0 G { leftRight = lr, upDown = ud } =
-	lr == lr0 && ud == ud0
 
 data Change a = NG | OK | Changed a deriving Show
 
