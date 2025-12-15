@@ -85,8 +85,8 @@ pngToImageGray1 nm hdr ibd obd = void $ PipeT.convert BSF.fromStrict
 		Pipe.yield []
 	Pipe.=$= do
 		(Pipe.yield =<< ImageG1.generateFromBytesM
-			(fromIntegral $ Header.headerWidth hdr)
-			(fromIntegral $ Header.headerHeight hdr)
+			(fromIntegral $ Header.width hdr)
+			(fromIntegral $ Header.height hdr)
 			Pipe.await)
 		[] <- Pipe.await
 		pure ()
@@ -97,21 +97,21 @@ type PngToImageGray1Members nm es = (
 	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es )
 
 headerToRows :: Header.Header -> [Int]
-headerToRows h@Header.Header { Header.headerInterlaceMethod = Header.InterlaceMethodNon } =
-	replicate (fromIntegral $ Header.headerHeight h)
-		((fromIntegral (Header.headerWidth h) * fromIntegral (Header.headerBitDepth h)) `div'` 8 * sampleNum' h)
-headerToRows h@Header.Header { Header.headerInterlaceMethod = Header.InterlaceMethodAdam7 } =
-	map ((* sampleNum' h) . (`div'` 8) . (* fromIntegral (Header.headerBitDepth h)))
+headerToRows h@Header.Header { Header.interlaceMethod = Header.InterlaceMethodNon } =
+	replicate (fromIntegral $ Header.height h)
+		((fromIntegral (Header.width h) * fromIntegral (Header.bitDepth h)) `div'` 8 * sampleNum' h)
+headerToRows h@Header.Header { Header.interlaceMethod = Header.InterlaceMethodAdam7 } =
+	map ((* sampleNum' h) . (`div'` 8) . (* fromIntegral (Header.bitDepth h)))
 		$ interlacePixelNums
-			(fromIntegral (Header.headerWidth h))
-			(fromIntegral $ Header.headerHeight h)
+			(fromIntegral (Header.width h))
+			(fromIntegral $ Header.height h)
 headerToRows h = error $ "headerToRows: " ++ show h
 
 div' :: Integral n => n -> n -> n
 m `div'`n = (m - 1) `div` n + 1
 
 sampleNum' :: Integral n => Header.Header -> n
-sampleNum' = Header.colorTypeSampleNum . Header.headerColorType
+sampleNum' = Header.colorTypeSampleNum . Header.colorType
 
 interlacePixelNums :: Int -> Int -> [Int]
 interlacePixelNums w h =

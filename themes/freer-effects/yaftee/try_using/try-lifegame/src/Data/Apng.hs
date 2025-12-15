@@ -110,8 +110,8 @@ instance Datable.Datable FctlPixelsGray1 where
 		FctlPixelsGray1Pixels bs -> BSF.pack bs; _ -> error "bad"
 
 calcPoss :: Header.Header -> Word32 -> Word32 -> [[(Int, Int)]]
-calcPoss Header.Header { Header.headerInterlaceMethod = Header.InterlaceMethodNon } w h =
+calcPoss Header.Header { Header.interlaceMethod = Header.InterlaceMethodNon } w h =
 	(\y -> (, y) <$> [0 .. fromIntegral $ w - 1]) <$> [0 .. fromIntegral $ h - 1]
-calcPoss Header.Header { Header.headerInterlaceMethod = Header.InterlaceMethodAdam7 } _ _ =
+calcPoss Header.Header { Header.interlaceMethod = Header.InterlaceMethodAdam7 } _ _ =
 	error "not implemented"
 calcPoss _ _ _ = error "bad"

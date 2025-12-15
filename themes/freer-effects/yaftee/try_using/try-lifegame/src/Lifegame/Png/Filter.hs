@@ -61,17 +61,20 @@ unfilterTail bpp prior = Pipe.awaitMaybe >>= \case
 
 headerToBytesPerPixel :: Integral n => Header.Header -> n
 headerToBytesPerPixel hdr =
-	(fromIntegral (Header.headerBitDepth hdr) *
-		Header.colorTypeSampleNum (Header.headerColorType hdr) - 1) `div` 8 + 1
+	(fromIntegral (Header.bitDepth hdr) *
+		Header.colorTypeSampleNum (Header.colorType hdr) - 1) `div` 8 + 1
 
 headerToRowBytes :: Integral n => Header.Header -> n
 headerToRowBytes hdr =
-	(fromIntegral (Header.headerWidth hdr) * fromIntegral (Header.headerBitDepth hdr) *
-		Header.colorTypeSampleNum (Header.headerColorType hdr) - 1) `div` 8 + 1
+	(fromIntegral (Header.width hdr) * fromIntegral (Header.bitDepth hdr) *
+		Header.colorTypeSampleNum (Header.colorType hdr)) `div'` 8
 
 rowBytes :: Integral n => Header.Header -> n -> n
-rowBytes hdr wdt = ((wdt * bd - 1) * sampleNum' hdr - 1) `div` 8 + 1
-	where bd = fromIntegral $ Header.headerBitDepth hdr
+rowBytes hdr wdt = ((wdt * bd - 1) * sampleNum hdr) `div'` 8
+	where bd = fromIntegral $ Header.bitDepth hdr
 
-sampleNum' :: Integral n => Header.Header -> n
-sampleNum' = Header.colorTypeSampleNum . Header.headerColorType
+sampleNum :: Integral n => Header.Header -> n
+sampleNum = Header.colorTypeSampleNum . Header.colorType
+
+div' :: Integral n => n -> n -> n
+a `div'` b = (a - 1) `div` b + 1

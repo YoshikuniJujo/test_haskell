@@ -47,29 +47,25 @@ import Data.ByteString.ToolsYj qualified as BS
 -- HEADER
 
 data Header = Header {
-	headerWidth :: Word32, headerHeight :: Word32,
-	headerBitDepth :: Word8, headerColorType :: ColorType,
-	headerCompressionMethod :: CompressionMethod,
-	headerFilterMethod :: FilterMethod,
-	headerInterlaceMethod :: InterlaceMethod }
+	width :: Word32, height :: Word32,
+	bitDepth :: Word8, colorType :: ColorType,
+	compressionMethod :: CompressionMethod,
+	filterMethod :: FilterMethod, interlaceMethod :: InterlaceMethod }
 	deriving Show
 
 encodeHeader :: Header -> BS.ByteString
 encodeHeader Header {
-	headerWidth = wdt, headerHeight = hgt,
-	headerBitDepth = bd, headerColorType = ColorType ct,
-	headerCompressionMethod = CompressionMethod cm,
-	headerFilterMethod = FilterMethod fm,
-	headerInterlaceMethod = InterlaceMethod im } =
+	width = wdt, height = hgt, bitDepth = bd, colorType = ColorType ct,
+	compressionMethod = CompressionMethod cm,
+	filterMethod = FilterMethod fm, interlaceMethod = InterlaceMethod im } =
 	BS.fromBitsBE' wdt <> BS.fromBitsBE' hgt <> BS.pack [bd, ct, cm, fm, im]
 
 header0 :: Header
 header0 = Header {
-	headerWidth = 0, headerHeight = 0, headerBitDepth = 0,
-	headerColorType = ColorType 0,
-	headerCompressionMethod = CompressionMethod 0,
-	headerFilterMethod = FilterMethod 0,
-	headerInterlaceMethod = InterlaceMethod 0 }
+	width = 0, height = 0, bitDepth = 0,
+	colorType = ColorType 0,
+	compressionMethod = CompressionMethod 0,
+	filterMethod = FilterMethod 0, interlaceMethod = InterlaceMethod 0 }
 
 -- COLOR TYPE
 

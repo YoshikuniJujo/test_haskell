@@ -75,8 +75,8 @@ read nm = do
 	fm <- BSF.toBitsBE <$> Pipe.await
 	im <- BSF.toBitsBE <$> Pipe.await
 	State.putN nm Header.Header {
-		Header.headerWidth = w, Header.headerHeight = h,
-		Header.headerBitDepth = bd, Header.headerColorType = ct,
-		Header.headerCompressionMethod = cm,
-		Header.headerFilterMethod = fm,
-		Header.headerInterlaceMethod = im }
+		Header.width = w, Header.height = h,
+		Header.bitDepth = bd, Header.colorType = ct,
+		Header.compressionMethod = cm,
+		Header.filterMethod = fm,
+		Header.interlaceMethod = im }

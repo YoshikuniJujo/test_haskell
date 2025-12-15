@@ -62,11 +62,11 @@ write fp g =
 
 mkHeader :: Word32 -> Word32 -> Header.Header
 mkHeader w h = Header.Header {
-	Header.headerWidth = w, Header.headerHeight = h,
-	Header.headerBitDepth = 1, Header.headerColorType = Header.ColorTypeGrayscale,
-	Header.headerCompressionMethod = Header.CompressionMethodDeflate,
-	Header.headerFilterMethod = Header.FilterMethodDefaultFilter,
-	Header.headerInterlaceMethod = Header.InterlaceMethodNon }
+	Header.width = w, Header.height = h,
+	Header.bitDepth = 1, Header.colorType = Header.ColorTypeGrayscale,
+	Header.compressionMethod = Header.CompressionMethodDeflate,
+	Header.filterMethod = Header.FilterMethodDefaultFilter,
+	Header.interlaceMethod = Header.InterlaceMethodNon }
 
 writeApngGray1Foo :: FilePath -> Header.Header -> G -> IO ()
 writeApngGray1Foo fp hdr = writePngGray1Foo'' fp hdr . toFctlImage
@@ -93,9 +93,9 @@ writePngGray1Foo'' fpp hdr fctlsimg = do
 
 checkHeader :: Header.Header -> IO ()
 checkHeader hdr
-	| Header.headerBitDepth hdr == 1,
-		Header.headerColorType hdr == Header.ColorTypeGrayscale,
-		Header.headerInterlaceMethod hdr == Header.InterlaceMethodNon =
+	| Header.bitDepth hdr == 1,
+		Header.colorType hdr == Header.ColorTypeGrayscale,
+		Header.interlaceMethod hdr == Header.InterlaceMethodNon =
 		pure ()
 	| otherwise = error "not implemented for such header"
 
@@ -146,8 +146,8 @@ encodeApngGray1 :: (
 	Eff.E es a BSF.ByteString ()
 encodeApngGray1 hdr fctl ibe obe =
 	encodeRawCalcGray1 "barbaz" IO hdr {
-		Header.headerWidth = fctlWidth fctl,
-		Header.headerHeight = fctlHeight fctl }
+		Header.width = fctlWidth fctl,
+		Header.height = fctlHeight fctl }
 		(fctlToSize fctl)
 		Nothing ibe obe
 
@@ -293,9 +293,9 @@ firstImage Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd } dly =
 		disposeOp = Apng.DisposeOpNone, blendOp = Apng.BlendOpSource, image = bd }
 
 calcSizes :: Header.Header -> Word32 -> Word32 -> [(Int, Int)]
-calcSizes Header.Header { Header.headerInterlaceMethod = Header.InterlaceMethodNon } w h =
+calcSizes Header.Header { Header.interlaceMethod = Header.InterlaceMethodNon } w h =
 	[(fromIntegral w, fromIntegral h)]
-calcSizes Header.Header { Header.headerInterlaceMethod = Header.InterlaceMethodAdam7 } w h =
+calcSizes Header.Header { Header.interlaceMethod = Header.InterlaceMethodAdam7 } w h =
 	adam7Sizes (fromIntegral w) (fromIntegral h)
 calcSizes _ _ _ = error "bad"
 

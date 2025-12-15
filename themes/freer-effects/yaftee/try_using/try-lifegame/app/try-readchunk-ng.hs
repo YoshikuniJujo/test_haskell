@@ -97,12 +97,12 @@ chunkBody nm = Pipe.await >>= \case
 
 header :: Word32 -> Word32 -> Header.Header
 header w h = Header.Header {
-	Header.headerWidth = w, Header.headerHeight = h,
-	Header.headerBitDepth = 1,
-	Header.headerColorType = Header.ColorTypeGrayscale,
-	Header.headerCompressionMethod = Header.CompressionMethodDeflate,
-	Header.headerFilterMethod = Header.FilterMethodDefaultFilter,
-	Header.headerInterlaceMethod = Header.InterlaceMethodNon }
+	Header.width = w, Header.height = h,
+	Header.bitDepth = 1,
+	Header.colorType = Header.ColorTypeGrayscale,
+	Header.compressionMethod = Header.CompressionMethodDeflate,
+	Header.filterMethod = Header.FilterMethodDefaultFilter,
+	Header.interlaceMethod = Header.InterlaceMethodNon }
 
 actl :: Word32 -> Apng.Actl
 actl fn = Apng.Actl { Apng.actlFrames = fn, Apng.actlPlays = 0 }

@@ -56,8 +56,8 @@ main = do
 	hClose hh
 
 	let	n = length fps
-		wdt = Header.headerWidth hdr
-		hgt = Header.headerHeight hdr
+		wdt = Header.width hdr
+		hgt = Header.height hdr
 
 	print fps
 	print (wdt, hgt)
@@ -93,9 +93,9 @@ main = do
 	putStrLn ""
 	print hdr
 	print Header.Header {
-		Header.headerWidth = 20, Header.headerHeight = 11,
-		Header.headerBitDepth = 1,
-		Header.headerColorType = Header.ColorTypeGrayscale,
-		Header.headerCompressionMethod = Header.CompressionMethodDeflate,
-		Header.headerFilterMethod = Header.FilterMethodDefaultFilter,
-		Header.headerInterlaceMethod = Header.InterlaceMethodNon }
+		Header.width = 20, Header.height = 11,
+		Header.bitDepth = 1,
+		Header.colorType = Header.ColorTypeGrayscale,
+		Header.compressionMethod = Header.CompressionMethodDeflate,
+		Header.filterMethod = Header.FilterMethodDefaultFilter,
+		Header.interlaceMethod = Header.InterlaceMethodNon }

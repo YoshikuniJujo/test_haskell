@@ -87,9 +87,9 @@ writePngGray1Foo'' fpp hdr fn np fctlsimgs = do
 
 checkHeader :: Header.Header -> IO ()
 checkHeader hdr
-	| Header.headerBitDepth hdr == 1,
-		Header.headerColorType hdr == Header.ColorTypeGrayscale,
-		Header.headerInterlaceMethod hdr == Header.InterlaceMethodNon =
+	| Header.bitDepth hdr == 1,
+		Header.colorType hdr == Header.ColorTypeGrayscale,
+		Header.interlaceMethod hdr == Header.InterlaceMethodNon =
 		pure ()
 	| otherwise = error "not implemented for such header"
 
@@ -154,8 +154,8 @@ encodeApngGray1 :: (
 encodeApngGray1 _ _ _ [] _ _ = pure ()
 encodeApngGray1 hdr fn pn fctls@(fctl : _) ibe obe =
 	encodeRawCalcGray1 "barbaz" IO hdr {
-		Header.headerWidth = fctlWidth fctl,
-		Header.headerHeight = fctlHeight fctl } fn pn
+		Header.width = fctlWidth fctl,
+		Header.height = fctlHeight fctl } fn pn
 		(fctlToSize <$> fctls)
 		Nothing ibe obe
 
@@ -321,9 +321,9 @@ fromDiff p c dly = do
 		image = bd }
 
 calcSizes :: Header.Header -> Word32 -> Word32 -> [(Int, Int)]
-calcSizes Header.Header { Header.headerInterlaceMethod = Header.InterlaceMethodNon } w h =
+calcSizes Header.Header { Header.interlaceMethod = Header.InterlaceMethodNon } w h =
 	[(fromIntegral w, fromIntegral h)]
-calcSizes Header.Header { Header.headerInterlaceMethod = Header.InterlaceMethodAdam7 } w h =
+calcSizes Header.Header { Header.interlaceMethod = Header.InterlaceMethodAdam7 } w h =
 	adam7Sizes (fromIntegral w) (fromIntegral h)
 calcSizes _ _ _ = error "bad"
 
