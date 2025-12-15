@@ -62,12 +62,11 @@ unfilterTail bpp prior = Pipe.awaitMaybe >>= \case
 headerToBytesPerPixel :: Integral n => Header.Header -> n
 headerToBytesPerPixel hdr =
 	(fromIntegral (Header.bitDepth hdr) *
-		Header.colorTypeSampleNum (Header.colorType hdr) - 1) `div` 8 + 1
+		Header.colorTypeSampleNum (Header.colorType hdr)) `div'` 8
 
 headerToRowBytes :: Integral n => Header.Header -> n
-headerToRowBytes hdr =
-	(fromIntegral (Header.width hdr) * fromIntegral (Header.bitDepth hdr) *
-		Header.colorTypeSampleNum (Header.colorType hdr)) `div'` 8
+headerToRowBytes hdr@Header.Header { Header.width = w, Header.height = h } =
+	(fromIntegral w * fromIntegral h * sampleNum hdr) `div'` 8
 
 rowBytes :: Integral n => Header.Header -> n -> n
 rowBytes hdr wdt = ((wdt * bd - 1) * sampleNum hdr) `div'` 8
