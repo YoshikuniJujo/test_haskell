@@ -99,9 +99,9 @@ type PngToImageGray1Members nm es = (
 headerToRows :: Header.Header -> [Int]
 headerToRows h@Header.Header { Header.interlaceMethod = Header.InterlaceMethodNon } =
 	replicate (fromIntegral $ Header.height h)
-		((fromIntegral (Header.width h) * fromIntegral (Header.bitDepth h)) `div'` 8 * sampleNum' h)
+		((fromIntegral (Header.width h) * fromIntegral (Header.bitDepth h)) `div'` 8 * sampleNum h)
 headerToRows h@Header.Header { Header.interlaceMethod = Header.InterlaceMethodAdam7 } =
-	map ((* sampleNum' h) . (`div'` 8) . (* fromIntegral (Header.bitDepth h)))
+	map ((* sampleNum h) . (`div'` 8) . (* fromIntegral (Header.bitDepth h)))
 		$ interlacePixelNums
 			(fromIntegral (Header.width h))
 			(fromIntegral $ Header.height h)
@@ -110,8 +110,8 @@ headerToRows h = error $ "headerToRows: " ++ show h
 div' :: Integral n => n -> n -> n
 m `div'`n = (m - 1) `div` n + 1
 
-sampleNum' :: Integral n => Header.Header -> n
-sampleNum' = Header.colorTypeSampleNum . Header.colorType
+sampleNum :: Integral n => Header.Header -> n
+sampleNum = Header.colorTypeSampleNum . Header.colorType
 
 interlacePixelNums :: Int -> Int -> [Int]
 interlacePixelNums w h =
