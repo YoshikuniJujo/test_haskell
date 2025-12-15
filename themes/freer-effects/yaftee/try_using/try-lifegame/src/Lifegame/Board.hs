@@ -24,7 +24,7 @@ module Lifegame.Board (
 
 	-- * MATCHING
 
-	multiMatchTop, multiMatchBtt, Pattern, asciiToPattern,
+	matchTop, matchBtt, Pattern, asciiToPattern,
 
 	-- * CLEAR
 
@@ -144,9 +144,9 @@ addShapePixel bd xo yo bss x y
 
 -- Top
 
-multiMatchTop :: Ord a =>
+matchTop :: Ord a =>
 	Int -> [(a, Pattern)] -> B -> ([(Int, Int)], [(a, (Int, Int))])
-multiMatchTop n ptts bd = second (L.nub . L.sort) . partitionEithers
+matchTop n ptts bd = second (L.nub . L.sort) . partitionEithers
 	$ (<$> boardLivesTop n bd) \l@(x, y) ->
 		(\(i, p) -> (i, l `sub` p)) <$> multiMatch ptts x y bd
 
@@ -156,9 +156,9 @@ boardLivesTop n bd@B { width = w } =
 
 -- Bottom
 
-multiMatchBtt :: Ord a => Int ->
+matchBtt :: Ord a => Int ->
 	[(a, Pattern)] -> B -> ([(Int, Int)], [(a, (Int, Int))])
-multiMatchBtt n ptts bd = second (L.nub . L.sort) . partitionEithers
+matchBtt n ptts bd = second (L.nub . L.sort) . partitionEithers
 	$ (<$> boardLivesBottom n bd) \l@(x, y) ->
 		(\(i, p) -> (i, l `sub` p)) <$> multiMatch ptts x y bd
 

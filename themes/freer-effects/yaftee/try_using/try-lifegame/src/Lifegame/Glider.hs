@@ -19,7 +19,7 @@ module Lifegame.Glider (
 
 	-- * BOARD OF EACH GENERATION
 
-	boards'
+	generations'
 
 	) where
 
@@ -47,13 +47,11 @@ shapeAsAscii = \case
 	shape2 = ["*.*", ".**", ".*."]; shape3 = ["..*", "*.*", ".**"]
 
 rotate :: LeftRight -> UpDown -> [String] -> [String]
-rotate Left Up sp = reverse $ reverse <$> sp
-rotate Left Down sp = flipXY $ reverse sp
-rotate Right Up sp = reverse $ flipXY sp
-rotate Right Down sp = sp
+rotate Left Up = reverse . (reverse <$>); rotate Left Down = flipXY . reverse
+rotate Right Up = reverse . flipXY; rotate Right Down = id
 
 flipXY :: [String] -> [String]
-flipXY sp = (\x -> (!! x) <$> sp) <$> [0 .. w - 1] where w = length $ head sp
+flipXY s = (\x -> (!! x) <$> s) <$> [0 .. w - 1] where w = length $ head s
 
 isDirectionOf :: (LeftRight, UpDown) -> G -> Bool
 (h0, v0) `isDirectionOf` G { leftRight = h, upDown = v } = h == h0 && v == v0
@@ -85,30 +83,22 @@ read1 _ = Nothing
 
 -- BOARD OF EACH GENERATION
 
-boards' :: B -> [B]
-boards' b = (b :) . maybe [] boards' $ removeTopGs =<< removeBttGs (next b)
+generations' :: B -> [B]
+generations' b =
+	(b :) . maybe [] generations' $ removeTopGs =<< removeBttGs (next b)
 
 -- Remove Top Gliders
 
 removeTopGs :: B -> Maybe B
 removeTopGs bd
-	| checkTopEdge bd = let (lvs, gls) = searchIndependentLivesTop 7 bd in
-		if checkTopEdgeG lvs gls
-			then Just $ removeGliders bd (filter isTopGlider gls)
-			else Nothing
+	| checkTopEdge bd = case matchTop 7 allIndependentGs bd of
+		([], (uncurry fromInd <$>) -> gls)
+			| not . checkRightUpToLeftUp $ L.sort gls ->
+				Just $ removeGs bd (filter isTop gls)
+			| otherwise -> Nothing
+		_ -> Nothing
 	| otherwise = Just bd
-	where isTopGlider ((_, y), _) = y == 0
-
-searchIndependentLivesTop :: Int -> B -> ([(Int, Int)], [((Int, Int), G)])
-searchIndependentLivesTop n = matchMultiIndependentLivesTop n allIndependent
-
-matchMultiIndependentLivesTop :: Int -> [Independent] -> B -> ([(Int, Int)], [((Int, Int), G)])
-matchMultiIndependentLivesTop n inds brd = second ((uncurry independentToG) <$>) $
-	multiMatchTop n ((\ind -> (ind, independentToPattern ind)) <$> inds) brd
-
-checkTopEdgeG :: [(Int, Int)] -> [((Int, Int), G)] -> Bool
-checkTopEdgeG [] gls = not . checkRightUpToLeftUp $ L.sort gls
-checkTopEdgeG _ _ = False
+	where isTop ((_, y), _) = y == 0
 
 checkRightUpToLeftUp :: [((Int, Int), G)] -> Bool
 checkRightUpToLeftUp [] = False
@@ -120,75 +110,41 @@ checkRightUpToLeftUp ((_, g) : gs)
 -- Remove Bottom Gliders
 
 removeBttGs :: B -> Maybe B
-removeBttGs brd = case removeBottomGliders brd of
-	NG -> Nothing; OK -> Just brd; Changed brd' -> Just brd'
-
-removeBottomGliders :: B -> Change B
-removeBottomGliders brd
-	| checkBottomEdge brd = let
-		(lvs, gls) = searchIndependentLivesBottom 7 brd in
-		if checkBottomEdgeG lvs gls
-		then Changed $ removeGliders brd (filter (isBottomGlider brd) gls)
-		else NG
-	| otherwise = OK
-
-checkBottomEdgeG :: [(Int, Int)] -> [((Int, Int), G)] -> Bool
-checkBottomEdgeG [] gls = not $ checkRightDownToLeftDown $ L.sort gls
-checkBottomEdgeG _ _ = False
+removeBttGs bd
+	| checkBottomEdge bd = case matchBtt 7 allIndependentGs bd of
+		([], (uncurry fromInd <$>) -> gls)
+			| not $ checkRightDownToLeftDown $ L.sort gls ->
+				Just $ removeGs bd (filter isBtt gls)
+			| otherwise -> Nothing
+		_ -> Nothing
+	| otherwise = Just bd
+	where isBtt ((_, y), _) = y == height bd - 3
 
 checkRightDownToLeftDown :: [((Int, Int), G)] -> Bool
 checkRightDownToLeftDown [] = False
 checkRightDownToLeftDown ((_, g) : gs)
-	| (Right, Down) `isDirectionOf` g = checkLeftDown gs
+	| (Right, Down) `isDirectionOf` g =
+		any (((Left, Down) `isDirectionOf`) . snd) gs
 	| otherwise = checkRightDownToLeftDown gs
-
-checkLeftDown :: [((Int, Int), G)] -> Bool
-checkLeftDown = any (((Left, Down) `isDirectionOf`) . snd)
-
-isBottomGlider :: B -> ((Int, Int), G) -> Bool
-isBottomGlider brd ((_, y), _) = y == height brd - 3
-
-matchMultiIndependentLivesBottom :: Int -> [Independent] -> B -> ([(Int, Int)], [((Int, Int), G)])
-matchMultiIndependentLivesBottom n inds brd = second ((uncurry independentToG) <$>) $
-	multiMatchBtt n ((\ind -> (ind, independentToPattern ind)) <$> inds) brd
-
-searchIndependentLivesBottom :: Int -> B -> ([(Int, Int)], [((Int, Int), G)])
-searchIndependentLivesBottom n = matchMultiIndependentLivesBottom n allIndependent
 
 -- Remove Gliders
 
-removeGliders :: B -> [((Int, Int), G)] -> B
-removeGliders bd gls = clear bd (toArea <$> gls)
-	where toArea ((xo, yo), _) = (Area xo yo 3 3)
-
-data Change a = NG | OK | Changed a deriving Show
+removeGs :: B -> [((Int, Int), G)] -> B
+removeGs bd = clear bd . ((\((xo, yo), _) -> Area xo yo 3 3) <$>)
 
 -- Independent
 
 data Independent = Independent {
-	independentShape :: Shape,
-	independentLeftRight :: LeftRight,
-	independentUpDown :: UpDown }
+	indShape :: Shape, indLeftRight :: LeftRight, indUpDown :: UpDown }
 	deriving (Show, Eq, Ord)
 
-independentToPattern :: Independent -> Pattern
-independentToPattern Independent {
-	independentShape = sp,
-	independentLeftRight = lr,
-	independentUpDown = ud } =
-	asciiToPattern 11 11 4 4 . rotate lr ud $ shapeAsAscii sp
+fromInd :: Independent -> (Int, Int) -> ((Int, Int), G)
+fromInd Independent { indShape = s, indLeftRight = h, indUpDown = v } (x, y) =
+	((x + 4, y + 4), G s h v)
 
-independentToG :: Independent -> (Int, Int) -> ((Int, Int), G)
-independentToG ind = uncurry $ independentPosToGlider ind
-
-independentPosToGlider :: Independent -> Int -> Int -> ((Int, Int), G)
-independentPosToGlider
-	Independent {
-		independentShape = sp,
-		independentLeftRight = lr,
-		independentUpDown = ud } x y = ((x + 4, y + 4), G sp lr ud)
-
-allIndependent :: [Independent]
-allIndependent = concat . concat $
-	(<$> [Shape0 ..]) \sp -> (<$> [Left ..]) \lr -> (<$> [Up ..]) \ud ->
-		Independent sp lr ud
+allIndependentGs :: [(Independent, Pattern)]
+allIndependentGs = (id &&& ptt) <$>
+	[ Independent s h v | s <- [Shape0 ..], h <- [Left ..], v <- [Up ..] ]
+	where
+	ptt Independent { indShape = s, indLeftRight = h, indUpDown = v } =
+		asciiToPattern 11 11 4 4 . rotate h v $ shapeAsAscii s
