@@ -97,17 +97,15 @@ pattern BlendOpOver = BlendOp 1
 
 -- FCTL PIXEL GRAY1
 
-data FctlPixelsGray1
-	= FctlPixelsGray1Fctl Fctl | FctlPixelsGray1Pixels [Word8] deriving Show
+data FctlPixelsGray1 = FPG1Fctl Fctl | FPG1Pixels [Word8] deriving Show
 
 instance Fctlable FctlPixelsGray1 where
-	getFctl = \case FctlPixelsGray1Fctl f -> Just f; _ -> Nothing
+	getFctl = \case FPG1Fctl f -> Just f; _ -> Nothing
 
 instance Datable.Datable FctlPixelsGray1 where
-	isDat = \case FctlPixelsGray1Pixels _ -> True; _ -> False
+	isDat = \case FPG1Pixels _ -> True; _ -> False
 	endDat _ = False
-	toDat _hdr = \case
-		FctlPixelsGray1Pixels bs -> BSF.pack bs; _ -> error "bad"
+	toDat _hdr = \case FPG1Pixels bs -> BSF.pack bs; _ -> error "bad"
 
 calcPoss :: Header.Header -> Word32 -> Word32 -> [[(Int, Int)]]
 calcPoss Header.Header { Header.interlaceMethod = Header.InterlaceMethodNon } w h =

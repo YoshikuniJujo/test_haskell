@@ -5,6 +5,7 @@
 {-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module System.File.Apng.Gray1.NoInterlace (writeApngGray1, Frame) where
@@ -17,7 +18,7 @@ import Control.Monad.Yaftee.Eff qualified as Eff
 import Control.Monad.Yaftee.Pipe qualified as Pipe
 import Control.Monad.Yaftee.Pipe.Tools qualified as PipeT
 import Control.Monad.Yaftee.Pipe.ByteString qualified as PipeBS
-import Control.Monad.Yaftee.Pipe.Zlib qualified as PipeZ
+import Control.Monad.Yaftee.Pipe.Zlib qualified as PZ
 import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
@@ -27,241 +28,205 @@ import Data.Foldable
 import Data.Ratio
 import Data.Bool
 import Data.ByteString.FingerTree qualified as BSF
-import Data.Png.Header qualified as Header
+import Data.Png.Header qualified as H
 
 import System.IO
 
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 
-import Data.Png qualified as Encode
-import Control.Monad.Yaftee.Pipe.Tools qualified as Buffer
+import Data.Png qualified as Png
 
 import Data.Word
 import Data.ByteString.FingerTree.Bits qualified as BSF
-import Data.Png qualified as Palette
+import Data.Png qualified as P
 import Lifegame.Png.Filter qualified as Filter
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
-import Data.Image.Gray1 qualified as Gray1
+import Data.Image.Gray1 qualified as G1
 
-import Lifegame.Png.Chunk.Encode
+import Lifegame.Png.Chunk.Encode qualified as ChunkEn
 
-import Data.Apng
-import Data.Apng qualified as Apng
+import Data.Apng qualified as A
 import Data.Vector qualified as V
 
 import Data.Word.Crc32 qualified as Crc32
-import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as ChunkNew
+import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as Chunk
 
 -- EXPORTS
 
-writeApngGray1 :: FilePath -> Header.Header -> Int -> Word32 -> [Frame] -> IO ()
+writeApngGray1 :: FilePath -> H.Header -> Int -> Word32 -> [Frame] -> IO ()
 writeApngGray1 fp h fn np = writeFG fp h fn np . (toFctlImage <$>) . fromImgs
 
-type Frame = (Gray1.G, Ratio Word16)
+type Frame = (G1.G, Ratio Word16)
 
 -- CONVERSION: FROM FRAME TO FCTL AND GRAY1
 
 data G = G {
 	width :: Word32, height :: Word32, xOffset :: Word32, yOffset :: Word32,
 	delay :: Ratio Word16,
-	disposeOp :: Apng.DisposeOp, blendOp :: Apng.BlendOp,
+	disposeOp :: A.DisposeOp, blendOp :: A.BlendOp,
 	image :: V.Vector Word8 }
 	deriving Show
 
-toFctlImage :: G -> (Apng.Fctl, Gray1.G)
+toFctlImage :: G -> (A.Fctl, G1.G)
 toFctlImage g = (
-	Apng.Fctl {
-		Apng.fctlWidth = w, Apng.fctlHeight = h,
-		Apng.fctlXOffset = xo, Apng.fctlYOffset = yo,
-		Apng.fctlDelay = d,
-		Apng.fctlDisposeOp = dop, Apng.fctlBlendOp = bop },
-	Gray1.G {
-		Gray1.width = fromIntegral w, Gray1.height = fromIntegral h,
-		Gray1.body = bd } )
+	A.Fctl {
+		A.fctlWidth = w, A.fctlHeight = h,
+		A.fctlXOffset = xo, A.fctlYOffset = yo, A.fctlDelay = d,
+		A.fctlDisposeOp = dop, A.fctlBlendOp = bop },
+	G1.G {
+		G1.width = fromIntegral w, G1.height = fromIntegral h,
+		G1.body = bd } )
 	where G {
 		width = w, height = h, xOffset = xo, yOffset = yo,
-		delay = d, disposeOp = dop, blendOp = bop,
-		image = bd } = g
+		delay = d, disposeOp = dop, blendOp = bop, image = bd } = g
 
-fromImgs :: [(Gray1.G, Ratio Word16)] -> [G]
+fromImgs :: [(G1.G, Ratio Word16)] -> [G]
 fromImgs [] = error "no images"
-fromImgs ida@((i0, d0) : _) = firstImage i0 d0 : go 0 ida
+fromImgs ida@((i0, d0) : _) = firstImg i0 d0 : go 0 ida
 	where
 	go _ [] = error "no images"; go _ [_] = []
 	go d ((i1, _) : ids@((i2, d2) : _)) = case fromDiff i1 i2 (d + d2) of
 		Nothing -> go (d + d2) ids; Just g -> g : go 0 ids
 
-firstImage :: Gray1.G -> Ratio Word16 -> G
-firstImage Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd } dly =
-	G {
-		width = fromIntegral w, height = fromIntegral h,
-		xOffset = 0, yOffset = 0,
-		delay = dly,
-		disposeOp = Apng.DisposeOpNone, blendOp = Apng.BlendOpSource, image = bd }
+firstImg :: G1.G -> Ratio Word16 -> G
+firstImg G1.G { G1.width = w, G1.height = h, G1.body = bd } dly = G {
+	width = fromIntegral w, height = fromIntegral h,
+	xOffset = 0, yOffset = 0, delay = dly,
+	disposeOp = A.DisposeOpNone, blendOp = A.BlendOpSource, image = bd }
 
-fromDiff :: Gray1.G -> Gray1.G -> Ratio Word16 -> Maybe G
+fromDiff :: G1.G -> G1.G -> Ratio Word16 -> Maybe G
 fromDiff p c dly = do
-	(xo, yo, Gray1.G {
-		Gray1.width = w, Gray1.height = h, Gray1.body = bd }) <-
-		Gray1.diff p c
+	(x, y, G1.G { G1.width = w, G1.height = h, G1.body = b }) <- G1.diff p c
 	pure G {
 		width = fromIntegral w, height = fromIntegral h,
-		xOffset = xo, yOffset = yo,
-		delay = dly,
-		disposeOp = Apng.DisposeOpNone, blendOp = Apng.BlendOpSource,
-		image = bd }
+		xOffset = x, yOffset = y, delay = dly,
+		disposeOp = A.DisposeOpNone, blendOp = A.BlendOpSource,
+		image = b }
 
-writeFG :: FilePath -> Header.Header -> Int -> Word32 -> [(Fctl, Gray1.G)] -> IO ()
-writeFG fpp hdr fn np fctlsimgs = do
-	checkHeader
-	putStrLn "writePngGray'' begin"
+-- WRITE FROM FCTL AND GRAY1 IMAGES
+
+writeFG :: FilePath -> H.Header -> Int -> Word32 -> [(A.Fctl, G1.G)] -> IO ()
+writeFG fpp hdr fn np ((unzip . take fn) -> (fctls, imgs)) = do
+	chkHdr
 	ho <- openFile fpp WriteMode
-	ibe <- PipeZ.cByteArrayMalloc 64
-	obe <- PipeZ.cByteArrayMalloc 64
-	let	(fctls, imgs_) = unzip $ take fn fctlsimgs
-
-	putStrLn "before hWritePngGray"
-
-	hWritePngGray1' ho hdr fn np (fctls, imgs_) ibe obe
-
-	putStrLn "after hWritePngGray"
-
-	PipeZ.cByteArrayFree ibe
-	PipeZ.cByteArrayFree obe
-	hClose ho
-	print hdr
+	(ibe, obe) <- (,) <$> PZ.cByteArrayMalloc 64 <*> PZ.cByteArrayMalloc 64
+	hWriteFG ho hdr fn np fctls imgs ibe obe
+	PZ.cByteArrayFree ibe; PZ.cByteArrayFree obe; hClose ho
 	where
-	checkHeader
-		| Header.bitDepth hdr == 1,
-			Header.colorType hdr == Header.ColorTypeGrayscale,
-			Header.interlaceMethod hdr == Header.InterlaceMethodNon =
-			pure ()
+	chkHdr	| H.bitDepth hdr == 1, H.colorType hdr == H.ColorTypeGrayscale,
+			H.interlaceMethod hdr == H.InterlaceMethodNon = pure ()
 		| otherwise = error "not implemented for such header"
 
-hWritePngGray1' ::
-	Handle -> Header.Header -> Int -> Word32 -> ([Fctl], [Gray1.G]) ->
-	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld -> IO ()
-hWritePngGray1' ho hdr fn np (fctls, imgs) ibe obe = do
-	void . Eff.runM . ChunkNew.encodeRun_ @"foo" . Except.run @String . Except.run @Zlib.ReturnCode
-		. Fail.run
-		. Buffer.devideRun @"barbaz" @BSF.ByteString . PipeZ.run @"barbaz"
-		. Pipe.run $ hWritePngPipeGray1' ho hdr fn np fctls imgs ibe obe
+hWriteFG :: Handle -> H.Header -> Int -> Word32 -> [A.Fctl] -> [G1.G] ->
+	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld -> IO ()
+hWriteFG h hdr fn np fctls imgs ibe obe = void
+	. Eff.runM . Chunk.encodeRun_ @"encode-chunk"
+	. Except.run @String . Except.run @Zlib.ReturnCode . Fail.run
+	. PipeT.devideRun @"apng" @BSF.ByteString . PZ.run @"apng" . Pipe.run
+	$ hWritePipe h hdr fn np fctls imgs ibe obe
 
-hWritePngPipeGray1' :: (
+-- WRITE PIPE
+
+hWritePipe :: (
 	U.Member Pipe.P es,
-	U.Member (State.Named "foo" Crc32.C) es,
-	U.Member (State.Named "barbaz" (Buffer.Devide BSF.ByteString)) es,
-	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
+	U.Member (State.Named "encode-chunk" Crc32.C) es,
+	U.Member (State.Named "apng" (PipeT.Devide BSF.ByteString)) es,
+	U.Member (State.Named "apng" (Maybe PZ.ByteString)) es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
-	U.Member U.Fail es,
-	U.Base IO.I es ) =>
-	Handle -> Header.Header -> Int -> Word32 -> [Fctl] -> [Gray1.G] ->
-	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
-	Eff.E es i o ()
-hWritePngPipeGray1' ho hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrLn)
-	. void $ fromFctlImagesGray1' hdr fctls imgs
-		Pipe.=$= encodeApngGray1 hdr fn np fctls ibe obe
+	U.Member U.Fail es, U.Base IO.I es ) =>
+	Handle -> H.Header -> Int -> Word32 -> [A.Fctl] -> [G1.G] ->
+	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld -> Eff.E es i o ()
+hWritePipe h hdr fn np fctls imgs ibe obe = (`Except.catch` IO.putStrLn)
+	. void $ fctlPixelsGray1 hdr fctls imgs
+		Pipe.=$= encode hdr fn np fctls ibe obe
+		Pipe.=$= PipeT.convert BSF.toStrict Pipe.=$= PipeBS.hPutStr h
 
-		Pipe.=$= PipeT.convert BSF.toStrict
-		Pipe.=$= PipeBS.hPutStr ho
-
-fromFctlImagesGray1' :: (
+fctlPixelsGray1 :: (
 	U.Member Pipe.P es, U.Member U.Fail es, U.Base (U.FromFirst IO) es ) =>
-	Header.Header -> [Fctl] -> [Gray1.G] -> Eff.E es i FctlPixelsGray1 ()
-fromFctlImagesGray1' _ [] [] = pure ()
-fromFctlImagesGray1' hdr (fctl : fctls) (img : imgs) = do
-	Pipe.yield $ FctlPixelsGray1Fctl fctl
-	fromGrayImage1' img
-	fromFctlImagesGray1' hdr fctls imgs
-fromFctlImagesGray1' _ _ _ = error "bad"
+	H.Header -> [A.Fctl] -> [G1.G] -> Eff.E es i A.FctlPixelsGray1 ()
+fctlPixelsGray1 _ [] [] = pure ()
+fctlPixelsGray1 hdr (fctl : fctls) (img : imgs) =
+	Pipe.yield (A.FPG1Fctl fctl) >> fromGrayImage1 img >>
+	fctlPixelsGray1 hdr fctls imgs
+fctlPixelsGray1 _ _ _ = error "bad"
 
-fromGrayImage1' :: (U.Member Pipe.P es, U.Member U.Fail es) =>
-	Gray1.G -> Eff.E es i FctlPixelsGray1 ()
-fromGrayImage1' img = case Gray1.unconsRow img of
+fromGrayImage1 :: (U.Member Pipe.P es, U.Member U.Fail es) =>
+	G1.G -> Eff.E es i A.FctlPixelsGray1 ()
+fromGrayImage1 i = case G1.unconsRow i of
 	Nothing -> pure ()
-	Just (r, img') -> do
-		Pipe.yield . FctlPixelsGray1Pixels $ toList r
-		fromGrayImage1' img'
+	Just (r, j) -> Pipe.yield (A.FPG1Pixels $ toList r) >> fromGrayImage1 j
 
-encodeApngGray1 :: (
-	Fctlable a, Encode.Datable a,
+encode :: (
+	A.Fctlable a, Png.Datable a,
 	U.Member Pipe.P es,
-	U.Member (State.Named "foo" Crc32.C) es,
-	U.Member (State.Named "barbaz" (Buffer.Devide BSF.ByteString)) es,
-	U.Member (State.Named "barbaz" (Maybe PipeZ.ByteString)) es,
-	U.Member (Except.E String) es,
-	U.Member (Except.E Zlib.ReturnCode) es,
-	U.Member U.Fail es,
-	U.Base (U.FromFirst IO) es ) =>
-	Header.Header -> Int -> Word32 -> [Fctl] ->
-	PipeZ.CByteArray RealWorld -> PipeZ.CByteArray RealWorld ->
+	U.Member (State.Named "encode-chunk" Crc32.C) es,
+	U.Member (State.Named "apng" (PipeT.Devide BSF.ByteString)) es,
+	U.Member (State.Named "apng" (Maybe PZ.ByteString)) es,
+	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
+	U.Member U.Fail es, U.Base (U.FromFirst IO) es ) =>
+	H.Header -> Int -> Word32 -> [A.Fctl] ->
+	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld ->
 	Eff.E es a BSF.ByteString ()
-encodeApngGray1 _ _ _ [] _ _ = pure ()
-encodeApngGray1 hdr fn pn fctls@(fctl : _) ibe obe =
-	encodeRawCalcGray1 "barbaz" IO hdr {
-		Header.width = fctlWidth fctl,
-		Header.height = fctlHeight fctl } fn pn
-		(fctlToSize <$> fctls)
-		Nothing ibe obe
-	where fctlToSize c = (fctlWidth c, fctlHeight c)
+encode _ _ _ [] _ _ = pure ()
+encode hdr fn pn fctls@(fctl : _) ibe obe =
+	encodeRaw "apng" IO
+		hdr { H.width = A.fctlWidth fctl, H.height = A.fctlHeight fctl }
+		fn pn (toSize <$> fctls) Nothing ibe obe
+	where toSize c = (A.fctlWidth c, A.fctlHeight c)
 
-encodeRawCalcGray1 :: forall nm m -> (
-	Fctlable a, Encode.Datable a,
-	PrimBase m,
+encodeRaw :: forall nm m -> (
+	A.Fctlable a, Png.Datable a, PrimBase m,
 	U.Member Pipe.P es,
-	U.Member (State.Named "foo" Crc32.C) es,
-	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
-	U.Member (State.Named nm (Buffer.Devide BSF.ByteString)) es,
+	U.Member (State.Named "encode-chunk" Crc32.C) es,
+	U.Member (State.Named nm (Maybe PZ.ByteString)) es,
+	U.Member (State.Named nm (PipeT.Devide BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
-	U.Member U.Fail es,
-	U.Base (U.FromFirst m) es
-	) =>
-	Header.Header -> Int -> Word32 ->
-	[(Word32, Word32)] -> Maybe Palette.Palette ->
-	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
+	U.Member U.Fail es, U.Base (U.FromFirst m) es ) =>
+	H.Header -> Int -> Word32 -> [(Word32, Word32)] -> Maybe P.Palette ->
+	PZ.CByteArray (PrimState m) -> PZ.CByteArray (PrimState m) ->
 	Eff.E es a BSF.ByteString ()
-encodeRawCalcGray1 _ _ _ _ _ [] _ _ _ = pure ()
-encodeRawCalcGray1 nm m hdr fn np ((w0, h0) : sz) mplt ibe obe = void $
+encodeRaw _ _ _ _ _ [] _ _ _ = pure ()
+encodeRaw nm m hdr fn np ((w0, h0) : sz) mplt ibe obe = void $
 -- MAKE IDAT
-	do	Just fctl <- getFctl <$> Pipe.await
-		Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl sn fctl, sn + 1)
+	do	Just fctl <- A.getFctl <$> Pipe.await
+		Pipe.yield \sn -> (ChunkEn.Chunk "fcTL" $ A.encodeFctl sn fctl, sn + 1)
 		pipeDat nm m False hdr w0 h0 ibe obe
 		for_ (take (fn - 1) sz) \(w, h) -> do
-			Just fctl' <- getFctl <$> Pipe.await
-			Pipe.yield \sn -> (Chunk "fcTL" $ encodeFctl sn fctl', sn + 1)
+			Just fctl' <- A.getFctl <$> Pipe.await
+			Pipe.yield \sn -> (ChunkEn.Chunk "fcTL" $ A.encodeFctl sn fctl', sn + 1)
 			pipeDat nm m True hdr w h ibe obe
 	Pipe.=$= makeChunks hdr fn np mplt
 
 makeChunks :: (
 	Integral a, Num b,
 	U.Member Pipe.P es,
-	U.Member (State.Named "foo" Crc32.C) es,
+	U.Member (State.Named "encode-chunk" Crc32.C) es,
 	U.Member (Except.E String) es, U.Member Fail.F es
 	) =>
-	Header.Header -> a -> Word32 -> Maybe Palette.Palette ->
-	Eff.E es (b -> (Chunk, b)) BSF.ByteString ()
+	H.Header -> a -> Word32 -> Maybe P.Palette ->
+	Eff.E es (b -> (ChunkEn.Chunk, b)) BSF.ByteString ()
 makeChunks hdr fn np mplt = void $ do
 -- MAKE CHUNKS
-		let	bd'' = Header.encodeHeader hdr
+		let	bd'' = H.encodeHeader hdr
 		Pipe.yield $ \sn -> (
-			Chunk {
-				name = "IHDR",
-				body = BSF.fromStrict bd'' },
+			ChunkEn.Chunk {
+				ChunkEn.name = "IHDR",
+				ChunkEn.body = BSF.fromStrict bd'' },
 				sn )
 
 		case mplt of
 			Nothing -> pure ()
 			Just plt -> Pipe.yield $ \sn -> (
-				Chunk {
-					name = "PLTE",
-					body = Palette.encodePalette plt },
+				ChunkEn.Chunk {
+					ChunkEn.name = "PLTE",
+					ChunkEn.body = P.encodePalette plt },
 				sn )
 
 		Pipe.yield $ \sn -> (
-			Chunk {
-				name = "acTL",
-				body = encodeActl $ Actl (fromIntegral fn) np },
+			ChunkEn.Chunk {
+				ChunkEn.name = "acTL",
+				ChunkEn.body = A.encodeActl $ A.Actl (fromIntegral fn) np },
 			sn )
 
 		bd0 <- Pipe.await
@@ -271,46 +236,46 @@ makeChunks hdr fn np mplt = void $ do
 			Just bd -> (>> go) $ Pipe.yield bd -- \sn -> (bd, sn)
 
 		Pipe.yield \sn -> (
-			Chunk { name = "IEND", body = "" },
+			ChunkEn.Chunk { ChunkEn.name = "IEND", ChunkEn.body = "" },
 			sn )
-	Pipe.=$= encode "foo" 0
+	Pipe.=$= ChunkEn.encode "encode-chunk" 0
 
 pipeDat :: forall nm m -> (
-	Encode.Datable a,
+	Png.Datable a,
 	PrimBase m,
 	U.Member Pipe.P es,
-	U.Member (State.Named nm (Maybe PipeZ.ByteString)) es,
-	U.Member (State.Named nm (Buffer.Devide BSF.ByteString)) es,
+	U.Member (State.Named nm (Maybe PZ.ByteString)) es,
+	U.Member (State.Named nm (PipeT.Devide BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
 	U.Base (U.FromFirst m) es
 	) =>
 	Bool ->
-	Header.Header -> Word32 -> Word32 ->
-	PipeZ.CByteArray (PrimState m) -> PipeZ.CByteArray (PrimState m) ->
-	Eff.E es a (Word32 -> (Chunk, Word32)) ()
+	H.Header -> Word32 -> Word32 ->
+	PZ.CByteArray (PrimState m) -> PZ.CByteArray (PrimState m) ->
+	Eff.E es a (Word32 -> (ChunkEn.Chunk, Word32)) ()
 pipeDat nm m iorf hdr w h ibe obe = void $
 	(fix \go -> do
 		x <- Pipe.await
-		if Encode.endDat x then pure () else Pipe.yield x >> go)
-	Pipe.=$= PipeT.convert (Encode.toDat hdr)
+		if Png.endDat x then pure () else Pipe.yield x >> go)
+	Pipe.=$= PipeT.convert (Png.toDat hdr)
 	Pipe.=$= Filter.filter hdr (calcSizes hdr w h)
 	Pipe.=$= PipeT.convert BSF.pack
-	Pipe.=$= PipeZ.deflate nm m opts ibe obe
-	Pipe.=$= Buffer.devide nm BSF.splitAt' "" 1000
---	Pipe.=$= Buffer.devide nm BSF.splitAt' "" 100000
+	Pipe.=$= PZ.deflate nm m opts ibe obe
+	Pipe.=$= PipeT.devide nm BSF.splitAt' "" 1000
+--	Pipe.=$= PipeT.devide nm BSF.splitAt' "" 100000
 	Pipe.=$= PipeT.convert \dt sn' ->
-		(bool ((, sn') . (Chunk "IDAT")) ((, sn' + 1) . (Chunk "fdAT" . (BSF.fromBitsBE' sn' <>))) iorf) dt
-	where opts = PipeZ.DeflateOptions {
-		PipeZ.deflateOptionsCompressionLevel = Zlib.DefaultCompression,
-		PipeZ.deflateOptionsCompressionMethod = Zlib.Deflated,
-		PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
-		PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
-		PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
+		(bool ((, sn') . (ChunkEn.Chunk "IDAT")) ((, sn' + 1) . (ChunkEn.Chunk "fdAT" . (BSF.fromBitsBE' sn' <>))) iorf) dt
+	where opts = PZ.DeflateOptions {
+		PZ.deflateOptionsCompressionLevel = Zlib.DefaultCompression,
+		PZ.deflateOptionsCompressionMethod = Zlib.Deflated,
+		PZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
+		PZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
+		PZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
 
-calcSizes :: Header.Header -> Word32 -> Word32 -> [(Int, Int)]
-calcSizes Header.Header { Header.interlaceMethod = Header.InterlaceMethodNon } w h =
+calcSizes :: H.Header -> Word32 -> Word32 -> [(Int, Int)]
+calcSizes H.Header { H.interlaceMethod = H.InterlaceMethodNon } w h =
 	[(fromIntegral w, fromIntegral h)]
-calcSizes Header.Header { Header.interlaceMethod = Header.InterlaceMethodAdam7 } w h =
+calcSizes H.Header { H.interlaceMethod = H.InterlaceMethodAdam7 } w h =
 	adam7Sizes (fromIntegral w) (fromIntegral h)
 calcSizes _ _ _ = error "bad"
 

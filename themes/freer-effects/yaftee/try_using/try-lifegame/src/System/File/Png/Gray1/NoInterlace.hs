@@ -130,7 +130,7 @@ fromGrayImage1' :: (U.Member Pipe.P es, U.Member U.Fail es) =>
 fromGrayImage1' img = case Gray1.unconsRow img of
 	Nothing -> pure ()
 	Just (r, img') -> do
-		Pipe.yield . FctlPixelsGray1Pixels $ toList r
+		Pipe.yield . FPG1Pixels $ toList r
 		fromGrayImage1' img'
 
 encodeApngGray1 :: (
