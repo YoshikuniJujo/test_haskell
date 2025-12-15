@@ -7,11 +7,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module System.File.Apng.Gray1.NoInterlace (
-
-	writeApngGray1Foo'
-
-	) where
+module System.File.Apng.Gray1.NoInterlace (writeApngGray1, Frame) where
 
 import Control.Monad
 import Control.Monad.Fix
@@ -57,17 +53,68 @@ import Data.Vector qualified as V
 import Data.Word.Crc32 qualified as Crc32
 import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as ChunkNew
 
-writeApngGray1Foo' :: FilePath -> Header.Header -> Int -> Word32 -> [(Gray1.G, Ratio Word16)] -> IO ()
-writeApngGray1Foo' fp hdr fn np imgs = do
-	writeApngGray1Foo fp hdr fn np $ fromImages imgs
---	print $ fromImages imgs
+-- EXPORTS
 
-writeApngGray1Foo :: FilePath -> Header.Header -> Int -> Word32 -> [G] -> IO ()
-writeApngGray1Foo fp hdr fn np = writePngGray1Foo'' fp hdr fn np . (toFctlImage <$>)
+writeApngGray1 :: FilePath -> Header.Header -> Int -> Word32 -> [Frame] -> IO ()
+writeApngGray1 fp h fn np = writeFG fp h fn np . (toFctlImage <$>) . fromImgs
 
-writePngGray1Foo'' :: FilePath -> Header.Header -> Int -> Word32 -> [(Fctl, Gray1.G)] -> IO ()
-writePngGray1Foo'' fpp hdr fn np fctlsimgs = do
-	checkHeader hdr
+type Frame = (Gray1.G, Ratio Word16)
+
+-- CONVERSION: FROM FRAME TO FCTL AND GRAY1
+
+data G = G {
+	width :: Word32, height :: Word32, xOffset :: Word32, yOffset :: Word32,
+	delay :: Ratio Word16,
+	disposeOp :: Apng.DisposeOp, blendOp :: Apng.BlendOp,
+	image :: V.Vector Word8 }
+	deriving Show
+
+toFctlImage :: G -> (Apng.Fctl, Gray1.G)
+toFctlImage g = (
+	Apng.Fctl {
+		Apng.fctlWidth = w, Apng.fctlHeight = h,
+		Apng.fctlXOffset = xo, Apng.fctlYOffset = yo,
+		Apng.fctlDelay = d,
+		Apng.fctlDisposeOp = dop, Apng.fctlBlendOp = bop },
+	Gray1.G {
+		Gray1.width = fromIntegral w, Gray1.height = fromIntegral h,
+		Gray1.body = bd } )
+	where G {
+		width = w, height = h, xOffset = xo, yOffset = yo,
+		delay = d, disposeOp = dop, blendOp = bop,
+		image = bd } = g
+
+fromImgs :: [(Gray1.G, Ratio Word16)] -> [G]
+fromImgs [] = error "no images"
+fromImgs ida@((i0, d0) : _) = firstImage i0 d0 : go 0 ida
+	where
+	go _ [] = error "no images"; go _ [_] = []
+	go d ((i1, _) : ids@((i2, d2) : _)) = case fromDiff i1 i2 (d + d2) of
+		Nothing -> go (d + d2) ids; Just g -> g : go 0 ids
+
+firstImage :: Gray1.G -> Ratio Word16 -> G
+firstImage Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd } dly =
+	G {
+		width = fromIntegral w, height = fromIntegral h,
+		xOffset = 0, yOffset = 0,
+		delay = dly,
+		disposeOp = Apng.DisposeOpNone, blendOp = Apng.BlendOpSource, image = bd }
+
+fromDiff :: Gray1.G -> Gray1.G -> Ratio Word16 -> Maybe G
+fromDiff p c dly = do
+	(xo, yo, Gray1.G {
+		Gray1.width = w, Gray1.height = h, Gray1.body = bd }) <-
+		Gray1.diff p c
+	pure G {
+		width = fromIntegral w, height = fromIntegral h,
+		xOffset = xo, yOffset = yo,
+		delay = dly,
+		disposeOp = Apng.DisposeOpNone, blendOp = Apng.BlendOpSource,
+		image = bd }
+
+writeFG :: FilePath -> Header.Header -> Int -> Word32 -> [(Fctl, Gray1.G)] -> IO ()
+writeFG fpp hdr fn np fctlsimgs = do
+	checkHeader
 	putStrLn "writePngGray'' begin"
 	ho <- openFile fpp WriteMode
 	ibe <- PipeZ.cByteArrayMalloc 64
@@ -84,14 +131,13 @@ writePngGray1Foo'' fpp hdr fn np fctlsimgs = do
 	PipeZ.cByteArrayFree obe
 	hClose ho
 	print hdr
-
-checkHeader :: Header.Header -> IO ()
-checkHeader hdr
-	| Header.bitDepth hdr == 1,
-		Header.colorType hdr == Header.ColorTypeGrayscale,
-		Header.interlaceMethod hdr == Header.InterlaceMethodNon =
-		pure ()
-	| otherwise = error "not implemented for such header"
+	where
+	checkHeader
+		| Header.bitDepth hdr == 1,
+			Header.colorType hdr == Header.ColorTypeGrayscale,
+			Header.interlaceMethod hdr == Header.InterlaceMethodNon =
+			pure ()
+		| otherwise = error "not implemented for such header"
 
 hWritePngGray1' ::
 	Handle -> Header.Header -> Int -> Word32 -> ([Fctl], [Gray1.G]) ->
@@ -158,9 +204,7 @@ encodeApngGray1 hdr fn pn fctls@(fctl : _) ibe obe =
 		Header.height = fctlHeight fctl } fn pn
 		(fctlToSize <$> fctls)
 		Nothing ibe obe
-
-fctlToSize :: Fctl -> (Word32, Word32)
-fctlToSize c = (fctlWidth c, fctlHeight c)
+	where fctlToSize c = (fctlWidth c, fctlHeight c)
 
 encodeRawCalcGray1 :: forall nm m -> (
 	Fctlable a, Encode.Datable a,
@@ -251,74 +295,17 @@ pipeDat nm m iorf hdr w h ibe obe = void $
 	Pipe.=$= PipeT.convert (Encode.toDat hdr)
 	Pipe.=$= Filter.filter hdr (calcSizes hdr w h)
 	Pipe.=$= PipeT.convert BSF.pack
-	Pipe.=$= PipeZ.deflate nm m sampleOptions ibe obe
+	Pipe.=$= PipeZ.deflate nm m opts ibe obe
 	Pipe.=$= Buffer.devide nm BSF.splitAt' "" 1000
 --	Pipe.=$= Buffer.devide nm BSF.splitAt' "" 100000
 	Pipe.=$= PipeT.convert \dt sn' ->
 		(bool ((, sn') . (Chunk "IDAT")) ((, sn' + 1) . (Chunk "fdAT" . (BSF.fromBitsBE' sn' <>))) iorf) dt
-
-sampleOptions :: PipeZ.DeflateOptions
-sampleOptions = PipeZ.DeflateOptions {
-	PipeZ.deflateOptionsCompressionLevel = Zlib.DefaultCompression,
-	PipeZ.deflateOptionsCompressionMethod = Zlib.Deflated,
-	PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
-	PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
-	PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
-
-data G = G {
-	width :: Word32, height :: Word32,
-	xOffset :: Word32, yOffset :: Word32,
-	delay :: Ratio Word16,
-	disposeOp :: Apng.DisposeOp, blendOp :: Apng.BlendOp,
-	image :: V.Vector Word8 }
-	deriving Show
-
-toFctlImage :: G -> (Apng.Fctl, Gray1.G)
-toFctlImage g = (
-	Apng.Fctl {
-		Apng.fctlWidth = w, Apng.fctlHeight = h,
-		Apng.fctlXOffset = xo, Apng.fctlYOffset = yo,
-		Apng.fctlDelay = d,
-		Apng.fctlDisposeOp = dop, Apng.fctlBlendOp = bop },
-	Gray1.G {
-		Gray1.width = fromIntegral w, Gray1.height = fromIntegral h,
-		Gray1.body = bd } )
-	where
-	G {	width = w, height = h, xOffset = xo, yOffset = yo,
-		delay = d, disposeOp = dop, blendOp = bop,
-		image = bd } = g
-
-fromImages :: [(Gray1.G, Ratio Word16)] -> [G]
-fromImages [] = error "no images"
-fromImages ida@((i0, d0) : _) =
-	firstImage i0 d0 : go 0 ida
-	where
-	go _ [] = error "no images"
-	go _ [_] = []
-	go d ((i1, _) : ids@((i2, d2) : _)) =
-		case fromDiff i1 i2 (d + d2) of
-			Nothing -> go (d + d2) ids
-			Just g -> g : go 0 ids
-
-firstImage :: Gray1.G -> Ratio Word16 -> G
-firstImage Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd } dly =
-	G {
-		width = fromIntegral w, height = fromIntegral h,
-		xOffset = 0, yOffset = 0,
-		delay = dly,
-		disposeOp = Apng.DisposeOpNone, blendOp = Apng.BlendOpSource, image = bd }
-
-fromDiff :: Gray1.G -> Gray1.G -> Ratio Word16 -> Maybe G
-fromDiff p c dly = do
-	(xo, yo, Gray1.G {
-		Gray1.width = w, Gray1.height = h, Gray1.body = bd }) <-
-		Gray1.diff p c
-	pure G {
-		width = fromIntegral w, height = fromIntegral h,
-		xOffset = xo, yOffset = yo,
-		delay = dly,
-		disposeOp = Apng.DisposeOpNone, blendOp = Apng.BlendOpSource,
-		image = bd }
+	where opts = PipeZ.DeflateOptions {
+		PipeZ.deflateOptionsCompressionLevel = Zlib.DefaultCompression,
+		PipeZ.deflateOptionsCompressionMethod = Zlib.Deflated,
+		PipeZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
+		PipeZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
+		PipeZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
 
 calcSizes :: Header.Header -> Word32 -> Word32 -> [(Int, Int)]
 calcSizes Header.Header { Header.interlaceMethod = Header.InterlaceMethodNon } w h =
