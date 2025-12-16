@@ -1,0 +1,62 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
+
+module Main (main) where
+
+import Control.Monad
+import Data.Ratio
+import Data.Word
+import System.Environment
+import System.Directory
+import System.FilePath
+
+import System.File.Png.Gray1.NoInterlace qualified as Png
+import Lifegame.Board qualified as Lg
+
+rootDir :: IO FilePath
+rootDir = (</> ".yoshj/lifegame") <$>  getHomeDirectory
+
+main :: IO ()
+main = do
+	fp : _ <- getArgs
+	rd <- rootDir
+	createDirectoryIfMissing True rd
+	createDirectoryIfMissing False $ rd </> "pngs"
+	(nm, _, w, h, xo, yo, ff, cf, _, shp) <- readLifegame . lines <$> readFile fp
+	let	nmd = rd </> "pngs" </> nm
+		szost = show w ++ "x" ++ show h ++ "_" ++ show xo ++ "x" ++ show yo
+		szostd = nmd </> szost
+	createDirectoryIfMissing True szostd
+	print nm
+	putStrLn szost
+	let	b0 = Lg.putShapeAscii w h xo yo shp
+		bs = take cf $ drop ff $ Lg.generations b0
+		fps = (szostd </>) . boardName <$> [ff .. ff + cf]
+		imgs = Lg.toGray1 <$> bs
+--	Img.printAsAscii `mapM_` imgs
+	zipWithM_ Png.write fps imgs
+
+readLifegame :: [String] ->
+	(String, Int, Int, Int, Int, Int, Int, Int, Ratio Word16, [String])
+readLifegame src = case words <$> src of
+	["id:", nm] :
+		["ratio:", rt] :
+		["width:", w] :
+		["height:", h] :
+		["x-offset:", xo] :
+		["y-offset:", yo] :
+		["first-frame:", drp] :
+		["frame-number:", fn] :
+		["delay:", dly] :
+		["shape:"] : shpgls -> case span (not.null) shpgls of
+			(shp, _) -> (
+				nm,
+				read rt, read w, read h, read xo, read yo, read drp, read fn,
+				read dly, head <$> shp)
+
+	_ -> error "bad"
+
+boardName :: Int -> FilePath
+boardName n = "board_" <> replicate (4 - length s) '0' <> s <.> "png"
+	where s = show n
