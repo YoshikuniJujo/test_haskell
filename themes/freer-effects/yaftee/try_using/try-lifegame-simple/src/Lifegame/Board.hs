@@ -22,6 +22,8 @@ module Lifegame.Board (
 
 	putShapeAscii,
 
+	toAscii
+
 	) where
 
 import Prelude hiding (read)
@@ -99,3 +101,9 @@ putShapePixel xo yo bss x y
 
 div' :: Integral n => n -> n -> n
 a `div'` b = (a - 1) `div` b + 1
+
+toAscii :: B -> [String]
+toAscii = (((bool '.' '*') <$>) <$>) . toBools
+
+toBools :: B -> [[Bool]]
+toBools b@B { width = w, height = h } = (\y -> (\x -> read b x y) <$> [0 .. w - 1]) <$> [0 .. h - 1]
