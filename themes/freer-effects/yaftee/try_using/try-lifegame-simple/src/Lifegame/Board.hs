@@ -18,11 +18,13 @@ module Lifegame.Board (
 
 	toGray1,
 
-	-- * PUT/ADD SHAPE
+	-- * PUT SHAPE
 
 	putShapeAscii,
 
-	toAscii
+	-- * PRINT AS ASCII
+
+	printAsAscii
 
 	) where
 
@@ -102,6 +104,9 @@ putShapePixel xo yo bss x y
 
 div' :: Integral n => n -> n -> n
 a `div'` b = (a - 1) `div` b + 1
+
+printAsAscii :: B -> IO ()
+printAsAscii = (putStrLn `mapM_`) . toAscii
 
 toAscii :: B -> [String]
 toAscii = (((bool '.' '*') <$>) <$>) . toBools
