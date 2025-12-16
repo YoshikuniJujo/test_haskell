@@ -8,7 +8,7 @@ module Data.Png.Header (
 
 	-- * HEADER
 
-	Header(..), header0, encodeHeader,
+	Header(..), header0, encode,
 
 	-- * COLOR TYPE
 
@@ -53,8 +53,8 @@ data Header = Header {
 	filterMethod :: FilterMethod, interlaceMethod :: InterlaceMethod }
 	deriving Show
 
-encodeHeader :: Header -> BS.ByteString
-encodeHeader Header {
+encode :: Header -> BS.ByteString
+encode Header {
 	width = wdt, height = hgt, bitDepth = bd, colorType = ColorType ct,
 	compressionMethod = CompressionMethod cm,
 	filterMethod = FilterMethod fm, interlaceMethod = InterlaceMethod im } =

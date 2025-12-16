@@ -115,8 +115,8 @@ fctl w h d = Apng.Fctl {
 	Apng.fctlDisposeOp = Apng.DisposeOpNone,
 	Apng.fctlBlendOp = Apng.BlendOpSource }
 
-fdatChunk :: Word32 -> BSF.ByteString -> EnChunk.Chunk
-fdatChunk sn bd = EnChunk.Chunk "fdAT" $ BSF.fromBitsBE' sn <> bd
+fdatChunk :: Word32 -> BSF.ByteString -> EnChunk.C
+fdatChunk sn bd = EnChunk.C "fdAT" $ BSF.fromBitsBE' sn <> bd
 
 mkChunks :: (
 	Integral a,
@@ -125,25 +125,25 @@ mkChunks :: (
 	U.Member (State.Named "foobar" [Ratio Word16]) es,
 	U.Member (Except.E String) es, U.Member Fail.F es
 	) =>
-	Word32 -> Word32 -> a -> Eff.E es ChunkNew.C (Word32 -> (EnChunk.Chunk, Word32)) ()
+	Word32 -> Word32 -> a -> Eff.E es ChunkNew.C (Word32 -> (EnChunk.C, Word32)) ()
 mkChunks wdt hgt n = do
-	Pipe.yield \sn -> (EnChunk.Chunk "IHDR" . BSF.fromStrict
-		. Header.encodeHeader $ header wdt hgt, sn)
-	Pipe.yield \sn -> (EnChunk.Chunk "acTL"
+	Pipe.yield \sn -> (EnChunk.C "IHDR" . BSF.fromStrict
+		. Header.encode $ header wdt hgt, sn)
+	Pipe.yield \sn -> (EnChunk.C "acTL"
 		. Apng.encodeActl . actl $ fromIntegral n, sn)
 
 	ChunkNew.Begin _ "IHDR" <- Pipe.await
 	_bd <- chunkBody "foobar"
 	Just d' <- pop "foobar"
 	Pipe.yield \sn -> (
-		EnChunk.Chunk "fcTL" (Apng.encodeFctl sn $ fctl wdt hgt d'),
+		EnChunk.C "fcTL" (Apng.encodeFctl sn $ fctl wdt hgt d'),
 		sn + 1 )
 	doWhile_ do
 		ChunkNew.Begin _ cnm <- Pipe.await
 		case cnm of
 			"IDAT" -> do
 				bd <- chunkBody "foobar"
-				Pipe.yield \sn -> (EnChunk.Chunk "IDAT" bd, sn)
+				Pipe.yield \sn -> (EnChunk.C "IDAT" bd, sn)
 				pure True
 			"IEND" -> do { ChunkNew.End <- Pipe.await; pure False }
 			_ -> pure True
@@ -154,7 +154,7 @@ mkChunks wdt hgt n = do
 			_bd <- chunkBody "foobar"
 			Just d'' <- pop "foobar"
 			Pipe.yield \sn -> (
-				EnChunk.Chunk "fcTL" (
+				EnChunk.C "fcTL" (
 					Apng.encodeFctl sn $ fctl wdt hgt d''),
 					sn + 1 )
 			doWhile_ do
@@ -170,7 +170,7 @@ mkChunks wdt hgt n = do
 					_ -> pure True
 			pure True
 		_ -> Except.throw @String "bad"
-	Pipe.yield \sn -> (EnChunk.Chunk "IEND" "", sn)
+	Pipe.yield \sn -> (EnChunk.C "IEND" "", sn)
 
 pop :: forall nm -> (U.Member (State.Named nm [a]) es) => Eff.E es i o (Maybe a)
 pop nm = State.getsModifyN nm \case [] -> Nothing; x : xs -> Just (x, xs)

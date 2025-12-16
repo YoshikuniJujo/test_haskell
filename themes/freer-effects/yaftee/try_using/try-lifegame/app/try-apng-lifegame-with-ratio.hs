@@ -89,7 +89,7 @@ main = do
 		Pipe.=$= PipeT.convert ((, read d_) <$>)
 		Pipe.=$= do
 			fs <- Pipe.await
-			Eff.effBase $ writeApngGray1 fpo hdr n 0 fs
+			Eff.effBase $ write fpo hdr { Header.width = 10 * wdt, Header.height = 10 * hgt } n 0 fs
 	putStrLn ""
 	print hdr
 	print Header.Header {

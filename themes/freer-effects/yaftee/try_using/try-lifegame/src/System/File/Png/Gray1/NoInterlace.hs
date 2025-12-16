@@ -179,7 +179,7 @@ makeChunks :: (
 	Eff.E es (b -> (Chunk, b)) BSF.ByteString ()
 makeChunks hdr mplt = void $ do
 -- MAKE CHUNKS
-		let	bd'' = Header.encodeHeader hdr
+		let	bd'' = Header.encode hdr
 		Pipe.yield $ \sn -> (
 			Chunk {
 				chunkName = "IHDR",

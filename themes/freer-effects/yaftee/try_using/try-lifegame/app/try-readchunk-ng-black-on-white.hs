@@ -80,12 +80,12 @@ main = do
 		Pipe.=$= PipeT.convert BSF.fromStrict
 		Pipe.=$= replicateM_ n (ChunkNew.decode "foobar" 60)
 		Pipe.=$= do
-			Pipe.yield \sn -> (EnChunk.Chunk "IHDR"
+			Pipe.yield \sn -> (EnChunk.C "IHDR"
 				. BSF.fromStrict
-				. Header.encodeHeader $ header wdt hgt, sn)
-			Pipe.yield \sn -> (EnChunk.Chunk "PLTE"
+				. Header.encode $ header wdt hgt, sn)
+			Pipe.yield \sn -> (EnChunk.C "PLTE"
 				$ Palette.encodePalette blackOnWhite, sn)
-			Pipe.yield \sn -> (EnChunk.Chunk "acTL"
+			Pipe.yield \sn -> (EnChunk.C "acTL"
 				. Apng.encodeActl . actl $ fromIntegral n, sn)
 
 			do	
@@ -93,7 +93,7 @@ main = do
 				_bd <- chunkBody "foobar"
 				Just d' <- pop "foobar"
 				Pipe.yield \sn -> (
-					EnChunk.Chunk "fcTL"
+					EnChunk.C "fcTL"
 						(Apng.encodeFctl sn $ fctl wdt hgt d'),
 					sn + 1 )
 				doWhile_ do
@@ -101,7 +101,7 @@ main = do
 					case cnm of
 						"IDAT" -> do
 							bd <- chunkBody "foobar"
-							Pipe.yield \sn -> (EnChunk.Chunk cnm bd, sn)
+							Pipe.yield \sn -> (EnChunk.C cnm bd, sn)
 							pure True
 						"IEND" -> do
 							ChunkNew.End <- Pipe.await
@@ -115,7 +115,7 @@ main = do
 					_bd <- chunkBody "foobar"
 					Just d' <- pop "foobar"
 					Pipe.yield \sn -> (
-						EnChunk.Chunk "fcTL"
+						EnChunk.C "fcTL"
 							(Apng.encodeFctl sn $ fctl wdt hgt d'),
 						sn + 1 )
 					doWhile_ do
@@ -132,7 +132,7 @@ main = do
 					pure True
 				_ -> Except.throw @String "bad"
 
-			Pipe.yield \sn -> (EnChunk.Chunk "IEND" "", sn)
+			Pipe.yield \sn -> (EnChunk.C "IEND" "", sn)
 
 		Pipe.=$= EnChunk.encode "foo" 0
 		Pipe.=$= PipeT.convert BSF.toStrict
@@ -173,8 +173,8 @@ fctl w h d = Apng.Fctl {
 	Apng.fctlDisposeOp = Apng.DisposeOpNone,
 	Apng.fctlBlendOp = Apng.BlendOpSource }
 
-fdatChunk :: Word32 -> BSF.ByteString -> EnChunk.Chunk
-fdatChunk sn bd = EnChunk.Chunk "fdAT" $ BSF.fromBitsBE' sn <> bd
+fdatChunk :: Word32 -> BSF.ByteString -> EnChunk.C
+fdatChunk sn bd = EnChunk.C "fdAT" $ BSF.fromBitsBE' sn <> bd
 
 blackOnWhite :: Palette.Palette
 blackOnWhite = Palette.Palette (V.fromList [(191, 191, 191), (0, 0, 0)])
