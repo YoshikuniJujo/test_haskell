@@ -22,33 +22,25 @@ import Control.Monad.Yaftee.State qualified as State
 import Control.Monad.Yaftee.Except qualified as Except
 import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
+import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as Chunk
 import Control.HigherOpenUnion qualified as U
 import Data.Foldable
+import Data.Vector qualified as V
 import Data.Ratio
 import Data.Bool
-import Data.ByteString.FingerTree qualified as BSF
-import Data.Png.Header qualified as H
-
-import System.IO
-
-import Codec.Compression.Zlib.Constant.Core qualified as Zlib
-
-import Data.Png qualified as Png
-
 import Data.Word
-import Data.ByteString.FingerTree.Bits qualified as BSF
-import Lifegame.Png.Filter qualified as Filter
-import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
-
-import Data.Image.Gray1 qualified as G1
-
-import Lifegame.Png.Chunk.Encode qualified as CEn
-
-import Data.Apng qualified as A
-import Data.Vector qualified as V
-
 import Data.Word.Crc32 qualified as Crc32
-import Control.Monad.Yaftee.Pipe.Png.Chunk qualified as Chunk
+import Data.ByteString.FingerTree qualified as BSF
+import Data.ByteString.FingerTree.Bits qualified as BSF
+import Data.Image.Gray1 qualified as G1
+import Data.Png qualified as Png
+import Data.Png.Header qualified as H
+import Data.Apng qualified as A
+import System.IO
+import Codec.Compression.Zlib.Constant.Core qualified as Zlib
+import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
+import Lifegame.Png.Chunk.Encode qualified as CEn
+import Lifegame.Png.Filter qualified as Filter
 
 -- EXPORTS
 
@@ -222,8 +214,8 @@ chunks hdr fn np = void $
 calcSizes :: H.Header -> Word32 -> Word32 -> [(Int, Int)]
 calcSizes H.Header { H.interlaceMethod = H.InterlaceMethodNon } w h =
 	[(fromIntegral w, fromIntegral h)]
-calcSizes H.Header { H.interlaceMethod = H.InterlaceMethodAdam7 } w h =
-	adam7Sizes (fromIntegral w) (fromIntegral h)
+calcSizes H.Header { H.interlaceMethod = H.InterlaceMethodAdam7 } wdt hgt =
+	adam7Sizes (fromIntegral wdt) (fromIntegral hgt)
 	where
 	adam7Sizes w h = [
 		(w `div'` 8, h `div'` 8),
