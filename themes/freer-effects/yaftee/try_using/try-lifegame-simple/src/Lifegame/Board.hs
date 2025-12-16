@@ -43,9 +43,10 @@ data B = B { width :: Int, height :: Int, body :: V.Vector Word8 }
 instance NFData B
 
 read :: B -> Int -> Int -> Bool
-read B { width = w, height = h, body = bd } x y =
-	testBit (bd V.! (w' * y' + (x' `div` 8))) $ 7 - x' `mod` 8
-	where w' = w `div'` 8; x' = x `mod` w; y' = y `mod` h
+read B { width = w, height = h, body = bd } x y
+	| x < 0 || w <= x || y < 0 || h <= y =  False
+	| otherwise = testBit (bd V.! (w' * y + (x `div` 8))) $ 7 - x `mod` 8
+	where w' = w `div'` 8
 
 generate :: Int -> Int -> (Int -> Int -> Bool) -> B
 generate w h px = B { width = w, height = h, body = generateBody w h px }
