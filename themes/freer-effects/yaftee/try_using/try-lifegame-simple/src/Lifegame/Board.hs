@@ -6,13 +6,9 @@
 
 module Lifegame.Board (
 
-	-- * BOARD DATA TYPE
+	-- * BOARD DATA TYPE AND GENERATIONS
 
-	B,
-
-	-- * GENERATIONS
-
-	generations,
+	B, generations,
 
 	-- * CONVERSION BETWEEN BOARD AND GRAY1
 
