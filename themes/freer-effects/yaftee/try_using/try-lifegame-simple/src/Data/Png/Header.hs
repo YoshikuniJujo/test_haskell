@@ -8,7 +8,7 @@ module Data.Png.Header (
 
 	-- * HEADER
 
-	Header(..), header0, encode,
+	Header(..), encode,
 
 	-- * COLOR TYPE
 
@@ -59,13 +59,6 @@ encode Header {
 	compressionMethod = CompressionMethod cm,
 	filterMethod = FilterMethod fm, interlaceMethod = InterlaceMethod im } =
 	BS.fromBitsBE' wdt <> BS.fromBitsBE' hgt <> BS.pack [bd, ct, cm, fm, im]
-
-header0 :: Header
-header0 = Header {
-	width = 0, height = 0, bitDepth = 0,
-	colorType = ColorType 0,
-	compressionMethod = CompressionMethod 0,
-	filterMethod = FilterMethod 0, interlaceMethod = InterlaceMethod 0 }
 
 -- COLOR TYPE
 
