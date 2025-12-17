@@ -27,6 +27,7 @@ library
   exposed-modules:
       Conduit
       Data.Image.Gray1
+      Data.Png
       Data.Png.Filter
       Data.Png.Header
       Except
