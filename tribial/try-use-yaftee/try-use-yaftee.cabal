@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Conduit
+      Data.Image.Gray1
       Except
       Hello
       Lib
