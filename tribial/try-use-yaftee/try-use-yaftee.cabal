@@ -29,6 +29,8 @@ library
       Except
       Hello
       Lib
+      Lifegame.Board
+      Lifegame.Tools
       StateExcept
   other-modules:
       Paths_try_use_yaftee
