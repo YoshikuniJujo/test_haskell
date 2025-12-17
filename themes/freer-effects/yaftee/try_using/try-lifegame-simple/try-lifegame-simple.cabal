@@ -33,6 +33,7 @@ library
       Lifegame.Board
       Lifegame.Png.Chunk.Encode
       Lifegame.Png.Filter
+      Lifegame.Tools
       System.File.Png.Gray1.NoInterlace
   other-modules:
       Paths_try_lifegame_simple

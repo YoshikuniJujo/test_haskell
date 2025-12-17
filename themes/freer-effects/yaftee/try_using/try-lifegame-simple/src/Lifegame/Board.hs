@@ -32,6 +32,7 @@ import Data.Vector qualified as V
 import Data.Bool
 import Data.Word
 import Data.Image.Gray1 qualified as Gray1
+import Lifegame.Tools
 
 -- BOARD DATA TYPE
 
@@ -97,9 +98,6 @@ putShapePixel xo yo bss x y
 	|	xo <= x && x < xo + (length $ head bss) &&
 		yo <= y && y < yo + (length bss) = bss !! (y - yo) !! (x - xo)
 	| otherwise = False
-
-div' :: Integral n => n -> n -> n
-a `div'` b = (a - 1) `div` b + 1
 
 printAsAscii :: B -> IO ()
 printAsAscii = (putStrLn `mapM_`) . toAscii
