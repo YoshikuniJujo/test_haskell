@@ -42,10 +42,12 @@ import Data.Image.Gray1 qualified as G1
 
 import Data.Apng
 
+import Lifegame.Png.Chunk.Encode qualified as ChunkEn
+
 -- WRITE
 
 write :: FilePath -> G1.G -> IO ()
-write fp = writeH fp <$> header <*> id
+write fp = writeHdr fp <$> header <*> id
 	where header g = H.Header {
 		H.width = fromIntegral $ G1.width g,
 		H.height = fromIntegral $ G1.height g,
@@ -54,8 +56,8 @@ write fp = writeH fp <$> header <*> id
 		H.filterMethod = H.FilterMethodDefaultFilter,
 		H.interlaceMethod = H.InterlaceMethodNon }
 
-writeH :: FilePath -> H.Header -> G1.G -> IO ()
-writeH fp hdr img = do
+writeHdr :: FilePath -> H.Header -> G1.G -> IO ()
+writeHdr fp hdr img = do
 	checkHeader
 	h <- openFile fp WriteMode
 	(ibe, obe) <- (,) <$> PZ.cByteArrayMalloc 64 <*> PZ.cByteArrayMalloc 64
@@ -131,6 +133,31 @@ idat hdr w h ibe obe = void $
 		PZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
 		PZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
 
+idat' :: (
+	Png.Datable a, U.Member P.P es,
+	U.Member (State.Named "png" (Maybe PZ.ByteString)) es,
+	U.Member (State.Named "png" (PipeT.Devide BSF.ByteString)) es,
+	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
+	U.Base IO.I es ) =>
+	H.Header -> Word32 -> Word32 ->
+	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld ->
+	Eff.E es a ChunkEn.C ()
+idat' hdr w h ibe obe = void $
+	(fix \go -> P.await >>= \x ->
+		if Png.endDat x then pure () else P.yield x >> go)
+	P.=$= PipeT.convert (Png.toDat hdr)
+	P.=$= Filter.filter hdr (calcSizes hdr w h)
+	P.=$= PipeT.convert BSF.pack
+	P.=$= PZ.deflate "png" IO opts ibe obe
+	P.=$= PipeT.devide "png" BSF.splitAt' "" 100000
+	P.=$= PipeT.convert (ChunkEn.C "IDAT")
+	where opts = PZ.DeflateOptions {
+		PZ.deflateOptionsCompressionLevel = Zlib.DefaultCompression,
+		PZ.deflateOptionsCompressionMethod = Zlib.Deflated,
+		PZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
+		PZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
+		PZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
+
 calcSizes :: H.Header -> Word32 -> Word32 -> [(Int, Int)]
 calcSizes H.Header { H.interlaceMethod = H.InterlaceMethodNon } w h =
 	[(fromIntegral w, fromIntegral h)]
@@ -146,6 +173,18 @@ calcSizes H.Header { H.interlaceMethod = H.InterlaceMethodAdam7 } wdt hgt =
 		(w `div` 2, h `div'` 2), (w, h `div` 2) ]
 	m `div'`n = (m - 1) `div` n + 1
 calcSizes _ _ _ = error "bad"
+
+chunks' :: (
+	U.Member P.P es, ChunkEn.EncodeMembers "foo" es,
+	U.Member (Except.E String) es, U.Member Fail.F es
+	) => H.Header -> Eff.E es ChunkEn.C BSF.ByteString ()
+chunks' hdr = void $
+	do	let	bd'' = H.encode hdr
+		P.yield $ ChunkEn.C { ChunkEn.name = "IHDR", ChunkEn.body = BSF.fromStrict bd'' }
+		bd0 <- P.await
+		P.yield bd0
+		P.yield $ ChunkEn.C { ChunkEn.name = "IEND", ChunkEn.body = "" }
+	P.=$= ChunkEn.encode "foo"
 
 chunks :: U.Member P.P es => H.Header -> Eff.E es Chunk BSF.ByteString ()
 chunks hdr = void $
@@ -166,5 +205,5 @@ encodeChunk Chunk { ckName = nm, ckBody = bd } =
 	BSF.fromBitsBE' @Word32 ln <> nmbd <> BSF.fromBitsBE' (Crc32.toWord crc)
 	where
 	ln = fromIntegral $ BSF.length bd
-	nmbd = nm <> bd
 	crc = Crc32.complement $ BSF.foldl' Crc32.step Crc32.initial nmbd
+	nmbd = nm <> bd

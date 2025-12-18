@@ -75,7 +75,7 @@ main = do
 		Pipe.=$= PipeT.convert BSF.fromStrict
 		Pipe.=$= replicateM_ n (ChunkNew.decode "foobar" 50)
 		Pipe.=$= mkChunks wdt hgt n
-		Pipe.=$= EnChunk.encode "foo" 0
+		Pipe.=$= EnChunk.encode' "foo" 0
 		Pipe.=$= PipeT.convert BSF.toStrict
 		Pipe.=$= PipeBS.hPutStr ho
 --	hClose `mapM_` hs;
