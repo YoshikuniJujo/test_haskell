@@ -38,7 +38,7 @@ filterRaw hdr r0 = \case
 	where
 	bpp = (fromIntegral (Png.bitDepth hdr) *
 			Png.colorTypeSampleNum (Png.colorType hdr)) `div'` 8
-	rowBytes wdt = ((wdt * bd - 1) * sn) `div'` 8
+	rowBytes wdt = (wdt * bd * sn) `div'` 8
 		where
 		bd = fromIntegral $ Png.bitDepth hdr
 		sn = Png.colorTypeSampleNum $ Png.colorType hdr
