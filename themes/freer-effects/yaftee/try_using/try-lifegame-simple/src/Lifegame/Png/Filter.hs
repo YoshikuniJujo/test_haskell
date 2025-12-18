@@ -30,25 +30,21 @@ filterRaw :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 filterRaw hdr r0 = \case
 	[] -> pure ()
 	(w, h) : ss -> void do
-		Pipe.yield $ Png.filter bpp (rowBytes w `replicate` 0) r0
-		filterTail bpp (BSF.unpack r0) (h - 1)
+		Pipe.yield $ Png.filter bypp (zeros w) r0
+		filterTail bypp (BSF.unpack r0) (h - 1)
 		case ss of
 			[] -> pure ()
-			_ -> (\bs -> filterRaw hdr bs ss) =<< Pipe.await
+			_ -> flip (filterRaw hdr) ss =<< Pipe.await
 	where
-	bpp = (fromIntegral (Png.bitDepth hdr) *
-			Png.colorTypeSampleNum (Png.colorType hdr)) `div'` 8
-	rowBytes wdt = (wdt * bd * sn) `div'` 8
-		where
-		bd = fromIntegral $ Png.bitDepth hdr
-		sn = Png.colorTypeSampleNum $ Png.colorType hdr
+	zeros w = ((w * Png.bpp hdr) `div'` 8) `replicate` 0
+	bypp = Png.bpp hdr `div'` 8
 
 filterTail :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
 	Int -> [Word8] -> Int -> Eff.E es BSF.ByteString [Word8] ()
-filterTail bpp pr = \case
+filterTail bypp pr = \case
 	0 -> pure ()
 	n -> Pipe.awaitMaybe >>= \case
 		Nothing -> pure (); Just BSF.Empty -> pure ()
 		Just bs -> do
-			Pipe.yield $ Png.filter bpp pr bs
-			filterTail bpp (BSF.unpack bs) (n - 1)
+			Pipe.yield $ Png.filter bypp pr bs
+			filterTail bypp (BSF.unpack bs) (n - 1)
