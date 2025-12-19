@@ -33,7 +33,6 @@ import System.IO
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 import Lifegame.Png.Chunk.Encode qualified as ChunkEn
-import Lifegame.Tools
 
 -- WRITE
 
@@ -110,7 +109,8 @@ idat hdr h ib ob = void $ PipeT.convert (Png.toDat hdr) P.=$= fltr
 		PZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
 		PZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
 		PZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
-	fltr = h `times_` (P.yield . ((0 :) . otoList) =<< P.await)
+	fltr = fromIntegral h
+		`replicateM_` (P.yield . ((0 :) . otoList) =<< P.await)
 
 chunks :: U.Member P.P es => H.Header -> Eff.E es ChunkEn.C ChunkEn.C ()
 chunks hdr = void $ do

@@ -14,8 +14,5 @@ import Control.HigherOpenUnion qualified as U
 div' :: Integral n => n -> n -> n
 a `div'` b = (a - 1) `div` b + 1
 
-times_ :: (Integral n, Monad m) => n -> m a -> m ()
-times_ n act | n < 1 = pure () | otherwise = act >> times_ (n - 1) act
-
 pop :: forall nm -> (U.Member (State.Named nm [a]) es) => Eff.E es i o (Maybe a)
 pop nm = State.getsModifyN nm \case [] -> Nothing; x : xs -> Just (x, xs)
