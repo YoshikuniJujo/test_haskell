@@ -1,0 +1,28 @@
+id:		shushupopo-short-short
+ratio:		1
+width:		3200
+height:		500
+x-offset:	200
+y-offset:	290
+first-frame:	0
+frame-number:	200
+delay:		1%64
+shape:
+...*.
+....*
+*...*
+.****
+.....
+.....
+.....
+*....
+.**..
+..*..
+..*..
+.*...
+.....
+.....
+...*.
+....*
+*...*
+.****
