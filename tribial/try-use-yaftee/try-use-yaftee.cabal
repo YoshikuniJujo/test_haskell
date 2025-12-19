@@ -103,8 +103,8 @@ executable lifegame-generations
     , zlib-yaftee
   default-language: Haskell2010
 
-executable try-readchunk-ng
-  main-is: try-readchunk-ng.hs
+executable pngs-to-apng
+  main-is: pngs-to-apng.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N

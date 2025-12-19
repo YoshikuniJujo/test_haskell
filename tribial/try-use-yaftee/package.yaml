@@ -79,8 +79,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-use-yaftee
-  try-readchunk-ng:
-    main:                try-readchunk-ng.hs
+  pngs-to-apng:
+    main:                pngs-to-apng.hs
     source-dirs:         app
     other-modules:       []
     ghc-options:
