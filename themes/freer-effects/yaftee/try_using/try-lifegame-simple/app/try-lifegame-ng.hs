@@ -5,56 +5,36 @@
 module Main (main) where
 
 import Control.Monad
-import Data.Ratio
-import Data.Word
 import System.Environment
 import System.Directory
 import System.FilePath
-
 import System.File.Png.Gray1.NoInterlace qualified as Png
-import Lifegame.Board qualified as Lg
+import Lifegame.Board qualified as L
 
 rootDir :: IO FilePath
-rootDir = (</> ".yoshj/lifegame") <$>  getHomeDirectory
+rootDir = (</> ".yoshj/lifegame") <$> getHomeDirectory
 
 main :: IO ()
 main = do
-	fp : _ <- getArgs
 	rd <- rootDir
-	createDirectoryIfMissing True rd
-	createDirectoryIfMissing False $ rd </> "pngs"
-	(nm, _, w, h, xo, yo, ff, cf, _, shp) <- readLifegame . lines <$> readFile fp
-	let	nmd = rd </> "pngs" </> nm
-		szost = show w ++ "x" ++ show h ++ "_" ++ show xo ++ "x" ++ show yo
-		szostd = nmd </> szost
-	createDirectoryIfMissing True szostd
-	print nm
-	putStrLn szost
-	let	b0 = Lg.putShapeAscii w h xo yo shp
-		bs = take cf $ drop ff $ Lg.generations b0
-		fps = (szostd </>) . boardName <$> [ff .. ff + cf]
-		imgs = Lg.toGray1 <$> bs
---	Img.printAsAscii `mapM_` imgs
+	fp : _ <- getArgs
+	(nm, w, h, x, y, d, t, s) <- readLifegame . lines <$> readFile fp
+	let	fps = (dir </>) . boardName <$> [d .. d + t - 1]
+		dir = rd </> "pngs" </> nm </> so
+		so = show w ++ "x" ++ show h ++ "_" ++ show x ++ "x" ++ show y
+		imgs = L.toGray1 <$> gs
+		gs = take t . drop d $ L.generations $ L.putShapeAscii w h x y s
+	createDirectoryIfMissing True dir
 	zipWithM_ Png.write fps imgs
 
-readLifegame :: [String] ->
-	(String, Int, Int, Int, Int, Int, Int, Int, Ratio Word16, [String])
+readLifegame :: [String] -> (String, Int, Int, Int, Int, Int, Int, [String])
 readLifegame src = case words <$> src of
-	["id:", nm] :
-		["ratio:", rt] :
-		["width:", w] :
-		["height:", h] :
-		["x-offset:", xo] :
-		["y-offset:", yo] :
-		["first-frame:", drp] :
-		["frame-number:", fn] :
-		["delay:", dly] :
-		["shape:"] : shpgls -> case span (not.null) shpgls of
-			(shp, _) -> (
-				nm,
-				read rt, read w, read h, read xo, read yo, read drp, read fn,
-				read dly, head <$> shp)
-
+	["id:", nm] : ["width:", w] : ["height:", h] :
+		["x-offset:", xo] : ["y-offset:", yo] :
+		["first-frame:", drp] : ["frame-number:", fn] :
+		["shape:"] : sp -> (
+			nm, read w, read h, read xo, read yo,
+			read drp, read fn, head <$> sp )
 	_ -> error "bad"
 
 boardName :: Int -> FilePath
