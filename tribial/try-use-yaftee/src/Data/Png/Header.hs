@@ -8,7 +8,7 @@ module Data.Png.Header (
 
 	-- * HEADER
 
-	Header(..), encode, sampleNum,
+	Header(..), encode, bpp,
 
 	-- * COLOR TYPE
 
@@ -57,6 +57,9 @@ encode Header {
 	compressionMethod = CompressionMethod cm,
 	filterMethod = FilterMethod fm, interlaceMethod = InterlaceMethod im } =
 	BS.fromBitsBE' wdt <> BS.fromBitsBE' hgt <> BS.pack [bd, ct, cm, fm, im]
+
+bpp :: Integral n => Header -> n
+bpp hdr = fromIntegral (bitDepth hdr) * sampleNum hdr
 
 sampleNum :: Integral n => Header -> n
 sampleNum = colorTypeSampleNum . colorType
