@@ -15,7 +15,7 @@ module Lifegame.Png.Chunk.Encode (
 
 	-- * ENCODE
 
-	encode, C(..), Chunk.EncodeMembers
+	encode, encode', C(..), Chunk.EncodeMembers
 
 	) where
 
@@ -41,3 +41,16 @@ convert = forever $ Pipe.await >>= \f -> let C nm bd = f in
 
 data C = C { name :: BSF.ByteString, body :: BSF.ByteString }
 	deriving Show
+
+encode' :: forall nm -> (
+	U.Member Pipe.P es, Chunk.EncodeMembers nm es,
+	U.Member (Except.E String) es, U.Member Fail.F es ) =>
+	a -> Eff.E es (a -> (C, a)) BSF.ByteString ()
+encode' nm st0 = void $ convert' st0 Pipe.=$= Chunk.encode nm
+
+convert' :: U.Member Pipe.P es => a -> Eff.E es (a -> (C, a)) Chunk.C r
+convert' st0 =
+	fvr st0 \st -> Pipe.await >>= \f -> let (C nm bd, st') = f st in
+		st' <$ mapM_ Pipe.yield
+			[Chunk.Begin (olength bd) nm, Chunk.Body bd, Chunk.End]
+	where fvr st a = a st >>= (`fvr` a)
