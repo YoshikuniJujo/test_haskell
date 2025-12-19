@@ -36,6 +36,7 @@ library
       Lifegame.Png.Chunk.Encode
       Lifegame.Tools
       StateExcept
+      System.File.Png.Gray1.NoInterlace
   other-modules:
       Paths_try_use_yaftee
   autogen-modules:
