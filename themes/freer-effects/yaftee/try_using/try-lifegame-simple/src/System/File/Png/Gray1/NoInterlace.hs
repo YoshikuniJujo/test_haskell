@@ -122,33 +122,21 @@ idat hdr w h ibe obe = void $
 	(fix \go -> P.await >>= \x ->
 		if Png.endDat x then pure () else P.yield x >> go)
 	P.=$= PipeT.convert (Png.toDat hdr)
-	P.=$= Filter.filter hdr (calcSizes hdr w h)
+	P.=$= (chkHdr >> Filter.filter hdr (fromIntegral w) (fromIntegral h))
 	P.=$= PipeT.convert BSF.pack
 	P.=$= PZ.deflate "png" IO opts ibe obe
 	P.=$= PipeT.devide "png" BSF.splitAt' "" 100000
 	P.=$= PipeT.convert (ChunkEn.C "IDAT")
-	where opts = PZ.DeflateOptions {
+	where
+	opts = PZ.DeflateOptions {
 		PZ.deflateOptionsCompressionLevel = Zlib.DefaultCompression,
 		PZ.deflateOptionsCompressionMethod = Zlib.Deflated,
 		PZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
 		PZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
 		PZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
-
-calcSizes :: H.Header -> Word32 -> Word32 -> [(Int, Int)]
-calcSizes H.Header { H.interlaceMethod = H.InterlaceMethodNon } w h =
-	[(fromIntegral w, fromIntegral h)]
-calcSizes H.Header { H.interlaceMethod = H.InterlaceMethodAdam7 } wdt hgt =
-	adam7Sizes (fromIntegral wdt) (fromIntegral hgt)
-	where
-	adam7Sizes w h = [
-		(w `div'` 8, h `div'` 8),
-		(w `div'` 4 `div` 2, h `div'` 8),
-		(w `div'` 4, h `div'` 4 `div` 2),
-		(w `div'` 2 `div` 2, h `div'` 4),
-		(w `div'` 2, h `div'` 2 `div` 2),
-		(w `div` 2, h `div'` 2), (w, h `div` 2) ]
-	m `div'`n = (m - 1) `div` n + 1
-calcSizes _ _ _ = error "bad"
+	chkHdr = case hdr of
+		H.Header { H.interlaceMethod = H.InterlaceMethodNon } -> pure ()
+		_ -> Except.throw @String "not implemented"
 
 chunks :: (
 	U.Member P.P es, ChunkEn.EncodeMembers "foo" es,

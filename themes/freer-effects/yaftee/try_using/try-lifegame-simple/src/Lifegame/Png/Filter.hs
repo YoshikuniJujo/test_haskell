@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lifegame.Png.Filter (filter, Size) where
+module Lifegame.Png.Filter (filter) where
 
 import Prelude hiding (filter)
 import Control.Monad
@@ -19,24 +19,17 @@ import Data.Png qualified as Png
 import Lifegame.Tools
 
 filter :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
-	Png.Header -> [Size] -> Eff.E es BSF.ByteString [Word8] ()
-filter hdr ss = flip (filterRaw hdr) ss =<< Pipe.await
-
-type Size = (Int, Int)
+	Png.Header -> Int -> Int -> Eff.E es BSF.ByteString [Word8] ()
+filter hdr w h = filterRaw hdr w h =<< Pipe.await
 
 filterRaw :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
-	Png.Header ->
-	BSF.ByteString -> [Size] -> Eff.E es BSF.ByteString [Word8] ()
-filterRaw hdr r0 = \case
-	[] -> pure ()
-	(w, h) : ss -> void do
-		Pipe.yield $ Png.filter bypp (zeros w) r0
-		filterTail bypp (BSF.unpack r0) (h - 1)
-		case ss of
-			[] -> pure ()
-			_ -> flip (filterRaw hdr) ss =<< Pipe.await
+	Png.Header -> Int -> Int ->
+	BSF.ByteString -> Eff.E es BSF.ByteString [Word8] ()
+filterRaw hdr w h r0 = void do
+	Pipe.yield $ Png.filter bypp zeros r0
+	filterTail bypp (BSF.unpack r0) (h - 1)
 	where
-	zeros w = ((w * Png.bpp hdr) `div'` 8) `replicate` 0
+	zeros = ((w * Png.bpp hdr) `div'` 8) `replicate` 0
 	bypp = Png.bpp hdr `div'` 8
 
 filterTail :: (U.Member Pipe.P es, U.Member (Except.E String) es) =>
