@@ -9,7 +9,6 @@
 
 module System.File.Png.Gray1.NoInterlace (write) where
 
-import Prelude hiding (filter)
 import Control.Monad
 import Control.Monad.ST
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -25,7 +24,6 @@ import Control.HigherOpenUnion qualified as U
 import Data.Foldable
 import Data.MonoTraversable
 import Data.Function
-import Data.Bool
 import Data.Word
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Image.Gray1 qualified as G1
@@ -40,8 +38,8 @@ import Lifegame.Tools
 -- WRITE
 
 write :: FilePath -> G1.G -> IO ()
-write fp = writeHdr fp <$> header <*> id
-	where header g = H.Header {
+write fp = writeHdr fp <$> hdr <*> id
+	where hdr g = H.Header {
 		H.width = fromIntegral $ G1.width g,
 		H.height = fromIntegral $ G1.height g,
 		H.bitDepth = 1, H.colorType = H.ColorTypeGrayscale,
@@ -84,31 +82,25 @@ writePipe :: (
 	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld -> Eff.E es i o ()
 writePipe h hdr img ib ob = (`Except.catch` IO.putStrLn)
 	. (`Except.catch` IO.print @Zlib.ReturnCode)
-	. void $ pixels img
-		P.=$= idat hdr (H.height hdr) ib ob
-		P.=$= chunks hdr P.=$= ChunkEn.encode "png"
+	. void $ rows img
+		P.=$= idat hdr (H.height hdr) ib ob P.=$= chunks hdr
+		P.=$= ChunkEn.encode "png"
 		P.=$= PipeT.convert BSF.toStrict P.=$= PipeBS.hPutStr h
 
-pixels :: U.Member P.P es => G1.G -> Eff.E es i Png.PixelsGray1 ()
-pixels = fix \go -> maybe (pure ())
+rows :: U.Member P.P es => G1.G -> Eff.E es i Png.PixelsGray1 ()
+rows = fix \go -> maybe (pure ())
 	(\(r, i) -> P.yield (Png.PG1Pixels $ toList r) >> go i) . G1.unconsRow
 
 idat :: (
 	Png.Datable a, U.Member P.P es,
 	U.Member (State.Named "png" (Maybe PZ.ByteString)) es,
 	U.Member (State.Named "png" (PipeT.Devide BSF.ByteString)) es,
-	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
-	U.Base IO.I es ) =>
+	U.Member (Except.E Zlib.ReturnCode) es, U.Base IO.I es ) =>
 	H.Header -> Word32 ->
 	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld ->
 	Eff.E es a ChunkEn.C ()
-idat hdr h ib ob = void $
-	(fix \go -> P.await >>= \x ->
-		bool (P.yield x) (pure ()) (Png.endDat x) >> go)
-	P.=$= PipeT.convert (Png.toDat hdr)
-	P.=$= (chkHdr >> filter (fromIntegral h))
-	P.=$= PipeT.convert BSF.pack
-	P.=$= PZ.deflate "png" IO opts ib ob
+idat hdr h ib ob = void $ PipeT.convert (Png.toDat hdr) P.=$= fltr
+	P.=$= PipeT.convert BSF.pack P.=$= PZ.deflate "png" IO opts ib ob
 	P.=$= PipeT.devide "png" BSF.splitAt' "" 1000
 	P.=$= PipeT.convert (ChunkEn.C "IDAT")
 	where
@@ -118,16 +110,7 @@ idat hdr h ib ob = void $
 		PZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
 		PZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
 		PZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
-	chkHdr = case hdr of
-		H.Header { H.interlaceMethod = H.InterlaceMethodNon } -> pure ()
-		_ -> Except.throw @String "not implemented"
-
-filter :: (U.Member P.P es) =>
-	Int -> Eff.E es BSF.ByteString [Word8] ()
-filter n = n `times_` do
-	P.awaitMaybe >>= \case
-		Nothing -> pure (); Just BSF.Empty -> pure ()
-		Just bs -> P.yield (0 : otoList bs) -- >> filter (n - 1)
+	fltr = h `times_` (P.yield . ((0 :) . otoList) =<< P.await)
 
 chunks :: U.Member P.P es => H.Header -> Eff.E es ChunkEn.C ChunkEn.C ()
 chunks hdr = void $ do
