@@ -13,6 +13,7 @@ import Data.Vector qualified as V
 import Data.Bool
 import Data.Word
 import Lifegame.Tools
+import Data.Image.Gray1 qualified as Gray1
 
 -- BOARD DATA TYPE
 
@@ -84,3 +85,9 @@ calc p x y
 	l = read p x y
 	ns = length . filter id $ (uncurry $ read p) <$> [ (z, w) |
 		z <- [x - 1 .. x + 1], w <- [y - 1 .. y + 1], (z, w) /= (x, y) ]
+
+-- CONVERSION BETWEEN BOARD AND GRAY1
+
+toGray1 :: B -> Gray1.G
+toGray1 B { width = w, height = h, body = bd } =
+	Gray1.G { Gray1.width = w, Gray1.height = h, Gray1.body = bd }

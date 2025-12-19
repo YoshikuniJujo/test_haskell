@@ -62,6 +62,17 @@ executables:
   try-use-yaftee-exe:
     main:                Main.hs
     source-dirs:         app
+    other-modules:       []
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-use-yaftee
+  lifegame-generations:
+    main:                lifegame-generations.hs
+    source-dirs:         app
+    other-modules:       []
     ghc-options:
     - -threaded
     - -rtsopts
