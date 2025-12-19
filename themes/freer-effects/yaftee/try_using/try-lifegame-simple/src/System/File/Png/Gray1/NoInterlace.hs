@@ -9,6 +9,7 @@
 
 module System.File.Png.Gray1.NoInterlace (write) where
 
+import Prelude hiding (filter)
 import Control.Monad
 import Control.Monad.ST
 import Control.Monad.Yaftee.Eff qualified as Eff
@@ -22,6 +23,7 @@ import Control.Monad.Yaftee.Fail qualified as Fail
 import Control.Monad.Yaftee.IO qualified as IO
 import Control.HigherOpenUnion qualified as U
 import Data.Foldable
+import Data.MonoTraversable
 import Data.Function
 import Data.Bool
 import Data.Word
@@ -33,7 +35,7 @@ import System.IO
 import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 import Lifegame.Png.Chunk.Encode qualified as ChunkEn
-import Lifegame.Png.Filter qualified as Filter
+import Lifegame.Tools
 
 -- WRITE
 
@@ -83,7 +85,7 @@ writePipe :: (
 writePipe h hdr img ib ob = (`Except.catch` IO.putStrLn)
 	. (`Except.catch` IO.print @Zlib.ReturnCode)
 	. void $ pixels img
-		P.=$= idat hdr (H.width hdr) (H.height hdr) ib ob
+		P.=$= idat hdr (H.height hdr) ib ob
 		P.=$= chunks hdr P.=$= ChunkEn.encode "png"
 		P.=$= PipeT.convert BSF.toStrict P.=$= PipeBS.hPutStr h
 
@@ -97,14 +99,14 @@ idat :: (
 	U.Member (State.Named "png" (PipeT.Devide BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
 	U.Base IO.I es ) =>
-	H.Header -> Word32 -> Word32 ->
+	H.Header -> Word32 ->
 	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld ->
 	Eff.E es a ChunkEn.C ()
-idat hdr w h ib ob = void $
+idat hdr h ib ob = void $
 	(fix \go -> P.await >>= \x ->
 		bool (P.yield x) (pure ()) (Png.endDat x) >> go)
 	P.=$= PipeT.convert (Png.toDat hdr)
-	P.=$= (chkHdr >> Filter.filter hdr (fromIntegral w) (fromIntegral h))
+	P.=$= (chkHdr >> filter (fromIntegral h))
 	P.=$= PipeT.convert BSF.pack
 	P.=$= PZ.deflate "png" IO opts ib ob
 	P.=$= PipeT.devide "png" BSF.splitAt' "" 1000
@@ -119,6 +121,13 @@ idat hdr w h ib ob = void $
 	chkHdr = case hdr of
 		H.Header { H.interlaceMethod = H.InterlaceMethodNon } -> pure ()
 		_ -> Except.throw @String "not implemented"
+
+filter :: (U.Member P.P es) =>
+	Int -> Eff.E es BSF.ByteString [Word8] ()
+filter n = n `times_` do
+	P.awaitMaybe >>= \case
+		Nothing -> pure (); Just BSF.Empty -> pure ()
+		Just bs -> P.yield (0 : otoList bs) -- >> filter (n - 1)
 
 chunks :: U.Member P.P es => H.Header -> Eff.E es ChunkEn.C ChunkEn.C ()
 chunks hdr = void $ do

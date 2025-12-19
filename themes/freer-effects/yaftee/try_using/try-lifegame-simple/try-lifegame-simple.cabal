@@ -28,11 +28,9 @@ library
       Data.Apng
       Data.Image.Gray1
       Data.Png
-      Data.Png.Filter
       Data.Png.Header
       Lifegame.Board
       Lifegame.Png.Chunk.Encode
-      Lifegame.Png.Filter
       Lifegame.Tools
       System.File.Png.Gray1.NoInterlace
   other-modules:
