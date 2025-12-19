@@ -28,14 +28,12 @@ library
       Conduit
       Data.Image.Gray1
       Data.Png
-      Data.Png.Filter
       Data.Png.Header
       Except
       Hello
       Lib
       Lifegame.Board
       Lifegame.Png.Chunk.Encode
-      Lifegame.Png.Filter
       Lifegame.Tools
       StateExcept
   other-modules:

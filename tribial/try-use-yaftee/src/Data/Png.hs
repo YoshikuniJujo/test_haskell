@@ -10,7 +10,6 @@
 module Data.Png (
 
 	module Data.Png.Header,
-	module Data.Png.Filter,
 
 	Datable(..),
 
@@ -18,7 +17,6 @@ module Data.Png (
 
 import Data.ByteString.FingerTree qualified as BSF
 import Data.Png.Header
-import Data.Png.Filter
 
 class Datable a where
 	isDat :: a -> Bool; endDat :: a -> Bool
