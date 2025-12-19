@@ -33,8 +33,6 @@ import Codec.Compression.Zlib.Constant.Core qualified as Zlib
 import Data.Png qualified as Png
 
 import Data.Word
-import Data.Word.Crc32 qualified as Crc32
-import Data.ByteString.FingerTree.Bits qualified as BSF
 import Lifegame.Png.Filter qualified as Filter
 import Codec.Compression.Zlib.Advanced.Core qualified as Zlib
 
@@ -73,7 +71,8 @@ hWrite :: Handle -> H.Header -> G1.G ->
 	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld -> IO ()
 hWrite h hdr img ibe obe = void
 	. Eff.runM . Except.run @String . Except.run @Zlib.ReturnCode
-	. Fail.run . PipeT.devideRun @"png" @BSF.ByteString . PZ.run @"png"
+	. Fail.run . ChunkEn.encodeRun_ @"foo"
+	. PipeT.devideRun @"png" @BSF.ByteString . PZ.run @"png"
 	. P.run $ writePipe h hdr img ibe obe
 
 
@@ -81,6 +80,7 @@ hWrite h hdr img ibe obe = void
 
 writePipe :: (
 	U.Member P.P es,
+	ChunkEn.EncodeMembers "foo" es,
 	U.Member (State.Named "png" (PipeT.Devide BSF.ByteString)) es,
 	U.Member (State.Named "png" (Maybe PZ.ByteString)) es,
 	U.Member (Except.E String) es, U.Member (Except.E Zlib.ReturnCode) es,
@@ -99,10 +99,11 @@ pixels = maybe (pure ())
 
 encode :: (
 	Png.Datable a, U.Member P.P es,
+	ChunkEn.EncodeMembers "foo" es,
 	U.Member (State.Named "png" (Maybe PZ.ByteString)) es,
 	U.Member (State.Named "png" (PipeT.Devide BSF.ByteString)) es,
 	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
-	U.Base IO.I es ) =>
+	U.Member Fail.F es, U.Base IO.I es ) =>
 	H.Header -> Word32 -> Word32 ->
 	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld ->
 	Eff.E es a BSF.ByteString ()
@@ -116,33 +117,8 @@ idat :: (
 	U.Base IO.I es ) =>
 	H.Header -> Word32 -> Word32 ->
 	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld ->
-	Eff.E es a Chunk ()
-idat hdr w h ibe obe = void $
-	(fix \go -> P.await >>= \x ->
-		if Png.endDat x then pure () else P.yield x >> go)
-	P.=$= PipeT.convert (Png.toDat hdr)
-	P.=$= Filter.filter hdr (calcSizes hdr w h)
-	P.=$= PipeT.convert BSF.pack
-	P.=$= PZ.deflate "png" IO opts ibe obe
-	P.=$= PipeT.devide "png" BSF.splitAt' "" 100000
-	P.=$= PipeT.convert (Chunk "IDAT")
-	where opts = PZ.DeflateOptions {
-		PZ.deflateOptionsCompressionLevel = Zlib.DefaultCompression,
-		PZ.deflateOptionsCompressionMethod = Zlib.Deflated,
-		PZ.deflateOptionsWindowBits = Zlib.WindowBitsZlib 15,
-		PZ.deflateOptionsMemLevel = Zlib.MemLevel 1,
-		PZ.deflateOptionsCompressionStrategy = Zlib.DefaultStrategy }
-
-idat' :: (
-	Png.Datable a, U.Member P.P es,
-	U.Member (State.Named "png" (Maybe PZ.ByteString)) es,
-	U.Member (State.Named "png" (PipeT.Devide BSF.ByteString)) es,
-	U.Member (Except.E Zlib.ReturnCode) es, U.Member (Except.E String) es,
-	U.Base IO.I es ) =>
-	H.Header -> Word32 -> Word32 ->
-	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld ->
 	Eff.E es a ChunkEn.C ()
-idat' hdr w h ibe obe = void $
+idat hdr w h ibe obe = void $
 	(fix \go -> P.await >>= \x ->
 		if Png.endDat x then pure () else P.yield x >> go)
 	P.=$= PipeT.convert (Png.toDat hdr)
@@ -174,36 +150,14 @@ calcSizes H.Header { H.interlaceMethod = H.InterlaceMethodAdam7 } wdt hgt =
 	m `div'`n = (m - 1) `div` n + 1
 calcSizes _ _ _ = error "bad"
 
-chunks' :: (
+chunks :: (
 	U.Member P.P es, ChunkEn.EncodeMembers "foo" es,
 	U.Member (Except.E String) es, U.Member Fail.F es
 	) => H.Header -> Eff.E es ChunkEn.C BSF.ByteString ()
-chunks' hdr = void $
+chunks hdr = void $
 	do	let	bd'' = H.encode hdr
 		P.yield $ ChunkEn.C { ChunkEn.name = "IHDR", ChunkEn.body = BSF.fromStrict bd'' }
 		bd0 <- P.await
 		P.yield bd0
 		P.yield $ ChunkEn.C { ChunkEn.name = "IEND", ChunkEn.body = "" }
 	P.=$= ChunkEn.encode "foo"
-
-chunks :: U.Member P.P es => H.Header -> Eff.E es Chunk BSF.ByteString ()
-chunks hdr = void $
-	do	let	bd'' = H.encode hdr
-		P.yield $ Chunk { ckName = "IHDR", ckBody = BSF.fromStrict bd'' }
-		bd0 <- P.await
-		P.yield bd0
-		P.yield $ Chunk { ckName = "IEND", ckBody = "" }
-	P.=$= do
-		P.yield "\x89PNG\r\n\SUB\n"
-		forever $ P.yield . encodeChunk =<< P.await
-
-data Chunk = Chunk { ckName :: BSF.ByteString, ckBody :: BSF.ByteString }
-	deriving Show
-
-encodeChunk :: Chunk -> BSF.ByteString
-encodeChunk Chunk { ckName = nm, ckBody = bd } =
-	BSF.fromBitsBE' @Word32 ln <> nmbd <> BSF.fromBitsBE' (Crc32.toWord crc)
-	where
-	ln = fromIntegral $ BSF.length bd
-	crc = Crc32.complement $ BSF.foldl' Crc32.step Crc32.initial nmbd
-	nmbd = nm <> bd

@@ -7,7 +7,17 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lifegame.Png.Chunk.Encode (encode, encode', C(..), Chunk.EncodeMembers) where
+module Lifegame.Png.Chunk.Encode (
+
+	-- * RUN
+
+	Chunk.encodeRun_, Chunk.EncodeStates,
+
+	-- * ENCODE
+
+	encode, encode', C(..), Chunk.EncodeMembers
+
+	) where
 
 import Control.Monad
 import Control.Monad.Yaftee.Eff qualified as Eff
