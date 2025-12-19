@@ -1,9 +1,21 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ExplicitForAll #-}
+{-# LANGUAGE RequiredTypeArguments #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lifegame.Tools where
+
+import Control.Monad.Yaftee.Eff qualified as Eff
+import Control.Monad.Yaftee.State qualified as State
+import Control.HigherOpenUnion qualified as U
 
 div' :: Integral n => n -> n -> n
 a `div'` b = (a - 1) `div` b + 1
 
 times_ :: (Integral n, Monad m) => n -> m a -> m ()
-n `times_` act | n < 1 = pure () | otherwise = act >> (n - 1) `times_` act
+times_ n act | n < 1 = pure () | otherwise = act >> times_ (n - 1) act
+
+pop :: forall nm -> (U.Member (State.Named nm [a]) es) => Eff.E es i o (Maybe a)
+pop nm = State.getsModifyN nm \case [] -> Nothing; x : xs -> Just (x, xs)
