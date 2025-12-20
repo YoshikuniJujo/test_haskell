@@ -75,13 +75,6 @@ packages:
   original:
     hackage: freer-base-classes-0.1.0.0
 - completed:
-    hackage: ftcqueue-0.1.0.1@sha256:2fdb84a50d3281b622112cd8a4573b5a087043d598e5e47377e1bbc504472d2a,1706
-    pantry-tree:
-      sha256: 1704d5ac9522c7f2800a663b3e837d1069720a7f1821595a3d668a46609631b9
-      size: 363
-  original:
-    hackage: ftcqueue-0.1.0.1
-- completed:
     hackage: bytestring-ft-0.1.0.0@sha256:b20eeafdedbe1f031bef47e721398d4b340140046dae09ac68622ea5e8e895a5,2083
     pantry-tree:
       sha256: 8323140812e8ad3a40258a4e56599bc1244893ea55f45103c3887454f59db932
@@ -111,8 +104,7 @@ packages:
     hackage: png-chunk-yaftee-0.1.0.3
 snapshots:
 - completed:
-    sha256: 4bc8e0388916c4000645c068dff642482d6ed1b68b747c2d4d444857979963e0
-    size: 726334
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/24.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/24.yaml
+    sha256: 8dd2b298abf5214ce1cc339f1282b9d424d66c511d433f874c12a92989dc3007
+    size: 715169
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/12/20.yaml
+  original: nightly-2025-12-20

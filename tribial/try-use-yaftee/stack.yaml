@@ -17,8 +17,8 @@
 #
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
-snapshot:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/24.yaml
+
+snapshot: nightly-2025-12-20
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -53,7 +53,6 @@ extra-deps:
   - higher-order-freer-monad-0.1.0.0
   - higher-order-open-union-0.1.0.1
   - freer-base-classes-0.1.0.0
-  - ftcqueue-0.1.0.1
   - bytestring-ft-0.1.0.0
   - bitarray-bs-0.1.0.0
   - zlib-core-0.1.0.1
