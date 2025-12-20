@@ -8,7 +8,7 @@ module Data.Png.Header (
 
 	-- * HEADER
 
-	Header(..), encode, bpp,
+	Header(..), encode,
 
 	-- * COLOR TYPE
 
@@ -58,12 +58,6 @@ encode Header {
 	filterMethod = FilterMethod fm, interlaceMethod = InterlaceMethod im } =
 	BS.fromBitsBE' wdt <> BS.fromBitsBE' hgt <> BS.pack [bd, ct, cm, fm, im]
 
-bpp :: Integral n => Header -> n
-bpp hdr = fromIntegral (bitDepth hdr) * sampleNum hdr
-
-sampleNum :: Integral n => Header -> n
-sampleNum = colorTypeSampleNum . colorType
-
 -- COLOR TYPE
 
 newtype ColorType = ColorType Word8 deriving (Eq, Bits)
@@ -87,14 +81,6 @@ instance Show ColorType where
 	show ColorTypeColorUsed = "ColorTypeColorUsed"
 	show ColorTypeAlphaChannelUsed = "ColorTypeAlphaChannelUsed"
 	show (ColorType n) = "(ColorType " ++ show n ++ ")"
-
-colorTypeSampleNum :: Num n => ColorType -> n
-colorTypeSampleNum ColorTypeGrayscale = 1
-colorTypeSampleNum ColorTypeColorUsed = 3
-colorTypeSampleNum ColorTypePalette = 1
-colorTypeSampleNum ColorTypeAlpha = 2
-colorTypeSampleNum ColorTypeColorAlpha = 4
-colorTypeSampleNum _ = error "not allowed color type"
 
 -- COMPRESSION METHOD
 
