@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-12-20
+snapshot: nightly-2025-12-21
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -52,7 +52,6 @@ extra-deps:
   - yaftee-conduit-bytestring-ft-0.1.0.1
   - higher-order-freer-monad-0.1.0.0
   - higher-order-open-union-0.1.0.1
-  - freer-base-classes-0.1.0.0
   - bytestring-ft-0.1.0.0
   - bitarray-bs-0.1.0.0
   - zlib-core-0.1.0.1

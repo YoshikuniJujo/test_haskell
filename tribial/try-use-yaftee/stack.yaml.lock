@@ -68,13 +68,6 @@ packages:
   original:
     hackage: higher-order-open-union-0.1.0.1
 - completed:
-    hackage: freer-base-classes-0.1.0.0@sha256:38e4853293416518606ea78699a57025b3595a8fbec36e8a26cce49e18fa1daf,1895
-    pantry-tree:
-      sha256: ea291a883003d80cdc2bcc4e3589e495ae1559e96e8368fe94ea724078f01476
-      size: 463
-  original:
-    hackage: freer-base-classes-0.1.0.0
-- completed:
     hackage: bytestring-ft-0.1.0.0@sha256:b20eeafdedbe1f031bef47e721398d4b340140046dae09ac68622ea5e8e895a5,2083
     pantry-tree:
       sha256: 8323140812e8ad3a40258a4e56599bc1244893ea55f45103c3887454f59db932
@@ -104,7 +97,7 @@ packages:
     hackage: png-chunk-yaftee-0.1.0.3
 snapshots:
 - completed:
-    sha256: 8dd2b298abf5214ce1cc339f1282b9d424d66c511d433f874c12a92989dc3007
-    size: 715169
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/12/20.yaml
-  original: nightly-2025-12-20
+    sha256: ecae7308cfd91c3c049f09a2bde18e2c321ef415e33e697f7fdae71d1e422d45
+    size: 714960
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/12/21.yaml
+  original: nightly-2025-12-21
