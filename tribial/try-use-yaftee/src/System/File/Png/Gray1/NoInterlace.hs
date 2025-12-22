@@ -48,18 +48,10 @@ write fp = writeHdr fp <$> hdr <*> id
 
 writeHdr :: FilePath -> H.Header -> G1.G -> IO ()
 writeHdr fp hdr img = do
-	chkHdr
 	h <- openFile fp WriteMode
 	(ib, ob) <- (,) <$> PZ.cByteArrayMalloc 64 <*> PZ.cByteArrayMalloc 64
 	hWrite h hdr img ib ob
 	PZ.cByteArrayFree ib; PZ.cByteArrayFree ob; hClose h
-	where chkHdr
-		| H.bitDepth hdr == 1,
-			H.colorType hdr == H.ColorTypeGrayscale,
-			H.compressionMethod hdr == H.CompressionMethodDeflate,
-			H.filterMethod hdr == H.FilterMethodDefaultFilter,
-			H.interlaceMethod hdr == H.InterlaceMethodNon = pure ()
-		| otherwise = error "not implemented for such header"
 
 hWrite :: Handle -> H.Header -> G1.G ->
 	PZ.CByteArray RealWorld -> PZ.CByteArray RealWorld -> IO ()
