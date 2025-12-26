@@ -17,6 +17,8 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 	createWindowCommandBuffersFramesCreateCommandBuffers,
 	createWindowCommandBuffersFramesCopyCommandBuffers,
 	createWindowCommandBuffersFramesFence2,
+	createWindowCommandBuffersFramesFence,
+	createWindowCommandBuffersFramesFence2Copy,
 	createWindowCommandBuffersSemaphores,
 
 	destroyBeforeCreateSwapChain,
@@ -45,6 +47,7 @@ import Data.Int
 import Gpu.Vulkan.AllocationCallbacks.Core qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.PhysicalDevice.Core qualified as Vk.Phd
 import Gpu.Vulkan.Device.Core qualified as Vk.Dvc
+import Gpu.Vulkan.Fence.Core qualified as Vk.Fnc
 import Gpu.Vulkan.CommandPool.Core qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer.Core qualified as Vk.CBffr
 import Gpu.Vulkan.Image.Core qualified as Vk.Img
@@ -205,6 +208,24 @@ createWindowCommandBuffersFramesFence2 =
 foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2"
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2 ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
+
+createWindowCommandBuffersFramesFence ::
+	Vk.Dvc.D -> Ptr Vk.AllocCallbacks.A -> #{type uint32_t} -> Ptr Vk.Fnc.F -> IO ()
+createWindowCommandBuffersFramesFence =
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence"
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence ::
+	Vk.Dvc.D -> Ptr Vk.AllocCallbacks.A -> #{type uint32_t} -> Ptr Vk.Fnc.F -> IO ()
+
+createWindowCommandBuffersFramesFence2Copy :: Vk.ImGui.H.Win.W -> Ptr Vk.Fnc.F -> IO ()
+createWindowCommandBuffersFramesFence2Copy =
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2_copy
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2_copy"
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2_copy ::
+	Vk.ImGui.H.Win.W -> Ptr Vk.Fnc.F -> IO ()
+	
 
 createWindowCommandBuffersSemaphores ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()

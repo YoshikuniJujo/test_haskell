@@ -269,6 +269,12 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2(
 	VkDevice device,
 	const VkAllocationCallbacks* allocator,
 	ImGui_ImplVulkanH_Window* wd );
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
+	VkDevice device,
+	const VkAllocationCallbacks* allocator,
+	uint32_t ic, VkFence* fncs );
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2Copy(
+	ImGui_ImplVulkanH_Window* wd, VkFence* fcns );
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator);

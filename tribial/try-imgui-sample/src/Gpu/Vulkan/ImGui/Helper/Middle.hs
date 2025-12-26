@@ -25,6 +25,8 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 -- * After Here
 
 	createWindowCommandBuffersFramesFence2,
+	createWindowCommandBuffersFramesFence,
+	createWindowCommandBuffersFramesFence2Copy,
 	createWindowCommandBuffersSemaphores,
 
 	destroyBeforeCreateSwapChain,
@@ -62,6 +64,7 @@ import Gpu.Vulkan.Enum qualified as Vk
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.PhysicalDevice.Middle.Internal qualified as Vk.Phd
 import Gpu.Vulkan.Device.Middle.Internal qualified as Vk.Dvc
+import Gpu.Vulkan.Fence.Middle.Internal qualified as Vk.Fnc
 import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam
 import Gpu.Vulkan.CommandPool.Middle.Internal qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer.Middle.Internal qualified as Vk.CmdBffr
@@ -203,9 +206,25 @@ setCommandBufferList cbs f =
 createWindowCommandBuffersFramesFence2 ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
 	TPMaybe.M Vk.AllocCallbacks.A mud -> IO ()
-createWindowCommandBuffersFramesFence2 (Vk.Dvc.D dvc) wd macs =
-	Vk.AllocCallbacks.mToCore macs \pacs -> do
-	C.createWindowCommandBuffersFramesFence2 dvc wd pacs
+createWindowCommandBuffersFramesFence2 dvc wd macs = do
+	n <- Vk.ImGui.H.Win.C.wCImageCount <$> Vk.ImGui.H.Win.C.toC wd
+	fncs <- createWindowCommandBuffersFramesFence dvc macs n
+	createWindowCommandBuffersFramesFence2Copy wd fncs $ fromIntegral n
+
+createWindowCommandBuffersFramesFence ::
+	Vk.Dvc.D ->
+	TPMaybe.M Vk.AllocCallbacks.A mud -> Word32 -> IO [Vk.Fnc.F]
+createWindowCommandBuffersFramesFence (Vk.Dvc.D dvc) macs ic = (Vk.Fnc.F <$>) <$> allocaArray (fromIntegral ic) \pfs -> do
+	Vk.AllocCallbacks.mToCore macs \pacs ->
+		C.createWindowCommandBuffersFramesFence dvc pacs ic pfs
+	peekArray (fromIntegral ic) pfs
+
+createWindowCommandBuffersFramesFence2Copy ::
+	Vk.ImGui.H.Win.W -> [Vk.Fnc.F] -> Int -> IO ()
+createWindowCommandBuffersFramesFence2Copy wd fncs ic = allocaArray ic \pfs -> do
+	pokeArray pfs $ (\(Vk.Fnc.F f) -> f) <$> fncs
+	C.createWindowCommandBuffersFramesFence2Copy wd pfs
+
 
 createWindowCommandBuffersSemaphores ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->

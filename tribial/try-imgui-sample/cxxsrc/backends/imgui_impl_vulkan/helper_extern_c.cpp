@@ -47,6 +47,17 @@ im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2(
 	const VkAllocationCallbacks* allocator
 	);
 extern "C" void
+im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence(
+	VkDevice device,
+	const VkAllocationCallbacks* allocator,
+	uint32_t ic, VkFence *fncs
+	);
+extern "C" void
+im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2_copy(
+	ImGui_ImplVulkanH_Window* wd,
+	VkFence *fncs
+	);
+extern "C" void
 im_gui_impl_vulkan_h_create_window_command_buffers_semaphores(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
@@ -201,6 +212,26 @@ im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2(
 {
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2(
 		device, allocator, wd );
+}
+
+void
+im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence(
+	VkDevice device,
+	const VkAllocationCallbacks* allocator,
+	uint32_t ic, VkFence *fncs
+	)
+{
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
+		device, allocator, ic, fncs );
+}
+
+void
+im_gui_impl_vulkan_h_create_window_command_buffers_frames_fence2_copy(
+	ImGui_ImplVulkanH_Window* wd,
+	VkFence *fncs
+	)
+{
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2Copy(wd, fncs);
 }
 
 void
