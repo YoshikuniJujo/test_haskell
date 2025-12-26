@@ -1585,10 +1585,19 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
 		wd, cbs );
 }
 
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyFenceToFrame(
+	VkFence* fncs, ImGui_ImplVulkanH_Frame** fds, uint32_t ic )
+{
+    for (uint32_t i = 0; i < ic; i++) {
+	    fds[i]->Fence = fncs[i];
+    }
+}
+
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
 	VkDevice device,
 	const VkAllocationCallbacks* allocator,
-	uint32_t ic, ImGui_ImplVulkanH_Frame** fds)
+	uint32_t ic,
+	VkFence *fncs)
 {
 
 	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence begin ***\n");
@@ -1598,15 +1607,30 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
 
     for (uint32_t i = 0; i < ic; i++)
     {
-        ImGui_ImplVulkanH_Frame* fd = fds[i];
         {
             VkFenceCreateInfo info = {};
             info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-            err = vkCreateFence(device, &info, allocator, &fd->Fence);
+	    printf("HELLO\n");
+            err = vkCreateFence(device, &info, allocator, &fncs[i]);
             check_vk_result(err);
         }
     }
+
+}
+
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2Copy(
+	ImGui_ImplVulkanH_Window* wd, VkFence *fncs )
+{
+
+	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2Copy begin ***\n");
+
+	uint32_t ic = wd->ImageCount;
+	ImGui_ImplVulkanH_Frame* fds[ic];
+	for (uint32_t i = 0; i < ic; i++)
+		fds[i] = &wd->Frames[i];
+
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyFenceToFrame(fncs, fds, ic);
 }
 
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2(
@@ -1618,14 +1642,13 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2(
 	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2 begin ***\n");
 
 	uint32_t ic = wd->ImageCount;
-
-	ImGui_ImplVulkanH_Frame* fds[ic];
-
-	for (uint32_t i = 0; i < ic; i++)
-		fds[i] = &wd->Frames[i];
+	VkFence fncs[ic];
 
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
-		device, allocator, ic, fds );
+		device, allocator, ic, fncs );
+
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2Copy(
+		wd, fncs);
 
 }
 
