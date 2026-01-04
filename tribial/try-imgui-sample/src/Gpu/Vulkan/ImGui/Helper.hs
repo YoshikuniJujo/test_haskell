@@ -12,12 +12,8 @@ module Gpu.Vulkan.ImGui.Helper (
 	selectSurfaceFormat,
 	selectPresentMode,
 	createWindowSwapChain,
-	createWindowCommandBuffers,
 	createWindowCommandBuffersCreateCommandPool,
-	createWindowCommandBuffersFromCommandPool,
 	createWindowCommandBuffersCopyCommandPool,
-	createWindowCommandBuffersFromCommandPool2,
-	createWindowCommandBuffersFrames,
 
 	createWindowCommandBuffersFramesCommandBuffers2,
 	createWindowCommandBuffersFramesCreateCommandBuffers,
@@ -101,13 +97,6 @@ destroyBeforeCreateSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
 destroyBeforeCreateSwapChain (Vk.Dvc.D dvc) wd mac =
 	M.destroyBeforeCreateSwapChain dvc wd (Vk.AllocCallbacks.toMiddle mac)
 
-createWindowCommandBuffers :: Vk.AllocCallbacks.ToMiddle mac =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Word32 -> IO a -> IO a
-createWindowCommandBuffers _phd dvc wd qfi mac ic f =
-	createWindowCommandBuffersCreateCommandPool dvc qfi mac ic \cp ->
-	createWindowCommandBuffersFromCommandPool dvc wd qfi mac cp f
-
 createWindowCommandBuffersCreateCommandPool :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.QFam.Index ->
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Word32 ->
@@ -122,34 +111,11 @@ fromList :: (a -> t s) -> [a] -> (forall ss . HPList.PL t ss -> b) -> b
 fromList _ [] f = f HPList.Nil
 fromList k (x : xs) f = fromList k xs \ys -> f $ k x HPList.:** ys
 
-createWindowCommandBuffersFromCommandPool :: Vk.AllocCallbacks.ToMiddle mac =>
-	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> HPList.PL Vk.CmdPl.C scpls -> IO a -> IO a
-createWindowCommandBuffersFromCommandPool (Vk.Dvc.D dvc) wd qfi mac cps =
-	M.createWindowCommandBuffersFromCommandPool
-		dvc wd qfi (Vk.AllocCallbacks.toMiddle mac) (HPList.toList (\(Vk.CmdPl.C cp) -> cp) cps)
-
 createWindowCommandBuffersCopyCommandPool ::
 	Vk.ImGui.H.Win.W -> HPList.PL Vk.CmdPl.C scpls -> IO ()
 createWindowCommandBuffersCopyCommandPool wd cps =
 	M.createWindowCommandBuffersCopyCommandPool
 		wd (HPList.toList (\(Vk.CmdPl.C cp) -> cp) cps)
-
-createWindowCommandBuffersFromCommandPool2 :: Vk.AllocCallbacks.ToMiddle mac =>
-	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO a -> IO a
-createWindowCommandBuffersFromCommandPool2 (Vk.Dvc.D dvc) wd qfi mac f =
-	M.createWindowCommandBuffersFromCommandPool2
-		dvc wd qfi (Vk.AllocCallbacks.toMiddle mac) f
-
-createWindowCommandBuffersFrames ::
-	Vk.AllocCallbacks.ToMiddle mac =>
-	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO a -> IO a
-createWindowCommandBuffersFrames dvc wd qfi mac f =
-	createWindowCommandBuffersFramesCommandBuffers2 dvc wd do
-		createWindowCommandBuffersFramesFence2 dvc wd mac
-		f
 
 createWindowCommandBuffersFramesCommandBuffers2 ::
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> IO a -> IO a
@@ -171,10 +137,10 @@ createWindowCommandBuffersFramesCopyCommandBuffers wd cbs =
 
 createWindowCommandBuffersFramesFence2 :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
-createWindowCommandBuffersFramesFence2 (Vk.Dvc.D dvc) wd mac =
-	M.createWindowCommandBuffersFramesFence2
-		dvc wd (Vk.AllocCallbacks.toMiddle mac)
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Int -> IO ()
+createWindowCommandBuffersFramesFence2 (Vk.Dvc.D dvc) wd mac n = do
+	fncs <- M.createWindowCommandBuffersFramesFence dvc (Vk.AllocCallbacks.toMiddle mac) $ fromIntegral n
+	M.createWindowCommandBuffersFramesFence2Copy wd fncs n
 
 createWindowCommandBuffersSemaphores :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
@@ -194,7 +160,7 @@ onlyCreateSwapChain (Vk.Dvc.D dvc) wd mac wdt hgt mic (Vk.Swpch.S sc) cap =
 	M.onlyCreateSwapChain dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic sc cap
 
 onlyCreateSwapChainNoWd :: (
-	Vk.AllocCallbacks.ToMiddle mac, Vk.T.FormatToValue fmt, Vk.T.FormatToValue fmt' ) =>
+	Vk.AllocCallbacks.ToMiddle mac, Vk.T.FormatToValue fmt' ) =>
 	Vk.Dvc.D sd ->
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Word32 ->
 	Vk.Swpch.S fmt ssc -> Vk.Sfc.Capabilities -> Vk.Sfc.S ssfc -> Vk.Sfc.Format fmt' ->
@@ -246,11 +212,6 @@ copyFramebufferToWd ::
 	Bool -> Vk.ImGui.H.Win.W -> [Vk.Frmbffr.F sfb] -> IO ()
 copyFramebufferToWd udr wd fbs =
 	M.copyFramebufferToWd udr wd ((\(Vk.Frmbffr.F fb) -> fb) <$> fbs)
-
-copyFramebufferToWd' ::
-	Bool -> Vk.ImGui.H.Win.W -> HPList.PL Vk.Frmbffr.F sfbs -> IO ()
-copyFramebufferToWd' udr wd fbs =
-	M.copyFramebufferToWd udr wd (HPList.toList (\(Vk.Frmbffr.F fb) -> fb) fbs)
 
 createWindowRenderPassRaw :: forall (fmt :: Vk.T.Format) sd mac srp . (
 	Vk.AllocCallbacks.ToMiddle mac, Vk.T.FormatToValue fmt

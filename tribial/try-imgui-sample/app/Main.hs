@@ -345,7 +345,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	pure () >>= \() ->
 	Vk.ImGui.H.createWindowCommandBuffersFramesCopyCommandBuffers wdcxx cbs $
 
-	Vk.ImGui.H.createWindowCommandBuffersFramesFence2 dvc wdcxx nil >>
+	Vk.ImGui.H.createWindowCommandBuffersFramesFence2 dvc wdcxx nil (length scis) >>
 	Vk.ImGui.H.createWindowCommandBuffersSemaphores dvc wdcxx nil >>
 
 	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo -> do

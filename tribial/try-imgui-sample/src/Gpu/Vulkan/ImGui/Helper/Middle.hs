@@ -9,16 +9,11 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 	selectSurfaceFormat,
 	selectPresentMode,
 	createWindowSwapChain,
-	createWindowCommandBuffers,
 	createWindowCommandBuffersCreateCommandPool,
-	createWindowCommandBuffersFromCommandPool,
 	createWindowCommandBuffersCopyCommandPool,
-	createWindowCommandBuffersFromCommandPool2,
-	createWindowCommandBuffersFrames,
 
 -- * Here
 
-	createWindowCommandBuffersFramesCommandBuffers2,
 	createWindowCommandBuffersFramesCreateCommandBuffers,
 	createWindowCommandBuffersFramesCopyCommandBuffers,
 
@@ -120,13 +115,6 @@ destroyBeforeCreateSwapChain (Vk.Dvc.D dvc) wd macs =
 	Vk.AllocCallbacks.mToCore macs \pacs ->
 	C.destroyBeforeCreateSwapChain dvc wd pacs
 
-createWindowCommandBuffers ::
-	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M Vk.AllocCallbacks.A mud -> Word32 -> IO a -> IO a
-createWindowCommandBuffers _phd dvc wd qfi macs ic f = do
-	cps <- createWindowCommandBuffersCreateCommandPool dvc qfi macs ic
-	createWindowCommandBuffersFromCommandPool dvc wd qfi macs cps f
-
 createWindowCommandBuffersCreateCommandPool ::
 	Vk.Dvc.D -> Vk.QFam.Index ->
 	TPMaybe.M Vk.AllocCallbacks.A mud -> Word32 -> IO [Vk.CmdPl.C]
@@ -137,44 +125,12 @@ createWindowCommandBuffersCreateCommandPool
 		copyBytes pcps pcps' (fromIntegral ic * sizeOf (undefined :: Ptr ()))
 	(Vk.CmdPl.C <$>) <$> peekArray (fromIntegral ic) pcps
 
-createWindowCommandBuffersFromCommandPool ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M Vk.AllocCallbacks.A mud -> [Vk.CmdPl.C] -> IO a -> IO a
-createWindowCommandBuffersFromCommandPool dvc wd qfi macs cps f = do
-	createWindowCommandBuffersCopyCommandPool wd cps
-	createWindowCommandBuffersFromCommandPool2 dvc wd qfi macs f
-
 createWindowCommandBuffersCopyCommandPool ::
 	Vk.ImGui.H.Win.W -> [Vk.CmdPl.C] -> IO ()
 createWindowCommandBuffersCopyCommandPool wd cps =
 	allocaArray (length cps) \pcps -> do
 		pokeArray pcps $ (\(Vk.CmdPl.C cp) -> cp) <$> cps
 		C.createWindowCommandBuffersCopyCommandPool wd pcps
-
-createWindowCommandBuffersFromCommandPool2 ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M Vk.AllocCallbacks.A mud -> IO a -> IO a
-createWindowCommandBuffersFromCommandPool2 dvc wd qfi macs f =
-	createWindowCommandBuffersFrames dvc wd qfi macs do
-		createWindowCommandBuffersSemaphores dvc wd macs
-		f
-
-createWindowCommandBuffersFrames ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Vk.QFam.Index ->
-	TPMaybe.M Vk.AllocCallbacks.A mud -> IO a -> IO a
-createWindowCommandBuffersFrames dvc wd qfi macs f =
-	createWindowCommandBuffersFramesCommandBuffers2 dvc wd do
-		createWindowCommandBuffersFramesFence2 dvc wd macs
-		f
-
-createWindowCommandBuffersFramesCommandBuffers2 ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> IO a -> IO a
-createWindowCommandBuffersFramesCommandBuffers2 dvc wd f = do
-	cbs <- createWindowCommandBuffersFramesCreateCommandBuffers dvc wd
-	createWindowCommandBuffersFramesCopyCommandBuffers wd cbs f
-	
--- createWindowCommandBuffersFramesCommandBuffers2 (Vk.Dvc.D dvc) wd =
---	C.createWindowCommandBuffersFramesCommandBuffers2 dvc wd
 
 createWindowCommandBuffersFramesCreateCommandBuffers ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> IO [Vk.CmdBffr.C]
@@ -205,11 +161,10 @@ setCommandBufferList cbs f =
 
 createWindowCommandBuffersFramesFence2 ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
-	TPMaybe.M Vk.AllocCallbacks.A mud -> IO ()
-createWindowCommandBuffersFramesFence2 dvc wd macs = do
-	n <- Vk.ImGui.H.Win.C.wCImageCount <$> Vk.ImGui.H.Win.C.toC wd
-	fncs <- createWindowCommandBuffersFramesFence dvc macs n
-	createWindowCommandBuffersFramesFence2Copy wd fncs $ fromIntegral n
+	TPMaybe.M Vk.AllocCallbacks.A mud -> Int -> IO ()
+createWindowCommandBuffersFramesFence2 dvc wd macs n = do
+	fncs <- createWindowCommandBuffersFramesFence dvc macs $ fromIntegral n
+	createWindowCommandBuffersFramesFence2Copy wd fncs n
 
 createWindowCommandBuffersFramesFence ::
 	Vk.Dvc.D ->
