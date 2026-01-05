@@ -332,6 +332,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	createFramebufferList fbg [0 ..] fbinfos >>= \fbs ->
 	HPList.replicateM (length scis) (createCommandPool dvc qfi) \cps ->
 	allocateCommandBuffers dvc cps \cbs ->
+	Vk.ImGui.H.createWindowCommandBuffersFramesFence dvc nil (length scis) >>= \fncs ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
@@ -344,8 +345,8 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.H.createWindowCommandBuffersCopyCommandPool wdcxx cps >>
 	pure () >>= \() ->
 	Vk.ImGui.H.createWindowCommandBuffersFramesCopyCommandBuffers wdcxx cbs $
+	Vk.ImGui.H.createWindowCommandBuffersFramesFence2Copy wdcxx fncs (length scis) >>
 
-	Vk.ImGui.H.createWindowCommandBuffersFramesFence2 dvc wdcxx nil (length scis) >>
 	Vk.ImGui.H.createWindowCommandBuffersSemaphores dvc wdcxx nil >>
 
 	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo -> do

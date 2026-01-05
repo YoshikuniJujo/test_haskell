@@ -20,6 +20,8 @@ module Gpu.Vulkan.ImGui.Helper (
 	createWindowCommandBuffersFramesCopyCommandBuffers,
 
 	createWindowCommandBuffersFramesFence2,
+	createWindowCommandBuffersFramesFence,
+	createWindowCommandBuffersFramesFence2Copy,
 	createWindowCommandBuffersSemaphores,
 
 	destroyBeforeCreateSwapChain,
@@ -60,6 +62,8 @@ import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
 import Gpu.Vulkan.RenderPass.Type qualified as Vk.RndrPss
 import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
 import Gpu.Vulkan.Framebuffer.Type qualified as Vk.Frmbffr
+
+import Gpu.Vulkan.Fence.Internal qualified as Vk.Fence
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
 import Gpu.Vulkan.Khr.Surface.Internal qualified as Vk.Sfc
@@ -138,9 +142,22 @@ createWindowCommandBuffersFramesCopyCommandBuffers wd cbs =
 createWindowCommandBuffersFramesFence2 :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Int -> IO ()
-createWindowCommandBuffersFramesFence2 (Vk.Dvc.D dvc) wd mac n = do
-	fncs <- M.createWindowCommandBuffersFramesFence dvc (Vk.AllocCallbacks.toMiddle mac) $ fromIntegral n
-	M.createWindowCommandBuffersFramesFence2Copy wd fncs n
+createWindowCommandBuffersFramesFence2 dvc wd mac n = do
+	fncs <- createWindowCommandBuffersFramesFence dvc mac n
+	createWindowCommandBuffersFramesFence2Copy wd fncs n
+
+createWindowCommandBuffersFramesFence ::
+	Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Dvc.D sd -> TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Int ->
+	IO [Vk.Fence.F sf]
+createWindowCommandBuffersFramesFence (Vk.Dvc.D dvc) mac n =
+	(Vk.Fence.F <$>) <$> M.createWindowCommandBuffersFramesFence
+		dvc (Vk.AllocCallbacks.toMiddle mac) (fromIntegral n)
+
+createWindowCommandBuffersFramesFence2Copy ::
+	Vk.ImGui.H.Win.W -> [Vk.Fence.F sf] -> Int -> IO ()
+createWindowCommandBuffersFramesFence2Copy wd fnc =
+	M.createWindowCommandBuffersFramesFence2Copy wd ((\(Vk.Fence.F f) -> f) <$> fnc)
 
 createWindowCommandBuffersSemaphores :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
