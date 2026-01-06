@@ -28,6 +28,7 @@ import Data.Bits.ToolsYj
 import Data.Default
 import Data.Maybe
 import Data.Maybe.ToolsYj
+import Data.Either
 import Data.List qualified as L
 import Data.List.ToolsYj
 import Data.HeteroParList (pattern (:**))
@@ -55,6 +56,7 @@ import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
 import Gpu.Vulkan.DescriptorPool.Type qualified as Vk.DscPl
+import Gpu.Vulkan.Fence qualified as Vk.Fnc
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
 import Gpu.Vulkan.Component qualified as Vk.Cmp
@@ -332,7 +334,12 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	createFramebufferList fbg [0 ..] fbinfos >>= \fbs ->
 	HPList.replicateM (length scis) (createCommandPool dvc qfi) \cps ->
 	allocateCommandBuffers dvc cps \cbs ->
-	Vk.ImGui.H.createWindowCommandBuffersFramesFence dvc nil (length scis) >>= \fncs ->
+	Vk.Fnc.group dvc nil \gfnc ->
+	let	fncInfo = Vk.Fnc.CreateInfo {
+			Vk.Fnc.createInfoNext = TMaybe.N,
+			Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit
+			} in
+	flip (Vk.Fnc.create' gfnc) fncInfo `mapM` [0 .. length scis - 1] >>= \(rights -> fncs) ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
