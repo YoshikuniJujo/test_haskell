@@ -277,7 +277,7 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2Copy(
 	ImGui_ImplVulkanH_Window* wd, VkFence* fcns );
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd,
-	const VkAllocationCallbacks* allocator);
+	const VkAllocationCallbacks* allocator, uint32_t sc);
 
 // Helper structure to hold the data needed by one rendering frame
 // (Used by example's main.cpp. Used by multi-viewport features. Probably NOT used by your own engine/app.)

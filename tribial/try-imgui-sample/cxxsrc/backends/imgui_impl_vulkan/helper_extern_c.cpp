@@ -241,7 +241,7 @@ im_gui_impl_vulkan_h_create_window_command_buffers_semaphores(
 	const VkAllocationCallbacks* allocator )
 {
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(
-		device, wd, allocator );
+		device, wd, allocator, wd->SemaphoreCount );
 }
 
 void
