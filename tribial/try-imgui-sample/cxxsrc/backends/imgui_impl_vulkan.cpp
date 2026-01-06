@@ -1421,6 +1421,39 @@ uint32_t ImGui_ImplVulkanH_SelectQueueFamilyIndex(VkPhysicalDevice physical_devi
     return (uint32_t)-1;
 }
 
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCreate(
+	VkDevice device, const VkAllocationCallbacks* allocator,
+	uint32_t sc, VkSemaphore *iasmps, VkSemaphore *rcsmps )
+{
+    VkResult err;
+
+    for (uint32_t i = 0; i < sc; i++)
+    {
+        {
+            VkSemaphoreCreateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            err = vkCreateSemaphore(device, &info, allocator, &(iasmps[i]));
+            check_vk_result(err);
+            err = vkCreateSemaphore(device, &info, allocator, &(rcsmps[i]));
+            check_vk_result(err);
+        }
+    }
+}
+
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCopy(
+	ImGui_ImplVulkanH_Window* wd,
+	uint32_t sc, VkSemaphore *iasmps, VkSemaphore *rcsmps )
+{
+    for (uint32_t i = 0; i < sc; i++)
+    {
+        ImGui_ImplVulkanH_FrameSemaphores* fsd = &wd->FrameSemaphores[i];
+	{
+	    fsd->ImageAcquiredSemaphore = iasmps[i];
+	    fsd->RenderCompleteSemaphore = rcsmps[i];
+	}
+    }
+}
+
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(VkDevice device, ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator, uint32_t sc)
 {
 
@@ -1432,18 +1465,10 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(VkDevice device, ImG
 	"*** ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores: wd->SemaphoreCount = %d\n",
 	wd->SemaphoreCount );
 
-    for (uint32_t i = 0; i < sc; i++)
-    {
-        ImGui_ImplVulkanH_FrameSemaphores* fsd = &wd->FrameSemaphores[i];
-        {
-            VkSemaphoreCreateInfo info = {};
-            info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            err = vkCreateSemaphore(device, &info, allocator, &fsd->ImageAcquiredSemaphore);
-            check_vk_result(err);
-            err = vkCreateSemaphore(device, &info, allocator, &fsd->RenderCompleteSemaphore);
-            check_vk_result(err);
-        }
-    }
+    VkSemaphore iasmps[sc], rcsmps[sc];
+
+    ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCreate(device, allocator, sc, iasmps, rcsmps);
+    ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCopy(wd, sc, iasmps, rcsmps);
 }
 
 VkCommandPool *ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
