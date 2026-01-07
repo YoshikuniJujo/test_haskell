@@ -11,7 +11,6 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 	createWindowCommandBuffersCreateCommandPool,
 	createWindowCommandBuffersFromCommandPool,
 	createWindowCommandBuffersCopyCommandPool,
-	createWindowCommandBuffersFromCommandPool2,
 	createWindowCommandBuffersFrames,
 	createWindowCommandBuffersFramesCommandBuffers2,
 	createWindowCommandBuffersFramesCreateCommandBuffers,
@@ -20,6 +19,8 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 	createWindowCommandBuffersFramesFence,
 	createWindowCommandBuffersFramesFence2Copy,
 	createWindowCommandBuffersSemaphores,
+	createWindowCommandBuffersSemaphoresCreate,
+	createWindowCommandBuffersSemaphoresCopy,
 
 	destroyBeforeCreateSwapChain,
 
@@ -40,6 +41,7 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 	) where
 
 import Foreign.Ptr
+import Foreign.Marshal.Array
 import Foreign.Concurrent
 import Data.Word
 import Data.Int
@@ -50,6 +52,7 @@ import Gpu.Vulkan.Device.Core qualified as Vk.Dvc
 import Gpu.Vulkan.Fence.Core qualified as Vk.Fnc
 import Gpu.Vulkan.CommandPool.Core qualified as Vk.CmdPl
 import Gpu.Vulkan.CommandBuffer.Core qualified as Vk.CBffr
+import Gpu.Vulkan.Semaphore.Core qualified as Vk.Smp
 import Gpu.Vulkan.Image.Core qualified as Vk.Img
 import Gpu.Vulkan.ImageView.Core qualified as Vk.ImgVw
 import Gpu.Vulkan.RenderPass.Core qualified as Vk.RndrPss
@@ -146,13 +149,6 @@ foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_copy_co
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_copy_command_pool ::
 	Vk.ImGui.H.Win.W -> Ptr Vk.CmdPl.C -> IO ()
 
-createWindowCommandBuffersFromCommandPool2 ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
-	Ptr Vk.AllocCallbacks.A -> IO ()
-createWindowCommandBuffersFromCommandPool2 dvc wd qf allc = do
-	createWindowCommandBuffersFrames dvc wd qf allc
-	createWindowCommandBuffersSemaphores dvc wd allc
-
 foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool2"
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_from_command_pool2 ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
@@ -228,13 +224,39 @@ foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_frames_
 	
 
 createWindowCommandBuffersSemaphores ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
-createWindowCommandBuffersSemaphores =
-	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_semaphores
+	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> Int -> IO ()
+createWindowCommandBuffersSemaphores dvc wd pacs n =
+	allocaArray n \iasmps -> allocaArray n \rcsmps -> do
+	createWindowCommandBuffersSemaphoresCreate
+		dvc pacs (fromIntegral n) iasmps rcsmps
+	createWindowCommandBuffersSemaphoresCopy
+		wd (fromIntegral n) iasmps rcsmps
+
+createWindowCommandBuffersSemaphoresCreate ::
+	Vk.Dvc.D -> Ptr Vk.AllocCallbacks.A ->
+	#{type uint32_t} -> Ptr Vk.Smp.S -> Ptr Vk.Smp.S -> IO ()
+createWindowCommandBuffersSemaphoresCreate =
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_semaphores_create
+
+createWindowCommandBuffersSemaphoresCopy ::
+	Vk.ImGui.H.Win.W ->
+	#{type uint32_t} -> Ptr Vk.Smp.S -> Ptr Vk.Smp.S -> IO ()
+createWindowCommandBuffersSemaphoresCopy =
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_semaphores_copy
 
 foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_semaphores"
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_semaphores ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_semaphores_create"
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_semaphores_create ::
+	Vk.Dvc.D -> Ptr Vk.AllocCallbacks.A ->
+	#{type uint32_t} -> Ptr Vk.Smp.S -> Ptr Vk.Smp.S -> IO ()
+
+foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_semaphores_copy"
+	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_semaphores_copy ::
+	Vk.ImGui.H.Win.W ->
+	#{type uint32_t} -> Ptr Vk.Smp.S -> Ptr Vk.Smp.S -> IO ()
 
 createSwapChain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} -> IO ()

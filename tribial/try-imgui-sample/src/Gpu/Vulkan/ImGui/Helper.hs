@@ -161,10 +161,10 @@ createWindowCommandBuffersFramesFence2Copy wd fnc =
 
 createWindowCommandBuffersSemaphores :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
-createWindowCommandBuffersSemaphores (Vk.Dvc.D dvc) wd mac =
+	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Int ->IO ()
+createWindowCommandBuffersSemaphores (Vk.Dvc.D dvc) wd mac n =
 	M.createWindowCommandBuffersSemaphores
-		dvc wd (Vk.AllocCallbacks.toMiddle mac)
+		dvc wd (Vk.AllocCallbacks.toMiddle mac) n
 
 createSwapChain :: Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Word32 -> IO ()
 createSwapChain (Vk.Dvc.D dvc) wd mic = M.createSwapChain dvc wd mic

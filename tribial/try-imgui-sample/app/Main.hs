@@ -355,7 +355,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.H.createWindowCommandBuffersFramesFence2Copy wdcxx fncs (length scis) >>
 
 	putStrLn ("length scis = " ++ show (length scis)) >>
-	Vk.ImGui.H.createWindowCommandBuffersSemaphores dvc wdcxx nil >>
+	Vk.ImGui.H.createWindowCommandBuffersSemaphores dvc wdcxx nil (length scis + 1) >>
 
 	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo -> do
 	cxx_initialize_ImGui_ImplVulkan_InitInfo

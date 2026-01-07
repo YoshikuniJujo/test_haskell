@@ -63,6 +63,15 @@ im_gui_impl_vulkan_h_create_window_command_buffers_semaphores(
 	ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator );
 extern "C" void
+im_gui_impl_vulkan_h_create_window_command_buffers_semaphores_create(
+	VkDevice device,
+	const VkAllocationCallbacks* allocator,
+	uint32_t sc, VkSemaphore *iasmps, VkSemaphore *rcsmps );
+extern "C" void
+im_gui_impl_vulkan_h_create_window_command_buffers_semaphores_copy(
+	ImGui_ImplVulkanH_Window* wd,
+	uint32_t sc, VkSemaphore *iasmps, VkSemaphore *rcsmps );
+extern "C" void
 	im_gui_impl_vulkan_h_create_window_command_buffers_copy_command_pool(
 	ImGui_ImplVulkanH_Window* wd, VkCommandPool *cps );
 extern "C" void im_gui_impl_vulkan_h_destroy_before_create_swap_chain(
@@ -242,6 +251,25 @@ im_gui_impl_vulkan_h_create_window_command_buffers_semaphores(
 {
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(
 		device, wd, allocator, wd->SemaphoreCount );
+}
+
+void
+im_gui_impl_vulkan_h_create_window_command_buffers_semaphores_create(
+	VkDevice device,
+	const VkAllocationCallbacks* allocator,
+	uint32_t sc, VkSemaphore *iasmps, VkSemaphore *rcsmps )
+{
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCreate(
+		device, allocator, sc, iasmps, rcsmps );
+}
+
+void
+im_gui_impl_vulkan_h_create_window_command_buffers_semaphores_copy(
+	ImGui_ImplVulkanH_Window* wd,
+	uint32_t sc, VkSemaphore *iasmps, VkSemaphore *rcsmps )
+{
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCopy(
+		wd, sc, iasmps, rcsmps );
 }
 
 void

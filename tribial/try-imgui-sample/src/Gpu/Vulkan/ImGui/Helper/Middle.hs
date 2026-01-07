@@ -23,6 +23,8 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 	createWindowCommandBuffersFramesFence,
 	createWindowCommandBuffersFramesFence2Copy,
 	createWindowCommandBuffersSemaphores,
+	createWindowCommandBuffersSemaphoresCreate,
+	createWindowCommandBuffersSemaphoresCopy,
 
 	destroyBeforeCreateSwapChain,
 	createSwapChain, onlyCreateSwapChain,
@@ -59,6 +61,7 @@ import Gpu.Vulkan.Enum qualified as Vk
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal qualified as Vk.AllocCallbacks
 import Gpu.Vulkan.PhysicalDevice.Middle.Internal qualified as Vk.Phd
 import Gpu.Vulkan.Device.Middle.Internal qualified as Vk.Dvc
+import Gpu.Vulkan.Semaphore.Middle.Internal qualified as Vk.Smp
 import Gpu.Vulkan.Fence.Middle.Internal qualified as Vk.Fnc
 import Gpu.Vulkan.QueueFamily.Middle qualified as Vk.QFam
 import Gpu.Vulkan.CommandPool.Middle.Internal qualified as Vk.CmdPl
@@ -180,13 +183,34 @@ createWindowCommandBuffersFramesFence2Copy wd fncs ic = allocaArray ic \pfs -> d
 	pokeArray pfs $ (\(Vk.Fnc.F f) -> f) <$> fncs
 	C.createWindowCommandBuffersFramesFence2Copy wd pfs
 
-
 createWindowCommandBuffersSemaphores ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
-	TPMaybe.M Vk.AllocCallbacks.A mud -> IO ()
-createWindowCommandBuffersSemaphores (Vk.Dvc.D dvc) wd macs =
-	Vk.AllocCallbacks.mToCore macs \pacs -> do
-	C.createWindowCommandBuffersSemaphores dvc wd pacs
+	TPMaybe.M Vk.AllocCallbacks.A mud -> Int -> IO ()
+createWindowCommandBuffersSemaphores dvc wd macs n = do
+	(iasmps, rcsmps) <-
+		createWindowCommandBuffersSemaphoresCreate dvc macs n
+	createWindowCommandBuffersSemaphoresCopy wd iasmps rcsmps
+
+createWindowCommandBuffersSemaphoresCreate ::
+	Vk.Dvc.D -> TPMaybe.M Vk.AllocCallbacks.A mud -> Int ->
+	IO ([Vk.Smp.S], [Vk.Smp.S])
+createWindowCommandBuffersSemaphoresCreate (Vk.Dvc.D dvc) macs n =
+	allocaArray n \iasmps -> allocaArray n \rcsmps -> do
+		Vk.AllocCallbacks.mToCore macs \pacs ->
+			C.createWindowCommandBuffersSemaphoresCreate
+				dvc pacs (fromIntegral n) iasmps rcsmps
+		(,)	<$> ((Vk.Smp.S <$>) <$> peekArray n iasmps)
+			<*> ((Vk.Smp.S <$>) <$> peekArray n rcsmps)
+
+createWindowCommandBuffersSemaphoresCopy ::
+	Vk.ImGui.H.Win.W -> [Vk.Smp.S] -> [Vk.Smp.S] -> IO ()
+createWindowCommandBuffersSemaphoresCopy wd iasmps rcsmps =
+	allocaArray n \piasmps -> allocaArray n \prcsmps -> do
+	pokeArray piasmps $ (\(Vk.Smp.S s) -> s) <$> iasmps
+	pokeArray prcsmps $ (\(Vk.Smp.S s) -> s) <$> rcsmps
+	C.createWindowCommandBuffersSemaphoresCopy
+		wd (fromIntegral n) piasmps prcsmps
+	where n = length iasmps
 
 createSwapChain :: Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Word32 -> IO ()
 createSwapChain (Vk.Dvc.D dvc) wd mic = C.createSwapChain dvc wd mic
