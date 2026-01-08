@@ -199,14 +199,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 		(wdt', hgt') = if Vk.extent2dWidth extnt == 0xffffffff
 			then (wdt, hgt)
 			else (fromIntegral $ Vk.extent2dWidth extnt, fromIntegral $ Vk.extent2dHeight extnt)
-		z' = z {
-			Vk.ImGui.Win.wCWidth = wdt',
-			Vk.ImGui.Win.wCHeight = hgt',
-			Vk.ImGui.Win.wCSurface = sfc,
-			Vk.ImGui.Win.wCSurfaceFormat = sfmt,
-			Vk.ImGui.Win.wCClearEnable = True,
-			Vk.ImGui.Win.wCPresentMode = pm
-			} in
+		in
 
 	putStrLn "OOOOOPS" >>
 
@@ -223,14 +216,13 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 		swpchInfo = Vk.Swpch.CreateInfo {
 			Vk.Swpch.createInfoNext = TMaybe.N,
 			Vk.Swpch.createInfoFlags = zeroBits,
-			Vk.Swpch.createInfoSurface = Vk.ImGui.Win.wCSurface z',
+			Vk.Swpch.createInfoSurface = sfc,
 			Vk.Swpch.createInfoMinImageCount = minImageCountNew,
 			Vk.Swpch.createInfoImageColorSpace =
-				Vk.Sfc.formatColorSpace
-					$ Vk.ImGui.Win.wCSurfaceFormat z',
+				Vk.Sfc.formatColorSpace sfmt,
 			Vk.Swpch.createInfoImageExtent = Vk.Extent2d
-				(fromIntegral $ Vk.ImGui.Win.wCWidth z')
-				(fromIntegral $ Vk.ImGui.Win.wCHeight z'),
+				(fromIntegral wdt')
+				(fromIntegral hgt'),
 			Vk.Swpch.createInfoImageArrayLayers = 1,
 			Vk.Swpch.createInfoImageUsage =
 				Vk.Img.UsageColorAttachmentBit,
@@ -241,12 +233,9 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 				Vk.Sfc.TransformIdentityBit,
 			Vk.Swpch.createInfoCompositeAlpha =
 				Vk.Sfc.CompositeAlphaOpaqueBit,
-			Vk.Swpch.createInfoPresentMode =
-				Vk.ImGui.Win.wCPresentMode z',
+			Vk.Swpch.createInfoPresentMode = pm,
 			Vk.Swpch.createInfoClipped = True,
-			Vk.Swpch.createInfoOldSwapchain =
-	--			TPMaybe.N } in
-				TPMaybe.J . U2 $ Vk.ImGui.Win.wCSwapchain z' } in
+			Vk.Swpch.createInfoOldSwapchain = TPMaybe.N } in
 	Vk.Swpch.create dvc swpchInfo nil \sc ->
 
 	Vk.ImGui.checkVersion >>
@@ -357,6 +346,17 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.C.cxx_imgui_impl_vulkan_init pInitInfo >>
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
+	let
+		z' = z {
+			Vk.ImGui.Win.wCWidth = wdt',
+			Vk.ImGui.Win.wCHeight = hgt',
+--			Vk.ImGui.Win.wCSwapchain = (sc :: Vk.Swpch.S fmt2 _),
+			Vk.ImGui.Win.wCSurface = sfc,
+			Vk.ImGui.Win.wCSurfaceFormat = sfmt,
+			Vk.ImGui.Win.wCClearEnable = True,
+			Vk.ImGui.Win.wCPresentMode = pm
+			}
+		in
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
 
 	Vk.ImGui.H.copySwapChainToWd wdcxx sc >>
