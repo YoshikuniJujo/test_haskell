@@ -56,6 +56,7 @@ import Gpu.Vulkan.CommandBuffer qualified as Vk.CmdBffr
 import Gpu.Vulkan.Descriptor qualified as Vk.Dsc
 import Gpu.Vulkan.DescriptorPool qualified as Vk.DscPl
 import Gpu.Vulkan.DescriptorPool.Type qualified as Vk.DscPl
+import Gpu.Vulkan.Semaphore qualified as Vk.Smp
 import Gpu.Vulkan.Fence qualified as Vk.Fnc
 import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.ImageView qualified as Vk.ImgVw
@@ -340,11 +341,18 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 			Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit
 			} in
 	flip (Vk.Fnc.create' gfnc) fncInfo `mapM` [0 .. length scis - 1] >>= \(rights -> fncs) ->
-	Vk.ImGui.H.createWindowCommandBuffersSemaphoresCreate dvc nil (length scis + 1)
-		>>= \(iasmps, rcsmps) ->
+	Vk.Smp.group dvc nil \giasmp ->
+	Vk.Smp.group dvc nil \grcsmp ->
+	let	smpInfo = Vk.Smp.CreateInfo {
+			Vk.Smp.createInfoNext = TMaybe.N,
+			Vk.Smp.createInfoFlags = zeroBits } in
+	flip (Vk.Smp.create' giasmp) smpInfo `mapM` [0 .. length scis] >>= \(rights -> iasmps) ->
+	flip (Vk.Smp.create' grcsmp) smpInfo `mapM` [0 .. length scis] >>= \(rights -> rcsmps) ->
+	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo ->
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
+
 	Vk.ImGui.H.copySwapChainToWd wdcxx sc >>
 	pure () >>= \() ->
 	Vk.ImGui.H.createSwapChainModifyWd wdcxx scis $
@@ -355,14 +363,11 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	pure () >>= \() ->
 	Vk.ImGui.H.createWindowCommandBuffersFramesCopyCommandBuffers wdcxx cbs $
 	Vk.ImGui.H.createWindowCommandBuffersFramesFence2Copy wdcxx fncs (length scis) >>
-	Vk.ImGui.H.createWindowCommandBuffersSemaphoresCopy wdcxx iasmps rcsmps >>
+	Vk.ImGui.H.createWindowCommandBuffersSemaphoresCopy wdcxx iasmps rcsmps >> do
 
-	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo -> do
 	cxx_initialize_ImGui_ImplVulkan_InitInfo
 		pInitInfo ist phd qfi dvc gq dp wdcxx
---	initInfo <- Vk.ImGui.initInfoFromCxx @'Nothing pInitInfo
---	printIO initInfo
---	Vk.ImGui.copyInitInfoToCxx initInfo pInitInfo
+
 	print =<< Vk.ImGui.C.cxx_imgui_impl_vulkan_init pInitInfo
 	let	fa@(ImGui.FontAtlas.M.F pfa) = ImGui.Io.fonts io
 		grsj = ImGui.FontAtlas.getGlyphRangesJapanese fa
