@@ -168,7 +168,8 @@ extern "C" void free_ImGui_ImplVulkan_InitInfo(ImGui_ImplVulkan_InitInfo* p);
 extern "C" void initialize_ImGui_ImplVulkan_InitInfo(
 	ImGui_ImplVulkan_InitInfo* p_init_info,
 	VkInstance ist, VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd );
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp,
+	VkRenderPass rp, uint32_t ic);
 
 extern "C" void cleanup (VkInstance ist, VkDevice dvc, ImGui_ImplVulkanH_Window* wd);
 
@@ -191,8 +192,12 @@ void
 initialize_ImGui_ImplVulkan_InitInfo(
 	ImGui_ImplVulkan_InitInfo* p_init_info,
 	VkInstance ist, VkPhysicalDevice phd, uint32_t qfi,
-	VkDevice dvc, VkQueue gq, VkDescriptorPool dp, ImGui_ImplVulkanH_Window* wd )
+	VkDevice dvc, VkQueue gq, VkDescriptorPool dp,
+	VkRenderPass rp,
+	uint32_t ic
+	)
 {
+	printf("*** initialize_ImGui_ImplVulkan_InitInfo begin\n");
 	p_init_info->ApiVersion = VK_API_VERSION_1_3;
 	p_init_info->Instance = ist;
 	p_init_info->PhysicalDevice = phd;
@@ -201,10 +206,10 @@ initialize_ImGui_ImplVulkan_InitInfo(
 	p_init_info->Queue = gq;
 	p_init_info->PipelineCache = g_PipelineCache;
 	p_init_info->DescriptorPool = dp;
-	p_init_info->RenderPass = wd->RenderPass;
+	p_init_info->RenderPass = rp;
 	p_init_info->Subpass = 0;
 	p_init_info->MinImageCount = g_MinImageCount;
-	p_init_info->ImageCount = wd->ImageCount;
+	p_init_info->ImageCount = ic;
 	p_init_info->MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 	p_init_info->Allocator = g_Allocator;
 	p_init_info->CheckVkResultFn = check_vk_result;

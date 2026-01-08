@@ -67,6 +67,9 @@ import Gpu.Vulkan.Sample qualified as Vk.Smpl
 import Gpu.Vulkan.Subpass qualified as Vk.Sbpss
 import Gpu.Vulkan.Pipeline qualified as Vk.Ppl
 import Gpu.Vulkan.RenderPass qualified as Vk.RndrPss
+import Gpu.Vulkan.RenderPass.Type qualified as Vk.RndrPss
+import Gpu.Vulkan.RenderPass.Middle.Internal qualified as Vk.M.RndrPss
+import Gpu.Vulkan.RenderPass.Core qualified as Vk.C.RndrPss
 
 import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
 
@@ -171,7 +174,7 @@ foreign import ccall "initialize_ImGui_ImplVulkan_InitInfo"
 	cxx_initialize_ImGui_ImplVulkan_InitInfo ::
 	Vk.ImGui.InitInfoCxx -> Vk.Ist.I si -> Vk.Phd.P ->
 	Vk.QFam.Index -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.DscPl.P sdp ->
-	Vk.ImGui.Win.W -> IO ()
+	Vk.C.RndrPss.R -> Word32 -> IO ()
 
 mainCxx ::
 	GlfwG.Win.W sw -> Vk.Ist.I si -> Vk.Sfc.S ss -> Vk.Phd.P ->
@@ -328,7 +331,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 			}
 		in
 
-	Vk.RndrPss.create dvc rndrpssInfo nil \rp ->
+	Vk.RndrPss.create dvc rndrpssInfo nil \rp@(Vk.RndrPss.R (Vk.M.RndrPss.R crp)) ->
 	createImageViews dvc imgvwInfo scis \scvs ->
 	Vk.Frmbffr.group dvc nil \fbg ->
 	let	fbinfos = mkFramebufferInfoList rp scvs (fromIntegral wdt') (fromIntegral hgt') in
@@ -349,6 +352,8 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	flip (Vk.Smp.create' giasmp) smpInfo `mapM` [0 .. length scis] >>= \(rights -> iasmps) ->
 	flip (Vk.Smp.create' grcsmp) smpInfo `mapM` [0 .. length scis] >>= \(rights -> rcsmps) ->
 	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo ->
+	cxx_initialize_ImGui_ImplVulkan_InitInfo
+		pInitInfo ist phd qfi dvc gq dp crp (fromIntegral $ length scis) >>
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
@@ -364,9 +369,6 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.H.createWindowCommandBuffersFramesCopyCommandBuffers wdcxx cbs $
 	Vk.ImGui.H.createWindowCommandBuffersFramesFence2Copy wdcxx fncs (length scis) >>
 	Vk.ImGui.H.createWindowCommandBuffersSemaphoresCopy wdcxx iasmps rcsmps >> do
-
-	cxx_initialize_ImGui_ImplVulkan_InitInfo
-		pInitInfo ist phd qfi dvc gq dp wdcxx
 
 	print =<< Vk.ImGui.C.cxx_imgui_impl_vulkan_init pInitInfo
 	let	fa@(ImGui.FontAtlas.M.F pfa) = ImGui.Io.fonts io
