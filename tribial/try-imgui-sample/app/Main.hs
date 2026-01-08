@@ -354,6 +354,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	cxx_new_ImGui_ImplVulkan_InitInfo >>= \pInitInfo ->
 	cxx_initialize_ImGui_ImplVulkan_InitInfo
 		pInitInfo ist phd qfi dvc gq dp crp (fromIntegral $ length scis) >>
+	Vk.ImGui.C.cxx_imgui_impl_vulkan_init pInitInfo >>
 
 	Vk.ImGui.Win.allocaW \wdcxx ->
 	Vk.ImGui.Win.wCCopyToCxx z' wdcxx $
@@ -370,7 +371,8 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.H.createWindowCommandBuffersFramesFence2Copy wdcxx fncs (length scis) >>
 	Vk.ImGui.H.createWindowCommandBuffersSemaphoresCopy wdcxx iasmps rcsmps >> do
 
-	print =<< Vk.ImGui.C.cxx_imgui_impl_vulkan_init pInitInfo
+	putStrLn "*** FONT SETTING ***"
+
 	let	fa@(ImGui.FontAtlas.M.F pfa) = ImGui.Io.fonts io
 		grsj = ImGui.FontAtlas.getGlyphRangesJapanese fa
 	print $ length grsj
@@ -379,6 +381,7 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 		print =<< peek pn
 	mfont <- ImGui.FontAtlas.addFontFromFileTtf fa "/usr/share/fonts/mikachan-font-ttf/mikachan.ttf" 18.0 Nothing
 		(Just $ ImGui.FontAtlas.getGlyphRangesJapanese fa)
+
 	alloca \psdw -> alloca \psow -> allocaArray 4 \pcc -> alloca \pscr -> do
 		poke psdw 1
 		poke psow 0
