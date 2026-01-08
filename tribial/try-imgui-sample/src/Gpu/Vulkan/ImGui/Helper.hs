@@ -23,6 +23,8 @@ module Gpu.Vulkan.ImGui.Helper (
 	createWindowCommandBuffersFramesFence,
 	createWindowCommandBuffersFramesFence2Copy,
 	createWindowCommandBuffersSemaphores,
+	createWindowCommandBuffersSemaphoresCreate,
+	createWindowCommandBuffersSemaphoresCopy,
 
 	destroyBeforeCreateSwapChain,
 	createSwapChain, onlyCreateSwapChain,
@@ -41,6 +43,7 @@ module Gpu.Vulkan.ImGui.Helper (
 
 	) where
 
+import Control.Arrow
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.HeteroParList qualified as HPList
@@ -63,6 +66,7 @@ import Gpu.Vulkan.RenderPass.Type qualified as Vk.RndrPss
 import Gpu.Vulkan.Framebuffer qualified as Vk.Frmbffr
 import Gpu.Vulkan.Framebuffer.Type qualified as Vk.Frmbffr
 
+import Gpu.Vulkan.Semaphore.Internal qualified as Vk.Smp
 import Gpu.Vulkan.Fence.Internal qualified as Vk.Fence
 
 import Gpu.Vulkan.Khr.Surface qualified as Vk.Sfc
@@ -162,11 +166,27 @@ createWindowCommandBuffersFramesFence2Copy wd fnc =
 createWindowCommandBuffersSemaphores :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
 	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Int ->IO ()
-createWindowCommandBuffersSemaphores (Vk.Dvc.D dvc) wd mac n = do
+createWindowCommandBuffersSemaphores dvc wd mac n = do
 	(iasmps, rcsmps) <-
-		M.createWindowCommandBuffersSemaphoresCreate
-			dvc (Vk.AllocCallbacks.toMiddle mac) n
-	M.createWindowCommandBuffersSemaphoresCopy wd iasmps rcsmps
+		createWindowCommandBuffersSemaphoresCreate dvc mac n
+	createWindowCommandBuffersSemaphoresCopy wd iasmps rcsmps
+
+createWindowCommandBuffersSemaphoresCreate :: Vk.AllocCallbacks.ToMiddle mac =>
+	Vk.Dvc.D sd -> TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> Int ->
+	IO ([Vk.Smp.S sia], [Vk.Smp.S src])
+createWindowCommandBuffersSemaphoresCreate (Vk.Dvc.D dvc) mac n =
+	((Vk.Smp.S <$>) *** (Vk.Smp.S <$>)) <$>
+	M.createWindowCommandBuffersSemaphoresCreate
+		dvc (Vk.AllocCallbacks.toMiddle mac) n
+
+createWindowCommandBuffersSemaphoresCopy ::
+	Vk.ImGui.H.Win.W -> [Vk.Smp.S sia] -> [Vk.Smp.S src] -> IO ()
+createWindowCommandBuffersSemaphoresCopy wd iasmps rcsmps =
+	M.createWindowCommandBuffersSemaphoresCopy wd iasmps' rcsmps'
+	where
+	iasmps' = tom <$> iasmps
+	rcsmps' = tom <$> rcsmps
+	tom (Vk.Smp.S s) = s
 
 createSwapChain :: Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> Word32 -> IO ()
 createSwapChain (Vk.Dvc.D dvc) wd mic = M.createSwapChain dvc wd mic
