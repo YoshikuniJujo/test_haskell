@@ -1777,13 +1777,14 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFrames(
 
 void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSemaphores(
 	VkDevice device,
-	ImGui_ImplVulkanH_Window* wd,
+	uint32_t sc,
+	ImVector<ImGui_ImplVulkanH_FrameSemaphores> smps,
 	const VkAllocationCallbacks* allocator
 	)
 {
-    for (uint32_t i = 0; i < wd->SemaphoreCount; i++)
-        ImGui_ImplVulkanH_DestroyFrameSemaphores(device, &wd->FrameSemaphores[i], allocator);
-    wd->FrameSemaphores.clear();
+    for (uint32_t i = 0; i < sc; i++)
+        ImGui_ImplVulkanH_DestroyFrameSemaphores(device, &smps[i], allocator);
+    smps.clear();
 }
 
 void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFirstHalf(
@@ -1801,7 +1802,7 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFirstHalf(
     ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFrames(
 	device, wd->ImageCount, wd->Frames, allocator );
     ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSemaphores(
-	device, wd, allocator );
+	device, wd->SemaphoreCount, wd->FrameSemaphores, allocator );
 }
 
 void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
@@ -1825,7 +1826,7 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainAfterWait(
 	)
 {
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSemaphores(
-		device, wd, allocator );
+		device, wd->SemaphoreCount, wd->FrameSemaphores, allocator );
 
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
 		device, wd, allocator );
