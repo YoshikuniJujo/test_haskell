@@ -176,6 +176,16 @@ IMGUI_IMPL_API int                  ImGui_ImplVulkanH_GetMinImageCountFromPresen
 void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator );
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainWaitIdle(
+	VkDevice device );
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFrames(
+	VkDevice device,
+	uint32_t ic,
+	ImVector<ImGui_ImplVulkanH_Frame> frm,
+	const VkAllocationCallbacks* allocator );
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainAfterWait(
+	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator );
 void ImGui_ImplVulkanH_SetSize(
 	ImGui_ImplVulkanH_Window* wd,
 	int w, int h,

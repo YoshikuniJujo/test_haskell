@@ -236,7 +236,12 @@ resizeSwapchain(
 	bool* pscr, int fbwdt, int fbhgt )
 {
 	ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
-	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(dvc, wd, g_Allocator);
+	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainWaitIdle(dvc);
+	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFrames(
+		dvc, wd->ImageCount, wd->Frames, g_Allocator);
+
+	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainAfterWait(dvc, wd, g_Allocator);
+
 	VkSwapchainKHR old_swapchain = wd->SwapchainPupupu;
 	wd->SwapchainPupupu = VK_NULL_HANDLE;
 	VkSurfaceCapabilitiesKHR cap;

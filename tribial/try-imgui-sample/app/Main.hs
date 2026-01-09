@@ -194,7 +194,6 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	GlfwG.Win.getFramebufferSize w >>= \(fromIntegral -> wdt, fromIntegral -> hgt) ->
 	Vk.Sfc.Phd.getCapabilities phd sfc >>= \cap ->
 
-	Vk.ImGui.Win.wCZero' @_ @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) \z ->
 	let	extnt = Vk.Sfc.capabilitiesCurrentExtent cap
 		(wdt', hgt') = if Vk.extent2dWidth extnt == 0xffffffff
 			then (wdt, hgt)
@@ -345,9 +344,22 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 		pInitInfo ist phd qfi dvc gq dp crp (fromIntegral $ length scis) >>
 	Vk.ImGui.C.cxx_imgui_impl_vulkan_init pInitInfo >>
 
+	putStrLn "*** FONT SETTING ***" >>
+
+	let	fa@(ImGui.FontAtlas.M.F pfa) = ImGui.Io.fonts io
+		grsj = ImGui.FontAtlas.getGlyphRangesJapanese fa in
+	print (length grsj) >>
+	alloca \pn -> do
+			print =<< ImGui.FontAtlas.C.cxx_im_font_atlas_sources pfa pn
+			print =<< peek pn
+		>>
+	ImGui.FontAtlas.addFontFromFileTtf fa "/usr/share/fonts/mikachan-font-ttf/mikachan.ttf" 18.0 Nothing
+		(Just $ ImGui.FontAtlas.getGlyphRangesJapanese fa) >>
+
 	Vk.ImGui.Win.allocaW \wdcxx ->
-	let
-		z' = z {
+	
+	Vk.ImGui.Win.wCZero' @_ @(Vk.M.ClearTypeColor Vk.M.ClearColorTypeFloat32) \z ->
+	let	z' = z {
 			Vk.ImGui.Win.wCWidth = wdt',
 			Vk.ImGui.Win.wCHeight = hgt',
 --			Vk.ImGui.Win.wCSwapchain = (sc :: Vk.Swpch.S fmt2 _),
@@ -370,17 +382,6 @@ mainCxx w ist sfc phd qfi dvc gq dp =
 	Vk.ImGui.H.createWindowCommandBuffersFramesCopyCommandBuffers wdcxx cbs $
 	Vk.ImGui.H.createWindowCommandBuffersFramesFence2Copy wdcxx fncs (length scis) >>
 	Vk.ImGui.H.createWindowCommandBuffersSemaphoresCopy wdcxx iasmps rcsmps >> do
-
-	putStrLn "*** FONT SETTING ***"
-
-	let	fa@(ImGui.FontAtlas.M.F pfa) = ImGui.Io.fonts io
-		grsj = ImGui.FontAtlas.getGlyphRangesJapanese fa
-	print $ length grsj
-	alloca \pn -> do
-		print =<< ImGui.FontAtlas.C.cxx_im_font_atlas_sources pfa pn
-		print =<< peek pn
-	mfont <- ImGui.FontAtlas.addFontFromFileTtf fa "/usr/share/fonts/mikachan-font-ttf/mikachan.ttf" 18.0 Nothing
-		(Just $ ImGui.FontAtlas.getGlyphRangesJapanese fa)
 
 	alloca \psdw -> alloca \psow -> allocaArray 4 \pcc -> alloca \pscr -> do
 		poke psdw 1

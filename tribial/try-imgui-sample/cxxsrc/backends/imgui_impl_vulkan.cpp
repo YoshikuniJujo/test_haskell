@@ -1753,30 +1753,95 @@ int ImGui_ImplVulkanH_GetMinImageCountFromPresentMode(VkPresentModeKHR present_m
     return 1;
 }
 
-void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(
-	VkDevice device,
-	ImGui_ImplVulkanH_Window* wd,
-	const VkAllocationCallbacks* allocator
-	)
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainWaitIdle(
+	VkDevice device )
 {
     VkResult err;
 
     err = vkDeviceWaitIdle(device);
     check_vk_result(err);
 
-    // We don't use ImGui_ImplVulkanH_DestroyWindow() because we want to preserve the old swapchain to create the new one.
-    // Destroy old Framebuffer
-    for (uint32_t i = 0; i < wd->ImageCount; i++)
-        ImGui_ImplVulkanH_DestroyFrame(device, &wd->Frames[i], allocator);
+}
+
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFrames(
+	VkDevice device,
+	uint32_t ic,
+	ImVector<ImGui_ImplVulkanH_Frame> frm,
+	const VkAllocationCallbacks* allocator
+	)
+{
+    for (uint32_t i = 0; i < ic; i++)
+	ImGui_ImplVulkanH_DestroyFrame(device, &frm[i], allocator);
+    frm.clear();
+}
+
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSemaphores(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator
+	)
+{
     for (uint32_t i = 0; i < wd->SemaphoreCount; i++)
         ImGui_ImplVulkanH_DestroyFrameSemaphores(device, &wd->FrameSemaphores[i], allocator);
-    wd->Frames.clear();
     wd->FrameSemaphores.clear();
+}
+
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFirstHalf(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator
+	)
+{
+
+    ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainWaitIdle(device);
+
+    // We don't use ImGui_ImplVulkanH_DestroyWindow() because we want to preserve the old swapchain to create the new one.
+    // Destroy old Framebuffer
+
+    ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFrames(
+	device, wd->ImageCount, wd->Frames, allocator );
+    ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSemaphores(
+	device, wd, allocator );
+}
+
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator
+	)
+
+{
     wd->ImageCount = 0;
     if (wd->RenderPass)
         vkDestroyRenderPass(device, wd->RenderPass, allocator);
     if (wd->Pipeline)
         vkDestroyPipeline(device, wd->Pipeline, allocator);
+}
+
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainAfterWait(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator
+	)
+{
+	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSemaphores(
+		device, wd, allocator );
+
+	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
+		device, wd, allocator );
+}
+
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
+	const VkAllocationCallbacks* allocator
+	)
+{
+	printf("*** ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain begin ***\n");
+
+	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainWaitIdle(device);
+	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainAfterWait(
+		device, wd, allocator );
 }
 
 void ImGui_ImplVulkanH_SetSize(
