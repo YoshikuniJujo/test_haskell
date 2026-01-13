@@ -239,8 +239,10 @@ resizeSwapchain(
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainWaitIdle(dvc);
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFrames(
 		dvc, wd->ImageCount, wd->Frames, g_Allocator);
+	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSemaphores(
+		dvc, wd->SemaphoreCount, wd->FrameSemaphores, g_Allocator );
 
-	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainAfterWait(dvc, wd, g_Allocator);
+	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(dvc, wd, g_Allocator);
 
 	VkSwapchainKHR old_swapchain = wd->SwapchainPupupu;
 	wd->SwapchainPupupu = VK_NULL_HANDLE;

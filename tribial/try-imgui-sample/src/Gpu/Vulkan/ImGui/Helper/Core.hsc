@@ -22,8 +22,6 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 	createWindowCommandBuffersSemaphoresCreate,
 	createWindowCommandBuffersSemaphoresCopy,
 
-	destroyBeforeCreateSwapChain,
-
 	createSwapChain, onlyCreateSwapChain,
 
 	onlyCreateSwapChainNoWd, copySwapChainToWd, setSize,
@@ -99,15 +97,6 @@ foreign import ccall "im_gui_impl_vulkan_h_create_window_swap_chain"
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
 	Ptr Vk.AllocCallbacks.A ->
 	#{type int} -> #{type int} -> #{type uint32_t} -> Vk.Swpch.S -> IO ()
-
-destroyBeforeCreateSwapChain ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
-destroyBeforeCreateSwapChain =
-	cxx_im_gui_impl_vulkan_h_destroy_before_create_swap_chain
-
-foreign import ccall "im_gui_impl_vulkan_h_destroy_before_create_swap_chain"
-	cxx_im_gui_impl_vulkan_h_destroy_before_create_swap_chain ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Ptr Vk.AllocCallbacks.A -> IO ()
 
 createWindowCommandBuffers ::
 	Vk.Phd.P -> Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->

@@ -159,6 +159,7 @@ struct ImGui_ImplVulkan_RenderState
 //-------------------------------------------------------------------------
 
 struct ImGui_ImplVulkanH_Frame;
+struct ImGui_ImplVulkanH_FrameSemaphores;
 struct ImGui_ImplVulkanH_Window;
 
 // Helpers
@@ -173,9 +174,6 @@ IMGUI_IMPL_API VkPhysicalDevice     ImGui_ImplVulkanH_SelectPhysicalDevice(VkIns
 IMGUI_IMPL_API uint32_t             ImGui_ImplVulkanH_SelectQueueFamilyIndex(VkPhysicalDevice physical_device);
 IMGUI_IMPL_API int                  ImGui_ImplVulkanH_GetMinImageCountFromPresentMode(VkPresentModeKHR present_mode);
 
-void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(
-	VkDevice device, ImGui_ImplVulkanH_Window* wd,
-	const VkAllocationCallbacks* allocator );
 void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainWaitIdle(
 	VkDevice device );
 void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFrames(
@@ -183,8 +181,14 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFrames(
 	uint32_t ic,
 	ImVector<ImGui_ImplVulkanH_Frame> frm,
 	const VkAllocationCallbacks* allocator );
-void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainAfterWait(
-	VkDevice device, ImGui_ImplVulkanH_Window* wd,
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSemaphores(
+	VkDevice device,
+	uint32_t sc,
+	ImVector<ImGui_ImplVulkanH_FrameSemaphores> smps,
+	const VkAllocationCallbacks* allocator );
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
+	VkDevice device,
+	ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator );
 void ImGui_ImplVulkanH_SetSize(
 	ImGui_ImplVulkanH_Window* wd,

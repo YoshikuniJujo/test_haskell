@@ -74,9 +74,6 @@ im_gui_impl_vulkan_h_create_window_command_buffers_semaphores_copy(
 extern "C" void
 	im_gui_impl_vulkan_h_create_window_command_buffers_copy_command_pool(
 	ImGui_ImplVulkanH_Window* wd, VkCommandPool *cps );
-extern "C" void im_gui_impl_vulkan_h_destroy_before_create_swap_chain(
-	VkDevice device, ImGui_ImplVulkanH_Window* wd,
-	const VkAllocationCallbacks* allocator );
 extern "C" void im_gui_impl_vulkan_h_create_swap_chain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
@@ -277,14 +274,6 @@ im_gui_impl_vulkan_h_create_window_command_buffers_copy_command_pool(
 	ImGui_ImplVulkanH_Window* wd, VkCommandPool *cps )
 {
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyCommandPool(wd, cps);
-}
-
-void
-im_gui_impl_vulkan_h_destroy_before_create_swap_chain(
-	VkDevice device, ImGui_ImplVulkanH_Window* wd,
-	const VkAllocationCallbacks* allocator )
-{
-	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(device, wd, allocator);
 }
 
 void

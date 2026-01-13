@@ -1825,23 +1825,7 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainAfterWait(
 	const VkAllocationCallbacks* allocator
 	)
 {
-	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSemaphores(
-		device, wd->SemaphoreCount, wd->FrameSemaphores, allocator );
-
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
-		device, wd, allocator );
-}
-
-void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain(
-	VkDevice device,
-	ImGui_ImplVulkanH_Window* wd,
-	const VkAllocationCallbacks* allocator
-	)
-{
-	printf("*** ImGui_ImplVulkanH_DestroyBeforeCreateSwapChain begin ***\n");
-
-	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainWaitIdle(device);
-	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainAfterWait(
 		device, wd, allocator );
 }
 

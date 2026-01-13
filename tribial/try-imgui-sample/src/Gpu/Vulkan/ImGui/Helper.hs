@@ -26,7 +26,6 @@ module Gpu.Vulkan.ImGui.Helper (
 	createWindowCommandBuffersSemaphoresCreate,
 	createWindowCommandBuffersSemaphoresCopy,
 
-	destroyBeforeCreateSwapChain,
 	createSwapChain, onlyCreateSwapChain,
 
 	onlyCreateSwapChainNoWd, copySwapChainToWd, M.setSize,
@@ -98,12 +97,6 @@ createWindowSwapChain (Vk.Dvc.D dvc) wd mac wdt hgt mic msc =
 	let	mmsc = (\(Vk.Swpch.S sc) -> sc) <$> msc in
 	M.createWindowSwapChain
 		dvc wd (Vk.AllocCallbacks.toMiddle mac) wdt hgt mic mmsc
-
-destroyBeforeCreateSwapChain :: Vk.AllocCallbacks.ToMiddle mac =>
-	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W ->
-	TPMaybe.M (U2 Vk.AllocCallbacks.A) mac -> IO ()
-destroyBeforeCreateSwapChain (Vk.Dvc.D dvc) wd mac =
-	M.destroyBeforeCreateSwapChain dvc wd (Vk.AllocCallbacks.toMiddle mac)
 
 createWindowCommandBuffersCreateCommandPool :: Vk.AllocCallbacks.ToMiddle mac =>
 	Vk.Dvc.D sd -> Vk.QFam.Index ->
