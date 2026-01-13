@@ -1805,28 +1805,22 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFirstHalf(
 	device, wd->SemaphoreCount, wd->FrameSemaphores, allocator );
 }
 
-void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
-	VkDevice device,
-	ImGui_ImplVulkanH_Window* wd,
-	const VkAllocationCallbacks* allocator
-	)
-
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainResetImageCount(
+	ImGui_ImplVulkanH_Window* wd )
 {
-    wd->ImageCount = 0;
-    if (wd->RenderPass)
-        vkDestroyRenderPass(device, wd->RenderPass, allocator);
-    if (wd->Pipeline)
-        vkDestroyPipeline(device, wd->Pipeline, allocator);
+	wd->ImageCount = 0;
 }
 
-void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainAfterWait(
+void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
 	VkDevice device,
-	ImGui_ImplVulkanH_Window* wd,
+	VkRenderPass rp,
+	VkPipeline ppl,
 	const VkAllocationCallbacks* allocator
 	)
+
 {
-	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
-		device, wd, allocator );
+    if (rp) vkDestroyRenderPass(device, rp, allocator);
+    if (ppl) vkDestroyPipeline(device, ppl, allocator);
 }
 
 void ImGui_ImplVulkanH_SetSize(
