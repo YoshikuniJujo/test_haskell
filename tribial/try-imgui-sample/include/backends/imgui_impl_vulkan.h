@@ -186,8 +186,6 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSemaphores(
 	uint32_t sc,
 	ImVector<ImGui_ImplVulkanH_FrameSemaphores> smps,
 	const VkAllocationCallbacks* allocator );
-void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainResetImageCount(
-	ImGui_ImplVulkanH_Window* wd );
 void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
 	VkDevice device,
 	VkRenderPass rp,

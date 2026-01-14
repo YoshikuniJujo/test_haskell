@@ -1805,12 +1805,6 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFirstHalf(
 	device, wd->SemaphoreCount, wd->FrameSemaphores, allocator );
 }
 
-void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainResetImageCount(
-	ImGui_ImplVulkanH_Window* wd )
-{
-	wd->ImageCount = 0;
-}
-
 void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
 	VkDevice device,
 	VkRenderPass rp,
@@ -1821,18 +1815,6 @@ void ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
 {
     if (rp) vkDestroyRenderPass(device, rp, allocator);
     if (ppl) vkDestroyPipeline(device, ppl, allocator);
-}
-
-void ImGui_ImplVulkanH_SetSize(
-	ImGui_ImplVulkanH_Window* wd,
-	int w, int h,
-	VkSurfaceCapabilitiesKHR *pcap )
-{
-	if (pcap->currentExtent.width == 0xffffffff) {
-		wd->Width = w; wd->Height = h;
-	} else {
-		wd->Width = pcap->currentExtent.width;
-		wd->Height = pcap->currentExtent.height; }
 }
 
 VkSwapchainKHR*
@@ -1921,6 +1903,18 @@ void ImGui_ImplVulkanH_OnlyCreateSwapChain(
 
 	ImGui_ImplVulkanH_CopySwapchainToWd(wd, pscsrc);
     }
+
+void ImGui_ImplVulkanH_SetSize(
+	ImGui_ImplVulkanH_Window* wd,
+	int w, int h,
+	VkSurfaceCapabilitiesKHR *pcap )
+{
+	if (pcap->currentExtent.width == 0xffffffff) {
+		wd->Width = w; wd->Height = h;
+	} else {
+		wd->Width = pcap->currentExtent.width;
+		wd->Height = pcap->currentExtent.height; }
+}
 
 void ImGui_ImplVulkanH_CreateSwapChainModifyWd(
 	ImGui_ImplVulkanH_Window* wd,

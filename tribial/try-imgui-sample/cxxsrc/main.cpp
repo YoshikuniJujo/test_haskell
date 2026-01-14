@@ -244,7 +244,7 @@ resizeSwapchain(
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
 		dvc, wd->RenderPass, wd->Pipeline, g_Allocator);
 
-	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainResetImageCount(wd);
+	wd->ImageCount = 0;
 
 	VkSwapchainKHR old_swapchain = wd->SwapchainPupupu;
 	wd->SwapchainPupupu = VK_NULL_HANDLE;
