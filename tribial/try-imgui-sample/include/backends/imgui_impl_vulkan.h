@@ -224,7 +224,7 @@ void ImGui_ImplVulkanH_SetSize(
 	VkSurfaceCapabilitiesKHR *pcap );
 uint32_t ImGui_ImplVulkanH_CreateSwapChain(
 	VkDevice device,
-	ImGui_ImplVulkanH_Window* wd,
+	VkSwapchainKHR sc,
 	uint32_t min_image_count,
 	VkImage *backbuffers_ret );
 void ImGui_ImplVulkanH_CreateSwapChainModifyWd(
