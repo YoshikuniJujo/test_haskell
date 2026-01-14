@@ -261,8 +261,11 @@ resizeSwapchain(
 
 	VkImage backbuffers_ret[16];
 
-//	ImGui_ImplVulkanH_CreateSwapChain(dvc, wd, g_MinImageCount, backbuffers_ret);
-	ImGui_ImplVulkanH_CreateSwapChain(dvc, wd, g_MinImageCount);
+	uint32_t ic;
+	ic = ImGui_ImplVulkanH_CreateSwapChain(dvc, wd, g_MinImageCount, backbuffers_ret);
+	wd->ImageCount = ic;
+	ImGui_ImplVulkanH_CreateSwapChainModifyWd(wd, backbuffers_ret, wd->ImageCount);
+
 	ImGui_ImplVulkanH_CreateOrResizeWindow(
 		ist, phd, dvc, wd, qfi, g_Allocator, fbwdt, fbhgt, g_MinImageCount, old_swapchain);
 	wd->FrameIndex = 0;

@@ -1925,11 +1925,11 @@ void ImGui_ImplVulkanH_CreateSwapChainModifyWd(
 
 
     // Create Swapchain
-void ImGui_ImplVulkanH_CreateSwapChain(
+uint32_t ImGui_ImplVulkanH_CreateSwapChain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
-	uint32_t min_image_count
-//	VkImage *backbuffers_ret
+	uint32_t min_image_count,
+	VkImage *backbuffers_ret
 	)
 {
 
@@ -1943,7 +1943,10 @@ void ImGui_ImplVulkanH_CreateSwapChain(
         err = vkGetSwapchainImagesKHR(device, wd->SwapchainPupupu, &wd->ImageCount, backbuffers);
         check_vk_result(err);
 
-	ImGui_ImplVulkanH_CreateSwapChainModifyWd(wd, backbuffers, wd->ImageCount);
+	for (int i; i < wd->ImageCount; i++)
+		backbuffers_ret[i] = backbuffers[i];
+
+	return wd->ImageCount;
 }
 
 VkRenderPass*

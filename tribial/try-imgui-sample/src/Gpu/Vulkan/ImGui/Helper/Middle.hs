@@ -26,7 +26,7 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 	createWindowCommandBuffersSemaphoresCreate,
 	createWindowCommandBuffersSemaphoresCopy,
 
-	createSwapChain, onlyCreateSwapChain,
+	onlyCreateSwapChain,
 
 	onlyCreateSwapChainNoWd, copySwapChainToWd, setSize,
 
@@ -204,9 +204,6 @@ createWindowCommandBuffersSemaphoresCopy wd iasmps rcsmps =
 	C.createWindowCommandBuffersSemaphoresCopy
 		wd (fromIntegral n) piasmps prcsmps
 	where n = length iasmps
-
-createSwapChain :: Vk.Dvc.D -> Vk.ImGui.H.Win.W -> Word32 -> IO ()
-createSwapChain (Vk.Dvc.D dvc) wd mic = C.createSwapChain dvc wd mic
 
 onlyCreateSwapChain ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W ->
