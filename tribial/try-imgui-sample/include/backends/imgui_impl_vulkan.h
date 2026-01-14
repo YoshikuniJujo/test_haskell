@@ -209,7 +209,8 @@ VkSwapchainKHR* ImGui_ImplVulkanH_OnlyCreateSwapChainNoWd(
 	int hgt );
 void ImGui_ImplVulkanH_CopySwapchainToWd(
 	ImGui_ImplVulkanH_Window* wd, VkSwapchainKHR* pscsrc );
-void ImGui_ImplVulkanH_OnlyCreateSwapChain(
+VkSwapchainKHR*
+ImGui_ImplVulkanH_OnlyCreateSwapChain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
 	const VkAllocationCallbacks* allocator,
@@ -217,10 +218,15 @@ void ImGui_ImplVulkanH_OnlyCreateSwapChain(
 	uint32_t min_image_count,
 	VkSwapchainKHR old_swapchain,
 	VkSurfaceCapabilitiesKHR *pcap );
+void ImGui_ImplVulkanH_SetSize(
+	ImGui_ImplVulkanH_Window* wd,
+	int w, int h,
+	VkSurfaceCapabilitiesKHR *pcap );
 void ImGui_ImplVulkanH_CreateSwapChain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd,
 	uint32_t min_image_count );
+//	VkImage *backbuffers_ret );
 void ImGui_ImplVulkanH_CreateSwapChainModifyWd(
 	ImGui_ImplVulkanH_Window* wd,
 	VkImage* backbuffers, int i );
