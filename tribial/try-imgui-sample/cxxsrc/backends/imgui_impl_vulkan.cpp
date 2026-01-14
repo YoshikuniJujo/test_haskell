@@ -2017,14 +2017,12 @@ void ImGui_ImplVulkanH_CreateWindowRenderPass(
 	const VkAllocationCallbacks* allocator )
 {
     VkResult err;
-//    VkRenderPass *rp = (VkRenderPass *)malloc(sizeof(VkRenderPass));
-
-	bool udr = wd->UseDynamicRendering;
-	VkFormat fmt = wd->SurfaceFormat.format;
-	bool ce = wd->ClearEnable;
 
 	VkRenderPass *rp = ImGui_ImplVulkanH_CreateWindowRenderPassRaw(
-		device, allocator, udr, fmt, ce);
+		device, allocator,
+		wd->UseDynamicRendering,
+		wd->SurfaceFormat.format,
+		wd->ClearEnable );
 
 	ImGui_ImplVulkanH_SetWdRenderPass(wd, rp);
 }
@@ -2075,15 +2073,16 @@ void ImGui_ImplVulkanH_CreateWindowImageViews(
 	)
     // Create The Image Views
 {
-	int im_count = wd->ImageCount;
-	VkImage imgs[im_count];
-	VkFormat fmt = wd->SurfaceFormat.format;
-	for (int i = 0; i < im_count; i++) {
+	VkImage imgs[wd->ImageCount];
+	for (int i = 0; i < wd->ImageCount; i++) {
 		imgs[i] = wd->Frames[i].Backbuffer;
 	}
 
 	VkImageView* views = ImGui_ImplVulkanH_CreateWindowImageViewsRaw(
-		device, fmt, im_count, imgs, allocator );
+		device,
+		wd->SurfaceFormat.format,
+		wd->ImageCount,
+		imgs, allocator );
 
 	ImGui_ImplVulkanH_CopyImageViewsToWd(wd, views);
 }
@@ -2144,21 +2143,57 @@ void ImGui_ImplVulkanH_CreateWindowFramebuffer(
 	const VkAllocationCallbacks* allocator
 	)
 {
-    VkResult err;
-
-    bool udr = wd->UseDynamicRendering;
-    int im_count = wd->ImageCount;
-    VkRenderPass* rp = &wd->RenderPass;
-    int wdt = wd->Width;
-    int hgt = wd->Height;
-    VkImageView bv[im_count];
-    for (int i = 0; i < im_count; i++)
-	bv[i] = wd->Frames[i].BackbufferView;
+	VkImageView bv[wd->ImageCount];
+	for (int i = 0; i < wd->ImageCount; i++)
+		bv[i] = wd->Frames[i].BackbufferView;
 
 	VkFramebuffer* fbs = ImGui_ImplVulkanH_CreateWindowFramebufferRaw(
-		device, allocator, udr, im_count, rp, wdt, hgt, bv );
+		device, allocator,
+		wd->UseDynamicRendering,
+		wd->ImageCount, &wd->RenderPass,
+		wd->Width, wd->Height, bv );
 
-	ImGui_ImplVulkanH_CopyFramebufferToWd(udr, wd, im_count, fbs);
+	ImGui_ImplVulkanH_CopyFramebufferToWd(
+		wd->UseDynamicRendering,
+		wd, wd->ImageCount, fbs);
+}
+
+// Also destroy old swap chain and in-flight frames data, if any.
+void ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
+	VkDevice device,
+	bool udr,
+	VkFormat fmt,
+	bool ce,
+	uint32_t ic,
+	ImVector<ImGui_ImplVulkanH_Frame> frms,
+	uint32_t wdt, uint32_t hgt,
+	const VkAllocationCallbacks* allocator,
+	VkSwapchainKHR old_swapchain,
+	VkRenderPass **rp,
+	VkImageView **views,
+	VkFramebuffer **fbs
+	)
+{
+    // If min image count was not specified, request different count of images dependent on selected present mode
+
+	if (old_swapchain)
+		vkDestroySwapchainKHR(device, old_swapchain, allocator);
+
+	*rp = ImGui_ImplVulkanH_CreateWindowRenderPassRaw(
+		device, allocator,
+		udr, fmt, ce );
+
+	VkImage imgs[ic];
+	for (int i = 0; i < ic; i++)
+		imgs[i] = frms[i].Backbuffer;
+
+	*views = ImGui_ImplVulkanH_CreateWindowImageViewsRaw(
+		device, fmt,
+		ic,
+		imgs, allocator );
+
+	*fbs = ImGui_ImplVulkanH_CreateWindowFramebufferRaw(
+		device, allocator, udr, ic, *rp, wdt, hgt, *views );
 }
 
 // Also destroy old swap chain and in-flight frames data, if any.
@@ -2172,15 +2207,26 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(
 	)
 {
     // If min image count was not specified, request different count of images dependent on selected present mode
+	VkRenderPass *rp;
+	VkImageView *views;
+	VkFramebuffer *fbs;
 
-    if (old_swapchain)
-        vkDestroySwapchainKHR(device, old_swapchain, allocator);
+	ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
+		device,
+		wd->UseDynamicRendering,
+		wd->SurfaceFormat.format,
+		wd->ClearEnable,
+		wd->ImageCount,
+		wd->Frames,
+		wd->Width, wd->Height,
+		allocator,
+		old_swapchain,
+		&rp, &views, &fbs );
 
-    ImGui_ImplVulkanH_CreateWindowRenderPass(device, wd, allocator);
-
-    ImGui_ImplVulkanH_CreateWindowImageViews(device, wd, allocator);
-
-    ImGui_ImplVulkanH_CreateWindowFramebuffer(device, wd, allocator);
+	ImGui_ImplVulkanH_SetWdRenderPass(wd, rp);
+	ImGui_ImplVulkanH_CopyImageViewsToWd(wd, views);
+	ImGui_ImplVulkanH_CopyFramebufferToWd(
+		wd->UseDynamicRendering, wd, wd->ImageCount, fbs);
 }
 
 // Create or resize window

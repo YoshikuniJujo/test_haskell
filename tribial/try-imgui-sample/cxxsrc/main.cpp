@@ -263,7 +263,6 @@ resizeSwapchain(
 	ic = ImGui_ImplVulkanH_CreateSwapChain(
 		dvc, wd->SwapchainPupupu, g_MinImageCount, backbuffers_ret);
 	ImGui_ImplVulkanH_CreateSwapChainModifyWd(wd, backbuffers_ret, ic);
-	wd->ImageCount = ic;
 
 	ImGui_ImplVulkanH_CreateOrResizeWindow(
 		ist, phd, dvc, wd, qfi, g_Allocator, fbwdt, fbhgt, g_MinImageCount, old_swapchain);
