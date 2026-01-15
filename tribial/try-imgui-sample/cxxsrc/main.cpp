@@ -264,8 +264,34 @@ resizeSwapchain(
 		dvc, wd->SwapchainPupupu, g_MinImageCount, backbuffers_ret);
 	ImGui_ImplVulkanH_CreateSwapChainModifyWd(wd, backbuffers_ret, ic);
 
-	ImGui_ImplVulkanH_CreateOrResizeWindow(
-		ist, phd, dvc, wd, qfi, g_Allocator, fbwdt, fbhgt, g_MinImageCount, old_swapchain);
+	VkRenderPass *rp;
+	VkImageView *views;
+	VkFramebuffer *fbs;
+
+	ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
+		dvc,
+		wd->UseDynamicRendering,
+		wd->SurfaceFormat.format,
+		wd->ClearEnable,
+		wd->ImageCount,
+		wd->Frames,
+		wd->Width, wd->Height,
+		g_Allocator,
+		old_swapchain,
+		&rp, &views, &fbs );
+
+	ImGui_ImplVulkanH_SetWdRenderPass(wd, rp);
+	ImGui_ImplVulkanH_CopyImageViewsToWd(wd, views);
+	ImGui_ImplVulkanH_CopyFramebufferToWd(
+		wd->UseDynamicRendering, wd, wd->ImageCount, fbs);
+
+    VkCommandPool *cps;
+
+    cps = ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
+		dvc, qfi, g_Allocator, ic );
+    ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool(
+		dvc, wd, qfi, g_Allocator, cps );
+
 	wd->FrameIndex = 0;
 	*pscr = false;
 }

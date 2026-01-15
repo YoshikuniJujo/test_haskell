@@ -261,6 +261,26 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(
 	VkDevice device,
 	ImGui_ImplVulkanH_Window* wd, const VkAllocationCallbacks* allocator,
 	int w, int h, uint32_t min_image_count, VkSwapchainKHR);
+void ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
+	VkDevice device,
+	bool udr,
+	VkFormat fmt,
+	bool ce,
+	uint32_t ic,
+	ImVector<ImGui_ImplVulkanH_Frame> frms,
+	uint32_t wdt, uint32_t hgt,
+	const VkAllocationCallbacks* allocator,
+	VkSwapchainKHR old_swapchain,
+	VkRenderPass **rp,
+	VkImageView **views,
+	VkFramebuffer **fbs );
+void ImGui_ImplVulkanH_SetWdRenderPass(
+	ImGui_ImplVulkanH_Window* wd, VkRenderPass *rp );
+void ImGui_ImplVulkanH_CopyImageViewsToWd (
+	ImGui_ImplVulkanH_Window* wd, VkImageView* views );
+void ImGui_ImplVulkanH_CopyFramebufferToWd(
+	bool udr, ImGui_ImplVulkanH_Window* wd,
+	int im_count, VkFramebuffer* fbs );
 void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_device, VkDevice device, ImGui_ImplVulkanH_Window* wd, uint32_t queue_family, const VkAllocationCallbacks* allocator, uint32_t ic);
 VkCommandPool *ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
 	VkDevice device,

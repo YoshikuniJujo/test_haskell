@@ -2238,9 +2238,31 @@ void ImGui_ImplVulkanH_CreateOrResizeWindow(
 {
     IM_ASSERT(g_FunctionsLoaded && "Need to call ImGui_ImplVulkan_LoadFunctions() if IMGUI_IMPL_VULKAN_NO_PROTOTYPES or VK_NO_PROTOTYPES are set!");
     (void)instance;
+	VkRenderPass *rp;
+	VkImageView *views;
+	VkFramebuffer *fbs;
+
+	ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
+		device,
+		wd->UseDynamicRendering,
+		wd->SurfaceFormat.format,
+		wd->ClearEnable,
+		wd->ImageCount,
+		wd->Frames,
+		wd->Width, wd->Height,
+		allocator,
+		old_swapchain,
+		&rp, &views, &fbs );
+
+	ImGui_ImplVulkanH_SetWdRenderPass(wd, rp);
+	ImGui_ImplVulkanH_CopyImageViewsToWd(wd, views);
+	ImGui_ImplVulkanH_CopyFramebufferToWd(
+		wd->UseDynamicRendering, wd, wd->ImageCount, fbs);
+	/*
     ImGui_ImplVulkanH_CreateWindowSwapChain(
 		device, wd, allocator,
 		width, height, min_image_count, old_swapchain);
+		*/
     ImGui_ImplVulkanH_CreateWindowCommandBuffers(physical_device, device, wd, queue_family, allocator, wd->ImageCount);
 }
 
