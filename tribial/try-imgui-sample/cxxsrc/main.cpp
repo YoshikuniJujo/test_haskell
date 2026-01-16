@@ -235,6 +235,19 @@ resizeSwapchain(
 	VkDevice dvc, ImGui_ImplVulkanH_Window* wd,
 	bool* pscr, int fbwdt, int fbhgt )
 {
+	VkSurfaceCapabilitiesKHR cap;
+	VkSwapchainKHR* pscsrc;
+	uint32_t ic;
+	VkRenderPass *rp;
+	VkImageView *views;
+	VkFramebuffer *fbs;
+	VkCommandPool *cps;
+	VkCommandBuffer *cbs;
+
+	VkSwapchainKHR old_swapchain = wd->SwapchainPupupu;
+	uint32_t sc = wd->SemaphoreCount;
+	VkSemaphore iasmps[sc], rcsmps[sc];
+
 	ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainWaitIdle(dvc);
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainFrames(
@@ -244,13 +257,10 @@ resizeSwapchain(
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
 		dvc, wd->RenderPass, wd->Pipeline, g_Allocator);
 
-	VkSwapchainKHR old_swapchain = wd->SwapchainPupupu;
 	wd->SwapchainPupupu = VK_NULL_HANDLE;
-	VkSurfaceCapabilitiesKHR cap;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(phd, wd->Surface, &cap);
 
 	ImGui_ImplVulkanH_SetSize(wd, fbwdt, fbhgt, &cap);
-	VkSwapchainKHR* pscsrc;
 	pscsrc = ImGui_ImplVulkanH_OnlyCreateSwapChainNoWd(
 		dvc, g_Allocator, g_MinImageCount, old_swapchain, &cap,
 		wd->Surface, &(wd->SurfaceFormat),
@@ -258,15 +268,10 @@ resizeSwapchain(
 	wd->SwapchainPupupu = *pscsrc;
 
 	VkImage backbuffers_ret[16];
-
-	uint32_t ic;
 	ic = ImGui_ImplVulkanH_CreateSwapChain(
-		dvc, wd->SwapchainPupupu, g_MinImageCount, backbuffers_ret);
+		dvc, *pscsrc, g_MinImageCount, backbuffers_ret);
+	VkFence fncs[ic];
 	ImGui_ImplVulkanH_CreateSwapChainModifyWd(wd, backbuffers_ret, ic);
-
-	VkRenderPass *rp;
-	VkImageView *views;
-	VkFramebuffer *fbs;
 
 	ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
 		dvc,
@@ -285,14 +290,23 @@ resizeSwapchain(
 	ImGui_ImplVulkanH_CopyFramebufferToWd(
 		wd->UseDynamicRendering, wd, wd->ImageCount, fbs);
 
-    VkCommandPool *cps;
-
     cps = ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
 		dvc, qfi, g_Allocator, ic );
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyCommandPool(wd, cps);
 
-    ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool(
-		dvc, wd, qfi, g_Allocator, cps );
+	cbs = ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(
+		dvc, ic, wd->Frames);
+
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
+		dvc, g_Allocator, ic, fncs );
+
+    ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCreate(dvc, g_Allocator, sc, iasmps, rcsmps);
+
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCopyCommandBuffers(
+		wd, cbs );
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2Copy(
+		wd, fncs);
+    ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCopy(wd, sc, iasmps, rcsmps);
 
 	wd->FrameIndex = 0;
 	*pscr = false;
