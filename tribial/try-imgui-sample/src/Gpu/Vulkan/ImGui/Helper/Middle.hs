@@ -14,7 +14,7 @@ module Gpu.Vulkan.ImGui.Helper.Middle (
 
 -- * Here
 
-	createWindowCommandBuffersFramesCreateCommandBuffers,
+--	createWindowCommandBuffersFramesCreateCommandBuffers,
 	createWindowCommandBuffersFramesCopyCommandBuffers,
 
 -- * After Here
@@ -127,15 +127,6 @@ createWindowCommandBuffersCopyCommandPool wd cps =
 	allocaArray (length cps) \pcps -> do
 		pokeArray pcps $ (\(Vk.CmdPl.C cp) -> cp) <$> cps
 		C.createWindowCommandBuffersCopyCommandPool wd pcps
-
-createWindowCommandBuffersFramesCreateCommandBuffers ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> IO [Vk.CmdBffr.C]
-createWindowCommandBuffersFramesCreateCommandBuffers (Vk.Dvc.D dvc) wd = do
-	n <- Vk.ImGui.H.Win.C.wCImageCount <$> Vk.ImGui.H.Win.C.toC wd
-	ps <- replicateM (fromIntegral n) $ newIORef nullPtr
-	cbs <- getCommandBuffersList wd =<<
-		C.createWindowCommandBuffersFramesCreateCommandBuffers dvc wd
-	pure $ zipWith Vk.CmdBffr.C ps cbs
 
 getCommandBuffersList ::
 	Vk.ImGui.H.Win.W -> Ptr Vk.CmdBffr.C.C -> IO [Vk.CmdBffr.C.C]

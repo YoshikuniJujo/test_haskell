@@ -285,6 +285,8 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffers(VkPhysicalDevice physical_devi
 VkCommandPool *ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
 	VkDevice device,
 	uint32_t queue_family, const VkAllocationCallbacks* allocator, uint32_t ic );
+void ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyCommandPool(
+	ImGui_ImplVulkanH_Window* wd, VkCommandPool *cps );
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool(
 	VkDevice device, ImGui_ImplVulkanH_Window* wd,
 	uint32_t queue_family, const VkAllocationCallbacks* allocator, VkCommandPool *cps );
@@ -303,7 +305,9 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
 VkCommandBuffer *
 ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(
 	VkDevice device,
-	ImGui_ImplVulkanH_Window* wd );
+	uint32_t ic,
+	ImVector<ImGui_ImplVulkanH_Frame> frm
+	);
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCopyCommandBuffers(
 	ImGui_ImplVulkanH_Window* wd, VkCommandBuffer *cbs );
 void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2(

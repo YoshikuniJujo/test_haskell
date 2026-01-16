@@ -289,6 +289,8 @@ resizeSwapchain(
 
     cps = ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
 		dvc, qfi, g_Allocator, ic );
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyCommandPool(wd, cps);
+
     ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool(
 		dvc, wd, qfi, g_Allocator, cps );
 

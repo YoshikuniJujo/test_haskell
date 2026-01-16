@@ -15,8 +15,6 @@ module Gpu.Vulkan.ImGui.Helper (
 	createWindowCommandBuffersCreateCommandPool,
 	createWindowCommandBuffersCopyCommandPool,
 
-	createWindowCommandBuffersFramesCommandBuffers2,
-	createWindowCommandBuffersFramesCreateCommandBuffers,
 	createWindowCommandBuffersFramesCopyCommandBuffers,
 
 	createWindowCommandBuffersFramesFence2,
@@ -117,18 +115,6 @@ createWindowCommandBuffersCopyCommandPool ::
 createWindowCommandBuffersCopyCommandPool wd cps =
 	M.createWindowCommandBuffersCopyCommandPool
 		wd (HPList.toList (\(Vk.CmdPl.C cp) -> cp) cps)
-
-createWindowCommandBuffersFramesCommandBuffers2 ::
-	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> IO a -> IO a
-createWindowCommandBuffersFramesCommandBuffers2 dvc wd f =
-	createWindowCommandBuffersFramesCreateCommandBuffers dvc wd \cbs ->
-	createWindowCommandBuffersFramesCopyCommandBuffers wd cbs f
-
-createWindowCommandBuffersFramesCreateCommandBuffers ::
-	Vk.Dvc.D sd -> Vk.ImGui.H.Win.W -> (forall scbs . HPList.PL Vk.CmdBffr.C scbs -> IO a) -> IO a
-createWindowCommandBuffersFramesCreateCommandBuffers (Vk.Dvc.D dvc) wd f = do
-	cbs <- M.createWindowCommandBuffersFramesCreateCommandBuffers dvc wd
-	fromList Vk.CmdBffr.C cbs f
 
 createWindowCommandBuffersFramesCopyCommandBuffers ::
 	Vk.ImGui.H.Win.W -> HPList.PL Vk.CmdBffr.C scbs -> IO a -> IO a

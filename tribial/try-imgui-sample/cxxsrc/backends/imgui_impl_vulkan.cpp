@@ -1549,12 +1549,14 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers(
 VkCommandBuffer *
 ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(
 	VkDevice device,
-	ImGui_ImplVulkanH_Window* wd )
+	uint32_t ic,
+	ImVector<ImGui_ImplVulkanH_Frame> frms
+	)
 {
+//	uint32_t ic = wd->ImageCount;
+//	ImVector<ImGui_ImplVulkanH_Frame> frms = wd->Frames;
 
 	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers begin ***\n");
-
-	uint32_t ic = wd->ImageCount;
 
 	VkCommandBuffer *cbs;
 
@@ -1566,7 +1568,7 @@ ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(
 	ImGui_ImplVulkanH_Frame* fds[ic];
 
 	for (uint32_t i = 0; i < ic; i++)
-		fds[i] = &wd->Frames[i];
+		fds[i] = &frms[i];
 
     for (uint32_t i = 0; i < ic; i++)
     {
@@ -1609,7 +1611,8 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2(
 	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCommandBuffers2 begin ***\n");
 
 	VkCommandBuffer *cbs;
-	cbs = ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(device, wd);
+	cbs = ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(
+		device, wd->ImageCount, wd->Frames);
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCopyCommandBuffers(
 		wd, cbs );
 }
@@ -1706,10 +1709,9 @@ void ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool(
 
 	printf("*** ImGui_ImplVulkanH_CreateWindowCommandBuffersFromCommandPool begin ***\n");
 
-	ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyCommandPool(wd, cps);
-
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersFrames(
 		device, wd, queue_family, allocator );
+
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphores(device, wd, allocator, wd->SemaphoreCount);
 }
 

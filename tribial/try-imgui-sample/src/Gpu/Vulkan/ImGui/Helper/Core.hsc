@@ -11,9 +11,9 @@ module Gpu.Vulkan.ImGui.Helper.Core (
 	createWindowCommandBuffersCreateCommandPool,
 	createWindowCommandBuffersFromCommandPool,
 	createWindowCommandBuffersCopyCommandPool,
-	createWindowCommandBuffersFrames,
-	createWindowCommandBuffersFramesCommandBuffers2,
-	createWindowCommandBuffersFramesCreateCommandBuffers,
+--	createWindowCommandBuffersFrames,
+--	createWindowCommandBuffersFramesCommandBuffers2,
+--	createWindowCommandBuffersFramesCreateCommandBuffers,
 	createWindowCommandBuffersFramesCopyCommandBuffers,
 	createWindowCommandBuffersFramesFence2,
 	createWindowCommandBuffersFramesFence,
@@ -143,25 +143,10 @@ foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_from_co
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
 	Ptr Vk.AllocCallbacks.A -> IO ()
 
-createWindowCommandBuffersFrames ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
-	Ptr Vk.AllocCallbacks.A -> IO ()
-createWindowCommandBuffersFrames dvc wd qf allc = do
-	createWindowCommandBuffersFramesCommandBuffers2 dvc wd
-	createWindowCommandBuffersFramesFence2 dvc wd allc
---	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames dvc wd qf allc
-
 foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_frames"
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames ::
 	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> #{type uint32_t} ->
 	Ptr Vk.AllocCallbacks.A -> IO ()
-
-createWindowCommandBuffersFramesCommandBuffers2 ::
-	Vk.Dvc.D -> Vk.ImGui.H.Win.W -> IO ()
-createWindowCommandBuffersFramesCommandBuffers2 dvc wd = do
---	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames_command_buffers2
-	cbs <- createWindowCommandBuffersFramesCreateCommandBuffers dvc wd
-	createWindowCommandBuffersFramesCopyCommandBuffers wd cbs
 
 foreign import ccall "im_gui_impl_vulkan_h_create_window_command_buffers_frames_command_buffers2"
 	cxx_im_gui_impl_vulkan_h_create_window_command_buffers_frames_command_buffers2 ::
