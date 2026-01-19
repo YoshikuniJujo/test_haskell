@@ -236,6 +236,7 @@ resizeSwapchain(
 	bool* pscr, int fbwdt, int fbhgt )
 {
 	VkSurfaceCapabilitiesKHR cap;
+	uint32_t wdt, hgt;
 	VkSwapchainKHR* pscsrc;
 	uint32_t ic;
 	VkRenderPass *rp;
@@ -260,27 +261,43 @@ resizeSwapchain(
 	wd->SwapchainPupupu = VK_NULL_HANDLE;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(phd, wd->Surface, &cap);
 
-	ImGui_ImplVulkanH_SetSize(wd, fbwdt, fbhgt, &cap);
+	if (cap.currentExtent.width == 0xffffffff) {
+		wdt = fbwdt; hgt = fbhgt;
+	} else {
+		wdt = cap.currentExtent.width;
+		hgt = cap.currentExtent.height; }
+
 	pscsrc = ImGui_ImplVulkanH_OnlyCreateSwapChainNoWd(
 		dvc, g_Allocator, g_MinImageCount, old_swapchain, &cap,
 		wd->Surface, &(wd->SurfaceFormat),
-		wd->PresentMode, wd->Width, wd->Height );
-	wd->SwapchainPupupu = *pscsrc;
+		wd->PresentMode, wdt, hgt );
 
 	VkImage backbuffers_ret[16];
 	ic = ImGui_ImplVulkanH_CreateSwapChain(
 		dvc, *pscsrc, g_MinImageCount, backbuffers_ret);
 	VkFence fncs[ic];
-	ImGui_ImplVulkanH_CreateSwapChainModifyWd(wd, backbuffers_ret, ic);
+
+	wd->Width = wdt;
+	wd->Height = hgt;
+	wd->SwapchainPupupu = *pscsrc;
+	wd->ImageCount = ic;
+        wd->SemaphoreCount = ic + 1;
+
+        wd->Frames.resize(ic);
+        wd->FrameSemaphores.resize(ic + 1);
+        memset(wd->Frames.Data, 0, wd->Frames.size_in_bytes());
+        memset(wd->FrameSemaphores.Data, 0, wd->FrameSemaphores.size_in_bytes());
+        for (uint32_t i = 0; i < ic; i++)
+		wd->Frames[i].Backbuffer = backbuffers_ret[i];
 
 	ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
 		dvc,
 		wd->UseDynamicRendering,
 		wd->SurfaceFormat.format,
 		wd->ClearEnable,
-		wd->ImageCount,
+		ic,
 		wd->Frames,
-		wd->Width, wd->Height,
+		wdt, hgt,
 		g_Allocator,
 		old_swapchain,
 		&rp, &views, &fbs );
@@ -288,7 +305,7 @@ resizeSwapchain(
 	ImGui_ImplVulkanH_SetWdRenderPass(wd, rp);
 	ImGui_ImplVulkanH_CopyImageViewsToWd(wd, views);
 	ImGui_ImplVulkanH_CopyFramebufferToWd(
-		wd->UseDynamicRendering, wd, wd->ImageCount, fbs);
+		wd->UseDynamicRendering, wd, ic, fbs);
 
     cps = ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
 		dvc, qfi, g_Allocator, ic );
