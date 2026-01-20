@@ -30,6 +30,7 @@ dependencies:
 - wuss
 - cryptohash-sha256
 - ppad-secp256k1
+- bech32
 
 ghc-options:
 - -Wall

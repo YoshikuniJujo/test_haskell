@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      TryBech32
   other-modules:
       Paths_try_hello_nostr
   autogen-modules:
@@ -36,6 +37,7 @@ library
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bech32
     , bytestring
     , cryptohash-sha256
     , ppad-secp256k1
@@ -58,6 +60,7 @@ executable try-hello-nostr-exe
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bech32
     , bytestring
     , cryptohash-sha256
     , ppad-secp256k1
@@ -82,6 +85,7 @@ test-suite try-hello-nostr-test
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bech32
     , bytestring
     , cryptohash-sha256
     , ppad-secp256k1

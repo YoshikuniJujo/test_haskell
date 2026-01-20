@@ -22,14 +22,28 @@ import Network.WebSockets
 import Crypto.Hash.SHA256
 import Crypto.Curve.Secp256k1
 
-main :: IO ()
-main = runSecureClient "nos.lol" 443 "/" ws
+import TryBech32
 
-ws :: ClientApp ()
-ws cnn = do
+import System.Environment
+
+main :: IO ()
+main = do
+	acc : _ <- getArgs
+	pub <- L.init <$> readFile acc
+	runSecureClient "nos.lol" 443 "/" (ws pub)
+
+fltr :: String -> T.Text
+fltr a = "{ \"kinds\": [1], " <>
+	"\"authors\": [\"" <> T.pack a <> "\"] }"
+
+ws :: String -> ClientApp ()
+ws pub cnn = do
+	let	Just pubStr = strToHexStr . BSC.unpack <$> dataPart (T.pack pub)
 	putStrLn "Connected!"
 
-	sendTextData cnn ("[\"REQ\", \"foobar12345\", { \"kinds\": [1] }]" :: T.Text)
+	sendTextData cnn (
+		"[\"REQ\", \"foobar12345\", " <> fltr pubStr <> "]"
+			:: T.Text )
 
 	(Just (Array (toList -> [_, _, Object obj])) :: Maybe Value) <- decode <$> receiveData cnn
 
@@ -69,6 +83,10 @@ ws cnn = do
 	print sig'
 
 	print $ verify_schnorr hshd pk' sig'
+
+	putStrLn "\n*** PUB KEY ***\n"
+
+	print pubStr
 
 	sendClose cnn ("Bye!" :: T.Text)
 
