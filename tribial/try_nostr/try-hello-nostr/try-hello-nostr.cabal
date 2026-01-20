@@ -36,7 +36,11 @@ library
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
+    , cryptohash-sha256
+    , scientific
     , text
+    , utf8-string
     , websockets
     , wuss
   default-language: Haskell2010
@@ -53,8 +57,12 @@ executable try-hello-nostr-exe
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
+    , cryptohash-sha256
+    , scientific
     , text
     , try-hello-nostr
+    , utf8-string
     , websockets
     , wuss
   default-language: Haskell2010
@@ -72,8 +80,12 @@ test-suite try-hello-nostr-test
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
+    , cryptohash-sha256
+    , scientific
     , text
     , try-hello-nostr
+    , utf8-string
     , websockets
     , wuss
   default-language: Haskell2010
