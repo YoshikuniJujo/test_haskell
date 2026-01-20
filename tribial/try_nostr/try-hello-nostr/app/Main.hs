@@ -6,14 +6,17 @@
 
 module Main (main) where
 
+import Foreign.C.Types
+import Control.Monad
 import Data.Foldable
 import Data.List qualified as L
+import Data.Map qualified as Map
 import Data.Char
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Data.ByteString.UTF8 qualified as BSU
 import Data.Text qualified as T
-import Data.Scientific
+import Data.Text.IO qualified as T
 import Data.Aeson
 import Data.Aeson.KeyMap qualified as A
 import System.Entropy
@@ -24,8 +27,10 @@ import Crypto.Hash.SHA256
 import Crypto.Curve.Secp256k1
 
 import TryBech32
+import Event
 
 import System.Environment
+import Data.UnixTime
 
 main :: IO ()
 main = do
@@ -44,63 +49,56 @@ ws pub sec cnn = do
 		Just sec' = parse_int256 =<< dataPart (T.pack sec)
 	putStrLn "Connected!"
 
-	sendTextData cnn (
-		"[\"REQ\", \"foobar12345\", " <> fltr pubStr <> "]"
-			:: T.Text )
+	sendTextData cnn
+		("[\"REQ\", \"foobar12345\", " <> fltr pubStr <> "]" :: T.Text)
 
-	(Just (Array (toList -> [_, _, Object obj])) :: Maybe Value) <- decode <$> receiveData cnn
-
-	print obj
-
-	putStrLn "\n*** FOR SERIALIZE ***\n"
+	Just (Array (toList -> [
+		String "EVENT", String "foobar12345", Object obj ])) <-
+		decode <$> receiveData cnn :: IO (Maybe Value)
 
 	let	Just (String pk) = A.lookup "pubkey" obj
-		Just crat = fromScientific <$> A.lookup "created_at" obj
-		Just knd = fromScientific <$> A.lookup "kind" obj
-		Just tgs = A.lookup "tags" obj
-		Just idnt = A.lookup "id" obj
---		Just cnt = escape <$> A.lookup "content" obj
-		Just cnt = escape <$> A.lookup "content" obj
-		Just (String sig) = A.lookup "sig" obj
-
-	print pk
-	print crat
-	print knd
-	print tgs
-	print cnt
-
-	putStrLn ""
-	let	srzd = serialize pk crat knd tgs cnt
-	putStrLn srzd
-	putStrLn . strToHexStr . BSC.unpack . hash $ BSU.fromString srzd
-	print idnt
-
-	putStrLn "\n*** FOR SIGNATURE ***\n"
-
-	let	hshd = hash $ BSU.fromString srzd
-		Just pk' = parse_point . BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack pk
-		sig' = BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack sig
-
-	print hshd
-	print pk'
-	print sig'
-
-	print $ verify_schnorr hshd pk' sig'
+	guard $ pk == T.pack pubStr
+	let	Just hshd = do
+			crat <- fromScientific <$> A.lookup "created_at" obj
+			knd <- fromScientific <$> A.lookup "kind" obj
+			tgs <- A.lookup "tags" obj
+			cnt <- escape <$> A.lookup "content" obj
+			let	srzd = serialize pk crat knd tgs cnt
+			pure . hash $ BSU.fromString srzd
+		Just pk' = parse_point . BS.pack . (fst . head . readHex <$>) . separate 2 $ pubStr
 
 	aux <- getEntropy 32
 	let	Just sig'' = sign_schnorr sec' hshd aux
-
-	print sig''
 	print $ verify_schnorr hshd pk' sig''
 
-	putStrLn "\n*** PUB KEY ***\n"
-
-	print pubStr
-	print sec'
+	let	ev = jsonToEvent obj
+	print ev
+	putStrLn ""
+	maybe (pure ()) (T.putStrLn . content) ev
 
 	sendClose cnn ("Bye!" :: T.Text)
 
-escape, escape' :: Value -> T.Text
+jsonToEvent :: Object -> Maybe Event
+jsonToEvent obj = do
+	String pk <- A.lookup "pubkey" obj
+	crat <- fromScientific <$> A.lookup "created_at" obj
+	knd <- fromScientific <$> A.lookup "kind" obj
+	tgs <- A.lookup "tags" obj
+	cnt <- escape <$> A.lookup "content" obj
+	String sig <- A.lookup "sig" obj
+	let	srzd = serialize pk crat knd tgs cnt
+		hshd = hash $ BSU.fromString srzd
+	pk' <- parse_point . BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack pk
+	let	sig' = BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack sig
+	guard $ verify_schnorr hshd pk' sig'
+	pure Event {
+		pubkey = pk',
+		created_at = fromEpochTime . CTime $ fromIntegral crat,
+		kind = knd,
+		tags = decodeTags tgs,
+		content = cnt }
+
+escape :: Value -> T.Text
 escape (String txt) = esc txt
 	where
 	esc "" = ""
@@ -113,8 +111,6 @@ escape (String txt) = esc txt
 	esc ('\f' T.:< ts) = "\\f" <> esc ts
 	esc (c T.:< ts) = c T.:< esc ts
 escape _ = error "bad"
-
-escape' (String txt) = txt
 
 fromScientific :: Value -> Int
 fromScientific (Number s) = round s
@@ -130,6 +126,16 @@ serializeTags (Array a) = '[' :
 	L.intercalate "," (serializeStrArray <$> toList a) ++
 	"]"
 serializeTags _ = error "bad"
+
+decodeTags :: Value -> Map.Map T.Text (T.Text, [T.Text])
+decodeTags (Array (toList -> ts)) = Map.fromList $ decodeTags1 <$> ts
+decodeTags _ = error "bad"
+
+decodeTags1 :: Value -> (T.Text, (T.Text, [T.Text]))
+decodeTags1 (Array (toList -> (
+	String k : String v : (((\(String o) -> o) <$>) -> os)))) =
+	(k, (v, os))
+decodeTags1 _ = error "bad"
 
 serializeStrArray :: Value -> String
 serializeStrArray (Array a) = '[' :

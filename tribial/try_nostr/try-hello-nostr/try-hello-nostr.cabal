@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Event
       Lib
       TryBech32
   other-modules:
@@ -39,11 +40,13 @@ library
     , base >=4.7 && <5
     , bech32
     , bytestring
+    , containers
     , cryptohash-sha256
     , entropy
     , ppad-secp256k1
     , scientific
     , text
+    , unix-time
     , utf8-string
     , websockets
     , wuss
@@ -63,12 +66,14 @@ executable try-hello-nostr-exe
     , base >=4.7 && <5
     , bech32
     , bytestring
+    , containers
     , cryptohash-sha256
     , entropy
     , ppad-secp256k1
     , scientific
     , text
     , try-hello-nostr
+    , unix-time
     , utf8-string
     , websockets
     , wuss
@@ -89,12 +94,14 @@ test-suite try-hello-nostr-test
     , base >=4.7 && <5
     , bech32
     , bytestring
+    , containers
     , cryptohash-sha256
     , entropy
     , ppad-secp256k1
     , scientific
     , text
     , try-hello-nostr
+    , unix-time
     , utf8-string
     , websockets
     , wuss
