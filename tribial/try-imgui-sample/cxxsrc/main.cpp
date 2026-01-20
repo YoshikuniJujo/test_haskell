@@ -229,6 +229,48 @@ cleanup (VkInstance ist, VkDevice dvc, ImGui_ImplVulkanH_Window* wd)
     CleanupVulkanWindow(ist, dvc, wd);
 }
 
+/*
+void
+resizeSwapchainToWd(
+	VkPhysicalDevice phd, uint32_t qfi,
+	ImGui_ImplVulkanH_Window* wd,
+	uint32_t wdt, uint32_t hgt,
+	VkSwapchainKHR* pscsrc,
+	uint32_t ic,
+	VkImage *backbuffers_ret,
+	VkRenderPass rp
+	) {
+
+	wd->Width = wdt;
+	wd->Height = hgt;
+	wd->SwapchainPupupu = *pscsrc;
+	wd->ImageCount = ic;
+        wd->SemaphoreCount = ic + 1;
+
+        wd->Frames.resize(ic);
+        wd->FrameSemaphores.resize(ic + 1);
+        memset(wd->Frames.Data, 0, wd->Frames.size_in_bytes());
+        memset(wd->FrameSemaphores.Data, 0, wd->FrameSemaphores.size_in_bytes());
+        for (uint32_t i = 0; i < ic; i++)
+		wd->Frames[i].Backbuffer = backbuffers_ret[i];
+
+	ImGui_ImplVulkanH_SetWdRenderPass(wd, rp);
+	ImGui_ImplVulkanH_CopyImageViewsToWd(wd, views);
+	ImGui_ImplVulkanH_CopyFramebufferToWd(
+		wd->UseDynamicRendering, wd, ic, fbs);
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyCommandPool(wd, cps);
+
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCopyCommandBuffers(
+		wd, cbs );
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence2Copy(
+		wd, fncs);
+    ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCopy(wd, sc, iasmps, rcsmps);
+
+	wd->FrameIndex = 0;
+	*pscr = false;
+}
+*/
+
 void
 resizeSwapchain(
 	VkInstance ist, VkPhysicalDevice phd, uint32_t qfi,
@@ -258,9 +300,7 @@ resizeSwapchain(
 	ImGui_ImplVulkanH_DestroyBeforeCreateSwapChainSecondHalf(
 		dvc, wd->RenderPass, wd->Pipeline, g_Allocator);
 
-	wd->SwapchainPupupu = VK_NULL_HANDLE;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(phd, wd->Surface, &cap);
-
 	if (cap.currentExtent.width == 0xffffffff) {
 		wdt = fbwdt; hgt = fbhgt;
 	} else {
@@ -272,10 +312,34 @@ resizeSwapchain(
 		wd->Surface, &(wd->SurfaceFormat),
 		wd->PresentMode, wdt, hgt );
 
-	VkImage backbuffers_ret[16];
 	ic = ImGui_ImplVulkanH_CreateSwapChain(
-		dvc, *pscsrc, g_MinImageCount, backbuffers_ret);
+		dvc, *pscsrc, g_MinImageCount, nullptr);
+	VkImage backbuffers_ret[ic];
 	VkFence fncs[ic];
+
+	ImGui_ImplVulkanH_CreateSwapChain(
+		dvc, *pscsrc, g_MinImageCount, backbuffers_ret);
+
+	ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
+		dvc,
+		wd->UseDynamicRendering,
+		wd->SurfaceFormat.format,
+		wd->ClearEnable,
+		ic,
+		backbuffers_ret,
+		wdt, hgt,
+		g_Allocator,
+		old_swapchain,
+		&rp, &views, &fbs );
+
+    cps = ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
+		dvc, qfi, g_Allocator, ic );
+
+	cbs = ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(
+		dvc, ic, wd->Frames);
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
+		dvc, g_Allocator, ic, fncs );
+    ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCreate(dvc, g_Allocator, sc, iasmps, rcsmps);
 
 	wd->Width = wdt;
 	wd->Height = hgt;
@@ -290,34 +354,11 @@ resizeSwapchain(
         for (uint32_t i = 0; i < ic; i++)
 		wd->Frames[i].Backbuffer = backbuffers_ret[i];
 
-	ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
-		dvc,
-		wd->UseDynamicRendering,
-		wd->SurfaceFormat.format,
-		wd->ClearEnable,
-		ic,
-		wd->Frames,
-		wdt, hgt,
-		g_Allocator,
-		old_swapchain,
-		&rp, &views, &fbs );
-
 	ImGui_ImplVulkanH_SetWdRenderPass(wd, rp);
 	ImGui_ImplVulkanH_CopyImageViewsToWd(wd, views);
 	ImGui_ImplVulkanH_CopyFramebufferToWd(
 		wd->UseDynamicRendering, wd, ic, fbs);
-
-    cps = ImGui_ImplVulkanH_CreateWindowCommandBuffersCreateCommandPool(
-		dvc, qfi, g_Allocator, ic );
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyCommandPool(wd, cps);
-
-	cbs = ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCreateCommandBuffers(
-		dvc, ic, wd->Frames);
-
-	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesFence(
-		dvc, g_Allocator, ic, fncs );
-
-    ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCreate(dvc, g_Allocator, sc, iasmps, rcsmps);
 
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCopyCommandBuffers(
 		wd, cbs );

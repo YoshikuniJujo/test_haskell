@@ -267,7 +267,7 @@ void ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
 	VkFormat fmt,
 	bool ce,
 	uint32_t ic,
-	ImVector<ImGui_ImplVulkanH_Frame> frms,
+	VkImage *imgs,
 	uint32_t wdt, uint32_t hgt,
 	const VkAllocationCallbacks* allocator,
 	VkSwapchainKHR old_swapchain,

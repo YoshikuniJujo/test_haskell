@@ -1963,14 +1963,15 @@ uint32_t ImGui_ImplVulkanH_CreateSwapChain(
 	uint32_t ic;
         err = vkGetSwapchainImagesKHR(device, sc, &ic, nullptr);
         check_vk_result(err);
-        VkImage backbuffers[16] = {};
-        IM_ASSERT(ic >= min_image_count);
-        IM_ASSERT(ic < IM_ARRAYSIZE(backbuffers));
-        err = vkGetSwapchainImagesKHR(device, sc, &ic, backbuffers);
-        check_vk_result(err);
 
-	for (int i; i < ic; i++)
-		backbuffers_ret[i] = backbuffers[i];
+	if (backbuffers_ret != nullptr) {
+		VkImage backbuffers[ic] = {};
+		IM_ASSERT(ic >= min_image_count);
+		IM_ASSERT(ic <= IM_ARRAYSIZE(backbuffers));
+		err = vkGetSwapchainImagesKHR(device, sc, &ic, backbuffers);
+		check_vk_result(err);
+		for (int i; i < ic; i++)
+			backbuffers_ret[i] = backbuffers[i]; }
 
 	return ic;
 }
@@ -2190,7 +2191,7 @@ void ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
 	VkFormat fmt,
 	bool ce,
 	uint32_t ic,
-	ImVector<ImGui_ImplVulkanH_Frame> frms,
+	VkImage *imgs,
 	uint32_t wdt, uint32_t hgt,
 	const VkAllocationCallbacks* allocator,
 	VkSwapchainKHR old_swapchain,
@@ -2207,10 +2208,6 @@ void ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
 	*rp = ImGui_ImplVulkanH_CreateWindowRenderPassRaw(
 		device, allocator,
 		udr, fmt, ce );
-
-	VkImage imgs[ic];
-	for (int i = 0; i < ic; i++)
-		imgs[i] = frms[i].Backbuffer;
 
 	*views = ImGui_ImplVulkanH_CreateWindowImageViewsRaw(
 		device, fmt,
@@ -2236,13 +2233,17 @@ void ImGui_ImplVulkanH_CreateWindowSwapChain(
 	VkImageView *views;
 	VkFramebuffer *fbs;
 
+	VkImage imgs[wd->ImageCount];
+	for (int i = 0; i < wd->ImageCount; i++)
+		imgs[i] = wd->Frames[i].Backbuffer;
+
 	ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
 		device,
 		wd->UseDynamicRendering,
 		wd->SurfaceFormat.format,
 		wd->ClearEnable,
 		wd->ImageCount,
-		wd->Frames,
+		imgs,
 		wd->Width, wd->Height,
 		allocator,
 		old_swapchain,
@@ -2267,13 +2268,17 @@ void ImGui_ImplVulkanH_CreateOrResizeWindow(
 	VkImageView *views;
 	VkFramebuffer *fbs;
 
+	VkImage imgs[wd->ImageCount];
+	for (int i = 0; i < wd->ImageCount; i++)
+		imgs[i] = wd->Frames[i].Backbuffer;
+
 	ImGui_ImplVulkanH_CreateWindowSwapChainRaw(
 		device,
 		wd->UseDynamicRendering,
 		wd->SurfaceFormat.format,
 		wd->ClearEnable,
 		wd->ImageCount,
-		wd->Frames,
+		imgs,
 		wd->Width, wd->Height,
 		allocator,
 		old_swapchain,
