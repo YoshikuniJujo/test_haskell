@@ -16,6 +16,7 @@ import Data.Text qualified as T
 import Data.Scientific
 import Data.Aeson
 import Data.Aeson.KeyMap qualified as A
+import System.Entropy
 import Numeric
 import Wuss
 import Network.WebSockets
@@ -28,17 +29,19 @@ import System.Environment
 
 main :: IO ()
 main = do
-	acc : _ <- getArgs
+	acc : foo : _ <- getArgs
 	pub <- L.init <$> readFile acc
-	runSecureClient "nos.lol" 443 "/" (ws pub)
+	sec <- L.init <$> readFile foo
+	runSecureClient "nos.lol" 443 "/" (ws pub sec)
 
 fltr :: String -> T.Text
 fltr a = "{ \"kinds\": [1], " <>
 	"\"authors\": [\"" <> T.pack a <> "\"] }"
 
-ws :: String -> ClientApp ()
-ws pub cnn = do
+ws :: String -> String -> ClientApp ()
+ws pub sec cnn = do
 	let	Just pubStr = strToHexStr . BSC.unpack <$> dataPart (T.pack pub)
+		Just sec' = parse_int256 =<< dataPart (T.pack sec)
 	putStrLn "Connected!"
 
 	sendTextData cnn (
@@ -84,9 +87,16 @@ ws pub cnn = do
 
 	print $ verify_schnorr hshd pk' sig'
 
+	aux <- getEntropy 32
+	let	Just sig'' = sign_schnorr sec' hshd aux
+
+	print sig''
+	print $ verify_schnorr hshd pk' sig''
+
 	putStrLn "\n*** PUB KEY ***\n"
 
 	print pubStr
+	print sec'
 
 	sendClose cnn ("Bye!" :: T.Text)
 

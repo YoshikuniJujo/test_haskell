@@ -40,6 +40,7 @@ library
     , bech32
     , bytestring
     , cryptohash-sha256
+    , entropy
     , ppad-secp256k1
     , scientific
     , text
@@ -63,6 +64,7 @@ executable try-hello-nostr-exe
     , bech32
     , bytestring
     , cryptohash-sha256
+    , entropy
     , ppad-secp256k1
     , scientific
     , text
@@ -88,6 +90,7 @@ test-suite try-hello-nostr-test
     , bech32
     , bytestring
     , cryptohash-sha256
+    , entropy
     , ppad-secp256k1
     , scientific
     , text

@@ -24,6 +24,7 @@ dependencies:
 - bytestring
 - utf8-string
 - text
+- entropy
 - scientific
 - aeson
 - websockets
