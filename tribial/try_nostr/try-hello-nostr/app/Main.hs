@@ -1,10 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
+import Data.Foldable
 import Data.Text
+import Data.Aeson
 import Wuss
 import Network.WebSockets
 
@@ -17,6 +20,8 @@ ws cnn = do
 
 	sendTextData cnn ("[\"REQ\", \"foobar12345\", { \"kinds\": [1] }]" :: Text)
 
-	print @Text =<< receiveData cnn
+	(Just (Array (toList -> [_, _, obj])) :: Maybe Value) <- decode <$> receiveData cnn
+
+	print obj
 
 	sendClose cnn ("Bye!" :: Text)
