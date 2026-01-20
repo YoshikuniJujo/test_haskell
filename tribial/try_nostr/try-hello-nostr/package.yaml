@@ -29,6 +29,7 @@ dependencies:
 - websockets
 - wuss
 - cryptohash-sha256
+- ppad-secp256k1
 
 ghc-options:
 - -Wall
