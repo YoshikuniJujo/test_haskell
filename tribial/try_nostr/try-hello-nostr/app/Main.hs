@@ -9,13 +9,17 @@ module Main (main) where
 import Foreign.C.Types
 import Control.Monad
 import Data.Foldable
+import Data.Maybe
 import Data.List qualified as L
+import Data.Vector qualified as V
 import Data.Map qualified as Map
 import Data.Char
+import Data.Word.Wider
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Data.ByteString.UTF8 qualified as BSU
 import Data.Text qualified as T
+import Data.Text.Encoding qualified as T
 import Data.Text.IO qualified as T
 import Data.Aeson
 import Data.Aeson.KeyMap qualified as A
@@ -34,21 +38,20 @@ import Data.UnixTime
 
 main :: IO ()
 main = do
-	acc : foo : _ <- getArgs
+	acc : foo : snd : msg : _ <- getArgs
 	pub <- L.init <$> readFile acc
 	sec <- L.init <$> readFile foo
-	runSecureClient "nos.lol" 443 "/" (ws pub sec)
+	runSecureClient "nos.lol" 443 "/" (ws (snd == "--send") msg pub sec)
 
 fltr :: String -> T.Text
 fltr a = "{ \"kinds\": [1], " <>
 	"\"authors\": [\"" <> T.pack a <> "\"] }"
 
-ws :: String -> String -> ClientApp ()
-ws pub sec cnn = do
-	let	Just pubStr = strToHexStr . BSC.unpack <$> dataPart (T.pack pub)
-		Just sec' = parse_int256 =<< dataPart (T.pack sec)
-	putStrLn "Connected!"
+ws :: Bool -> String -> String -> String -> ClientApp ()
+ws snd msg pub sec cnn = do
+	putStrLn "Connected!\n"
 
+	let	Just pubStr = strToHexStr . BSC.unpack <$> dataPart (T.pack pub)
 	sendTextData cnn
 		("[\"REQ\", \"foobar12345\", " <> fltr pubStr <> "]" :: T.Text)
 
@@ -56,25 +59,49 @@ ws pub sec cnn = do
 		String "EVENT", String "foobar12345", Object obj ])) <-
 		decode <$> receiveData cnn :: IO (Maybe Value)
 
-	let	Just (String pk) = A.lookup "pubkey" obj
-	guard $ pk == T.pack pubStr
-	let	Just hshd = do
-			crat <- fromScientific <$> A.lookup "created_at" obj
-			knd <- fromScientific <$> A.lookup "kind" obj
-			tgs <- A.lookup "tags" obj
-			cnt <- escape <$> A.lookup "content" obj
-			let	srzd = serialize pk crat knd tgs cnt
-			pure . hash $ BSU.fromString srzd
-		Just pk' = parse_point . BS.pack . (fst . head . readHex <$>) . separate 2 $ pubStr
-
-	aux <- getEntropy 32
-	let	Just sig'' = sign_schnorr sec' hshd aux
-	print $ verify_schnorr hshd pk' sig''
-
 	let	ev = jsonToEvent obj
 	print ev
 	putStrLn ""
 	maybe (pure ()) (T.putStrLn . content) ev
+
+	let	Just (String pk) = A.lookup "pubkey" obj
+	guard $ pk == T.pack pubStr
+
+	putStrLn "\n*** FOR SERIALIZE FROM EVENT ***"
+
+	maybe (pure ()) (putStrLn . serializeEvent) ev
+
+	putStrLn "\n*** SIGNATURE ***"
+
+	Just sig'' <- maybe (pure Nothing) ((Just <$>) . signatureEvent sec) ev
+
+	let	Just hshd' = hash . BSU.fromString . serializeEvent <$> ev
+	print $ verify_schnorr hshd' (fromJust $ pubkey <$> ev) sig''
+
+	putStrLn "\n*** MAKE EVENT ***"
+
+	print obj
+
+	let	Just ev' = ev
+	ut <- getUnixTime
+	json <- eventToJson sec ev' {
+		created_at = ut,
+		tags = Map.empty,
+		content = T.pack msg
+		}
+
+	print json
+
+	print $ jsonToEvent json
+
+	putStrLn "\n*** EVENT ***"
+
+	let
+		eventToSend = encode . Array $ V.fromList [String "EVENT", Object json]
+
+	print eventToSend
+
+	when snd $ sendTextData cnn eventToSend
 
 	sendClose cnn ("Bye!" :: T.Text)
 
@@ -84,9 +111,9 @@ jsonToEvent obj = do
 	crat <- fromScientific <$> A.lookup "created_at" obj
 	knd <- fromScientific <$> A.lookup "kind" obj
 	tgs <- A.lookup "tags" obj
-	cnt <- escape <$> A.lookup "content" obj
+	cnt <- (\(String s) -> s) <$> A.lookup "content" obj
 	String sig <- A.lookup "sig" obj
-	let	srzd = serialize pk crat knd tgs cnt
+	let	srzd = serialize pk crat knd tgs (esc cnt)
 		hshd = hash $ BSU.fromString srzd
 	pk' <- parse_point . BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack pk
 	let	sig' = BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack sig
@@ -98,19 +125,35 @@ jsonToEvent obj = do
 		tags = decodeTags tgs,
 		content = cnt }
 
+eventToJson :: String -> Event -> IO Object
+eventToJson sec ev = do
+	sig <- signatureEvent sec ev
+	pure $ A.fromList [
+		("content", String $ content ev),
+		("created_at",
+			Number . fromIntegral . (\(CTime t) -> t) . toEpochTime $ created_at ev),
+		("id", String . T.pack . strToHexStr . BSC.unpack $ hashEvent ev),
+		("kind", Number . fromIntegral $ kind ev),
+		("pubkey",
+			String . T.pack . strToHexStr . tail
+				. BSC.unpack . serialize_point . pubkey $ ev),
+		("sig", String . T.pack . strToHexStr $ BSC.unpack sig),
+		("tags", tagsToJson $ tags ev)
+		]
+
 escape :: Value -> T.Text
 escape (String txt) = esc txt
-	where
-	esc "" = ""
-	esc ('\n' T.:< ts) = "\\n" <> esc ts
-	esc ('"' T.:< ts) = "\\\"" <> esc ts
-	esc ('\\' T.:< ts) = "\\\\" <> esc ts
-	esc ('\r' T.:< ts) = "\\r" <> esc ts
-	esc ('\t' T.:< ts) = "\\t" <> esc ts
-	esc ('\b' T.:< ts) = "\\b" <> esc ts
-	esc ('\f' T.:< ts) = "\\f" <> esc ts
-	esc (c T.:< ts) = c T.:< esc ts
 escape _ = error "bad"
+
+esc "" = ""
+esc ('\n' T.:< ts) = "\\n" <> esc ts
+esc ('"' T.:< ts) = "\\\"" <> esc ts
+esc ('\\' T.:< ts) = "\\\\" <> esc ts
+esc ('\r' T.:< ts) = "\\r" <> esc ts
+esc ('\t' T.:< ts) = "\\t" <> esc ts
+esc ('\b' T.:< ts) = "\\b" <> esc ts
+esc ('\f' T.:< ts) = "\\f" <> esc ts
+esc (c T.:< ts) = c T.:< esc ts
 
 fromScientific :: Value -> Int
 fromScientific (Number s) = round s
@@ -150,3 +193,35 @@ strToHexStr = concat . (sh <$>) . map ord
 separate :: Int -> String -> [String]
 separate _ "" = []
 separate n s = take n s : separate n (drop n s)
+
+serializeEvent :: Event -> String
+serializeEvent ev = let
+	pk = T.pack . strToHexStr . tail . BSC.unpack . serialize_point . pubkey $ ev
+	Just crat' = fromIntegral
+			. (\(CTime t) -> t)
+			. toEpochTime . created_at <$> Just ev
+	Just tgs' = Array . V.fromList
+			. ((\(k, (v, os)) ->
+				Array $ V.fromList (String <$> (k : v : os))) <$>)
+			. Map.toList . tags
+			<$> Just ev
+	Just cnt' = esc . content <$> Just ev in
+	serialize pk crat' (fromJust $ kind <$> Just ev) tgs' cnt'
+
+tagsToJson :: Map.Map T.Text (T.Text, [T.Text]) -> Value
+tagsToJson tgs = let
+	tgs' = Array . V.fromList
+			. ((\(k, (v, os)) ->
+				Array $ V.fromList (String <$> (k : v : os))) <$>)
+			$ Map.toList tgs in
+	tgs'
+
+hashEvent :: Event -> BS.ByteString
+hashEvent = hash . BSU.fromString . serializeEvent
+
+signatureEvent :: String -> Event -> IO BS.ByteString
+signatureEvent sec ev = do
+	let	Just sec' = parse_int256 =<< dataPart (T.pack sec)
+	aux <- getEntropy 32
+	let	Just sig'' = sign_schnorr sec' (hashEvent ev) aux
+	pure sig''

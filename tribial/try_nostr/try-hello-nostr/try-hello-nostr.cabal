@@ -43,11 +43,13 @@ library
     , containers
     , cryptohash-sha256
     , entropy
+    , ppad-fixed
     , ppad-secp256k1
     , scientific
     , text
     , unix-time
     , utf8-string
+    , vector
     , websockets
     , wuss
   default-language: Haskell2010
@@ -69,12 +71,14 @@ executable try-hello-nostr-exe
     , containers
     , cryptohash-sha256
     , entropy
+    , ppad-fixed
     , ppad-secp256k1
     , scientific
     , text
     , try-hello-nostr
     , unix-time
     , utf8-string
+    , vector
     , websockets
     , wuss
   default-language: Haskell2010
@@ -97,12 +101,14 @@ test-suite try-hello-nostr-test
     , containers
     , cryptohash-sha256
     , entropy
+    , ppad-fixed
     , ppad-secp256k1
     , scientific
     , text
     , try-hello-nostr
     , unix-time
     , utf8-string
+    , vector
     , websockets
     , wuss
   default-language: Haskell2010
