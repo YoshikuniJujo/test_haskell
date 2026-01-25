@@ -18,7 +18,7 @@
 # snapshot: ./custom-snapshot.yaml
 # snapshot: https://example.com/snapshots/2024-01-01.yaml
 
-snapshot: nightly-2025-02-27
+snapshot: nightly-2026-01-24
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,10 +40,12 @@ packages:
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
+
 extra-deps:
   - gpu-vulkan-0.1.0.170
-  - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
-    commit: 84141653bc72cb21a91597a07a9fcae8d72f2ef2
+#  - git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
+#    commit: 84141653bc72cb21a91597a07a9fcae8d72f2ef2
+  - gpu-vulkan-middle-0.1.0.78
   - gpu-vulkan-core-0.1.0.21
   - shaderc-0.1.0.7
   - language-spir-v-0.1.0.3

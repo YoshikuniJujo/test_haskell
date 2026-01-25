@@ -12,16 +12,12 @@ packages:
   original:
     hackage: gpu-vulkan-0.1.0.170
 - completed:
-    commit: 84141653bc72cb21a91597a07a9fcae8d72f2ef2
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
-    name: gpu-vulkan-middle
+    hackage: gpu-vulkan-middle-0.1.0.78@sha256:8f3ac294ee331cb283476b101ada9f0e761fac914b9eb912c5505cd1e70d441d,9154
     pantry-tree:
-      sha256: 38db69d4ed90a98c28b8abe14ceb108a13fe69b0703bc86fdca8e6dcc1d04ca1
-      size: 16139
-    version: 0.1.0.75
+      sha256: defa1e41a57ee9e92240b48f09bc6cb0e7a97a907784db191686bd9c2065964d
+      size: 13577
   original:
-    commit: 84141653bc72cb21a91597a07a9fcae8d72f2ef2
-    git: https://github.com/YoshikuniJujo/gpu-vulkan-middle.git
+    hackage: gpu-vulkan-middle-0.1.0.78
 - completed:
     hackage: gpu-vulkan-core-0.1.0.21@sha256:347fcc9b982033e2162d1106e891f6d57ee251a79bdd8f9398f5ca918f3c9e91,3516
     pantry-tree:
@@ -45,7 +41,7 @@ packages:
     hackage: language-spir-v-0.1.0.3
 snapshots:
 - completed:
-    sha256: 7ec0e288e359b586f3e98bfdc35152922d9b7f2f97346a2e7b4c1b85833e4521
-    size: 654479
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/2/27.yaml
-  original: nightly-2025-02-27
+    sha256: c2fc9383886086db01bea00a4a5d148eaf89918baf6cabfcd3cbb4a0f8b9c524
+    size: 721519
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2026/1/24.yaml
+  original: nightly-2026-01-24
