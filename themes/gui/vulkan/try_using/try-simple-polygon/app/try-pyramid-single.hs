@@ -127,7 +127,8 @@ import Data.Sequences qualified as Sq
 import Data.MonoTraversable
 
 main :: IO ()
-main = createControllerEvent >>= \ce -> forkIO (doWhile_ $ controller ce) >>
+main = createControllerEvent >>= \ce ->
+	(GlfwG.joystickPresent GlfwG.Joystick'1 >>= print >> forkIO (doWhile_ $ controller ce)) >>
 	Win.create windowSize windowName \(Win.W w fr) ->
 	Ist.create debug \ist ->
 	bool id (DbgMsngr.setup ist) debug (body fr w ist ce)
