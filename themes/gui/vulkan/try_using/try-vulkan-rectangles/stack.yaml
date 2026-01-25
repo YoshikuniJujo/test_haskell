@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2024-12-15
+resolver: nightly-2026-01-24
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -52,7 +52,6 @@ extra-deps:
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
   - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
-  - themes/gui/vulkan/try-shaderc
   #  - features/ffi/pointer/try-storable-generic
   - themes/gui/vulkan/try-glfw-group
   - themes/mfrp/try-moffy-with-gtk3
@@ -67,10 +66,11 @@ extra-deps:
   # - git: https://github.com/YoshikuniJujo/glib-stopgap
   # commit: 429e8b95651bafaa67131a917d94581c89d1c90c
 - simple-pango-0.1.0.2
-- gpu-vulkan-0.1.0.159
-- gpu-vulkan-middle-0.1.0.64
-- gpu-vulkan-core-0.1.0.16
-- language-spir-v-0.1.0.1
+- gpu-vulkan-0.1.0.170
+- gpu-vulkan-middle-0.1.0.78
+- gpu-vulkan-core-0.1.0.21
+- shaderc-0.1.0.7
+- language-spir-v-0.1.0.3
 - X11-xft-0.3.4
 - X11-1.10.3
 - data-default-class-0.1.2.2

@@ -901,7 +901,7 @@ shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
 		Vk.Ppl.ShdrSt.createInfoModule =
 			(minfo glslVertexShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = HPList.Nil }
 	finfo = Vk.Ppl.ShdrSt.CreateInfo {
 		Vk.Ppl.ShdrSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlags = def,
@@ -909,7 +909,7 @@ shaderStages = U5 vinfo :** U5 finfo :** HPList.Nil
 		Vk.Ppl.ShdrSt.createInfoModule =
 			(minfo glslFragmentShaderMain, nil),
 		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = HPList.Nil }
 	minfo cd = Vk.ShaderModule.CreateInfo {
 		Vk.ShaderModule.createInfoNext = TMaybe.N,
 		Vk.ShaderModule.createInfoFlags = def,

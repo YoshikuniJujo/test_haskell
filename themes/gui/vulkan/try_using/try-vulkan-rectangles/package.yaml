@@ -45,7 +45,7 @@ dependencies:
 - try-gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-ext-debug-utils
 - try-gpu-vulkan-cglm
-- try-shaderc
+- shaderc
 - language-spir-v
 - hetero-parameter-list
 - ranged-list

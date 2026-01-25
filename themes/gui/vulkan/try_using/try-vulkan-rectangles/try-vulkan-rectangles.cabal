@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.39.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -61,6 +61,7 @@ library
     , optparse-declarative
     , primitive
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
@@ -78,7 +79,6 @@ library
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
     , type-set
     , typelevel-tools-yj
     , union-color
@@ -119,6 +119,7 @@ executable try-cairo-image-as-texture
     , optparse-declarative
     , primitive
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
@@ -136,7 +137,6 @@ executable try-cairo-image-as-texture
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -168,6 +168,7 @@ executable try-multi-rectangles
     , optparse-declarative
     , primitive
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
@@ -185,7 +186,6 @@ executable try-multi-rectangles
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -217,6 +217,7 @@ executable try-multi-rectangles2
     , optparse-declarative
     , primitive
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
@@ -234,7 +235,6 @@ executable try-multi-rectangles2
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -266,6 +266,7 @@ executable try-use-cairo
     , optparse-declarative
     , primitive
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
@@ -283,7 +284,6 @@ executable try-use-cairo
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -315,6 +315,7 @@ executable try-use-texture-group
     , optparse-declarative
     , primitive
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
@@ -332,7 +333,6 @@ executable try-use-texture-group
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
@@ -365,6 +365,7 @@ test-suite try-vulkan-rectangles-test
     , optparse-declarative
     , primitive
     , ranged-list
+    , shaderc
     , simple-cairo
     , simple-pango
     , stm
@@ -382,7 +383,6 @@ test-suite try-vulkan-rectangles-test
     , try-gpu-vulkan-khr-surface-glfw
     , try-gpu-vulkan-khr-swapchain
     , try-moffy-with-gtk3
-    , try-shaderc
     , try-vulkan-rectangles
     , type-set
     , typelevel-tools-yj
