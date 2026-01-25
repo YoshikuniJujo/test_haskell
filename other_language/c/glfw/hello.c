@@ -22,8 +22,10 @@ main()
 	}
 
 	int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
+	int present2 = glfwJoystickPresent(GLFW_JOYSTICK_2);
 
-	printf ("JOYSTICK PRESENT: %d\n", present);
+	printf ("JOYSTICK 1 PRESENT: %d\n", present);
+	printf ("JOYSTICK 2 PRESENT: %d\n", present2);
 
 	while (!glfwWindowShouldClose(window)) {
 //		glClear(GL_COLOR_BUFFER_BIT);
