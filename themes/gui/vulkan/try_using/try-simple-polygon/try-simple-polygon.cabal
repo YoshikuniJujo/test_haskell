@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.39.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -49,14 +49,20 @@ library
     , containers
     , data-default
     , ghc
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -64,14 +70,8 @@ library
     , time
     , tools-yj
     , try-codec-wavefront-obj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
-    , try-storable-generic
     , typelevel-tools-yj
     , union-color
     , vector
@@ -102,14 +102,20 @@ executable try-multisampling
     , containers
     , data-default
     , ghc
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -117,15 +123,9 @@ executable try-multisampling
     , time
     , tools-yj
     , try-codec-wavefront-obj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
     , try-simple-polygon
-    , try-storable-generic
     , typelevel-tools-yj
     , union-color
     , vector
@@ -146,14 +146,20 @@ executable try-pyramid-single
     , containers
     , data-default
     , ghc
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -161,15 +167,9 @@ executable try-pyramid-single
     , time
     , tools-yj
     , try-codec-wavefront-obj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
     , try-simple-polygon
-    , try-storable-generic
     , typelevel-tools-yj
     , union-color
     , vector
@@ -191,14 +191,20 @@ test-suite try-simple-polygon-test
     , containers
     , data-default
     , ghc
+    , glfw-group
     , gpu-vulkan
+    , gpu-vulkan-khr-surface
+    , gpu-vulkan-khr-surface-glfw
+    , gpu-vulkan-khr-swapchain
     , hetero-parameter-list
     , language-spir-v
     , mono-traversable
     , mtl
     , optparse-declarative
     , ranged-list
+    , shaderc
     , stm
+    , storable-generic
     , storable-peek-poke
     , template-haskell
     , temporary
@@ -206,15 +212,9 @@ test-suite try-simple-polygon-test
     , time
     , tools-yj
     , try-codec-wavefront-obj
-    , try-glfw-group
     , try-gpu-vulkan-cglm
     , try-gpu-vulkan-ext-debug-utils
-    , try-gpu-vulkan-khr-surface
-    , try-gpu-vulkan-khr-surface-glfw
-    , try-gpu-vulkan-khr-swapchain
-    , try-shaderc
     , try-simple-polygon
-    , try-storable-generic
     , typelevel-tools-yj
     , union-color
     , vector

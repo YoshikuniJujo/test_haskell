@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 
-resolver: nightly-2025-11-27
+resolver: nightly-2026-01-24
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,24 +42,13 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: a614866aa5b236f21c8f822d6109a299afe7a4e5
+  commit: 5e773454382554cc53f1b89c709b194774dd73a5
   subdirs:
-  - themes/gui/vulkan/try-gpu-vulkan-khr-swapchain
-  - themes/gui/vulkan/try-gpu-vulkan-khr-surface
-  - themes/gui/vulkan/try-gpu-vulkan-khr-surface-glfw
   - themes/gui/vulkan/try-gpu-vulkan-ext-debug-utils
   - themes/gui/vulkan/try-gpu-vulkan-cglm
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-swapchain
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface
-  - themes/gui/vulkan/try-gpu-vulkan-middle-khr-surface-glfw
   - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
-  - themes/gui/vulkan/try-gpu-vulkan-core-khr-swapchain
-  - themes/gui/vulkan/try-gpu-vulkan-core-khr-surface
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
-  - themes/gui/vulkan/try-shaderc
-  - features/ffi/pointer/try-storable-generic
   - themes/codec/try-codec-wavefront-obj
-  - themes/gui/vulkan/try-glfw-group
 - git: https://github.com/tanakh/optparse-declarative
   commit: d3193db7979f391f1a307849236b870fd8933709
 - gpu-vulkan-0.1.0.170
@@ -67,6 +56,17 @@ extra-deps:
 - gpu-vulkan-core-0.1.0.21
 - language-spir-v-0.1.0.3
 - fixed-generic-0.1.0.2
+- gpu-vulkan-khr-swapchain-0.1.0.1
+- gpu-vulkan-khr-surface-0.1.0.0
+- gpu-vulkan-khr-surface-glfw-0.1.0.0
+- gpu-vulkan-middle-khr-swapchain-0.1.0.0
+- gpu-vulkan-middle-khr-surface-0.1.0.0
+- gpu-vulkan-middle-khr-surface-glfw-0.1.0.1
+- gpu-vulkan-core-khr-swapchain-0.1.0.0
+- gpu-vulkan-core-khr-surface-0.1.0.0
+- shaderc-0.1.0.7
+- storable-generic-0.1.0.5
+- glfw-group-0.1.0.6
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

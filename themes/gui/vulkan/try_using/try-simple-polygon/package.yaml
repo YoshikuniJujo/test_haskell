@@ -36,14 +36,14 @@ dependencies:
 - JuicyPixels
 - ranged-list
 - gpu-vulkan
-- try-gpu-vulkan-khr-swapchain
-- try-gpu-vulkan-khr-surface
-- try-gpu-vulkan-khr-surface-glfw
+- gpu-vulkan-khr-swapchain
+- gpu-vulkan-khr-surface
+- gpu-vulkan-khr-surface-glfw
 - try-gpu-vulkan-ext-debug-utils
 - try-gpu-vulkan-cglm
 - language-spir-v
-- try-shaderc
-- try-storable-generic
+- shaderc
+- storable-generic
 - storable-peek-poke
 - hetero-parameter-list
 - union-color
@@ -56,7 +56,7 @@ dependencies:
 - mtl
 - stm
 - tools-yj
-- try-glfw-group
+- glfw-group
 - mono-traversable
 
 ghc-options:
