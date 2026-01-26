@@ -31,6 +31,18 @@ main()
 //		glClear(GL_COLOR_BUFFER_BIT);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		int a;
+		a = (a + 1) % 50;
+
+		int count;
+		const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count);
+		if (a == 0) {
+			printf("%d\n", count);
+			for (int i = 0; i < count; i++) {
+				printf("%f\n", axes[i]);
+			}
+		}
 	}
 
 	glfwTerminate();
