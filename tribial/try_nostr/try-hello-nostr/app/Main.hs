@@ -38,10 +38,12 @@ import Data.UnixTime
 
 main :: IO ()
 main = do
-	acc : foo : snd : msg : _ <- getArgs
+	scr : raddr : rprt : acc : foo : snd : msg : _ <- getArgs
 	pub <- L.init <$> readFile acc
 	sec <- L.init <$> readFile foo
-	runSecureClient "nos.lol" 443 "/" (ws (snd == "--send") msg pub sec)
+	if (scr == "secure")
+		then runSecureClient raddr (read rprt) "/" (ws (snd == "--send") msg pub sec)
+		else runClient raddr (read rprt) "/" (ws (snd == "--send") msg pub sec)
 
 fltr :: String -> T.Text
 fltr a = "{ \"kinds\": [1], " <>
@@ -55,37 +57,47 @@ ws snd msg pub sec cnn = do
 	sendTextData cnn
 		("[\"REQ\", \"foobar12345\", " <> fltr pubStr <> "]" :: T.Text)
 
-	Just (Array (toList -> [
-		String "EVENT", String "foobar12345", Object obj ])) <-
-		decode <$> receiveData cnn :: IO (Maybe Value)
+	dt <- receiveData cnn
+	print dt
+	let	Just r = decode dt
+	case r of
+		Array (toList -> [String "EOSE", String "foobar12345"]) -> do
+			putStrLn "EOSE RECEIVED"
+		Array (toList -> [
+			String "EVENT", String "foobar12345", Object obj ]) -> do
+			print obj
+			let	ev = jsonToEvent obj
+			print ev
+			putStrLn ""
+			maybe (pure ()) (T.putStrLn . content) ev
 
-	let	ev = jsonToEvent obj
-	print ev
-	putStrLn ""
-	maybe (pure ()) (T.putStrLn . content) ev
+			let	Just (String pk) = A.lookup "pubkey" obj
+			guard $ pk == T.pack pubStr
 
-	let	Just (String pk) = A.lookup "pubkey" obj
-	guard $ pk == T.pack pubStr
+			putStrLn "\n*** FOR SERIALIZE FROM EVENT ***"
 
-	putStrLn "\n*** FOR SERIALIZE FROM EVENT ***"
+			maybe (pure ()) (putStrLn . serializeEvent) ev
 
-	maybe (pure ()) (putStrLn . serializeEvent) ev
+			putStrLn "\n*** SIGNATURE ***"
 
-	putStrLn "\n*** SIGNATURE ***"
+			Just sig'' <- maybe (pure Nothing) ((Just <$>) . signatureEvent sec) ev
 
-	Just sig'' <- maybe (pure Nothing) ((Just <$>) . signatureEvent sec) ev
+			let	Just hshd' = hash . BSU.fromString . serializeEvent <$> ev
+			print $ verify_schnorr hshd' (fromJust $ pubkey <$> ev) sig''
 
-	let	Just hshd' = hash . BSU.fromString . serializeEvent <$> ev
-	print $ verify_schnorr hshd' (fromJust $ pubkey <$> ev) sig''
+			putStrLn "\n*** MAKE EVENT ***"
 
-	putStrLn "\n*** MAKE EVENT ***"
+			print obj
 
-	print obj
-
-	let	Just ev' = ev
+			let	Just ev' = ev
+			print $ pubkey ev'
+	let	Just pk' = parse_point . BS.pack . (fst . head . readHex <$>) $ separate 2 pubStr
+	print pk'
 	ut <- getUnixTime
-	json <- eventToJson sec ev' {
+	json <- eventToJson sec Event {
+		pubkey = pk',
 		created_at = ut,
+		kind = 1,
 		tags = Map.empty,
 		content = T.pack msg
 		}
@@ -102,6 +114,8 @@ ws snd msg pub sec cnn = do
 	print eventToSend
 
 	when snd $ sendTextData cnn eventToSend
+	Just r <- decode <$> receiveData cnn :: IO (Maybe Value)
+	print r
 
 	sendClose cnn ("Bye!" :: T.Text)
 
