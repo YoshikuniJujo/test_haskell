@@ -18,7 +18,7 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2023-01-01.yaml
 
-resolver: nightly-2025-02-13
+resolver: nightly-2026-01-26
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 #
 
 extra-deps:
-- gpu-vulkan-middle-0.1.0.74
+- gpu-vulkan-middle-0.1.0.78
 - gpu-vulkan-middle-khr-surface-0.1.0.0
 - gpu-vulkan-core-0.1.0.21
 - gpu-vulkan-core-khr-surface-0.1.0.0
