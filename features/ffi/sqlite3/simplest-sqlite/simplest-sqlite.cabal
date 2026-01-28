@@ -39,4 +39,5 @@ library
         exception-hierarchy == 0.1.0.*, template-haskell >= 2.12 && < 2.24
     ghc-options: -Wall -fno-warn-tabs
     extra-libraries: sqlite3
-    extensions: ForeignFunctionInterface
+    default-extensions: ForeignFunctionInterface
+    default-language: Haskell2010
