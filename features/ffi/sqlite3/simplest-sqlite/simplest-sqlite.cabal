@@ -21,12 +21,12 @@ extra-source-files:
 
 source-repository head
     type: git
-    location: git://github.com/YoshikuniJujo/test_haskell
+    location: https://github.com/YoshikuniJujo/test_haskell
 
 source-repository this
     type: git
-    location: git://github.com/YoshikuniJujo/test_haskell
-    tag: simplest-sqlite-0.1.0.2
+    location: https://github.com/YoshikuniJujo/test_haskell
+    tag: simplest-sqlite-0.1.0.3
 
 library
     hs-source-dirs: src
