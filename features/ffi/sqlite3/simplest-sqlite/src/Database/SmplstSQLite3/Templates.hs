@@ -19,7 +19,7 @@ newException e =
 
 sqliteThrowType :: DecQ
 sqliteThrowType = sigD (mkName "sqliteThrow") .
-	forallT [PlainTV $ mkName "a"] (cxt []) $
+	forallT [plainTV $ mkName "a"] (cxt []) $
 		conT ''String `arrT` conT ''CInt `arrT`
 			(conT ''IO `appT` varT (mkName "a"))
 
