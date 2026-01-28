@@ -47,6 +47,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-simplest-sqlite
+  qiita-sample:
+    main:                qiita-sample.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-simplest-sqlite
 
 tests:
   try-simplest-sqlite-test:

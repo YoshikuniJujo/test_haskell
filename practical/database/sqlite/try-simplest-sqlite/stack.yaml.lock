@@ -13,8 +13,7 @@ packages:
     hackage: simplest-sqlite-0.1.0.3
 snapshots:
 - completed:
-    sha256: 72cdd5851794184138551f43f0897c28f1a5acdda303b266aa9e910461103b3c
-    size: 726784
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/28.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/28.yaml
+    sha256: fb6f83a7414f1570b0259ee3c5e6e884409af7a17c08698194532ea47cd1fcb4
+    size: 721519
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2026/1/26.yaml
+  original: nightly-2026-01-26
