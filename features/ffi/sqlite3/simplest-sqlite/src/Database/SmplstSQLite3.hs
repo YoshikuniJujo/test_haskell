@@ -113,6 +113,13 @@ class SQLiteData a where
 	bindN :: Stmt -> Int -> a -> IO ()
 	column :: Stmt -> Int -> IO a
 
+instance SQLiteData a => SQLiteData (Maybe a) where
+	bindN stmt i Nothing = sqlite3BindNull stmt i ()
+	bindN stmt i (Just x) = bindN stmt i x
+	column stmt i = do
+		n <- columnIsNull stmt i
+		if n then pure Nothing else Just <$> column stmt i
+
 instance SQLiteDataList a => SQLiteData [a] where
 	bindN = bindNList
 	column = columnList
@@ -224,9 +231,13 @@ data Type = Integer | Float | Text | Blob | Null deriving (Show, Eq)
 foreign import ccall unsafe "sqlite3.h sqlite3_column_type"
 	c_sqlite3_column_type :: Ptr Stmt -> CInt -> IO CInt
 
+columnIsNull :: Stmt -> Int -> IO Bool
+columnIsNull stmt i = (== Null) <$> columnType stmt i
+
 columnType :: Stmt -> Int -> IO Type
 columnType (Stmt ps) i = (<$> c_sqlite3_column_type ps (fromIntegral i)) $ \t ->
-	case () of _	| t == sQLITE_INTEGER -> Integer
+	case () of _	| t == sQLITE_NULL -> Null
+			| t == sQLITE_INTEGER -> Integer
 			| t == sQLITE_FLOAT -> Float
 			| t == sQLITE_TEXT -> Text
 			| t == sQLITE_BLOB -> Blob
