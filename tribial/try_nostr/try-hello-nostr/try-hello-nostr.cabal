@@ -54,6 +54,31 @@ library
     , wuss
   default-language: Haskell2010
 
+executable medama-muter
+  main-is: medama-muter.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bech32
+    , bytestring
+    , containers
+    , cryptohash-sha256
+    , entropy
+    , ppad-fixed
+    , ppad-secp256k1
+    , scientific
+    , text
+    , try-hello-nostr
+    , unix-time
+    , utf8-string
+    , vector
+    , websockets
+    , wuss
+  default-language: Haskell2010
+
 executable try-hello-nostr-exe
   main-is: Main.hs
   other-modules:
