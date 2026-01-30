@@ -20,16 +20,26 @@ main = withSQLite "test.sqlite3" $ \db -> do
 		bindN sm 2 "good-bye"
 		_ <- step sm
 		reset sm
-		bindN sm 1 (222 :: Int)
+		bindN sm 1 (Just 222 :: Maybe Int)
 		bindN sm 2 "hoge"
-		step sm
+		print =<< step sm
+		reset sm
+		bindN sm 1 (Nothing :: Maybe Int)
+		bindN sm 2 "foobar"
+		print =<< step sm
 	_ <- withPrepared db "SELECT * FROM greeting" $ \sm -> do
-		_ <- step sm
-		column sm 0 >>= (print :: Int -> IO ())
+		print =<< step sm
+		column sm 0 >>= (print :: Maybe Int -> IO ())
 		column sm 1 >>= (print :: String -> IO ())
 		column sm 2 >>= (print :: String -> IO ())
-		_ <- step sm
-		column sm 0 >>= (print :: Int -> IO ())
+		print =<< step sm
+		column sm 0 >>= (print :: Maybe Int -> IO ())
 		column sm 1 >>= (print :: String -> IO ())
 		column sm 2 >>= (print :: String -> IO ())
+		print =<< step sm
+		column sm 0 >>= (print :: Maybe Int -> IO ())
+		column sm 1 >>= (print :: String -> IO ())
+		column sm 2 >>= (print :: String -> IO ())
+		print =<< step sm
+	_ <- withPrepared db "DELETE FROM greeting" step
 	return ()

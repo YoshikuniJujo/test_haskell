@@ -5,12 +5,18 @@
 
 packages:
 - completed:
-    hackage: simplest-sqlite-0.1.0.3@sha256:becca245683cc5fe9bef37f0dedcd4b19fe2faa12550ef08e9234f4855f89ab5,1204
+    commit: 7dc472d22731e7e21754013205787571b40ac0d3
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: simplest-sqlite
     pantry-tree:
-      sha256: 051c95504248825240445907675abfe54ec27d59c05986498ee5f5921d61f944
-      size: 617
+      sha256: f7effd02a21744ca27d85fd7284dba67fbe9774b8cfaab007fc777544d6d2e3a
+      size: 950
+    subdir: features/ffi/sqlite3/simplest-sqlite
+    version: 0.1.0.3
   original:
-    hackage: simplest-sqlite-0.1.0.3
+    commit: 7dc472d22731e7e21754013205787571b40ac0d3
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: features/ffi/sqlite3/simplest-sqlite
 snapshots:
 - completed:
     sha256: fb6f83a7414f1570b0259ee3c5e6e884409af7a17c08698194532ea47cd1fcb4
