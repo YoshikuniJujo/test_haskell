@@ -2,7 +2,7 @@ build-type: Simple
 cabal-version: >= 1.10
 
 name: simplest-sqlite
-version: 0.1.0.3
+version: 0.1.0.4
 stability: Experimental
 author: YoshikuniJujo <PAF01143@nifty.ne.jp>
 maintainer: YoshikuniJujo <PAF01143@nifty.ne.jp>
