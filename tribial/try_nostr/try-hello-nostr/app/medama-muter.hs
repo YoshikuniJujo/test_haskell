@@ -45,6 +45,10 @@ main = do
 		then runSecureClient raddr (read rprt) "/" (ws (snd == "--send") msg pub sec)
 		else runClient raddr (read rprt) "/" (ws (snd == "--send") msg pub sec)
 
+fltr :: Int -> String -> T.Text
+fltr k a = "{ \"kinds\": [" <> T.pack (show k) <> "], " <>
+	"\"authors\": [\"" <> T.pack a <> "\"] }"
+
 ws :: Bool -> String -> String -> String -> ClientApp ()
 ws snd msg pub sec cnn = do
 	putStrLn "Connected!\n"
@@ -54,13 +58,47 @@ ws snd msg pub sec cnn = do
 --		("[\"REQ\", \"foobar12345\", " <> fltr pubStr <> "]" :: T.Text)
 		("[\"REQ\", \"foobar12345\", { \"kinds\": [7]}]" :: T.Text)
 
-	evs <- doWhile 200 do
+	evs <- doWhile 10000 do
 		dt <- receiveData cnn
 		let	ev = getEvent =<< decode dt
 		pure ev
 	print evs
 	print $ content <$> evs
-	print $ filter ((== "\128065") . content) evs
+	let notMedama = head $ pubkeyToText . pubkey <$> evs
+	print notMedama
+--	let medamas = pubkeyToText . pubkey <$> filter ((== "\128065\65039") . content) evs
+	let medamas = pubkeyToText . pubkey <$> filter ((== "\128065") . content) evs
+--	let medamas = pubkeyToText . pubkey <$> filter ((== '\128065') . T.head . content) evs
+	print medamas
+
+	sendTextData cnn ("[\"CLOSE\", \"foobar12345\"]" :: T.Text)
+
+{-
+	sendTextData cnn
+		("[\"REQ\", \"barbaz12345\", " <> fltr 0 (T.unpack notMedama) <> "]" :: T.Text)
+	print @T.Text =<< receiveData cnn
+	sendTextData cnn ("[\"CLOSE\", \"barbaz12345\"]" :: T.Text)
+	-}
+	print @T.Text =<< receiveData cnn
+
+	sendTextData cnn
+		("[\"REQ\", \"medama\", " <> fltr 0 (T.unpack $ head medamas) <> "]" :: T.Text)
+
+	print @T.Text =<< receiveData cnn
+--	print @T.Text =<< receiveData cnn
+
+--	print @T.Text =<< receiveData cnn
+--	print @T.Text =<< receiveData cnn
+--	T.putStrLn =<< receiveData cnn
+--	T.putStrLn =<< receiveData cnn
+--	print @T.Text =<< receiveData cnn
+	T.putStrLn =<< receiveData cnn
+	T.putStrLn =<< receiveData cnn
+	T.putStrLn =<< receiveData cnn
+	T.putStrLn =<< receiveData cnn
+	T.putStrLn =<< receiveData cnn
+	T.putStrLn =<< receiveData cnn
+	T.putStrLn =<< receiveData cnn
 
 	sendClose cnn ("Bye!" :: T.Text)
 
@@ -105,6 +143,9 @@ eventToJson sec ev = do
 		("sig", String . T.pack . strToHexStr $ BSC.unpack sig),
 		("tags", tagsToJson $ tags ev)
 		]
+
+pubkeyToText = T.pack . strToHexStr . tail
+	. BSC.unpack . serialize_point
 
 escape :: Value -> T.Text
 escape (String txt) = esc txt
