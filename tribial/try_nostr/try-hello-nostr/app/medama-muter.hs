@@ -6,27 +6,19 @@
 
 module Main (main) where
 
-import Foreign.C.Types
-import Control.Monad
 import Data.Foldable
-import Data.Map qualified as Map
-import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
-import Data.ByteString.UTF8 qualified as BSU
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Data.Aeson
-import Data.Aeson.KeyMap qualified as A
-import Numeric
 import Wuss
 import Network.WebSockets
-import Crypto.Hash.SHA256
 import Crypto.Curve.Secp256k1
 
 import Event
+import Tools
 
 import System.Environment
-import Data.UnixTime
 
 main :: IO ()
 main = do
@@ -90,46 +82,8 @@ doWhile mx act = act >>= \case
 	Nothing -> pure []
 	Just x -> (x :) <$> doWhile (mx - 1) act
 
-jsonToEvent :: Object -> Maybe Event
-jsonToEvent obj = do
-	String pk <- A.lookup "pubkey" obj
-	crat <- fromScientific <$> A.lookup "created_at" obj
-	knd <- fromScientific <$> A.lookup "kind" obj
-	tgs <- A.lookup "tags" obj
-	cnt <- (\(String s) -> s) <$> A.lookup "content" obj
-	String sig <- A.lookup "sig" obj
-	let	srzd = serialize pk crat knd tgs (esc cnt)
-		hshd = hash $ BSU.fromString srzd
-	pk' <- parse_point . BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack pk
-	let	sig' = BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack sig
-	guard $ verify_schnorr hshd pk' sig'
-	pure Event {
-		pubkey = pk',
-		created_at = fromEpochTime . CTime $ fromIntegral crat,
-		kind = knd,
-		tags = decodeTags tgs,
-		content = cnt }
-
 pubkeyToText :: Projective -> T.Text
 pubkeyToText = T.pack . strToHexStr . tail . BSC.unpack . serialize_point
-
-fromScientific :: Value -> Int
-fromScientific (Number s) = round s
-fromScientific _ = error "bad"
-
-decodeTags :: Value -> Map.Map T.Text (T.Text, [T.Text])
-decodeTags (Array (toList -> ts)) = Map.fromList $ decodeTags1 <$> ts
-decodeTags _ = error "bad"
-
-decodeTags1 :: Value -> (T.Text, (T.Text, [T.Text]))
-decodeTags1 (Array (toList -> (
-	String k : String v : (((\(String o) -> o) <$>) -> os)))) =
-	(k, (v, os))
-decodeTags1 _ = error "bad"
-
-separate :: Int -> String -> [String]
-separate _ "" = []
-separate n s = take n s : separate n (drop n s)
 
 getEvent :: Value -> Maybe Event
 getEvent = \case

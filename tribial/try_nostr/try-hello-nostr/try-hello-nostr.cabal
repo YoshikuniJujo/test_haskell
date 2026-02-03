@@ -27,6 +27,7 @@ library
   exposed-modules:
       Event
       Lib
+      Tools
       TryBech32
   other-modules:
       Paths_try_hello_nostr
