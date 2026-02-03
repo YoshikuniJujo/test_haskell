@@ -1,7 +1,11 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Event.Signed where
+module Event.Signed (
+
+	E(..), signature, verify
+
+) where
 
 import Prelude hiding (id)
 import Data.Map qualified as Map
