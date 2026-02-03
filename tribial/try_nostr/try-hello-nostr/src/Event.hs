@@ -7,11 +7,15 @@ module Event (
 
 	-- * EVENT
 
-	E(..),
+	E(..), sample,
 
 	-- * SIGNATURE
 
 	signature, Secret, secretFromBech32, hash, serialize,
+
+	-- * VERIFY
+
+	verify,
 
 	-- * PUBLIC KEY
 
@@ -32,6 +36,7 @@ import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Data.ByteString.UTF8 qualified as BSU
 import Data.Text qualified as T
+import Data.Text.IO qualified as T
 import Data.UnixTime
 import Data.Aeson
 import Data.Aeson.KeyMap qualified as A
@@ -50,6 +55,18 @@ data E = E {
 	tags :: Map.Map T.Text (T.Text, [T.Text]),
 	content :: T.Text }
 	deriving Show
+
+sample :: FilePath -> IO E
+sample fp = do
+	Just pub <- dataPart . T.init <$> T.readFile fp
+	Just pk <- pure $ parse_point pub
+	ut <- getUnixTime
+	pure E {
+		pubkey = pk,
+		created_at = ut,
+		kind = 1,
+		tags = Map.empty,
+		content = "Hello" }
 
 serializeEvent :: E -> String
 serializeEvent ev = let
@@ -105,3 +122,6 @@ newtype Secret = Secret Wider deriving Show
 
 hash :: E -> BS.ByteString
 hash = SHA256.hash . BSU.fromString . serializeEvent
+
+verify :: E -> BS.ByteString -> Bool
+verify e = verify_schnorr (hash e) (pubkey e)

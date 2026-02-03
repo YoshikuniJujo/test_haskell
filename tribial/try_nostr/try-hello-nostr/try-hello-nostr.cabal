@@ -27,6 +27,7 @@ library
   exposed-modules:
       Event
       Event.Json
+      Event.Signed
       Tools
       TryBech32
   other-modules:
