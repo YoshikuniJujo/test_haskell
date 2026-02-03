@@ -3,11 +3,12 @@
 
 module Event.Signed (
 
-	E(..), signature, verify
+	E(..), signature, verify, verify'
 
 ) where
 
 import Prelude hiding (id)
+import Data.Maybe
 import Data.Map qualified as Map
 import Data.ByteString qualified as BS
 import Data.Text qualified as T
@@ -49,3 +50,6 @@ verify e = let e' = Event.E {
 	if id e == Event.hash e' && Event.verify e' (sig e)
 	then Just e'
 	else Nothing
+
+verify' :: E -> Bool
+verify' = isJust . verify
