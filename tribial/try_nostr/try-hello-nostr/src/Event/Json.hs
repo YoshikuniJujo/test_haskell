@@ -60,7 +60,8 @@ fromScientific _ = error "bad"
 
 encode :: T.Text -> Event.E -> IO A.Object
 encode sec ev = do
-	sig <- Event.signature sec ev
+	Just sec' <- pure $ Event.secretFromBech32 sec
+	Just sig <- Event.signature sec' ev
 	pure $ A.fromList [
 		("content", A.String $ Event.content ev),
 		("created_at",

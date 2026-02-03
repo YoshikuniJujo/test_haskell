@@ -5,7 +5,17 @@
 
 module Event (
 
-	E(..), signature, hash, serialize, parse_point
+	-- * EVENT
+
+	E(..),
+
+	-- * SIGNATURE
+
+	signature, Secret, secretFromBech32, hash, serialize,
+
+	-- * PUBLIC KEY
+
+	parse_point
 
 	) where
 
@@ -16,6 +26,7 @@ import Data.Maybe
 import Data.List qualified as L
 import Data.Vector qualified as V
 import Data.Map qualified as Map
+import Data.Word.Wider
 import Data.Char
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
@@ -81,12 +92,16 @@ serializeStrArray (Array a) = '[' :
 	L.intercalate "," ((\(String s) -> show s) <$> toList a) ++ "]"
 serializeStrArray _ = error "bad"
 
-signature :: T.Text -> E -> IO BS.ByteString
-signature sec ev = do
-	Just sec' <- pure $ parse_int256 =<< dataPart sec
-	aux <- getEntropy 32
-	Just sig'' <- pure $ sign_schnorr sec' (hash ev) aux
-	pure sig''
+signature :: Secret -> E -> IO (Maybe BS.ByteString)
+signature (Secret sec) ev = sign_schnorr sec (hash ev) <$> getEntropy 32
+
+secretFromBech32 :: T.Text -> Maybe Secret
+secretFromBech32 sec = parseSecret =<< dataPart' "nsec" sec
+
+parseSecret :: BS.ByteString -> Maybe Secret
+parseSecret = (Secret <$>) . parse_int256
+
+newtype Secret = Secret Wider deriving Show
 
 hash :: E -> BS.ByteString
 hash = SHA256.hash . BSU.fromString . serializeEvent
