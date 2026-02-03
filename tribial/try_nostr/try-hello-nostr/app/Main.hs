@@ -15,12 +15,13 @@ import Data.ByteString.Char8 qualified as BSC
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Data.UnixTime
-import Data.Aeson
+import Data.Aeson qualified as A
 import Wuss
 import Network.WebSockets
 import System.Environment
 
-import Event
+import Event qualified as Event
+import Event.Json as EvJs
 import TryBech32
 import Tools
 
@@ -41,37 +42,35 @@ ws sec pub fsnd msg cnn = do
 	let	pubTxt = T.pack . strToHexStr $ BSC.unpack pub
 	sendTextData cnn $ "[\"REQ\", \"foobar12345\", " <> fltr pubTxt <> "]"
 
-	Just r <- decode <$> receiveData cnn
+	Just r <- A.decode <$> receiveData cnn
 	case r of
-		Array (toList -> [String "EOSE", String "foobar12345"]) -> do
+		A.Array (toList -> [A.String "EOSE", A.String "foobar12345"]) -> do
 			putStrLn "EOSE RECEIVED"
-		Array (toList -> [
-			String "EVENT", String "foobar12345", Object obj ]) -> do
-			let	ev = jsonToEvent obj
+		A.Array (toList -> [
+			A.String "EVENT", A.String "foobar12345", A.Object obj ]) -> do
+			let	ev = EvJs.decode obj
 			print ev
 			putStrLn ""
-			maybe (pure ()) (T.putStrLn . content) ev
+			maybe (pure ()) (T.putStrLn . Event.content) ev
 		_ -> error "bad"
 
-	putStrLn "\n*** EVENT ***"
+	putStrLn "\n*** WRITE ***"
 
-	Just pk <- pure $ parse_point pub
-	ut <- getUnixTime
-	json <- eventToJson sec Event {
-		pubkey = pk,
-		created_at = ut,
-		kind = 1,
-		tags = Map.empty,
-		content = T.pack msg
-		}
+	when fsnd $ write sec pub cnn msg
 
-	print $ jsonToEvent json
-
-	when fsnd . sendTextData cnn
-		. encode . Array $ V.fromList [String "EVENT", Object json]
-	Just r' <- decode <$> receiveData cnn :: IO (Maybe Value)
+	Just r' <- A.decode <$> receiveData cnn :: IO (Maybe A.Value)
 	print r'
 
 	sendClose cnn ("Bye!" :: T.Text)
 	where fltr a = "{ \"kinds\": [1], " <>
 		"\"authors\": [\"" <> a <> "\"] }"
+
+write :: T.Text -> BSC.ByteString -> Connection -> String -> IO ()
+write sec pub cnn msg = do
+	Just pk <- pure $ Event.parse_point pub
+	ut <- getUnixTime
+	json <- EvJs.encode sec Event.E {
+		Event.pubkey = pk, Event.created_at = ut,
+		Event.kind = 1, Event.tags = Map.empty, Event.content = T.pack msg }
+	sendTextData cnn
+		. A.encode . A.Array $ V.fromList [A.String "EVENT", A.Object json]

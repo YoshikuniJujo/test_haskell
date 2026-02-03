@@ -10,12 +10,13 @@ import Data.Foldable
 import Data.ByteString.Char8 qualified as BSC
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
-import Data.Aeson
+import Data.Aeson qualified as A
 import Wuss
 import Network.WebSockets
 import Crypto.Curve.Secp256k1
 
-import Event
+import Event qualified as Event
+import Event.Json
 import Tools
 
 import System.Environment
@@ -41,14 +42,14 @@ ws cnn = do
 
 	evs <- doWhile 10000 do
 		dt <- receiveData cnn
-		let	ev = getEvent =<< decode dt
+		let	ev = getEvent =<< A.decode dt
 		pure ev
 	print evs
-	print $ content <$> evs
-	let notMedama = head $ pubkeyToText . pubkey <$> evs
+	print $ Event.content <$> evs
+	let notMedama = head $ pubkeyToText . Event.pubkey <$> evs
 	print notMedama
 --	let medamas = pubkeyToText . pubkey <$> filter ((== "\128065\65039") . content) evs
-	let medamas = pubkeyToText . pubkey <$> filter ((== "\128065") . content) evs
+	let medamas = pubkeyToText . Event.pubkey <$> filter ((== "\128065") . Event.content) evs
 --	let medamas = pubkeyToText . pubkey <$> filter ((== '\128065') . T.head . content) evs
 	print medamas
 
@@ -85,10 +86,10 @@ doWhile mx act = act >>= \case
 pubkeyToText :: Projective -> T.Text
 pubkeyToText = T.pack . strToHexStr . tail . BSC.unpack . serialize_point
 
-getEvent :: Value -> Maybe Event
+getEvent :: A.Value -> Maybe Event.E
 getEvent = \case
-	Array (toList -> [String "EOSE", String "foobar12345"]) -> Nothing
-	Array (toList -> [
-		String "EVENT", String "foobar12345", Object obj ]) ->
-		jsonToEvent obj
+	A.Array (toList -> [A.String "EOSE", A.String "foobar12345"]) -> Nothing
+	A.Array (toList -> [
+		A.String "EVENT", A.String "foobar12345", A.Object obj ]) ->
+		decode obj
 	_ -> Nothing

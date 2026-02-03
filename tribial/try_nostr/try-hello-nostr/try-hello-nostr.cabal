@@ -26,7 +26,7 @@ source-repository head
 library
   exposed-modules:
       Event
-      Lib
+      Event.Json
       Tools
       TryBech32
   other-modules:
