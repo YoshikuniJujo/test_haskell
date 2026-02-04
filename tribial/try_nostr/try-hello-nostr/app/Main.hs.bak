@@ -1,0 +1,103 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
+
+module Main (main) where
+
+import Control.Monad
+import Data.Foldable
+import Data.Vector qualified as V
+import Data.Map qualified as Map
+import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BSC
+import Data.ByteString.Lazy.Char8 qualified as BSLC
+import Data.Text qualified as T
+import Data.Text.IO qualified as T
+import Data.UnixTime
+import Data.Aeson qualified as A
+import Wuss
+import Network.WebSockets
+import System.Environment
+
+import Nostr.Event qualified as Event
+import Nostr.Event.Json as EvJs
+import TryBech32
+import Tools
+
+main :: IO ()
+main = do
+	scr : raddr : rprt : acc : foo : ((== "--send") -> fsnd) : msg : _ <-
+		getArgs
+	Just pub <- dataPart . T.init <$> T.readFile acc
+	sec <- T.init <$> T.readFile foo
+	if (scr == "secure") 
+	then runSecureClient raddr (read rprt) "/" (ws sec pub fsnd msg)
+	else runClient raddr (read rprt) "/" (ws sec pub fsnd msg)
+
+ws :: T.Text -> BS.ByteString -> Bool -> String -> ClientApp ()
+ws sec pub fsnd msg cnn = do
+	putStrLn "Connected!\n"
+
+	let	pubTxt = T.pack . strToHexStr $ BSC.unpack pub
+	sendTextData cnn $ "[\"REQ\", \"foobar12345\", " <> fltr pubTxt <> "]"
+
+	rcv <- receiveData cnn
+	BSLC.putStrLn rcv
+	Just r <- pure $ A.decode rcv
+	case r of
+		A.Array (toList -> [A.String "EOSE", A.String "foobar12345"]) -> do
+			putStrLn "EOSE RECEIVED"
+		A.Array (toList -> [
+			A.String "EVENT", A.String "foobar12345", A.Object obj ]) -> do
+			let	ev = EvJs.decode obj
+			print ev
+			putStrLn ""
+			maybe (pure ()) (T.putStrLn . Event.content) ev
+		_ -> error "bad"
+
+	putStrLn "\n*** WRITE ***"
+
+	when fsnd $ write sec pub cnn msg
+
+	Just r' <- A.decode <$> receiveData cnn :: IO (Maybe A.Value)
+	print r'
+	case r' of
+		A.Array (toList -> [A.String "EVENT", A.String "foobar12345", A.Object obj ]) -> do
+			let	ev = EvJs.decode obj
+			print ev
+			putStrLn ""
+			maybe (pure ()) (T.putStrLn . Event.content) ev
+		_ -> putStrLn "Oops"
+
+	sendClose cnn ("Bye!" :: T.Text)
+	where fltr a = "{ \"kinds\": [1], " <>
+		"\"authors\": [\"" <> a <> "\"]" <>
+--		", \"until\": 1708404544" <>
+--		", \"until\": 1712404544" <>
+--		", \"until\": 1714404544" <>
+--		", \"until\": 1714904544" <>
+--		", \"until\": 1715104544" <>
+--		", \"until\": 1715124544" <>
+--		", \"until\": 1715125000" <>
+		", \"until\": 1715127000" <>
+--		", \"until\": 1715130000" <>
+--		", \"until\": 1715134544" <>
+--		", \"until\": 1715154544" <>
+--		", \"until\": 1715204544" <>
+--		", \"until\": 1715404544" <>
+--		", \"until\": 1716404544" <>
+--		", \"until\": 1719881404" <>
+		" }"
+
+write :: T.Text -> BSC.ByteString -> Connection -> String -> IO ()
+write sec pub cnn msg = do
+	Just pk <- pure $ Event.parse_point pub
+	ut <- getUnixTime
+	Just sec' <- pure $ Event.secretFromBech32 sec
+	json <- EvJs.encode sec' Event.E {
+		Event.pubkey = pk, Event.created_at = ut,
+		Event.kind = 1, Event.tags = Map.empty, Event.content = T.pack msg }
+	sendTextData cnn
+		. A.encode . A.Array $ V.fromList [A.String "EVENT", A.Object json]
