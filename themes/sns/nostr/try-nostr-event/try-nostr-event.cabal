@@ -1,0 +1,107 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.38.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-nostr-event
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-nostr-event#readme>
+homepage:       https://github.com/YoshikuniJujo/try-nostr-event#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-nostr-event/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      (c) 2025 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-nostr-event
+
+library
+  exposed-modules:
+      Nostr.Event
+      Nostr.Event.Signed
+      Nostr.Event.Json
+  other-modules:
+      Bech32
+      Tools
+      Paths_try_nostr_event
+  autogen-modules:
+      Paths_try_nostr_event
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bech32
+    , bytestring
+    , containers
+    , cryptohash-sha256
+    , entropy
+    , ppad-fixed
+    , ppad-secp256k1
+    , text
+    , unix-time
+    , utf8-string
+    , vector
+  default-language: Haskell2010
+
+executable try-nostr-event-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_nostr_event
+  autogen-modules:
+      Paths_try_nostr_event
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bech32
+    , bytestring
+    , containers
+    , cryptohash-sha256
+    , entropy
+    , ppad-fixed
+    , ppad-secp256k1
+    , text
+    , try-nostr-event
+    , unix-time
+    , utf8-string
+    , vector
+  default-language: Haskell2010
+
+test-suite try-nostr-event-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_nostr_event
+  autogen-modules:
+      Paths_try_nostr_event
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bech32
+    , bytestring
+    , containers
+    , cryptohash-sha256
+    , entropy
+    , ppad-fixed
+    , ppad-secp256k1
+    , text
+    , try-nostr-event
+    , unix-time
+    , utf8-string
+    , vector
+  default-language: Haskell2010
