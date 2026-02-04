@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Event.Json (encode, decode) where
+module Event.Json (encode, encode', decode, decode') where
 
 import Foreign.C.Types
 import Control.Monad
@@ -14,6 +14,7 @@ import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Data.ByteString.UTF8 qualified as BSU
 import Data.Text qualified as T
+import Data.Text.Encoding qualified as T
 import Data.Aeson qualified as A
 import Data.Aeson.KeyMap qualified as A
 import Data.UnixTime
@@ -22,6 +23,7 @@ import Crypto.Curve.Secp256k1
 import Numeric
 
 import Event qualified as Event
+import Event.Signed qualified as Signed
 import Tools
 
 decode :: A.Object -> Maybe Event.E
@@ -43,6 +45,30 @@ decode obj = do
 		Event.kind = knd,
 		Event.tags = decodeTags tgs,
 		Event.content = cnt }
+
+decode' :: A.Object -> Maybe Signed.E
+decode' obj = do
+	A.String idnt <- A.lookup "id" obj
+	A.String pk <- A.lookup "pubkey" obj
+	crat <- fromScientific <$> A.lookup "created_at" obj
+	knd <- fromScientific <$> A.lookup "kind" obj
+	tgs <- A.lookup "tags" obj
+	cnt <- (\(A.String s) -> s) <$> A.lookup "content" obj
+	A.String sig <- A.lookup "sig" obj
+	let	srzd = Event.serialize pk crat knd tgs cnt
+		hshd = hash $ BSU.fromString srzd
+	pk' <- parse_point . BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack pk
+	let	sig' = BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack sig
+	guard $ verify_schnorr hshd pk' sig'
+	pure Signed.E {
+		Signed.id = T.encodeUtf8 idnt,
+		Signed.pubkey = pk',
+		Signed.created_at = fromEpochTime . CTime $ fromIntegral crat,
+		Signed.kind = knd,
+		Signed.tags = decodeTags tgs,
+		Signed.content = cnt,
+		Signed.sig = T.encodeUtf8 sig,
+		Signed.verified = True }
 
 decodeTags :: A.Value -> Map.Map T.Text (T.Text, [T.Text])
 decodeTags (A.Array (toList -> ts)) = Map.fromList $ decodeTags1 <$> ts
@@ -74,6 +100,21 @@ encode sec ev = do
 		("sig", A.String . T.pack . strToHexStr $ BSC.unpack sig),
 		("tags", tagsToJson $ Event.tags ev)
 		]
+
+encode' :: Signed.E -> Maybe A.Object
+encode' ev = let sig = Signed.sig ev in if Signed.verified ev
+	then Just $ A.fromList [
+		("content", A.String $ Signed.content ev),
+		("created_at",
+			A.Number . fromIntegral . (\(CTime t) -> t) . toEpochTime $ Signed.created_at ev),
+		("id", A.String . T.pack . strToHexStr . BSC.unpack $ Signed.id ev),
+		("kind", A.Number . fromIntegral $ Signed.kind ev),
+		("pubkey",
+			A.String . T.pack . strToHexStr . tail
+				. BSC.unpack . serialize_point . Signed.pubkey $ ev),
+		("sig", A.String . T.pack . strToHexStr $ BSC.unpack sig),
+		("tags", tagsToJson $ Signed.tags ev) ]
+	else Nothing
 
 tagsToJson :: Map.Map T.Text (T.Text, [T.Text]) -> A.Value
 tagsToJson tgs = let

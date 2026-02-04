@@ -8,8 +8,8 @@ module Event.Signed (
 ) where
 
 import Prelude hiding (id)
-import Data.Maybe
 import Data.Map qualified as Map
+import Data.Bool
 import Data.ByteString qualified as BS
 import Data.Text qualified as T
 import Data.UnixTime
@@ -24,7 +24,8 @@ data E = E {
 	kind :: Int,
 	tags :: Map.Map T.Text (T.Text, [T.Text]),
 	content :: T.Text,
-	sig :: BS.ByteString }
+	sig :: BS.ByteString,
+	verified :: Bool }
 	deriving Show
 
 signature :: Event.Secret -> Event.E -> IO E
@@ -37,7 +38,8 @@ signature sec e = do
 		kind = Event.kind e,
 		tags = Event.tags e,
 		content = Event.content e,
-		sig = sg }
+		sig = sg,
+		verified = True }
 
 verify :: E -> Maybe Event.E
 verify e = let e' = Event.E {
@@ -47,9 +49,8 @@ verify e = let e' = Event.E {
 	Event.tags = tags e,
 	Event.content = content e
 	} in
-	if id e == Event.hash e' && Event.verify e' (sig e)
-	then Just e'
-	else Nothing
+	bool Nothing (Just e')
+		$ verified e || id e == Event.hash e' && Event.verify e' (sig e)
 
-verify' :: E -> Bool
-verify' = isJust . verify
+verify' :: E -> Maybe E
+verify' e = e { verified = True } <$ verify e
