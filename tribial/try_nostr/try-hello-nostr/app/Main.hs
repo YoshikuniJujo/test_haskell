@@ -69,7 +69,8 @@ write :: T.Text -> BSC.ByteString -> Connection -> String -> IO ()
 write sec pub cnn msg = do
 	Just pk <- pure $ Event.parse_point pub
 	ut <- getUnixTime
-	json <- EvJs.encode sec Event.E {
+	Just sec' <- pure $ Event.secretFromBech32 sec
+	json <- EvJs.encode sec' Event.E {
 		Event.pubkey = pk, Event.created_at = ut,
 		Event.kind = 1, Event.tags = Map.empty, Event.content = T.pack msg }
 	sendTextData cnn

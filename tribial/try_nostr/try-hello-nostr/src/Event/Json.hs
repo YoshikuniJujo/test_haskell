@@ -27,24 +27,7 @@ import Event.Signed qualified as Signed
 import Tools
 
 decode :: A.Object -> Maybe Event.E
-decode obj = do
-	A.String pk <- A.lookup "pubkey" obj
-	crat <- fromScientific <$> A.lookup "created_at" obj
-	knd <- fromScientific <$> A.lookup "kind" obj
-	tgs <- A.lookup "tags" obj
-	cnt <- (\(A.String s) -> s) <$> A.lookup "content" obj
-	A.String sig <- A.lookup "sig" obj
-	let	srzd = Event.serialize pk crat knd tgs cnt
-		hshd = hash $ BSU.fromString srzd
-	pk' <- parse_point . BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack pk
-	let	sig' = BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack sig
-	guard $ verify_schnorr hshd pk' sig'
-	pure Event.E {
-		Event.pubkey = pk',
-		Event.created_at = fromEpochTime . CTime $ fromIntegral crat,
-		Event.kind = knd,
-		Event.tags = decodeTags tgs,
-		Event.content = cnt }
+decode = Signed.verify <=< decode'
 
 decode' :: A.Object -> Maybe Signed.E
 decode' obj = do
@@ -84,22 +67,10 @@ fromScientific :: A.Value -> Int
 fromScientific (A.Number s) = round s
 fromScientific _ = error "bad"
 
-encode :: T.Text -> Event.E -> IO A.Object
+encode :: Event.Secret -> Event.E -> IO A.Object
 encode sec ev = do
-	Just sec' <- pure $ Event.secretFromBech32 sec
-	Just sig <- Event.signature sec' ev
-	pure $ A.fromList [
-		("content", A.String $ Event.content ev),
-		("created_at",
-			A.Number . fromIntegral . (\(CTime t) -> t) . toEpochTime $ Event.created_at ev),
-		("id", A.String . T.pack . strToHexStr . BSC.unpack $ Event.hash ev),
-		("kind", A.Number . fromIntegral $ Event.kind ev),
-		("pubkey",
-			A.String . T.pack . strToHexStr . tail
-				. BSC.unpack . serialize_point . Event.pubkey $ ev),
-		("sig", A.String . T.pack . strToHexStr $ BSC.unpack sig),
-		("tags", tagsToJson $ Event.tags ev)
-		]
+	Just o <- encode' <$> Signed.signature sec ev
+	pure o
 
 encode' :: Signed.E -> Maybe A.Object
 encode' ev = let sig = Signed.sig ev in if Signed.verified ev

@@ -11,7 +11,7 @@ module Event (
 
 	-- * SIGNATURE
 
-	signature, Secret, secretFromBech32, hash, serialize,
+	signature, Secret(..), secretFromBech32, hash, serialize,
 
 	-- * VERIFY
 
