@@ -20,8 +20,8 @@ import Wuss
 import Network.WebSockets
 import System.Environment
 
-import Event qualified as Event
-import Event.Json as EvJs
+import Nostr.Event qualified as Event
+import Nostr.Event.Json as EvJs
 import TryBech32
 import Tools
 

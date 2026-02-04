@@ -24,18 +24,14 @@ dependencies:
 - containers
 - vector
 - bytestring
-- utf8-string
 - text
-- entropy
 - unix-time
-- scientific
 - aeson
 - websockets
 - wuss
-- cryptohash-sha256
 - ppad-secp256k1
-- ppad-fixed
 - bech32
+- try-nostr-event
 
 ghc-options:
 - -Wall

@@ -15,8 +15,8 @@ import Wuss
 import Network.WebSockets
 import Crypto.Curve.Secp256k1
 
-import Event qualified as Event
-import Event.Json
+import Nostr.Event qualified as Event
+import Nostr.Event.Json
 import Tools
 
 import System.Environment

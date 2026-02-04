@@ -25,9 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Event
-      Event.Json
-      Event.Signed
       Tools
       TryBech32
   other-modules:
@@ -43,14 +40,10 @@ library
     , bech32
     , bytestring
     , containers
-    , cryptohash-sha256
-    , entropy
-    , ppad-fixed
     , ppad-secp256k1
-    , scientific
     , text
+    , try-nostr-event
     , unix-time
-    , utf8-string
     , vector
     , websockets
     , wuss
@@ -67,15 +60,11 @@ executable medama-muter
     , bech32
     , bytestring
     , containers
-    , cryptohash-sha256
-    , entropy
-    , ppad-fixed
     , ppad-secp256k1
-    , scientific
     , text
     , try-hello-nostr
+    , try-nostr-event
     , unix-time
-    , utf8-string
     , vector
     , websockets
     , wuss
@@ -96,15 +85,11 @@ executable try-hello-nostr-exe
     , bech32
     , bytestring
     , containers
-    , cryptohash-sha256
-    , entropy
-    , ppad-fixed
     , ppad-secp256k1
-    , scientific
     , text
     , try-hello-nostr
+    , try-nostr-event
     , unix-time
-    , utf8-string
     , vector
     , websockets
     , wuss
@@ -126,15 +111,11 @@ test-suite try-hello-nostr-test
     , bech32
     , bytestring
     , containers
-    , cryptohash-sha256
-    , entropy
-    , ppad-fixed
     , ppad-secp256k1
-    , scientific
     , text
     , try-hello-nostr
+    , try-nostr-event
     , unix-time
-    , utf8-string
     , vector
     , websockets
     , wuss
