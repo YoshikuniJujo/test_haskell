@@ -3,7 +3,17 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Event.Json (encode, encode', decode, decode') where
+module Event.Json (
+
+	-- * CODEC BETWEEN EVENT AND JSON
+
+	encode, decode,
+
+	-- * CODEC BETWEEN SIGNED EVENT AND JSON
+
+	encode', decode'
+
+	) where
 
 import Foreign.C.Types
 import Control.Monad
