@@ -31,6 +31,8 @@ main = do
 		getArgs
 	Just pub <- dataPart . T.init <$> T.readFile acc
 	sec <- T.init <$> T.readFile foo
+--	Just pub <- dataPart <$> T.readFile acc
+--	sec <- T.readFile foo
 	if (scr == "secure") 
 	then runSecureClient raddr (read rprt) "/" (ws sec pub fsnd msg)
 	else runClient raddr (read rprt) "/" (ws sec pub fsnd msg)
@@ -41,8 +43,10 @@ ws sec pub fsnd msg cnn = do
 
 	let	pubTxt = T.pack . strToHexStr $ BSC.unpack pub
 	sendTextData cnn $ "[\"REQ\", \"foobar12345\", " <> fltr pubTxt <> "]"
+	print $ "[\"REQ\", \"foobar12345\", " <> fltr pubTxt <> "]"
 
 	Just r <- A.decode <$> receiveData cnn
+	print r
 	case r of
 		A.Array (toList -> [A.String "EOSE", A.String "foobar12345"]) -> do
 			putStrLn "EOSE RECEIVED"
@@ -73,5 +77,6 @@ write sec pub cnn msg = do
 	json <- EvJs.encode sec' Event.E {
 		Event.pubkey = pk, Event.created_at = ut,
 		Event.kind = 1, Event.tags = Map.empty, Event.content = T.pack msg }
+	print json
 	sendTextData cnn
 		. A.encode . A.Array $ V.fromList [A.String "EVENT", A.Object json]
