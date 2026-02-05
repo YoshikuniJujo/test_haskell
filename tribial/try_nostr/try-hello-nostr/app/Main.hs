@@ -12,6 +12,7 @@ import Data.Vector qualified as V
 import Data.Map qualified as Map
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
+import Data.ByteString.Lazy.Char8 qualified as BSLC
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Data.UnixTime
@@ -29,13 +30,14 @@ main :: IO ()
 main = do
 	scr : raddr : rprt : acc : foo : ((== "--send") -> fsnd) : msg : _ <-
 		getArgs
-	Just pub <- dataPart . T.init <$> T.readFile acc
-	sec <- T.init <$> T.readFile foo
---	Just pub <- dataPart <$> T.readFile acc
---	sec <- T.readFile foo
+	Just pub <- dataPart . chomp <$> T.readFile acc
+	sec <- chomp <$> T.readFile foo
 	if (scr == "secure") 
 	then runSecureClient raddr (read rprt) "/" (ws sec pub fsnd msg)
 	else runClient raddr (read rprt) "/" (ws sec pub fsnd msg)
+
+chomp :: T.Text -> T.Text
+chomp t = if T.last t == '\n' then T.init t else t
 
 ws :: T.Text -> BS.ByteString -> Bool -> String -> ClientApp ()
 ws sec pub fsnd msg cnn = do
@@ -62,7 +64,9 @@ ws sec pub fsnd msg cnn = do
 
 	when fsnd $ write sec pub cnn msg
 
-	Just r' <- A.decode <$> receiveData cnn :: IO (Maybe A.Value)
+	rdt <- receiveData cnn
+	BSLC.putStrLn rdt
+	Just r' <- pure $ A.decode rdt :: IO (Maybe A.Value) -- <$> receiveData cnn :: IO (Maybe A.Value)
 	print r'
 
 	sendClose cnn ("Bye!" :: T.Text)
