@@ -58,7 +58,7 @@ data E = E {
 
 sample :: FilePath -> IO E
 sample fp = do
-	Just pub <- dataPart . T.init <$> T.readFile fp
+	Just pub <- dataPart . chomp <$> T.readFile fp
 	Just pk <- pure $ parse_point pub
 	ut <- getUnixTime
 	pure E {
@@ -67,6 +67,9 @@ sample fp = do
 		kind = 1,
 		tags = Map.empty,
 		content = "Hello" }
+
+chomp :: T.Text -> T.Text
+chomp t = if T.last t == '\n' then T.init t else t
 
 serializeEvent :: E -> String
 serializeEvent ev = let
