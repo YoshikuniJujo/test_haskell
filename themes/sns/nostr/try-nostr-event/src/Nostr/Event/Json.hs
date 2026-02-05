@@ -11,7 +11,11 @@ module Nostr.Event.Json (
 
 	-- * CODEC BETWEEN SIGNED EVENT AND JSON
 
-	encode', decode'
+	encode', decode',
+
+	-- * ENCODE TAGS
+
+	encodeTags
 
 	) where
 
@@ -94,11 +98,11 @@ encode' ev = let sig = Signed.sig ev in if Signed.verified ev
 			A.String . T.pack . strToHexStr . tail
 				. BSC.unpack . serialize_point . Signed.pubkey $ ev),
 		("sig", A.String . T.pack . strToHexStr $ BSC.unpack sig),
-		("tags", tagsToJson $ Signed.tags ev) ]
+		("tags", encodeTags $ Signed.tags ev) ]
 	else Nothing
 
-tagsToJson :: Map.Map T.Text (T.Text, [T.Text]) -> A.Value
-tagsToJson tgs = let
+encodeTags :: Map.Map T.Text (T.Text, [T.Text]) -> A.Value
+encodeTags tgs = let
 	tgs' = A.Array . V.fromList
 			. ((\(k, (v, os)) ->
 				A.Array $ V.fromList (A.String <$> (k : v : os))) <$>)
