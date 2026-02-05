@@ -1,2 +1,7 @@
 .stack-work/
 *~
+npub
+nsec
+privkey.pem
+privkey.bin
+pub.bin
