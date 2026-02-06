@@ -13,9 +13,9 @@ module Nostr.Event.Json (
 
 	encode', decode',
 
-	-- * ENCODE TAGS
+	-- * CODEC TAGS
 
-	encodeTags
+	encodeTags, decodeTags
 
 	) where
 
@@ -104,7 +104,7 @@ encode' ev = let sig = Signed.sig ev in if Signed.verified ev
 encodeTags :: Map.Map T.Text (T.Text, [T.Text]) -> A.Value
 encodeTags tgs = let
 	tgs' = A.Array . V.fromList
-			. ((\(k, (v, os)) ->
-				A.Array $ V.fromList (A.String <$> (k : v : os))) <$>)
-			$ Map.toList tgs in
+		. ((\(k, (v, os)) ->
+			A.Array $ V.fromList (A.String <$> (k : v : os))) <$>)
+		$ Map.toList tgs in
 	tgs'
