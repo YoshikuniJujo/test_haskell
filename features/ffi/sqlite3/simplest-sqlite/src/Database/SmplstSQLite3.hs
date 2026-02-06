@@ -1,4 +1,5 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE LambdaCase, TupleSections #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Database.SmplstSQLite3 (
 	-- * Functions
@@ -127,6 +128,12 @@ instance SQLiteDataList a => SQLiteData [a] where
 instance SQLiteData () where
 	bindN = sqlite3BindNull
 	column _ _ = return ()
+
+instance SQLiteData Bool where
+	bindN stmt i = \case
+		False -> sqlite3BindInt stmt i 0
+		True -> sqlite3BindInt stmt i 1
+	column stmt i = (/= 0) <$> column @Int stmt i
 
 instance SQLiteData Int where
 	bindN = sqlite3BindInt
