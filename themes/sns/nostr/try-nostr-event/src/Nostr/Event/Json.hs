@@ -65,7 +65,7 @@ decode' obj = do
 		Signed.kind = knd,
 		Signed.tags = decodeTags tgs,
 		Signed.content = cnt,
-		Signed.sig = sig', -- T.encodeUtf8 sig,
+		Signed.sig = sig',
 		Signed.verified = True }
 
 decodeTags :: A.Value -> Map.Map T.Text (T.Text, [T.Text])
