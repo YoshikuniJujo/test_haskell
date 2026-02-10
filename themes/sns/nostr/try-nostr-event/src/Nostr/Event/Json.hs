@@ -56,15 +56,16 @@ decode' obj = do
 		hshd = hash $ BSU.fromString srzd
 	pk' <- parse_point . BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack pk
 	let	sig' = BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack sig
+		idnt' = BS.pack . (fst . head . readHex <$>) . separate 2 $ T.unpack idnt
 	guard $ verify_schnorr hshd pk' sig'
 	pure Signed.E {
-		Signed.id = T.encodeUtf8 idnt,
+		Signed.id = idnt',
 		Signed.pubkey = pk',
 		Signed.created_at = fromEpochTime . CTime $ fromIntegral crat,
 		Signed.kind = knd,
 		Signed.tags = decodeTags tgs,
 		Signed.content = cnt,
-		Signed.sig = T.encodeUtf8 sig,
+		Signed.sig = sig', -- T.encodeUtf8 sig,
 		Signed.verified = True }
 
 decodeTags :: A.Value -> Map.Map T.Text (T.Text, [T.Text])
