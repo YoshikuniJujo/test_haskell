@@ -49,6 +49,17 @@ executable qiita-sample
     , try-simplest-sqlite
   default-language: Haskell2010
 
+executable try-foreign-key
+  main-is: try-foreign-key.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , simplest-sqlite
+    , try-simplest-sqlite
+  default-language: Haskell2010
+
 executable try-simplest-sqlite-exe
   main-is: Main.hs
   other-modules:
