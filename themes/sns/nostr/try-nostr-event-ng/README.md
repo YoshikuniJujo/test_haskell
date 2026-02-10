@@ -1,0 +1,1 @@
+# try-nostr-event-ng
