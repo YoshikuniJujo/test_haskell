@@ -17,8 +17,8 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2023-12-06
 
+resolver: nightly-2026-02-10
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -43,11 +43,6 @@ packages:
 extra-deps:
   - git: https://github.com/YoshikuniJujo/moffy-samples-events
     commit: b0be6f272f3c76e161c44855c2c23ff98dd5208c
-  - simple-cairo-0.1.0.5
-  - cairo-image-0.1.0.0
-  - simple-pango-0.1.0.1
-  - union-color-0.1.2.1
-  - glib-stopgap-0.1.0.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
