@@ -21,10 +21,16 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- entropy
+- vector
 - bytestring
+- utf8-string
 - text
+- aeson
 - unix-time
 - ppad-secp256k1
+- ppad-fixed
+- cryptohash-sha256
 - bech32
 
 ghc-options:

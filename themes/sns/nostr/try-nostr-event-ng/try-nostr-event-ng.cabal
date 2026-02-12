@@ -28,6 +28,7 @@ library
       Bech32
       Lib
       Nostr.Event
+      Tools
   other-modules:
       Paths_try_nostr_event_ng
   autogen-modules:
@@ -36,12 +37,18 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , bech32
     , bytestring
+    , cryptohash-sha256
+    , entropy
+    , ppad-fixed
     , ppad-secp256k1
     , text
     , unix-time
+    , utf8-string
+    , vector
   default-language: Haskell2010
 
 executable try-nostr-event-ng-exe
@@ -54,13 +61,19 @@ executable try-nostr-event-ng-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , bech32
     , bytestring
+    , cryptohash-sha256
+    , entropy
+    , ppad-fixed
     , ppad-secp256k1
     , text
     , try-nostr-event-ng
     , unix-time
+    , utf8-string
+    , vector
   default-language: Haskell2010
 
 test-suite try-nostr-event-ng-test
@@ -74,11 +87,17 @@ test-suite try-nostr-event-ng-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , bech32
     , bytestring
+    , cryptohash-sha256
+    , entropy
+    , ppad-fixed
     , ppad-secp256k1
     , text
     , try-nostr-event-ng
     , unix-time
+    , utf8-string
+    , vector
   default-language: Haskell2010
