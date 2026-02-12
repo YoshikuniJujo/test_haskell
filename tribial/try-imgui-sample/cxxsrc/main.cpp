@@ -274,11 +274,14 @@ resizeSwapchainToWd(
 void
 resizeSwapchainSet(
 	ImGui_ImplVulkanH_Window *wd,
-	uint32_t wdt, uint32_t hgt, VkSwapchainKHR pscsrc
+	uint32_t wdt, uint32_t hgt, VkSwapchainKHR pscsrc,
+	uint32_t ic
 	)
 {
 	wd->Width = wdt; wd->Height = hgt;
 	wd->SwapchainPupupu = pscsrc;
+	wd->ImageCount = ic;
+	wd->SemaphoreCount = ic + 1;
 }
 
 void
@@ -351,10 +354,7 @@ resizeSwapchain(
 		dvc, g_Allocator, ic, fncs );
     ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCreate(dvc, g_Allocator, sc, iasmps, rcsmps);
 
-	resizeSwapchainSet(wd, wdt, hgt, *pscsrc);
-
-	wd->ImageCount = ic;
-        wd->SemaphoreCount = ic + 1;
+	resizeSwapchainSet(wd, wdt, hgt, *pscsrc, ic);
 
         wd->Frames.resize(ic);
         wd->FrameSemaphores.resize(ic + 1);
