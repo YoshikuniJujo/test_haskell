@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.1.
+-- This file has been generated from package.yaml by hpack version 0.39.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Bech32
       Lib
       Nostr.Event
   other-modules:
@@ -36,6 +37,8 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , bech32
+    , bytestring
     , ppad-secp256k1
     , text
     , unix-time
@@ -52,6 +55,8 @@ executable try-nostr-event-ng-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bech32
+    , bytestring
     , ppad-secp256k1
     , text
     , try-nostr-event-ng
@@ -70,6 +75,8 @@ test-suite try-nostr-event-ng-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bech32
+    , bytestring
     , ppad-secp256k1
     , text
     , try-nostr-event-ng
