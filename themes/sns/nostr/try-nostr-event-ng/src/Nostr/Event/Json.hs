@@ -3,12 +3,28 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Nostr.Event.Json where
+module Nostr.Event.Json (
+
+	-- * CODEC BETWEEN EVENT AND JSON
+
+	encode, decode,
+
+	-- * CODEC BEGWEEN SIGNED EVENT AND JSON
+
+	encode', decode',
+
+	-- * CODEC TAGS
+
+	encodeTags, decodeTags
+
+	) where
 
 import Foreign.C.Types
 import Control.Monad
 import Data.Foldable
+import Data.Vector qualified as V
 import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BSC
 import Data.ByteString.UTF8 qualified as BSU
 import Data.Text qualified as T
 import Data.Aeson qualified as A
@@ -70,3 +86,29 @@ decodeTags1 _ = error "bad"
 getString :: A.Value -> T.Text
 getString (A.String s) = s
 getString _ = error "bad"
+
+encode :: Event.Secret -> Event.E -> IO A.Object
+encode sec ev = do
+	Just o <- encode' <$> Signed.signature sec ev
+	pure o
+
+encode' :: Signed.E -> Maybe A.Object
+encode' ev = do
+	let	sig = Signed.sig ev
+	guard $ Signed.verified ev
+	pure $ A.fromList [
+		("content", A.String $ Signed.content ev),
+		("created_at", A.Number . fromIntegral . (\(CTime t) -> t)
+			. toEpochTime $ Signed.created_at ev),
+		("id", A.String
+			. T.pack . strToHexStr . BSC.unpack $ Signed.idnt ev),
+		("kind", A.Number . fromIntegral $ Signed.kind ev),
+		("pubkey", A.String . T.pack . strToHexStr . tail
+			. BSC.unpack . serialize_point $ Signed.pubkey ev),
+		("sig", A.String . T.pack . strToHexStr $ BSC.unpack sig),
+		("tags", encodeTags $ Signed.tags ev) ]
+
+encodeTags :: [(T.Text, (T.Text, [T.Text]))] -> A.Value
+encodeTags = A.Array . V.fromList .
+	((\(k, (v, os)) -> A.Array $ V.fromList (A.String <$> (k : v : os)))
+		<$>)
