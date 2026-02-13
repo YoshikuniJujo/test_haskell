@@ -28,6 +28,7 @@ library
       Bech32
       Lib
       Nostr.Event
+      Nostr.Event.Signed
       Tools
   other-modules:
       Paths_try_nostr_event_ng
