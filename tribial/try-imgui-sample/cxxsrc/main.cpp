@@ -284,6 +284,8 @@ resizeSwapchainSet(
 	wd->SemaphoreCount = ic + 1;
         wd->Frames.resize(ic);
         wd->FrameSemaphores.resize(ic + 1);
+        memset(wd->Frames.Data, 0, wd->Frames.size_in_bytes());
+        memset(wd->FrameSemaphores.Data, 0, wd->FrameSemaphores.size_in_bytes());
 }
 
 void
@@ -358,8 +360,6 @@ resizeSwapchain(
 
 	resizeSwapchainSet(wd, wdt, hgt, *pscsrc, ic);
 
-        memset(wd->Frames.Data, 0, wd->Frames.size_in_bytes());
-        memset(wd->FrameSemaphores.Data, 0, wd->FrameSemaphores.size_in_bytes());
         for (uint32_t i = 0; i < ic; i++)
 		wd->Frames[i].Backbuffer = backbuffers_ret[i];
 
