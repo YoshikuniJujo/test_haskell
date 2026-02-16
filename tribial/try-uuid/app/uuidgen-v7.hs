@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Lib
+import UUIDv7Gen
 
 main :: IO ()
 main = print =<< nextUUIDv7

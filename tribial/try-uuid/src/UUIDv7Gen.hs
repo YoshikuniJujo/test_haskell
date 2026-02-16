@@ -2,7 +2,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib (nextUUIDv7) where
+module UUIDv7Gen (nextUUIDv7) where
 
 import Foreign.C.Types
 import Data.Bits

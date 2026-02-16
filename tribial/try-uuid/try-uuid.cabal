@@ -25,7 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      UUIDv7Gen
   other-modules:
       Paths_try_uuid
   autogen-modules:
