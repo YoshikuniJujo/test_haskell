@@ -33,8 +33,7 @@ nextUUIDv7 = do
 		l64 = foldToWord64 $ drop 2 et
 	pure $ UUIDv7 {
 		upper = (u48 .|. m16) .&. verOff .|. verOn,
-		lower = l64 .&. varOff .|. varOn
-		}
+		lower = l64 .&. varOff .|. varOn }
 
 milliseconds :: UnixTime -> Word64
 milliseconds ut =
