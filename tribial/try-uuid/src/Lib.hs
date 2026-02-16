@@ -1,6 +1,51 @@
-module Lib where
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+module Lib (nextUUIDv7) where
 
+import Foreign.C.Types
+import Data.Bits
+import Data.Word
+import Data.ByteString qualified as BS
+import Data.UnixTime
+import System.Entropy
+import Numeric
 
+data UUIDv7 = UUIDv7 { upper :: Word64, lower :: Word64 }
+
+instance Show UUIDv7 where
+	show (UUIDv7 (hx 16 -> u) (hx 16 -> l)) = hyphen [8, 4, 4, 4] $ u ++ l
+
+hx :: Integral n => Int -> n -> String
+hx n i = replicate (n - length s) '0' ++ s where s = showHex i ""
+
+hyphen :: [Int] -> String -> String
+hyphen [] s = s
+hyphen (n : ns) s = take n s ++ "-" ++ hyphen ns (drop n s)
+
+nextUUIDv7 :: IO UUIDv7
+nextUUIDv7 = do
+	ut <- getUnixTime
+	et <- BS.unpack <$> getEntropy 10
+	let	u48 = milliseconds ut `shiftL` 16
+		m16 = foldToWord64 $ take 2 et
+		l64 = foldToWord64 $ drop 2 et
+	pure $ UUIDv7 {
+		upper = (u48 .|. m16) .&. verOff .|. verOn,
+		lower = l64 .&. varOff .|. varOn
+		}
+
+milliseconds :: UnixTime -> Word64
+milliseconds ut =
+	fromIntegral ((\(CTime ct) -> ct) $ utSeconds ut) * 1000 +
+	fromIntegral (utMicroSeconds ut) `div` 1000
+
+foldToWord64 :: [Word8] -> Word64
+foldToWord64 = foldl (\a b -> a `shiftL` 8 .|. fromIntegral b) 0
+
+verOff, verOn, varOff, varOn :: Word64
+verOff	= 0xffffffffffff0fff
+verOn	= 0x0000000000007000
+varOff	= 0x3fffffffffffffff
+varOn	= 0x8000000000000000

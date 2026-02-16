@@ -35,23 +35,40 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , entropy
     , time
+    , unix-time
     , uuid
   default-language: Haskell2010
 
 executable try-uuid-exe
   main-is: Main.hs
-  other-modules:
-      Paths_try_uuid
-  autogen-modules:
-      Paths_try_uuid
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , entropy
     , time
     , try-uuid
+    , unix-time
+    , uuid
+  default-language: Haskell2010
+
+executable uuidgen-v7
+  main-is: uuidgen-v7.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , entropy
+    , time
+    , try-uuid
+    , unix-time
     , uuid
   default-language: Haskell2010
 
@@ -67,7 +84,10 @@ test-suite try-uuid-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , entropy
     , time
     , try-uuid
+    , unix-time
     , uuid
   default-language: Haskell2010
