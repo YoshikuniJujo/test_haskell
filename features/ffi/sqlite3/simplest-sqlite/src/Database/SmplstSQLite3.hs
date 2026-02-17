@@ -179,6 +179,8 @@ foreign import ccall unsafe "sqlite3.h sqlite3_bind_null"
 	c_sqlite3_bind_null :: Ptr Stmt -> CInt -> IO CInt
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_int"
 	c_sqlite3_bind_int :: Ptr Stmt -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe "sqlite3.h sqlite3_bind_int64"
+	c_sqlite3_bind_int64 :: Ptr Stmt -> CInt -> Int64 -> IO CInt
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_double"
 	c_sqlite3_bind_double :: Ptr Stmt -> CInt -> CDouble -> IO CInt
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_text" c_sqlite3_bind_text ::
@@ -206,8 +208,8 @@ sqlite3BindInt (Stmt sm) i n = do
 
 sqlite3BindInt64 :: Stmt -> Int -> Int64 -> IO ()
 sqlite3BindInt64 (Stmt sm) i n = do
-	ret <- c_sqlite3_bind_int sm (fromIntegral i) (fromIntegral n)
-	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind int" ret
+	ret <- c_sqlite3_bind_int64 sm (fromIntegral i) n
+	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind int64" ret
 
 sqlite3BindString :: Stmt -> Int -> String -> IO ()
 sqlite3BindString (Stmt sm) i s = withCString s $ \cs -> do
