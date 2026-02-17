@@ -4,7 +4,7 @@
 
 module Data.UUIDv7 (
 
-	UUIDv7, nextUUIDv7, fromWords, toWords
+	UUIDv7, nextUUIDv7, fromWords, toWords, fromInts, toInts
 
 	) where
 
@@ -12,6 +12,7 @@ import Foreign.C.Types
 import Control.Arrow
 import Data.Bits
 import Data.Word
+import Data.Int
 import Data.ByteString qualified as BS
 import Data.UnixTime
 import System.Entropy
@@ -25,6 +26,22 @@ fromWords = UUIDv7
 
 toWords :: UUIDv7 -> (Word64, Word64)
 toWords = upper &&& lower
+
+fromInts :: Int64 -> Int64 -> UUIDv7
+fromInts (fromIntegral -> u) (fromIntegral -> l) =
+	UUIDv7 (u1 .|. u2 .|. svn) l'
+	where
+	u1 = (u .&.	0x0ffffffffffff000) `shiftL` 4
+	u2 = u .&.	0x0000000000000fff
+	svn =		0x0000000000007000
+	l' = l .|.	0x8000000000000000
+
+toInts :: UUIDv7 -> (Int64, Int64)
+toInts (UUIDv7 u l) = (fromIntegral $ u1 .|. u2, fromIntegral l')
+	where
+	u1 = (u .&. 0xffffffffffff0000) `shiftR` 4
+	u2 = u .&. 0x0000000000000fff
+	l' = l .&. 0x3fffffffffffffff
 
 instance Show UUIDv7 where
 	show (UUIDv7 (hx 16 -> u) (hx 16 -> l)) = hyphen [8, 4, 4, 4] $ u ++ l
