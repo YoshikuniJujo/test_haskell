@@ -140,6 +140,11 @@ instance SQLiteData Int where
 	column (Stmt sm) i =
 		fromIntegral <$> c_sqlite3_column_int sm (fromIntegral i)
 
+instance SQLiteData Int64 where
+	bindN = sqlite3BindInt64
+	column (Stmt sm) i =
+		fromIntegral <$> c_sqlite3_column_int sm (fromIntegral i)
+
 instance SQLiteData Double where
 	bindN = sqlite3BindDouble
 	column (Stmt sm) i =
@@ -196,6 +201,11 @@ sqlite3BindDouble (Stmt sm) i d = do
 
 sqlite3BindInt :: Stmt -> Int -> Int -> IO ()
 sqlite3BindInt (Stmt sm) i n = do
+	ret <- c_sqlite3_bind_int sm (fromIntegral i) (fromIntegral n)
+	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind int" ret
+
+sqlite3BindInt64 :: Stmt -> Int -> Int64 -> IO ()
+sqlite3BindInt64 (Stmt sm) i n = do
 	ret <- c_sqlite3_bind_int sm (fromIntegral i) (fromIntegral n)
 	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind int" ret
 
