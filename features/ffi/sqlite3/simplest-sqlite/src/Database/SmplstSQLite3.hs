@@ -99,6 +99,8 @@ step (Stmt psm) = do
 
 foreign import ccall unsafe "sqlite3.h sqlite3_column_int"
 	c_sqlite3_column_int :: Ptr Stmt -> CInt -> IO CInt
+foreign import ccall unsafe "sqlite3.h sqlite3_column_int64"
+	c_sqlite3_column_int64 :: Ptr Stmt -> CInt -> IO Int64
 foreign import ccall unsafe "sqlite3.h sqlite3_column_double"
 	c_sqlite3_column_double :: Ptr Stmt -> CInt -> IO CDouble
 foreign import ccall unsafe "sqlite3.h sqlite3_column_text"
@@ -142,8 +144,7 @@ instance SQLiteData Int where
 
 instance SQLiteData Int64 where
 	bindN = sqlite3BindInt64
-	column (Stmt sm) i =
-		fromIntegral <$> c_sqlite3_column_int sm (fromIntegral i)
+	column (Stmt sm) i = c_sqlite3_column_int64 sm (fromIntegral i)
 
 instance SQLiteData Double where
 	bindN = sqlite3BindDouble
