@@ -24,7 +24,7 @@ data E = E {
 	content :: T.Text,
 	sig :: BS.ByteString,
 	verified :: Bool }
-	deriving Show
+	deriving (Show, Eq)
 
 signature :: Event.Secret -> Event.E -> IO E
 signature sec e = do
