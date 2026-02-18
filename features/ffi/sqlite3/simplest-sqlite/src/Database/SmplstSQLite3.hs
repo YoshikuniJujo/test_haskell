@@ -223,8 +223,9 @@ sqlite3BindByteString (Stmt sm) i s = BS.useAsCString s $ \cs -> do
 	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind text" ret
 
 sqlite3BindBlob :: Stmt -> Int -> BS.ByteString -> IO ()
-sqlite3BindBlob (Stmt sm) i s = BS.useAsCString s $ \cs -> do
-	ret <- c_sqlite3_bind_blob sm (fromIntegral i) cs (- 1) nullPtr
+sqlite3BindBlob (Stmt sm) i s = BS.useAsCStringLen s $ \(cs, n) -> do
+	ret <- c_sqlite3_bind_blob
+		sm (fromIntegral i) cs (fromIntegral n) nullPtr
 	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind text" ret
 
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_parameter_index"

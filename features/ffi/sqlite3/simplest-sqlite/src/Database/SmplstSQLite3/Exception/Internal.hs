@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, ExistentialQuantification, DeriveDataTypeable #-}
+{-# LANGUAGE TemplateHaskell, ExistentialQuantification #-}
 
 module Database.SmplstSQLite3.Exception.Internal (
 	sqliteThrow, sqliteThrowBindError,
@@ -124,7 +124,6 @@ module Database.SmplstSQLite3.Exception.Internal (
 
 import Control.Exception
 import Control.Exception.Hierarchy
-import Data.Typeable
 import Foreign.C.Types
 
 import Database.SmplstSQLite3.Constants
@@ -233,7 +232,7 @@ mapM newException [
 	"SQLITE_BIND_ERROR" ]
 
 
-data SQLITE_ERROR_OTHER = SQLITE_ERROR_OTHER CInt String deriving (Typeable, Show)
+data SQLITE_ERROR_OTHER = SQLITE_ERROR_OTHER CInt String deriving Show
 
 exceptionHierarchy Nothing $
 	ExNode "SQLiteException" [
@@ -449,7 +448,7 @@ sqliteThrowBindError :: String -> IO a
 sqliteThrowBindError em = throw $ SQLITE_BIND_ERROR em
 
 newtype NullPointerException = NullPointerException String
-	deriving (Typeable, Show)
+	deriving Show
 
 exceptionHierarchy Nothing (ExType ''NullPointerException)
 
