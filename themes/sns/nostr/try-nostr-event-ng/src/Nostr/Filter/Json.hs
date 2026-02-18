@@ -17,13 +17,3 @@ encode :: Filter.Filter -> A.Value
 encode f = A.Object . A.fromList $ catMaybes [
 	("ids" ,) . A.Array . V.fromList . (A.String . bsToHexText <$>) <$> Filter.ids f
 	]
-
-sampleFilter :: Filter.Filter
-sampleFilter = Filter.Filter {
-	Filter.ids = Just ["foo", "bar", "baz"],
-	Filter.authors = Nothing,
-	Filter.kinds = Nothing,
-	Filter.tags = [],
-	Filter.since = Nothing,
-	Filter.until = Nothing,
-	Filter.limit = Nothing }

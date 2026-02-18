@@ -6,7 +6,7 @@ module Nostr.Event (
 
 	-- * EVENT
 
-	E(..), sample,
+	E(..),
 
 	-- * SIGNATURE
 
@@ -48,21 +48,6 @@ data E = E {
 	tags :: [(T.Text, (T.Text, [T.Text]))],
 	content :: T.Text }
 	deriving Show
-
-sample :: FilePath -> IO E
-sample fp = do
-	Just pub <- dataPart . chomp <$> T.readFile fp
-	Just pk <- pure $ parse_point pub
-	ut <- getUnixTime
-	pure E {
-		pubkey = pk,
-		created_at = ut,
-		kind = 1,
-		tags = [],
-		content = "Hello" }
-
-chomp :: T.Text -> T.Text
-chomp t = if T.last t == '\n' then T.init t else t
 
 signature :: Secret -> E -> IO (Maybe BS.ByteString)
 signature (Secret sec) ev = sign_schnorr sec (hash ev) <$> getEntropy 32
