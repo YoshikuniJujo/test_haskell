@@ -1,9 +1,15 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Tools where
 
 import Data.Char
+import Data.ByteString.Char8 qualified as BSC
+import Data.Text qualified as T
 import Numeric
+
+bsToHexText :: BSC.ByteString -> T.Text
+bsToHexText = T.pack . strToHexStr . BSC.unpack
 
 strToHexStr :: String -> String
 strToHexStr = concat . (sh <$>) . map ord
