@@ -30,6 +30,7 @@ library
       Nostr.Event
       Nostr.Event.Json
       Nostr.Event.Signed
+      Nostr.Filter
       Tools
   other-modules:
       Paths_try_nostr_event_ng
