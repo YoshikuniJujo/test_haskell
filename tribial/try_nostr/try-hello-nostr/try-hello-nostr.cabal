@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.1.
+-- This file has been generated from package.yaml by hpack version 0.39.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -42,7 +42,7 @@ library
     , containers
     , ppad-secp256k1
     , text
-    , try-nostr-event
+    , try-nostr-event-ng
     , unix-time
     , vector
     , websockets
@@ -63,7 +63,7 @@ executable medama-muter
     , ppad-secp256k1
     , text
     , try-hello-nostr
-    , try-nostr-event
+    , try-nostr-event-ng
     , unix-time
     , vector
     , websockets
@@ -88,7 +88,7 @@ executable try-hello-nostr-exe
     , ppad-secp256k1
     , text
     , try-hello-nostr
-    , try-nostr-event
+    , try-nostr-event-ng
     , unix-time
     , vector
     , websockets
@@ -114,7 +114,7 @@ test-suite try-hello-nostr-test
     , ppad-secp256k1
     , text
     , try-hello-nostr
-    , try-nostr-event
+    , try-nostr-event-ng
     , unix-time
     , vector
     , websockets

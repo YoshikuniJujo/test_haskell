@@ -31,7 +31,7 @@ dependencies:
 - wuss
 - ppad-secp256k1
 - bech32
-- try-nostr-event
+- try-nostr-event-ng
 
 ghc-options:
 - -Wall

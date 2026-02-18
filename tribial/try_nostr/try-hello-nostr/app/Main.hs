@@ -1,4 +1,4 @@
-{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE PackageImports, ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -24,7 +24,7 @@ import System.Environment
 import Nostr.Event qualified as Event
 import Nostr.Event.Json as EvJs
 import TryBech32
-import Tools
+import "try-hello-nostr" Tools
 
 main :: IO ()
 main = do
@@ -80,7 +80,7 @@ write sec pub cnn msg = do
 	Just sec' <- pure $ Event.secretFromBech32 sec
 	json <- EvJs.encode sec' Event.E {
 		Event.pubkey = pk, Event.created_at = ut,
-		Event.kind = 1, Event.tags = Map.empty, Event.content = T.pack msg }
+		Event.kind = 1, Event.tags = [], Event.content = T.pack msg }
 	print json
 	sendTextData cnn
 		. A.encode . A.Array $ V.fromList [A.String "EVENT", A.Object json]

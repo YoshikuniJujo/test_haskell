@@ -1,4 +1,4 @@
-{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE PackageImports, ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -17,7 +17,7 @@ import Crypto.Curve.Secp256k1
 
 import Nostr.Event qualified as Event
 import Nostr.Event.Json
-import Tools
+import "try-hello-nostr" Tools
 
 import System.Environment
 
