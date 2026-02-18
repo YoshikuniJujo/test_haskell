@@ -107,6 +107,8 @@ foreign import ccall unsafe "sqlite3.h sqlite3_column_text"
 	c_sqlite3_column_text :: Ptr Stmt -> CInt -> IO CString
 foreign import ccall unsafe "sqlite3.h sqlite3_column_blob"
 	c_sqlite3_column_blob :: Ptr Stmt -> CInt -> IO CString
+foreign import ccall unsafe "sqlite3.h sqlite3_column_bytes"
+	c_sqlite3_column_bytes :: Ptr Stmt -> CInt -> IO CInt
 
 class SQLiteDataList a where
 	bindNList :: Stmt -> Int -> [a] -> IO ()
@@ -158,8 +160,10 @@ instance SQLiteDataList Char where
 
 instance SQLiteData BS.ByteString where
 	bindN = sqlite3BindBlob
-	column (Stmt sm) i = packCString' "ByteString column"
-		=<< c_sqlite3_column_blob sm (fromIntegral i)
+	column (Stmt sm) i = do
+		ln <- c_sqlite3_column_bytes sm (fromIntegral i)
+		cs <- c_sqlite3_column_blob sm (fromIntegral i)
+		packCStringLen' "ByteString column" (cs, fromIntegral ln)
 
 instance SQLiteData T.Text where
 	bindN sm i = sqlite3BindByteString sm i . T.encodeUtf8
@@ -175,6 +179,11 @@ packCString' :: String -> CString -> IO BS.ByteString
 packCString' em cstr
 	| cstr == nullPtr = nullPointerException em
 	| otherwise = BS.packCString cstr
+
+packCStringLen' :: String -> CStringLen -> IO BS.ByteString
+packCStringLen' em csln@(cstr, _)
+	| cstr == nullPtr = nullPointerException em
+	| otherwise = BS.packCStringLen csln
 
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_null"
 	c_sqlite3_bind_null :: Ptr Stmt -> CInt -> IO CInt
