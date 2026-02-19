@@ -6,6 +6,7 @@
 
 module Main (main) where
 
+import Prelude hiding (until)
 import Control.Monad
 import Data.Foldable
 import Data.Vector qualified as V
@@ -47,6 +48,7 @@ ws sec pub_ fsnd msg cnn = do
 	let	pubTxt = T.pack . strToHexStr $ BSC.unpack pub
 		req = "[\"REQ\", \"foobar12345\", " <> fltr pubTxt <> "]"
 	Just ft <- pure $ fltr' pub_
+	print $ mkFilter pub_
 	let	req' = "[\"REQ\", \"foobar12345\", " <> ft <> "]"
 	sendTextData cnn req
 
@@ -78,6 +80,15 @@ ws sec pub_ fsnd msg cnn = do
 	print r'
 
 	sendClose cnn ("Bye!" :: T.Text)
+
+mkFilter :: T.Text -> Maybe Filter
+mkFilter a = do
+	pub <- dataPart (chomp a)
+	pk <- Event.parse_point pub
+	pure Filter {
+		ids = Nothing,
+		authors = Just [pk], kinds = Just [1], tags = [],
+		since = Nothing, until = Nothing, limit = Nothing }
 
 fltr' :: T.Text -> Maybe T.Text
 fltr' a = do
