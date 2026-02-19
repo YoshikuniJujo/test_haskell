@@ -9,8 +9,6 @@ module Main (main) where
 import Control.Monad
 import Data.Foldable
 import Data.Vector qualified as V
-import Data.Map qualified as Map
-import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Data.ByteString.Lazy.Char8 qualified as BSLC
 import Data.Text qualified as T
@@ -26,26 +24,36 @@ import Nostr.Event.Json as EvJs
 import TryBech32
 import "try-hello-nostr" Tools
 
+import Nostr.Filter
+
 main :: IO ()
 main = do
 	scr : raddr : rprt : acc : foo : ((== "--send") -> fsnd) : msg : _ <-
 		getArgs
-	Just pub <- dataPart . chomp <$> T.readFile acc
+	pub_ <- T.readFile acc
 	sec <- chomp <$> T.readFile foo
 	if (scr == "secure") 
-	then runSecureClient raddr (read rprt) "/" (ws sec pub fsnd msg)
-	else runClient raddr (read rprt) "/" (ws sec pub fsnd msg)
+	then runSecureClient raddr (read rprt) "/" (ws sec pub_ fsnd msg)
+	else runClient raddr (read rprt) "/" (ws sec pub_ fsnd msg)
 
 chomp :: T.Text -> T.Text
 chomp t = if T.last t == '\n' then T.init t else t
 
-ws :: T.Text -> BS.ByteString -> Bool -> String -> ClientApp ()
-ws sec pub fsnd msg cnn = do
+ws :: T.Text -> T.Text -> Bool -> String -> ClientApp ()
+ws sec pub_ fsnd msg cnn = do
 	putStrLn "Connected!\n"
 
+	Just pub <- pure . dataPart $ chomp pub_
 	let	pubTxt = T.pack . strToHexStr $ BSC.unpack pub
-	sendTextData cnn $ "[\"REQ\", \"foobar12345\", " <> fltr pubTxt <> "]"
-	print $ "[\"REQ\", \"foobar12345\", " <> fltr pubTxt <> "]"
+		req = "[\"REQ\", \"foobar12345\", " <> fltr pubTxt <> "]"
+	Just ft <- pure $ fltr' pub_
+	let	req' = "[\"REQ\", \"foobar12345\", " <> ft <> "]"
+	sendTextData cnn req
+
+	T.putStrLn pub_
+	T.putStrLn req
+	T.putStrLn req'
+	putStrLn ""
 
 	Just r <- A.decode <$> receiveData cnn
 	print r
@@ -70,8 +78,14 @@ ws sec pub fsnd msg cnn = do
 	print r'
 
 	sendClose cnn ("Bye!" :: T.Text)
-	where fltr a = "{ \"kinds\": [1], " <>
-		"\"authors\": [\"" <> a <> "\"] }"
+
+fltr' :: T.Text -> Maybe T.Text
+fltr' a = do
+	a' <- T.pack . strToHexStr . BSC.unpack <$> dataPart (chomp a)
+	pure $ "{ \"kinds\": [1], " <> "\"authors\": [\"" <> a' <> "\"] }"
+
+fltr :: T.Text -> T.Text
+fltr a = "{ \"kinds\": [1], " <> "\"authors\": [\"" <> a <> "\"] }"
 
 write :: T.Text -> BSC.ByteString -> Connection -> String -> IO ()
 write sec pub cnn msg = do
