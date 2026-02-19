@@ -1,5 +1,5 @@
 {-# LANGUAGE PackageImports, ImportQualifiedPost #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
@@ -23,9 +23,9 @@ import System.Environment
 import Nostr.Event qualified as Event
 import Nostr.Event.Json as EvJs
 import TryBech32
-import "try-hello-nostr" Tools
 
 import Nostr.Filter
+import Nostr.Filter.Json qualified as FlJsn
 
 main :: IO ()
 main = do
@@ -45,28 +45,25 @@ ws sec pub_ fsnd msg cnn = do
 	putStrLn "Connected!\n"
 
 	Just pub <- pure . dataPart $ chomp pub_
-	let	pubTxt = T.pack . strToHexStr $ BSC.unpack pub
-		req = "[\"REQ\", \"foobar12345\", " <> fltr pubTxt <> "]"
-	Just ft <- pure $ fltr' pub_
-	print $ mkFilter pub_
-	let	req' = "[\"REQ\", \"foobar12345\", " <> ft <> "]"
-	sendTextData cnn req
-
-	T.putStrLn pub_
-	T.putStrLn req
-	T.putStrLn req'
+	let	req0 = A.encode . A.Array . V.fromList
+			. ([A.String "REQ", A.String "foobar12345"] ++) . (: [])
+			. FlJsn.encode <$> mkFilter pub_
+	maybe (pure ()) BSLC.putStrLn req0
+	maybe (pure ()) (sendTextData cnn) req0
 	putStrLn ""
 
-	Just r <- A.decode <$> receiveData cnn
-	print r
-	case r of
-		A.Array (toList -> [A.String "EOSE", A.String "foobar12345"]) -> do
+	r <- receiveData cnn
+	BSLC.putStrLn r
+	putStrLn ""
+
+	case A.decode r of
+		Just (A.Array (toList -> [A.String "EOSE", A.String "foobar12345"])) -> do
 			putStrLn "EOSE RECEIVED"
-		A.Array (toList -> [
-			A.String "EVENT", A.String "foobar12345", A.Object obj ]) -> do
+		Just (A.Array (toList -> [
+			A.String "EVENT", A.String "foobar12345", A.Object obj ])) -> do
 			let	ev = EvJs.decode obj
-			print ev
-			putStrLn ""
+			-- print ev
+			-- putStrLn ""
 			maybe (pure ()) (T.putStrLn . Event.content) ev
 		_ -> error "bad"
 
@@ -74,12 +71,23 @@ ws sec pub_ fsnd msg cnn = do
 
 	when fsnd $ write sec pub cnn msg
 
-	rdt <- receiveData cnn
-	BSLC.putStrLn rdt
-	Just r' <- pure $ A.decode rdt :: IO (Maybe A.Value) -- <$> receiveData cnn :: IO (Maybe A.Value)
-	print r'
+	doWhile do
+
+		rdt <- receiveData cnn
+		BSLC.putStrLn rdt
+		let	r' = A.decode rdt :: Maybe A.Value -- <$> receiveData cnn :: IO (Maybe A.Value)
+
+		pure case r' of
+			Just (A.Array (V.toList -> [A.String "EOSE", A.String "foobar12345"])) -> False
+			Just _ -> True
+			Nothing -> error "bad"
 
 	sendClose cnn ("Bye!" :: T.Text)
+
+doWhile :: IO Bool -> IO ()
+doWhile act = do
+	b <- act
+	if b then doWhile act else pure ()
 
 mkFilter :: T.Text -> Maybe Filter
 mkFilter a = do
@@ -90,14 +98,6 @@ mkFilter a = do
 		authors = Just [pk], kinds = Just [1], tags = [],
 		since = Nothing, until = Nothing, limit = Nothing }
 
-fltr' :: T.Text -> Maybe T.Text
-fltr' a = do
-	a' <- T.pack . strToHexStr . BSC.unpack <$> dataPart (chomp a)
-	pure $ "{ \"kinds\": [1], " <> "\"authors\": [\"" <> a' <> "\"] }"
-
-fltr :: T.Text -> T.Text
-fltr a = "{ \"kinds\": [1], " <> "\"authors\": [\"" <> a <> "\"] }"
-
 write :: T.Text -> BSC.ByteString -> Connection -> String -> IO ()
 write sec pub cnn msg = do
 	Just pk <- pure $ Event.parse_point pub
@@ -107,5 +107,7 @@ write sec pub cnn msg = do
 		Event.pubkey = pk, Event.created_at = ut,
 		Event.kind = 1, Event.tags = [], Event.content = T.pack msg }
 	print json
-	sendTextData cnn
-		. A.encode . A.Array $ V.fromList [A.String "EVENT", A.Object json]
+	print $ EvJs.decode json
+	let	event = A.encode . A.Array $ V.fromList [A.String "EVENT", A.Object json]
+	BSLC.putStrLn event
+	sendTextData cnn event
