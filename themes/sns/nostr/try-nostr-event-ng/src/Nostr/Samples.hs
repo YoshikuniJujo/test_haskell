@@ -38,3 +38,15 @@ sampleFilter = Filter.Filter {
 	Filter.since = Nothing,
 	Filter.until = Nothing,
 	Filter.limit = Nothing }
+
+sampleFilter2 :: FilePath -> IO Filter.Filter
+sampleFilter2 fp = do
+	Just pb <- readPub fp
+	pure Filter.Filter {
+		Filter.ids = Just ["foo", "bar", "baz"],
+		Filter.authors = Just [pb],
+		Filter.kinds = Just [1],
+		Filter.tags = [],
+		Filter.since = Nothing,
+		Filter.until = Nothing,
+		Filter.limit = Just 100 }
