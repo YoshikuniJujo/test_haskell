@@ -27,28 +27,38 @@ import TryBech32
 import Nostr.Filter
 import Nostr.Filter.Json qualified as FlJsn
 
+import "try-hello-nostr" Tools
+
+data Opt = Author | P | Others
+	deriving Show
+
+readOpt :: String -> Opt
+readOpt "--author" = Author
+readOpt "-p" = P
+readOpt _ = Others
+
 main :: IO ()
 main = do
-	scr : raddr : rprt : acc : foo : ((== "--send") -> fsnd) : msg : acc' : _ <-
+	opt : scr : raddr : rprt : acc : foo : ((== "--send") -> fsnd) : msg : acc' : _ <-
 		getArgs
 	pub_ <- T.readFile acc
 	pub_2 <- T.readFile acc'
 	sec <- chomp <$> T.readFile foo
 	if (scr == "secure") 
-	then runSecureClient raddr (read rprt) "/" (ws sec pub_ pub_2 fsnd msg)
-	else runClient raddr (read rprt) "/" (ws sec pub_ pub_2 fsnd msg)
+	then runSecureClient raddr (read rprt) "/" (ws (readOpt opt) sec pub_ pub_2 fsnd msg)
+	else runClient raddr (read rprt) "/" (ws (readOpt opt) sec pub_ pub_2 fsnd msg)
 
 chomp :: T.Text -> T.Text
 chomp t = if T.last t == '\n' then T.init t else t
 
-ws :: T.Text -> T.Text -> T.Text -> Bool -> String -> ClientApp ()
-ws sec pub_ pub_2 fsnd msg cnn = do
+ws :: Opt -> T.Text -> T.Text -> T.Text -> Bool -> String -> ClientApp ()
+ws opt sec pub_ pub_2 fsnd msg cnn = do
 	putStrLn "Connected!\n"
 
 	Just pub <- pure . dataPart $ chomp pub_
 	let	req0 = A.encode . A.Array . V.fromList
 			. ([A.String "REQ", A.String "foobar12345"] ++) . (: [])
-			. FlJsn.encode <$> mkFilter pub_2
+			. FlJsn.encode <$> mkFilter opt pub_2
 	maybe (pure ()) BSLC.putStrLn req0
 	maybe (pure ()) (sendTextData cnn) req0
 	putStrLn ""
@@ -90,14 +100,20 @@ doWhile act = do
 	b <- act
 	if b then doWhile act else pure ()
 
-mkFilter :: T.Text -> Maybe Filter
-mkFilter a = do
+mkFilter :: Opt -> T.Text -> Maybe Filter
+mkFilter opt a = do
 	pub <- dataPart (chomp a)
 	pk <- Event.parse_point pub
-	pure Filter {
-		ids = Nothing,
-		authors = Just [pk], kinds = Just [1], tags = [],
-		since = Nothing, until = Nothing, limit = Just 5 }
+	pure case opt of
+		Author -> Filter {
+			ids = Nothing,
+			authors = Just [pk], kinds = Just [1], tags = [],
+			since = Nothing, until = Nothing, limit = Just 5 }
+		P -> Filter {
+			ids = Nothing,
+			authors = Nothing, kinds = Just [1],
+			tags = [('p', [T.pack . strToHexStr $ BSC.unpack pub])],
+			since = Nothing, until = Nothing, limit = Just 5 }
 
 write :: T.Text -> BSC.ByteString -> Connection -> String -> IO ()
 write sec pub cnn msg = do
