@@ -29,25 +29,26 @@ import Nostr.Filter.Json qualified as FlJsn
 
 main :: IO ()
 main = do
-	scr : raddr : rprt : acc : foo : ((== "--send") -> fsnd) : msg : _ <-
+	scr : raddr : rprt : acc : foo : ((== "--send") -> fsnd) : msg : acc' : _ <-
 		getArgs
 	pub_ <- T.readFile acc
+	pub_2 <- T.readFile acc'
 	sec <- chomp <$> T.readFile foo
 	if (scr == "secure") 
-	then runSecureClient raddr (read rprt) "/" (ws sec pub_ fsnd msg)
-	else runClient raddr (read rprt) "/" (ws sec pub_ fsnd msg)
+	then runSecureClient raddr (read rprt) "/" (ws sec pub_ pub_2 fsnd msg)
+	else runClient raddr (read rprt) "/" (ws sec pub_ pub_2 fsnd msg)
 
 chomp :: T.Text -> T.Text
 chomp t = if T.last t == '\n' then T.init t else t
 
-ws :: T.Text -> T.Text -> Bool -> String -> ClientApp ()
-ws sec pub_ fsnd msg cnn = do
+ws :: T.Text -> T.Text -> T.Text -> Bool -> String -> ClientApp ()
+ws sec pub_ pub_2 fsnd msg cnn = do
 	putStrLn "Connected!\n"
 
 	Just pub <- pure . dataPart $ chomp pub_
 	let	req0 = A.encode . A.Array . V.fromList
 			. ([A.String "REQ", A.String "foobar12345"] ++) . (: [])
-			. FlJsn.encode <$> mkFilter pub_
+			. FlJsn.encode <$> mkFilter pub_2
 	maybe (pure ()) BSLC.putStrLn req0
 	maybe (pure ()) (sendTextData cnn) req0
 	putStrLn ""
@@ -96,7 +97,7 @@ mkFilter a = do
 	pure Filter {
 		ids = Nothing,
 		authors = Just [pk], kinds = Just [1], tags = [],
-		since = Nothing, until = Nothing, limit = Nothing }
+		since = Nothing, until = Nothing, limit = Just 5 }
 
 write :: T.Text -> BSC.ByteString -> Connection -> String -> IO ()
 write sec pub cnn msg = do
