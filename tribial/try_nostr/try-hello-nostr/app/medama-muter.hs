@@ -40,7 +40,7 @@ ws cnn = do
 --		("[\"REQ\", \"foobar12345\", " <> fltr pubStr <> "]" :: T.Text)
 		("[\"REQ\", \"foobar12345\", { \"kinds\": [7]}]" :: T.Text)
 
-	evs <- doWhile 10000 do
+	evs <- doWhileN 10000 do
 		dt <- receiveData cnn
 		let	ev = getEvent =<< A.decode dt
 		pure ev
@@ -77,11 +77,11 @@ ws cnn = do
 
 	sendClose cnn ("Bye!" :: T.Text)
 
-doWhile :: Monad m => Int -> m (Maybe a) -> m [a]
-doWhile mx _ | mx < 1 = pure []
-doWhile mx act = act >>= \case
+doWhileN :: Monad m => Int -> m (Maybe a) -> m [a]
+doWhileN mx _ | mx < 1 = pure []
+doWhileN mx act = act >>= \case
 	Nothing -> pure []
-	Just x -> (x :) <$> doWhile (mx - 1) act
+	Just x -> (x :) <$> doWhileN (mx - 1) act
 
 pubkeyToText :: Projective -> T.Text
 pubkeyToText = T.pack . strToHexStr . tail . BSC.unpack . serialize_point

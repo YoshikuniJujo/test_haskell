@@ -48,9 +48,6 @@ main = do
 	then runSecureClient raddr (read rprt) "/" (ws (readOpt opt) sec pub_ pub_2 fsnd msg)
 	else runClient raddr (read rprt) "/" (ws (readOpt opt) sec pub_ pub_2 fsnd msg)
 
-chomp :: T.Text -> T.Text
-chomp t = if T.last t == '\n' then T.init t else t
-
 ws :: Opt -> T.Text -> T.Text -> T.Text -> Bool -> String -> ClientApp ()
 ws opt sec pub_ pub_2 fsnd msg cnn = do
 	putStrLn "Connected!\n"
@@ -94,11 +91,6 @@ ws opt sec pub_ pub_2 fsnd msg cnn = do
 			Nothing -> error "bad"
 
 	sendClose cnn ("Bye!" :: T.Text)
-
-doWhile :: IO Bool -> IO ()
-doWhile act = do
-	b <- act
-	if b then doWhile act else pure ()
 
 mkFilter :: Opt -> T.Text -> Maybe Filter
 mkFilter opt a = do

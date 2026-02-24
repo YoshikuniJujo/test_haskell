@@ -70,6 +70,27 @@ executable medama-muter
     , wuss
   default-language: Haskell2010
 
+executable post
+  main-is: post.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bech32
+    , bytestring
+    , containers
+    , ppad-secp256k1
+    , text
+    , try-hello-nostr
+    , try-nostr-event-ng
+    , unix-time
+    , vector
+    , websockets
+    , wuss
+  default-language: Haskell2010
+
 executable try-hello-nostr-exe
   main-is: Main.hs
   other-modules:
