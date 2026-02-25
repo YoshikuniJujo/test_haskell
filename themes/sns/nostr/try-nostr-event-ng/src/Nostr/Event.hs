@@ -8,17 +8,13 @@ module Nostr.Event (
 
 	E(..),
 
-	-- * SIGNATURE
+	-- * SIGNATURE AND VERIFY
 
-	signature, Secret(..), secretFromBech32, hash, serialize,
+	signature, verify, hash, serialize,
 
-	-- * VERIFY
+	-- * KEYS
 
-	verify,
-
-	-- * PUBLIC KEY
-
-	parse_point
+	Secret(..), Pub, secretFromBech32, publicFromBech32
 
 	) where
 
@@ -31,7 +27,6 @@ import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Data.ByteString.UTF8 qualified as BSU
 import Data.Text qualified as T
-import Data.Text.IO qualified as T
 import Data.Aeson
 import Data.UnixTime
 import System.Entropy
@@ -59,6 +54,9 @@ parseSecret :: BS.ByteString -> Maybe Secret
 parseSecret = (Secret <$>) . parse_int256
 
 newtype Secret = Secret Wider deriving Show
+
+publicFromBech32 :: T.Text -> Maybe Pub
+publicFromBech32 = (parse_point =<<) . dataPart' "npub"
 
 hash :: E -> BS.ByteString
 hash = SHA256.hash . BSU.fromString . serializeEvent
