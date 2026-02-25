@@ -3,6 +3,7 @@
 
 module Tools where
 
+import Data.Bool
 import Data.Char
 import Data.ByteString.Char8 qualified as BSC
 import Data.Text qualified as T
@@ -19,3 +20,6 @@ strToHexStr = concat . (sh <$>) . map ord
 separate :: Int -> String -> [String]
 separate _ "" = []
 separate n s = take n s : separate n (drop n s)
+
+chomp :: T.Text -> T.Text
+chomp = bool id T.init <$> (== '\n') . T.last <*> id
