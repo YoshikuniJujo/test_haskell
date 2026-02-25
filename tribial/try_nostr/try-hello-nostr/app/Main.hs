@@ -77,7 +77,7 @@ ws opt sec pub_ pub_2 fsnd msg cnn = do
 
 	putStrLn "\n*** WRITE ***"
 
-	when fsnd $ write sec pub cnn msg
+	when fsnd $ write sec pub_ cnn msg
 
 	doWhile do
 
@@ -95,7 +95,7 @@ ws opt sec pub_ pub_2 fsnd msg cnn = do
 mkFilter :: Opt -> T.Text -> Maybe Filter
 mkFilter opt a = do
 	pub <- dataPart (chomp a)
-	pk <- Event.parse_point pub
+	pk <- Event.publicFromBech32 a
 	pure case opt of
 		Author -> Filter {
 			ids = Nothing,
@@ -107,9 +107,9 @@ mkFilter opt a = do
 			tags = [('p', [T.pack . strToHexStr $ BSC.unpack pub])],
 			since = Nothing, until = Nothing, limit = Just 5 }
 
-write :: T.Text -> BSC.ByteString -> Connection -> String -> IO ()
+write :: T.Text -> T.Text -> Connection -> String -> IO ()
 write sec pub cnn msg = do
-	Just pk <- pure $ Event.parse_point pub
+	Just pk <- pure $ Event.publicFromBech32 pub
 	ut <- getUnixTime
 	Just sec' <- pure $ Event.secretFromBech32 sec
 	json <- EvJs.encode sec' Event.E {
