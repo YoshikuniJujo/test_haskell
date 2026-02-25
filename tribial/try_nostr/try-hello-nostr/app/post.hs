@@ -11,7 +11,6 @@ import Control.Monad
 import Data.Vector qualified as V
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
-import Data.ByteString.Lazy.Char8 qualified as BSLC
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Data.Aeson qualified as A
@@ -23,45 +22,38 @@ import Nostr.Event qualified as Event
 import Nostr.Event.Signed qualified as Signed
 import Nostr.Event.Json as EvJs
 
-import TryBech32
 import "try-hello-nostr" Tools
 
 main :: IO ()
 main = do
 	scr : adr : prt : pb : sc : ((== "--send") -> fsnd) : msg : _ <- getArgs
-	pub <- chomp <$> T.readFile pb; sec <- chomp <$> T.readFile sc
+	pub <- T.readFile pb; sec <- T.readFile sc
 	if (scr == "secure") 
-	then runSecureClient adr (read prt) "/" (ws sec pub fsnd msg)
-	else runClient adr (read prt) "/" (ws sec pub fsnd msg)
+	then runSecureClient adr (read prt) "/" (ws sec pub fsnd $ T.pack msg)
+	else runClient adr (read prt) "/" (ws sec pub fsnd $ T.pack msg)
 
-ws :: T.Text -> T.Text -> Bool -> String -> ClientApp ()
-ws sec pub_ fsnd msg cnn = do
-	Just pub <- pure $ dataPart' "npub" pub_
-	idnt <- T.pack . strToHexStr . BSC.unpack <$> write fsnd sec pub_ cnn msg
+ws :: T.Text -> T.Text -> Bool -> T.Text -> ClientApp ()
+ws sc pb fsnd msg cnn = do
+	idnt <- T.pack . strToHexStr . BSC.unpack <$> write fsnd sc pb cnn msg
 	when fsnd $ doWhile do
-
-		rdt <- receiveData cnn
-		BSLC.putStrLn rdt
-		let	r' = A.decode rdt :: Maybe A.Value
-
-		pure case r' of
-			Just (A.Array (V.toList -> [A.String "OK", A.String idnt', A.Bool True, A.String _]))
+		Just r <- A.decode <$> receiveData cnn
+		pure case r of
+			A.Array (V.toList -> [
+					A.String "OK", A.String idnt',
+					A.Bool True, A.String _ ])
 				| idnt' == idnt -> False
-			Just _ -> True
-			Nothing -> error "bad"
-
+			_ -> True
 	sendClose cnn ("Bye!" :: T.Text)
 
-write :: Bool -> T.Text -> T.Text -> Connection -> String -> IO BS.ByteString
-write fsnd sec pub_ cnn msg = do
-	Just pk <- pure $ Event.publicFromBech32 pub_
+write :: Bool -> T.Text -> T.Text -> Connection -> T.Text -> IO BS.ByteString
+write fsnd sc pb cnn msg = do
+	Just sk <- pure $ Event.secretFromBech32 sc
+	Just pk <- pure $ Event.publicFromBech32 pb
 	ut <- getUnixTime
-	Just sec' <- pure $ Event.secretFromBech32 sec
-	let	ev = Event.E {
-			Event.pubkey = pk, Event.created_at = ut,
-			Event.kind = 1, Event.tags = [], Event.content = T.pack msg }
-	ev' <- Signed.signature sec' ev
-	Just json <- pure $ EvJs.encode' ev'
-	let	event = A.encode . A.Array $ V.fromList [A.String "EVENT", A.Object json]
-	when fsnd $ sendTextData cnn event
-	pure $ Signed.idnt ev'
+	ev <- Signed.signature sk Event.E {
+		Event.pubkey = pk, Event.created_at = ut,
+		Event.kind = 1, Event.tags = [], Event.content = msg }
+	Just jsn <- pure $ EvJs.encode' ev
+	when fsnd . sendTextData cnn . A.encode
+		. A.Array $ V.fromList [A.String "EVENT", A.Object jsn]
+	pure $ Signed.idnt ev
