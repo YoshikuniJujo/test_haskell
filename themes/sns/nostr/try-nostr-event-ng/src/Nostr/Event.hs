@@ -47,16 +47,17 @@ data E = E {
 signature :: Secret -> E -> IO (Maybe BS.ByteString)
 signature (Secret sec) ev = sign_schnorr sec (hash ev) <$> getEntropy 32
 
-secretFromBech32 :: T.Text -> Maybe Secret
+secretFromBech32 :: T.Text -> Either String Secret
 secretFromBech32 sec = parseSecret =<< dataPart' "nsec" (chomp sec)
 
-parseSecret :: BS.ByteString -> Maybe Secret
-parseSecret = (Secret <$>) . parse_int256
+parseSecret :: BS.ByteString -> Either String Secret
+parseSecret = (Secret <$>) . maybe (Left "parse_int256 error") Right . parse_int256
 
 newtype Secret = Secret Wider deriving Show
 
-publicFromBech32 :: T.Text -> Maybe Pub
-publicFromBech32 = (parse_point =<<) . dataPart' "npub" . chomp
+publicFromBech32 :: T.Text -> Either String Pub
+publicFromBech32 =
+	(maybe (Left "parse_point error") Right . parse_point =<<) . dataPart' "npub" . chomp
 
 hash :: E -> BS.ByteString
 hash = SHA256.hash . BSU.fromString . serializeEvent
