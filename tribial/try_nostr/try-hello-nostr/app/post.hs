@@ -47,8 +47,8 @@ ws sc pb fsnd msg cnn = do
 
 write :: Bool -> T.Text -> T.Text -> Connection -> T.Text -> IO BS.ByteString
 write fsnd sc pb cnn msg = do
-	Just sk <- pure $ Event.secretFromBech32 sc
-	Just pk <- pure $ Event.publicFromBech32 pb
+	Right sk <- pure $ Event.secretFromBech32 sc
+	Right pk <- pure $ Event.publicFromBech32 pb
 	ut <- getUnixTime
 	ev <- Signed.signature sk Event.E {
 		Event.pubkey = pk, Event.created_at = ut,

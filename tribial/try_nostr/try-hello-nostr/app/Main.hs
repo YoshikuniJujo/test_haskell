@@ -1,5 +1,5 @@
 {-# LANGUAGE PackageImports, ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-x-partial #-}
@@ -7,21 +7,17 @@
 module Main (main) where
 
 import Prelude hiding (until)
-import Control.Monad
-import Data.Foldable
 import Data.Vector qualified as V
-import Data.ByteString.Char8 qualified as BSC
 import Data.ByteString.Lazy.Char8 qualified as BSLC
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
-import Data.UnixTime
 import Data.Aeson qualified as A
 import Wuss
 import Network.WebSockets
 import System.Environment
 
 import Nostr.Event qualified as Event
-import Nostr.Event.Json as EvJs
+import Nostr.Event.Json qualified as EvJsn
 import TryBech32
 
 import Nostr.Filter
@@ -29,94 +25,82 @@ import Nostr.Filter.Json qualified as FlJsn
 
 import "try-hello-nostr" Tools
 
-data Opt = Author | P | Others
-	deriving Show
-
-readOpt :: String -> Opt
-readOpt "--author" = Author
-readOpt "-p" = P
-readOpt _ = Others
-
 main :: IO ()
 main = do
-	opt : scr : raddr : rprt : acc : foo : ((== "--send") -> fsnd) : msg : acc' : _ <-
-		getArgs
-	pub_ <- T.readFile acc
-	pub_2 <- T.readFile acc'
-	sec <- chomp <$> T.readFile foo
+	opt : scr : raddr : rprt : acc : _ <- getArgs
+	pub <- T.readFile acc
 	if (scr == "secure") 
-	then runSecureClient raddr (read rprt) "/" (ws (readOpt opt) sec pub_ pub_2 fsnd msg)
-	else runClient raddr (read rprt) "/" (ws (readOpt opt) sec pub_ pub_2 fsnd msg)
+	then runSecureClient raddr (read rprt) "/" (ws (readOpt opt) pub)
+	else runClient raddr (read rprt) "/" (ws (readOpt opt) pub)
 
-ws :: Opt -> T.Text -> T.Text -> T.Text -> Bool -> String -> ClientApp ()
-ws opt sec pub_ pub_2 fsnd msg cnn = do
-	putStrLn "Connected!\n"
-
-	Just pub <- pure . dataPart $ chomp pub_
-	let	req0 = A.encode . A.Array . V.fromList
-			. ([A.String "REQ", A.String "foobar12345"] ++) . (: [])
-			. FlJsn.encode <$> mkFilter opt pub_2
-	maybe (pure ()) BSLC.putStrLn req0
-	maybe (pure ()) (sendTextData cnn) req0
+ws :: Opt -> T.Text -> ClientApp ()
+ws opt pub cnn = do
+	let	req0 = req "foobar12345" <$> mkFilter opt pub
+	either putStrLn ((>>) <$> BSLC.putStrLn <*> sendTextData cnn) req0
 	putStrLn ""
-
-	r <- receiveData cnn
-	BSLC.putStrLn r
-	putStrLn ""
-
-	case A.decode r of
-		Just (A.Array (toList -> [A.String "EOSE", A.String "foobar12345"])) -> do
-			putStrLn "EOSE RECEIVED"
-		Just (A.Array (toList -> [
-			A.String "EVENT", A.String "foobar12345", A.Object obj ])) -> do
-			let	ev = EvJs.decode obj
-			-- print ev
-			-- putStrLn ""
-			maybe (pure ()) (T.putStrLn . Event.content) ev
-		_ -> error "bad"
-
-	putStrLn "\n*** WRITE ***"
-
-	when fsnd $ write sec pub_ cnn msg
-
-	doWhile do
-
-		rdt <- receiveData cnn
+	doWhile $ receiveData cnn >>= \rdt -> do
 		BSLC.putStrLn rdt
-		let	r' = A.decode rdt :: Maybe A.Value -- <$> receiveData cnn :: IO (Maybe A.Value)
-
-		pure case r' of
-			Just (A.Array (V.toList -> [A.String "EOSE", A.String "foobar12345"])) -> False
-			Just _ -> True
+		case A.decode rdt of
+			Just (A.Array (V.toList -> [
+					A.String "EOSE",
+					A.String "foobar12345" ])) -> pure False
+			Just (A.Array (V.toList -> [
+					A.String "EVENT",
+					A.String "foobar12345",
+					A.Object jsn ])) -> do
+				midnt <- pure $ fst
+					<$> (lookup "e" =<< Event.tags <$> EvJsn.decode jsn)
+				case midnt of
+					Just idnt -> do
+						print $ filterFromId idnt
+						sendTextData cnn . req "barbaz54321" $ filterFromId idnt
+					Nothing -> pure ()
+				pure True
+			Just (A.Array (V.toList -> [
+					A.String "EVENT",
+					A.String "barbaz54321",
+					A.Object jsn ])) -> do
+				putStrLn "barbaz54321"
+				print jsn
+				pure True
+			Just _ -> pure True; Nothing -> error "bad"
+	doWhile $ receiveData cnn >>= \rdt -> do
+		BSLC.putStrLn rdt
+		case A.decode rdt of
+			Just (A.Array (V.toList -> [
+					A.String "EOSE",
+					A.String "barbaz54321" ])) -> pure False
+			Just _ -> pure True
 			Nothing -> error "bad"
-
 	sendClose cnn ("Bye!" :: T.Text)
 
-mkFilter :: Opt -> T.Text -> Maybe Filter
+mkFilter :: Opt -> T.Text -> Either String Filter
 mkFilter opt a = do
-	pub <- dataPart (chomp a)
 	pk <- Event.publicFromBech32 a
-	pure case opt of
-		Author -> Filter {
+	pub <- maybe (Left "error") (Right . toHex) $ dataPart' "npub" (chomp a)
+	case opt of
+		Author -> pure Filter {
 			ids = Nothing,
 			authors = Just [pk], kinds = Just [1], tags = [],
 			since = Nothing, until = Nothing, limit = Just 5 }
-		P -> Filter {
+		P -> pure Filter {
 			ids = Nothing,
 			authors = Nothing, kinds = Just [1],
-			tags = [('p', [T.pack . strToHexStr $ BSC.unpack pub])],
+			tags = [('p', [pub])],
 			since = Nothing, until = Nothing, limit = Just 5 }
+		Others -> Left "no such option"
 
-write :: T.Text -> T.Text -> Connection -> String -> IO ()
-write sec pub cnn msg = do
-	Just pk <- pure $ Event.publicFromBech32 pub
-	ut <- getUnixTime
-	Just sec' <- pure $ Event.secretFromBech32 sec
-	json <- EvJs.encode sec' Event.E {
-		Event.pubkey = pk, Event.created_at = ut,
-		Event.kind = 1, Event.tags = [], Event.content = T.pack msg }
-	print json
-	print $ EvJs.decode json
-	let	event = A.encode . A.Array $ V.fromList [A.String "EVENT", A.Object json]
-	BSLC.putStrLn event
-	sendTextData cnn event
+filterFromId :: T.Text -> Filter
+filterFromId idnt = Filter {
+	ids = Just [fromHex idnt],
+	authors = Nothing, kinds = Nothing,
+	tags = [], since = Nothing, until = Nothing, limit = Just 5 }
+
+data Opt = Author | P | Others deriving Show
+
+readOpt :: String -> Opt
+readOpt = \case "--author" -> Author; "-p" -> P; _ -> Others
+
+req :: T.Text -> Filter -> BSLC.ByteString
+req nm = A.encode . A.Array . V.fromList
+	. ([A.String "REQ", A.String nm] ++) . (: []) . FlJsn.encode

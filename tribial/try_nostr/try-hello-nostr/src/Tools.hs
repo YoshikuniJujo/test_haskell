@@ -7,13 +7,21 @@ module Tools where
 import Data.Function
 import Data.Bool
 import Data.Char
+import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BSC
 import Data.Text qualified as T
 import Numeric
+
+toHex :: BSC.ByteString -> T.Text
+toHex = T.pack . strToHexStr . BSC.unpack
 
 strToHexStr :: String -> String
 strToHexStr = concat . (sh <$>) . map ord
 	where
 	sh n = let s = showHex n "" in replicate (2 - length s) '0' ++ s
+
+fromHex :: T.Text -> BS.ByteString
+fromHex = BS.pack . (fst . head . readHex <$>) . separate 2 . T.unpack
 
 separate :: Int -> String -> [String]
 separate _ "" = []
