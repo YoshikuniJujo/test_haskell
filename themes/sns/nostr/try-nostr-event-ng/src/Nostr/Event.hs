@@ -101,7 +101,7 @@ serializeTags _ = error "bad"
 
 serializeStrArray :: Value -> String
 serializeStrArray (Array a) = '[' :
-	L.intercalate "."
+	L.intercalate ","
 		((\case String s -> show s; _ -> error "bad") <$> toList a) ++
 	"]"
 serializeStrArray _ = error "bad"
