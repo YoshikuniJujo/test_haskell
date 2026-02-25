@@ -33,16 +33,16 @@ packages:
   original:
     hackage: ppad-sha256-0.3.1
 - completed:
-    commit: bc609f1bb33324185e7111a650ccce5d061abb55
+    commit: 34550f23a4d9bb57763ba7ecdf05b4b55673635c
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-nostr-event-ng
     pantry-tree:
-      sha256: 4b4252594ee204589b8577bfd10961d089531b36a5402b43c1f16a88694edd80
-      size: 1099
+      sha256: 4ed8da7d3c7de0f231340ae1202c2d04e32cd8472de398a695d599e9bc978d43
+      size: 1100
     subdir: themes/sns/nostr/try-nostr-event-ng
     version: 0.1.0.0
   original:
-    commit: bc609f1bb33324185e7111a650ccce5d061abb55
+    commit: 34550f23a4d9bb57763ba7ecdf05b4b55673635c
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/sns/nostr/try-nostr-event-ng
 snapshots:

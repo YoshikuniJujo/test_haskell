@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Moffy.Nostr
       Tools
       TryBech32
   other-modules:
@@ -40,9 +41,13 @@ library
     , bech32
     , bytestring
     , containers
+    , moffy
+    , moffy-samples-events
     , ppad-secp256k1
+    , stm
     , text
     , try-nostr-event-ng
+    , type-set
     , unix-time
     , vector
     , websockets
@@ -60,10 +65,14 @@ executable medama-muter
     , bech32
     , bytestring
     , containers
+    , moffy
+    , moffy-samples-events
     , ppad-secp256k1
+    , stm
     , text
     , try-hello-nostr
     , try-nostr-event-ng
+    , type-set
     , unix-time
     , vector
     , websockets
@@ -81,10 +90,14 @@ executable post
     , bech32
     , bytestring
     , containers
+    , moffy
+    , moffy-samples-events
     , ppad-secp256k1
+    , stm
     , text
     , try-hello-nostr
     , try-nostr-event-ng
+    , type-set
     , unix-time
     , vector
     , websockets
@@ -106,10 +119,14 @@ executable try-hello-nostr-exe
     , bech32
     , bytestring
     , containers
+    , moffy
+    , moffy-samples-events
     , ppad-secp256k1
+    , stm
     , text
     , try-hello-nostr
     , try-nostr-event-ng
+    , type-set
     , unix-time
     , vector
     , websockets
@@ -132,10 +149,14 @@ test-suite try-hello-nostr-test
     , bech32
     , bytestring
     , containers
+    , moffy
+    , moffy-samples-events
     , ppad-secp256k1
+    , stm
     , text
     , try-hello-nostr
     , try-nostr-event-ng
+    , type-set
     , unix-time
     , vector
     , websockets

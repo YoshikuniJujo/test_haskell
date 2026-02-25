@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- stm
 - containers
 - vector
 - bytestring
@@ -31,6 +32,9 @@ dependencies:
 - wuss
 - ppad-secp256k1
 - bech32
+- moffy
+- moffy-samples-events
+- type-set
 - try-nostr-event-ng
 
 ghc-options:
