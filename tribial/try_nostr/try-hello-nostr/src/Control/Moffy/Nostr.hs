@@ -12,9 +12,7 @@ module Control.Moffy.Nostr where
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Moffy
-import Control.Moffy.Handle qualified as H
 import Control.Moffy.Run
-import Control.Moffy.Samples.Handle.TChan
 import Data.Type.Set
 import Data.OneOrMore qualified as OOM
 import Data.OneOrMoreApp
@@ -55,44 +53,54 @@ type Events = Req :- Event :- Eose :- Halt :- 'Nil
 
 sample :: IO ()
 sample = run "nos.lol" "443" $ do
-	waitFor . adjust $ await (ReqReq "foobar" Filter.Filter {
+	_ <- waitFor . adjust $ await (ReqReq "foobar" Filter.Filter {
 		Filter.ids = Nothing, Filter.authors = Nothing,
 		Filter.kinds = Just [1], Filter.tags = [],
 		Filter.since = Nothing, Filter.until = Nothing,
 		Filter.limit = Just 5 }) id
-	emit =<< waitFor (adjust $ await EventReq \(OccEvent nm ev) -> ev)
+	emit =<< waitFor (adjust $ await EventReq \(OccEvent _nm ev) -> ev)
 	waitFor . adjust $ await HaltReq id
+
+handleTChan :: TChan (EvReqs es) -> TChan (EvOccs es) -> Handle IO es
+handleTChan cr co rq = do
+	atomically $ writeTChan cr rq
+	atomically $ readTChan co
 
 run :: Show a => String -> String -> Sig s Events a r -> IO ()
 run raddr rprt s = do
 	cr <- atomically newTChan
 	co <- atomically newTChan
-	forkIO $ do
-		interpret (H.retry $ handle (Just 0.1) cr co) print s
+	_ <- forkIO $ do
+		_ <- interpret (handleTChan cr co) print s
 		pure ()
 	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co
 
 ws :: T.Text ->
 	TChan (EvReqs Events) -> TChan (EvOccs Events) -> Ws.ClientApp ()
-ws pub cr co cnn = do
-	hlt <- atomically $ newTVar False
-	forkIO . doWhile $ atomically (readTChan cr) >>= \r -> do
---		threadDelay 1000000
-		case OOM.project r of
-			Nothing -> pure ()
+ws _pub cr co cnn = do
+	doWhile $ atomically (readTChan cr) >>= \r -> do
+		a <- case OOM.project r of
+			Nothing -> pure True
 			Just (ReqReq nm fltr) -> do
 				let	r1 = req nm fltr
 				Ws.sendTextData cnn r1
 				atomically . writeTChan co . expand $ Singleton OccReq
-		case OOM.project r of
-			Nothing -> pure ()
+				pure True
+		b <- case OOM.project r of
+			Nothing -> pure True
 			Just HaltReq -> do
-				atomically $ writeTVar hlt True
 				atomically . writeTChan co . expand $ Singleton OccHalt
-		pure True
-	doWhile $ Ws.receiveData cnn >>= \rdt -> do
---		threadDelay 1000000
-		threadDelay 100000
+				pure False
+		c <- case OOM.project r of
+			Nothing -> pure True
+			Just EventReq -> do
+				readPost co cnn
+				pure True
+		print $ a && b && c
+		pure $ a && b && c
+
+readPost :: TChan (EvOccs Events) -> Ws.Connection -> IO ()
+readPost co cnn = Ws.receiveData cnn >>= \rdt -> do
 		LBSC.putStrLn rdt
 		case A.decode rdt of
 			Just (A.Array (V.toList -> [
@@ -107,7 +115,6 @@ ws pub cr co cnn = do
 				atomically . writeTChan co . expand
 					. Singleton $ OccEvent nm ev
 			Just _ -> pure (); Nothing -> error "bad"
-		atomically $ not <$> readTVar hlt
 
 req :: T.Text -> Filter.Filter -> LBSC.ByteString
 req nm = A.encode . A.Array . V.fromList

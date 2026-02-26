@@ -33,7 +33,6 @@ dependencies:
 - ppad-secp256k1
 - bech32
 - moffy
-- moffy-samples-events
 - type-set
 - try-nostr-event-ng
 

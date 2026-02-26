@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Tools where
+module Tools (doWhile, strToHexStr, toHex, fromHex, chomp) where
 
 import Data.Function
 import Data.Bool
