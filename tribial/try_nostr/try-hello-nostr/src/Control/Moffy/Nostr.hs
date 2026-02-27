@@ -9,7 +9,7 @@
 
 module Control.Moffy.Nostr where
 
-import Prelude hiding (break)
+import Prelude hiding (break, scanl)
 import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM
@@ -78,10 +78,11 @@ sampleFilter' flt = run printEvent "nos.lol" "443" do
 	waitFor . adjust $ await HaltReq (const ())
 
 sampleFilter2 :: Filter.Filter -> Filter.Filter -> IO ()
-sampleFilter2 flt1 flt2 = run print "nos.lol" "443" do
+sampleFilter2 flt1 flt2 = run print2Req "nos.lol" "443" do
 	waitFor $ request "foobar" flt1
 	waitFor $ request "hogepiyo" flt2
-	((,) <$%> untilEose "foobar" flt1 <*%> untilEose "hogepiyo" flt2)
+	((,)	<$%> scanl (flip (:)) [] (untilEose "foobar" flt1)
+		<*%> scanl (flip (:)) [] (untilEose "hogepiyo" flt2))
 		`break` ((\_ _ -> ()) <$> awaitNameEose "foobar" <*> awaitNameEose "hogepiyo")
 	waitFor . adjust $ await HaltReq (const ())
 
@@ -89,6 +90,11 @@ printEvent :: Event.E -> IO ()
 printEvent ev = do
 	print ev
 	T.putStrLn $ Event.content ev
+
+print2Req :: ([Event.E], [Event.E]) -> IO ()
+print2Req (evs1, evs2) = do
+	printEvent `mapM_` evs1
+	printEvent `mapM_` evs2
 
 untilEose :: T.Text -> Filter.Filter -> Sig s Events Event.E ()
 untilEose nm flt = do
@@ -164,7 +170,7 @@ ws _pub cr co cnn = do
 
 readPost :: TChan (EvOccs Events) -> Ws.Connection -> IO ()
 readPost co cnn = Ws.receiveData cnn >>= \rdt -> do
-	LBSC.putStrLn rdt
+--	LBSC.putStrLn rdt
 	case A.decode rdt of
 		Just (A.Array (V.toList -> [
 				A.String "EOSE",
