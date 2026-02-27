@@ -64,14 +64,19 @@ numbered [t| Halt |]
 instance Request Halt where
 	data Occurred Halt = OccHalt deriving Show
 
-type Events = Req :- Event :- Eose :- Halt :- 'Nil
+data End = EndReq deriving (Show, Eq, Ord)
+numbered [t| End |]
+instance Request End where
+	data Occurred End = OccEnd deriving Show
+
+type Events = Req :- Event :- Eose :- Halt :- End :- 'Nil
 
 type EventsThread = Events :+: (GetThreadId :- 'Nil)
 
-type EventsRnd = Req :- Event :- Eose :- Halt :- Rnd.RandomEv
+type EventsRnd = Req :- Event :- Eose :- Halt :- End :- Rnd.RandomEv
 
 sample :: IO ()
-sample = run print "nos.lol" "443" $ do
+sample = run (const print) "nos.lol" "443" $ do
 	_ <- waitFor . adjust $ await (ReqReq "foobar" Filter.Filter {
 		Filter.ids = Nothing, Filter.authors = Nothing,
 		Filter.kinds = Just [1], Filter.tags = [],
@@ -91,19 +96,19 @@ sample' = run' print "nos.lol" "443" $ do
 	waitFor . adjust $ await HaltReq id
 
 sampleFilter :: Filter.Filter -> IO ()
-sampleFilter flt = run print "nos.lol" "443" $ do
+sampleFilter flt = run (const print) "nos.lol" "443" $ do
 	_ <- waitFor . adjust $ await (ReqReq "foobar" flt) id
 	emit =<< waitFor (adjust $ await EventReq \(OccEvent _nm ev) -> ev)
 	waitFor . adjust $ await HaltReq id
 
 sampleFilter' :: Filter.Filter -> IO ()
-sampleFilter' flt = run printEvent "nos.lol" "443" do
+sampleFilter' flt = run (const printEvent) "nos.lol" "443" do
 	waitFor $ request "foobar" flt
 	untilEose "foobar" flt `break` awaitNameEose "foobar"
 	waitFor . adjust $ await HaltReq (const ())
 
 sampleFilter2 :: Filter.Filter -> Filter.Filter -> IO ()
-sampleFilter2 flt1 flt2 = run print2Req "nos.lol" "443" do
+sampleFilter2 flt1 flt2 = run (const print2Req) "nos.lol" "443" do
 	waitFor $ request "foobar" flt1
 	waitFor $ request "hogepiyo" flt2
 	((,)	<$%> scanl (flip (:)) [] (untilEose "foobar" flt1)
@@ -114,9 +119,15 @@ sampleFilter2 flt1 flt2 = run print2Req "nos.lol" "443" do
 sampleId :: FilePath -> IO ()
 sampleId fp = do
 	Just flt <- filterP <$> T.readFile fp
-	run (\ms -> print (length ms) >> zipWithM_ printEventE' [0 ..] ms) "nos.lol" "443" do
-		waitFor $ request "foobar" flt
-		readingEventE flt `break` awaitNameEose "barbarbar"
+	run (\end ms -> do
+			print (length ms)
+			zipWithM_ printEventE' [0 ..] ms
+			atomically case ms of
+				[] -> writeTVar end True
+				_ -> pure ()
+			) "nos.lol" "443" do
+		(waitFor (request "foobar" flt) >>
+			readingEventE flt) `break` await EndReq (const ())
 --		untilEose "foobar" flt `break` awaitNameEose "foobar"
 		waitFor . adjust $ await HaltReq (const ())
 
@@ -331,57 +342,86 @@ handle'' ::
 handle'' cr co = Handle.retry
 	$ TC.handle (Just 0.5) cr co `Handle.merge` handleGetThreadId
 
-run :: (a -> IO ()) -> String -> String -> Sig s Events a r -> IO ()
+run :: (TVar Bool -> a -> IO ()) -> String -> String -> Sig s Events a r -> IO ()
 run pr raddr rprt s = do
+	end <- atomically $ newTVar False
 	cr <- atomically newTChan
 	co <- atomically newTChan
 	_ <- forkIO $ do
-		_ <- interpret (handleTChan cr co) pr s
+		_ <- interpret (handleTChan cr co) (pr end) s
 		pure ()
-	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co
+	forkIO $ doWhile do
+		threadDelay 1000000
+		e <- atomically $ readTVar end
+--		atomically . when e . writeTChan co . expand $ Singleton OccEnd
+		putStrLn $ "END CHECKER: " ++ show e
+		atomically . when e . writeTChan cr . OOM.expand $ OOM.Singleton EndReq
+		pure $ not e
+	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co end
 
 run' :: (a -> IO ()) -> String -> String -> Sig s EventsRnd a r -> IO ()
 run' pr raddr rprt s = do
+	end <- atomically $ newTVar False
 	cr <- atomically newTChan
 	co <- atomically newTChan
 	_ <- forkIO $ do
 		_ <- interpretSt (handle' cr co) pr s (mkStdGen 8)
 		pure ()
-	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co
+	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co end
 
 run'' :: (a -> IO ()) -> String -> String -> Sig s EventsThread a r -> IO ()
 run'' pr raddr rprt s = do
+	end <- atomically $ newTVar False
 	cr <- atomically newTChan
 	co <- atomically newTChan
 	_ <- forkIO $ do
 		_ <- interpret (handle'' cr co) pr s
 		pure ()
-	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co
+	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co end
 
 ws :: T.Text ->
-	TChan (EvReqs Events) -> TChan (EvOccs Events) -> Ws.ClientApp ()
-ws _pub cr co cnn = do
-	doWhile $ atomically (readTChan cr) >>= \r -> do
-		a <- case OOM.project r of
-			Nothing -> pure True
-			Just (ReqReq nm fltr) -> do
-				T.putStrLn nm
-				let	r1 = req nm fltr
-				Ws.sendTextData cnn r1
-				atomically . writeTChan co . expand $ Singleton OccReq
-				pure True
-		b <- case OOM.project r of
-			Nothing -> pure True
-			Just HaltReq -> do
-				atomically . writeTChan co . expand $ Singleton OccHalt
-				pure False
-		c <- case OOM.project r of
-			Nothing -> pure True
-			Just EventReq -> do
-				readPost co cnn
-				pure True
-		print $ a && b && c
-		pure $ a && b && c
+	TChan (EvReqs Events) -> TChan (EvOccs Events) ->
+	TVar Bool -> Ws.ClientApp ()
+ws _pub cr co end cnn = do
+	-- atomically . writeTChan co . expand $ Singleton OccEnd
+	doWhile $ do
+		putStrLn "before readTChan"
+		e <- atomically $ readTVar end
+		putStrLn $ "end = " ++ show e
+--		atomically . when e . writeTChan co . expand $ Singleton OccEnd
+		atomically (readTChan cr) >>= \r -> do
+			putStrLn "readTChan done"
+			a <- case OOM.project r of
+				Nothing -> pure True
+				Just (ReqReq nm fltr) -> do
+					T.putStrLn nm
+					let	r1 = req nm fltr
+					Ws.sendTextData cnn r1
+					atomically . writeTChan co . expand $ Singleton OccReq
+					pure True
+			b <- case OOM.project r of
+				Nothing -> pure True
+				Just HaltReq -> do
+					putStrLn "HALT"
+					atomically . writeTChan co . expand $ Singleton OccHalt
+					pure False
+			c <- case OOM.project r of
+				Nothing -> pure True
+				Just EventReq -> do
+					putStrLn "BEFORE READ POST"
+					readPost co cnn
+					pure True
+			case OOM.project r of
+				Nothing -> pure True
+				Just EndReq -> do
+					putStrLn "END REQ"
+					e <- atomically $ readTVar end
+					putStrLn $ "END VAR: " ++ show e
+--					atomically . writeTChan co . expand $ Singleton OccEnd
+					pure True
+			print $ a && b && c
+			pure $ a && b && c -- && (not e)
+	putStrLn "BYEBYE"
 	Ws.sendClose cnn ("Bye!" :: T.Text)
 
 readPost :: TChan (EvOccs Events) -> Ws.Connection -> IO ()
