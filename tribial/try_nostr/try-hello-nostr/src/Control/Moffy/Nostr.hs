@@ -17,6 +17,8 @@ import Control.Concurrent.STM
 import Control.Moffy
 import Control.Moffy.Handle qualified as Handle
 import Control.Moffy.Run
+import Control.Moffy.Event.ThreadId
+import Control.Moffy.Handle.ThreadId
 import Control.Moffy.Samples.Event.Random qualified as Rnd
 import Control.Moffy.Samples.Handle.TChan qualified as TC
 import Control.Moffy.Samples.Handle.Random qualified as Rnd
@@ -64,6 +66,8 @@ instance Request Halt where
 
 type Events = Req :- Event :- Eose :- Halt :- 'Nil
 
+type EventsThread = Events :+: (GetThreadId :- 'Nil)
+
 type EventsRnd = Req :- Event :- Eose :- Halt :- Rnd.RandomEv
 
 sample :: IO ()
@@ -110,9 +114,18 @@ sampleFilter2 flt1 flt2 = run print2Req "nos.lol" "443" do
 sampleId :: FilePath -> IO ()
 sampleId fp = do
 	Just flt <- filterP <$> T.readFile fp
-	run (printEventE `mapM_`) "nos.lol" "443" do
+	run (\ms -> print (length ms) >> zipWithM_ printEventE' [0 ..] ms) "nos.lol" "443" do
 		waitFor $ request "foobar" flt
 		readingEventE flt `break` awaitNameEose "barbarbar"
+--		untilEose "foobar" flt `break` awaitNameEose "foobar"
+		waitFor . adjust $ await HaltReq (const ())
+
+sampleIdT :: FilePath -> IO ()
+sampleIdT fp = do
+	Just flt <- filterP <$> T.readFile fp
+	run'' (printEventE `mapM_`) "nos.lol" "443" do
+		waitFor . adjust $ request "foobar" flt
+		readingEventET flt -- `break` adjust (awaitNameEose "barbarbar")
 --		untilEose "foobar" flt `break` awaitNameEose "foobar"
 		waitFor . adjust $ await HaltReq (const ())
 
@@ -145,6 +158,16 @@ printEventE (ev, mev) = do
 		Nothing -> pure ()
 		Just ev' -> printEvent ev'
 
+printEventE' :: Int -> (Event.E, Maybe Event.E) -> IO ()
+printEventE' n (ev, mev) = do
+	putStrLn $ "*** " ++ show n ++ "***"
+	print ev
+	T.putStrLn $ Event.content ev
+	print $ lookupE ev
+	case mev of
+		Nothing -> putStrLn "NO ROOT MESSAGE"
+		Just ev' -> printEvent ev'
+
 lookupE :: Event.E -> Maybe T.Text
 lookupE = (fst <$>) . lookup "e" . Event.tags
 
@@ -168,7 +191,12 @@ untilEose nm flt = do
 
 readingEventE :: Filter.Filter -> Sig s Events [(Event.E, Maybe Event.E)] ()
 readingEventE flt = do
-	void . parList . spawn $ emit =<< (waitFor $ awaitNameEventE "foobar")
+--	void . parList . spawn $ emit =<< (waitFor $ awaitNameEventE "foobar")
+	void . parList . spawn $ awaitNameEventESig "foobar"
+
+readingEventET :: Filter.Filter -> Sig s EventsThread [(Event.E, Maybe Event.E)] ()
+readingEventET flt = do
+	void . parList . spawn $ emit =<< (waitFor $ awaitNameEventET "foobar")
 
 readingEventE' :: Filter.Filter -> Sig s EventsRnd [(Event.E, Maybe Event.E)] ()
 readingEventE' flt = do
@@ -191,8 +219,32 @@ awaitNameEventE nm0 = do
 	case lookupE ev of
 		Nothing -> pure (ev, Nothing)
 		Just e -> do
-			request "barbarbar" (filterId e)
-			ev' <- awaitNameEvent "barbarbar"
+			let	nm = "bar" <> e
+			request nm (filterId e)
+			ev' <- awaitNameEvent nm
+			pure (ev, Just ev')
+
+awaitNameEventESig :: T.Text -> Sig s Events (Event.E, Maybe Event.E) ()
+awaitNameEventESig nm0 = do
+	ev <- waitFor $ awaitNameEvent nm0
+	case lookupE ev of
+		Nothing -> emit (ev, Nothing)
+		Just e -> do
+			let	nm = "bar" <> e
+			waitFor $ request nm (filterId e)
+			emit (ev, Nothing)
+			ev' <- waitFor $ awaitNameEvent nm
+			emit (ev, Just ev')
+
+awaitNameEventET :: T.Text -> React s EventsThread (Event.E, Maybe Event.E)
+awaitNameEventET nm0 = do
+	ev <- adjust $ awaitNameEvent nm0
+	case lookupE ev of
+		Nothing -> pure (ev, Nothing)
+		Just e -> do
+			nm <- threadedName
+			adjust $ request nm (filterId e)
+			ev' <- adjust $ awaitNameEvent nm
 			pure (ev, Just ev')
 
 awaitNameEventE' :: T.Text -> React s EventsRnd (Event.E, Maybe Event.E)
@@ -228,6 +280,11 @@ randomName' :: React s EventsRnd T.Text
 randomName' = do
 	n <- adjust Rnd.getRandom
 	pure . T.pack $ "barbarbar" ++ show @Word64 n
+
+threadedName :: React s EventsThread T.Text
+threadedName = do
+	n <- adjust getThreadId
+	pure . T.pack $ "barbarbar" ++ show n
 
 awaitEose :: React s Events T.Text
 awaitEose = adjust $ await EoseReq \(OccEose nm) -> nm
@@ -269,6 +326,11 @@ handle' ::
 handle' cr co = Handle.retrySt
 	$ Handle.liftHandle' (TC.handle (Just 0.5) cr co) `Handle.mergeSt` Rnd.handleRandom
 
+handle'' ::
+	TChan (EvReqs Events) -> TChan (EvOccs Events) -> Handle IO EventsThread
+handle'' cr co = Handle.retry
+	$ TC.handle (Just 0.5) cr co `Handle.merge` handleGetThreadId
+
 run :: (a -> IO ()) -> String -> String -> Sig s Events a r -> IO ()
 run pr raddr rprt s = do
 	cr <- atomically newTChan
@@ -284,6 +346,15 @@ run' pr raddr rprt s = do
 	co <- atomically newTChan
 	_ <- forkIO $ do
 		_ <- interpretSt (handle' cr co) pr s (mkStdGen 8)
+		pure ()
+	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co
+
+run'' :: (a -> IO ()) -> String -> String -> Sig s EventsThread a r -> IO ()
+run'' pr raddr rprt s = do
+	cr <- atomically newTChan
+	co <- atomically newTChan
+	_ <- forkIO $ do
+		_ <- interpret (handle'' cr co) pr s
 		pure ()
 	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co
 
