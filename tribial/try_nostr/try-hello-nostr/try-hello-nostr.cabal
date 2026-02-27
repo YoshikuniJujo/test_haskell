@@ -43,6 +43,7 @@ library
     , containers
     , moffy
     , ppad-secp256k1
+    , random
     , stm
     , text
     , try-nostr-event-ng
@@ -67,6 +68,7 @@ executable medama-muter
     , containers
     , moffy
     , ppad-secp256k1
+    , random
     , stm
     , text
     , try-hello-nostr
@@ -92,6 +94,7 @@ executable post
     , containers
     , moffy
     , ppad-secp256k1
+    , random
     , stm
     , text
     , try-hello-nostr
@@ -121,6 +124,7 @@ executable try-hello-nostr-exe
     , containers
     , moffy
     , ppad-secp256k1
+    , random
     , stm
     , text
     , try-hello-nostr
@@ -151,6 +155,7 @@ test-suite try-hello-nostr-test
     , containers
     , moffy
     , ppad-secp256k1
+    , random
     , stm
     , text
     , try-hello-nostr

@@ -1,6 +1,7 @@
 {-# LANGUAGE PackageImports, ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -21,10 +22,12 @@ import Data.OneOrMore qualified as OOM
 import Data.OneOrMoreApp
 import Data.Vector qualified as V
 import Data.Bool
+import Data.Word
 import Data.ByteString.Lazy.Char8 qualified as LBSC
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Data.Aeson qualified as A
+import System.Random
 import Nostr.Event qualified as Event
 import Nostr.Event.Json qualified as EvJsn
 import Nostr.Filter qualified as Filter
@@ -91,7 +94,7 @@ sampleFilter2 flt1 flt2 = run print2Req "nos.lol" "443" do
 sampleId :: FilePath -> IO ()
 sampleId fp = do
 	Just flt <- filterP <$> T.readFile fp
-	run printEventE "nos.lol" "443" do
+	run (printEventE `mapM_`) "nos.lol" "443" do
 		waitFor $ request "foobar" flt
 		readingEventE flt `break` awaitNameEose "barbarbar"
 --		untilEose "foobar" flt `break` awaitNameEose "foobar"
@@ -138,9 +141,9 @@ untilEose nm flt = do
 --	waitFor $ request nm flt
 	void $ (forever $ emit =<< (waitFor $ awaitNameEvent nm)) -- `break` awaitNameEose nm
 
-readingEventE :: Filter.Filter -> Sig s Events (Event.E, Maybe Event.E) ()
+readingEventE :: Filter.Filter -> Sig s Events [(Event.E, Maybe Event.E)] ()
 readingEventE flt = do
-	void . forever $ emit =<< (waitFor $ awaitNameEventE "foobar")
+	void . parList . spawn $ emit =<< (waitFor $ awaitNameEventE "foobar")
 
 request :: T.Text -> Filter.Filter -> React s Events ()
 request nm flt = adjust $ await (ReqReq nm flt) (const ())
@@ -162,6 +165,24 @@ awaitNameEventE nm0 = do
 			request "barbarbar" (filterId e)
 			ev' <- awaitNameEvent "barbarbar"
 			pure (ev, Just ev')
+
+{-
+nameEventE :: T.Text -> Sig s Events [(Event.E, Maybe Event.E)] ()
+nameEventE nm0 = do
+	ev <- awaitNameEvent nm0
+	case lookupE ev of
+		Nothing -> do
+			emit (ev, Nothing)
+			nameEventE nm0
+		Just e -> do
+			nm <- randomName
+			request nm (filterId e)
+			-}
+
+randomName :: IO T.Text
+randomName = do
+	n <- randomIO
+	pure . T.pack $ "barbarbar" ++ show @Word64 n
 
 awaitEose :: React s Events T.Text
 awaitEose = adjust $ await EoseReq \(OccEose nm) -> nm
