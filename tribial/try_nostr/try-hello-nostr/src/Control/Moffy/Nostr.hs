@@ -33,6 +33,7 @@ import Data.ByteString.Lazy.Char8 qualified as LBSC
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Data.Aeson qualified as A
+import System.Timeout
 import System.Random
 import Nostr.Event qualified as Event
 import Nostr.Event.Json qualified as EvJsn
@@ -126,8 +127,8 @@ sampleId fp = do
 				[] -> writeTVar end True
 				_ -> pure ()
 			) "nos.lol" "443" do
-		(waitFor (request "foobar" flt) >>
-			readingEventE flt) `break` await EndReq (const ())
+		waitFor (request "foobar" flt)
+		readingEventE flt `break` await EndReq (const ())
 --		untilEose "foobar" flt `break` awaitNameEose "foobar"
 		waitFor . adjust $ await HaltReq (const ())
 
@@ -355,7 +356,7 @@ run pr raddr rprt s = do
 		e <- atomically $ readTVar end
 --		atomically . when e . writeTChan co . expand $ Singleton OccEnd
 		putStrLn $ "END CHECKER: " ++ show e
-		atomically . when e . writeTChan cr . OOM.expand $ OOM.Singleton EndReq
+--		atomically . when e . writeTChan cr . OOM.expand $ OOM.Singleton EndReq
 		pure $ not e
 	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co end
 
@@ -409,7 +410,7 @@ ws _pub cr co end cnn = do
 				Nothing -> pure True
 				Just EventReq -> do
 					putStrLn "BEFORE READ POST"
-					readPost co cnn
+					timeout 1000000 $ readPost co cnn
 					pure True
 			case OOM.project r of
 				Nothing -> pure True
@@ -417,10 +418,11 @@ ws _pub cr co end cnn = do
 					putStrLn "END REQ"
 					e <- atomically $ readTVar end
 					putStrLn $ "END VAR: " ++ show e
---					atomically . writeTChan co . expand $ Singleton OccEnd
+					atomically . when e . writeTChan co . expand $ Singleton OccEnd
 					pure True
 			print $ a && b && c
-			pure $ a && b && c -- && (not e)
+--			pure $ a && b && c && (not e)
+			pure $ a && b && c
 	putStrLn "BYEBYE"
 	Ws.sendClose cnn ("Bye!" :: T.Text)
 
