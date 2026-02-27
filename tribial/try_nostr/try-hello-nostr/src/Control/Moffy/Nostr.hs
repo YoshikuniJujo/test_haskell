@@ -33,6 +33,7 @@ import Wuss qualified as Ws
 import Network.WebSockets qualified as Ws
 
 import Tools
+import TryBech32
 
 data Req = ReqReq T.Text Filter.Filter deriving (Show, Eq, Ord)
 numbered [t| Req |]
@@ -74,7 +75,8 @@ sampleFilter flt = run print "nos.lol" "443" $ do
 
 sampleFilter' :: Filter.Filter -> IO ()
 sampleFilter' flt = run printEvent "nos.lol" "443" do
-	untilEose "foobar" flt
+	waitFor $ request "foobar" flt
+	untilEose "foobar" flt `break` awaitNameEose "foobar"
 	waitFor . adjust $ await HaltReq (const ())
 
 sampleFilter2 :: Filter.Filter -> Filter.Filter -> IO ()
@@ -86,10 +88,45 @@ sampleFilter2 flt1 flt2 = run print2Req "nos.lol" "443" do
 		`break` ((\_ _ -> ()) <$> awaitNameEose "foobar" <*> awaitNameEose "hogepiyo")
 	waitFor . adjust $ await HaltReq (const ())
 
+sampleId :: FilePath -> IO ()
+sampleId fp = do
+	Just flt <- filterP <$> T.readFile fp
+	run printEventE "nos.lol" "443" do
+		waitFor $ request "foobar" flt
+		readingEventE flt `break` awaitNameEose "barbarbar"
+--		untilEose "foobar" flt `break` awaitNameEose "foobar"
+		waitFor . adjust $ await HaltReq (const ())
+
 printEvent :: Event.E -> IO ()
 printEvent ev = do
 	print ev
 	T.putStrLn $ Event.content ev
+
+printEvent' :: Event.E -> IO ()
+printEvent' ev = do
+	print ev
+	T.putStrLn $ Event.content ev
+	print $ lookupE ev
+
+printEventE :: (Event.E, Maybe Event.E) -> IO ()
+printEventE (ev, mev) = do
+	print ev
+	T.putStrLn $ Event.content ev
+	print $ lookupE ev
+	case mev of
+		Nothing -> pure ()
+		Just ev' -> printEvent ev'
+
+lookupE :: Event.E -> Maybe T.Text
+lookupE = (fst <$>) . lookup "e" . Event.tags
+
+filterId :: T.Text -> Filter.Filter
+filterId a = Filter.Filter {
+	Filter.ids = Just [fromHex a],
+	Filter.authors = Nothing, Filter.kinds = Just [1],
+	Filter.tags = [],
+	Filter.since = Nothing, Filter.until = Nothing,
+	Filter.limit = Just 1 }
 
 print2Req :: ([Event.E], [Event.E]) -> IO ()
 print2Req (evs1, evs2) = do
@@ -101,6 +138,10 @@ untilEose nm flt = do
 --	waitFor $ request nm flt
 	void $ (forever $ emit =<< (waitFor $ awaitNameEvent nm)) -- `break` awaitNameEose nm
 
+readingEventE :: Filter.Filter -> Sig s Events (Event.E, Maybe Event.E) ()
+readingEventE flt = do
+	void . forever $ emit =<< (waitFor $ awaitNameEventE "foobar")
+
 request :: T.Text -> Filter.Filter -> React s Events ()
 request nm flt = adjust $ await (ReqReq nm flt) (const ())
 
@@ -111,6 +152,16 @@ awaitNameEvent :: T.Text -> React s Events Event.E
 awaitNameEvent nm0 = do
 	(nm, ev) <- awaitEvent
 	if nm == nm0 then pure ev else awaitNameEvent nm0
+
+awaitNameEventE :: T.Text -> React s Events (Event.E, Maybe Event.E)
+awaitNameEventE nm0 = do
+	ev <- awaitNameEvent nm0
+	case lookupE ev of
+		Nothing -> pure (ev, Nothing)
+		Just e -> do
+			request "barbarbar" (filterId e)
+			ev' <- awaitNameEvent "barbarbar"
+			pure (ev, Just ev')
 
 awaitEose :: React s Events T.Text
 awaitEose = adjust $ await EoseReq \(OccEose nm) -> nm
@@ -125,6 +176,16 @@ filterAuthor pb = do
 		Filter.ids = Nothing,
 		Filter.authors = Just [pk], Filter.kinds = Just [1],
 		Filter.tags = [],
+		Filter.since = Nothing, Filter.until = Nothing,
+		Filter.limit = Just 5 }
+
+filterP :: T.Text -> Maybe Filter.Filter
+filterP a = do
+	pub <- toHex <$> dataPart' "npub" (chomp a)
+	pure Filter.Filter {
+		Filter.ids = Nothing,
+		Filter.authors = Nothing, Filter.kinds = Just [1],
+		Filter.tags = [('p', [pub])],
 		Filter.since = Nothing, Filter.until = Nothing,
 		Filter.limit = Just 5 }
 
