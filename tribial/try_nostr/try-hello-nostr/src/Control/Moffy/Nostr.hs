@@ -15,6 +15,7 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Moffy
 import Control.Moffy.Run
+import Data.Type.Flip
 import Data.Type.Set
 import Data.OneOrMore qualified as OOM
 import Data.OneOrMoreApp
@@ -72,7 +73,17 @@ sampleFilter flt = run print "nos.lol" "443" $ do
 	waitFor . adjust $ await HaltReq id
 
 sampleFilter' :: Filter.Filter -> IO ()
-sampleFilter' flt = run printEvent "nos.lol" "443" $ untilEose "foobar" flt
+sampleFilter' flt = run printEvent "nos.lol" "443" do
+	untilEose "foobar" flt
+	waitFor . adjust $ await HaltReq (const ())
+
+sampleFilter2 :: Filter.Filter -> Filter.Filter -> IO ()
+sampleFilter2 flt1 flt2 = run print "nos.lol" "443" do
+	waitFor $ request "foobar" flt1
+	waitFor $ request "hogepiyo" flt2
+	((,) <$%> untilEose "foobar" flt1 <*%> untilEose "hogepiyo" flt2)
+		`break` ((\_ _ -> ()) <$> awaitNameEose "foobar" <*> awaitNameEose "hogepiyo")
+	waitFor . adjust $ await HaltReq (const ())
 
 printEvent :: Event.E -> IO ()
 printEvent ev = do
@@ -81,9 +92,8 @@ printEvent ev = do
 
 untilEose :: T.Text -> Filter.Filter -> Sig s Events Event.E ()
 untilEose nm flt = do
-	waitFor $ request nm flt
-	void $ (forever $ emit =<< (waitFor $ awaitNameEvent nm)) `break` awaitNameEose nm
-	waitFor . adjust $ await HaltReq (const ())
+--	waitFor $ request nm flt
+	void $ (forever $ emit =<< (waitFor $ awaitNameEvent nm)) -- `break` awaitNameEose nm
 
 request :: T.Text -> Filter.Filter -> React s Events ()
 request nm flt = adjust $ await (ReqReq nm flt) (const ())
@@ -133,6 +143,7 @@ ws _pub cr co cnn = do
 		a <- case OOM.project r of
 			Nothing -> pure True
 			Just (ReqReq nm fltr) -> do
+				T.putStrLn nm
 				let	r1 = req nm fltr
 				Ws.sendTextData cnn r1
 				atomically . writeTChan co . expand $ Singleton OccReq
@@ -153,7 +164,7 @@ ws _pub cr co cnn = do
 
 readPost :: TChan (EvOccs Events) -> Ws.Connection -> IO ()
 readPost co cnn = Ws.receiveData cnn >>= \rdt -> do
---	LBSC.putStrLn rdt
+	LBSC.putStrLn rdt
 	case A.decode rdt of
 		Just (A.Array (V.toList -> [
 				A.String "EOSE",
