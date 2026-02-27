@@ -15,7 +15,11 @@ import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Moffy
+import Control.Moffy.Handle qualified as Handle
 import Control.Moffy.Run
+import Control.Moffy.Samples.Event.Random qualified as Rnd
+import Control.Moffy.Samples.Handle.TChan qualified as TC
+import Control.Moffy.Samples.Handle.Random qualified as Rnd
 import Data.Type.Flip
 import Data.Type.Set
 import Data.OneOrMore qualified as OOM
@@ -60,8 +64,20 @@ instance Request Halt where
 
 type Events = Req :- Event :- Eose :- Halt :- 'Nil
 
+type EventsRnd = Req :- Event :- Eose :- Halt :- Rnd.RandomEv
+
 sample :: IO ()
 sample = run print "nos.lol" "443" $ do
+	_ <- waitFor . adjust $ await (ReqReq "foobar" Filter.Filter {
+		Filter.ids = Nothing, Filter.authors = Nothing,
+		Filter.kinds = Just [1], Filter.tags = [],
+		Filter.since = Nothing, Filter.until = Nothing,
+		Filter.limit = Just 5 }) id
+	emit =<< waitFor (adjust $ await EventReq \(OccEvent _nm ev) -> ev)
+	waitFor . adjust $ await HaltReq id
+
+sample' :: IO ()
+sample' = run' print "nos.lol" "443" $ do
 	_ <- waitFor . adjust $ await (ReqReq "foobar" Filter.Filter {
 		Filter.ids = Nothing, Filter.authors = Nothing,
 		Filter.kinds = Just [1], Filter.tags = [],
@@ -97,6 +113,15 @@ sampleId fp = do
 	run (printEventE `mapM_`) "nos.lol" "443" do
 		waitFor $ request "foobar" flt
 		readingEventE flt `break` awaitNameEose "barbarbar"
+--		untilEose "foobar" flt `break` awaitNameEose "foobar"
+		waitFor . adjust $ await HaltReq (const ())
+
+sampleId' :: FilePath -> IO ()
+sampleId' fp = do
+	Just flt <- filterP <$> T.readFile fp
+	run' (printEventE `mapM_`) "nos.lol" "443" do
+		waitFor . adjust $ request "foobar" flt
+		readingEventE' flt -- `break` awaitNameEose' "barbarbar"
 --		untilEose "foobar" flt `break` awaitNameEose "foobar"
 		waitFor . adjust $ await HaltReq (const ())
 
@@ -145,6 +170,10 @@ readingEventE :: Filter.Filter -> Sig s Events [(Event.E, Maybe Event.E)] ()
 readingEventE flt = do
 	void . parList . spawn $ emit =<< (waitFor $ awaitNameEventE "foobar")
 
+readingEventE' :: Filter.Filter -> Sig s EventsRnd [(Event.E, Maybe Event.E)] ()
+readingEventE' flt = do
+	void . parList . spawn $ emit =<< (waitFor $ awaitNameEventE' "foobar")
+
 request :: T.Text -> Filter.Filter -> React s Events ()
 request nm flt = adjust $ await (ReqReq nm flt) (const ())
 
@@ -166,6 +195,17 @@ awaitNameEventE nm0 = do
 			ev' <- awaitNameEvent "barbarbar"
 			pure (ev, Just ev')
 
+awaitNameEventE' :: T.Text -> React s EventsRnd (Event.E, Maybe Event.E)
+awaitNameEventE' nm0 = do
+	ev <- adjust $ awaitNameEvent nm0
+	case lookupE ev of
+		Nothing -> pure (ev, Nothing)
+		Just e -> do
+			nm <- randomName'
+			adjust $ request nm (filterId e)
+			ev' <- adjust $ awaitNameEvent nm
+			pure (ev, Just ev')
+
 {-
 nameEventE :: T.Text -> Sig s Events [(Event.E, Maybe Event.E)] ()
 nameEventE nm0 = do
@@ -184,11 +224,19 @@ randomName = do
 	n <- randomIO
 	pure . T.pack $ "barbarbar" ++ show @Word64 n
 
+randomName' :: React s EventsRnd T.Text
+randomName' = do
+	n <- adjust Rnd.getRandom
+	pure . T.pack $ "barbarbar" ++ show @Word64 n
+
 awaitEose :: React s Events T.Text
 awaitEose = adjust $ await EoseReq \(OccEose nm) -> nm
 
 awaitNameEose :: T.Text -> React s Events ()
 awaitNameEose nm0 = bool (awaitNameEose nm0) (pure ()) . (== nm0) =<< awaitEose
+
+awaitNameEose' :: T.Text -> React s EventsRnd ()
+awaitNameEose' nm0 = bool (awaitNameEose' nm0) (pure ()) . (== nm0) =<< adjust awaitEose
 
 filterAuthor :: T.Text -> Either String Filter.Filter
 filterAuthor pb = do
@@ -215,12 +263,27 @@ handleTChan cr co rq = do
 	atomically $ writeTChan cr rq
 	atomically $ readTChan co
 
+handle' ::
+	Rnd.RandomState st =>
+	TChan (EvReqs Events) -> TChan (EvOccs Events) -> HandleSt st IO EventsRnd
+handle' cr co = Handle.retrySt
+	$ Handle.liftHandle' (TC.handle (Just 0.5) cr co) `Handle.mergeSt` Rnd.handleRandom
+
 run :: (a -> IO ()) -> String -> String -> Sig s Events a r -> IO ()
 run pr raddr rprt s = do
 	cr <- atomically newTChan
 	co <- atomically newTChan
 	_ <- forkIO $ do
 		_ <- interpret (handleTChan cr co) pr s
+		pure ()
+	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co
+
+run' :: (a -> IO ()) -> String -> String -> Sig s EventsRnd a r -> IO ()
+run' pr raddr rprt s = do
+	cr <- atomically newTChan
+	co <- atomically newTChan
+	_ <- forkIO $ do
+		_ <- interpretSt (handle' cr co) pr s (mkStdGen 8)
 		pure ()
 	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co
 

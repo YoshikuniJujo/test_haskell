@@ -42,6 +42,7 @@ library
     , bytestring
     , containers
     , moffy
+    , moffy-samples-events
     , ppad-secp256k1
     , random
     , stm
@@ -67,6 +68,7 @@ executable medama-muter
     , bytestring
     , containers
     , moffy
+    , moffy-samples-events
     , ppad-secp256k1
     , random
     , stm
@@ -93,6 +95,7 @@ executable post
     , bytestring
     , containers
     , moffy
+    , moffy-samples-events
     , ppad-secp256k1
     , random
     , stm
@@ -123,6 +126,7 @@ executable try-hello-nostr-exe
     , bytestring
     , containers
     , moffy
+    , moffy-samples-events
     , ppad-secp256k1
     , random
     , stm
@@ -154,6 +158,7 @@ test-suite try-hello-nostr-test
     , bytestring
     , containers
     , moffy
+    , moffy-samples-events
     , ppad-secp256k1
     , random
     , stm
