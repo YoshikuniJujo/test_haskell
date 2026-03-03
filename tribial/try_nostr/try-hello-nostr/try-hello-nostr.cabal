@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       Control.Moffy.Nostr
+      Control.Moffy.Nostr.Event
+      Control.Moffy.Nostr2
       Tools
       TryBech32
   other-modules:

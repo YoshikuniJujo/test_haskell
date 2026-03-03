@@ -124,7 +124,7 @@ sampleId fp = do
 			print (length ms)
 			zipWithM_ printEventE' [0 ..] ms
 			atomically case ms of
-				[] -> writeTVar end True
+				[] -> pure () -- writeTVar end True
 				_ -> pure ()
 			) "nos.lol" "443" do
 		waitFor (request "foobar" flt)
@@ -351,6 +351,7 @@ run pr raddr rprt s = do
 	_ <- forkIO $ do
 		_ <- interpret (handleTChan cr co) (pr end) s
 		pure ()
+		{-
 	forkIO $ doWhile do
 		threadDelay 1000000
 		e <- atomically $ readTVar end
@@ -358,6 +359,7 @@ run pr raddr rprt s = do
 		putStrLn $ "END CHECKER: " ++ show e
 --		atomically . when e . writeTChan cr . OOM.expand $ OOM.Singleton EndReq
 		pure $ not e
+		-}
 	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co end
 
 run' :: (a -> IO ()) -> String -> String -> Sig s EventsRnd a r -> IO ()
