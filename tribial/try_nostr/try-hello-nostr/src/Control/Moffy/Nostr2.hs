@@ -1,6 +1,6 @@
 {-# LANGUAGE PackageImports, ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
@@ -16,6 +16,7 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Moffy
 import Control.Moffy.Run
+import Control.Moffy.Nostr.Event
 import Data.OneOrMore qualified as OOM
 import Data.OneOrMoreApp
 import Data.Vector qualified as V
@@ -24,69 +25,50 @@ import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Data.Aeson qualified as A
 import System.Timeout
+import Network.WebSockets qualified as Ws
+import Wuss qualified as Ws
 import Nostr.Event qualified as Event
 import Nostr.Event.Json qualified as EvJsn
 import Nostr.Filter qualified as Filter
 import Nostr.Filter.Json qualified as FlJsn
-import Wuss qualified as Ws
-import Network.WebSockets qualified as Ws
-
 import Tools
 import TryBech32
-
-import Control.Moffy.Nostr.Event
 
 sampleId2 :: FilePath -> IO ()
 sampleId2 fp = do
 	Just flt <- filterP <$> T.readFile fp
-	run (\end ms -> do
-			print (length ms)
-			zipWithM_ printEvPair [0 ..] ms
-			atomically case ms of
-				[] -> do
-					e <- readTVar end
-					case e of
-						Before -> writeTVar end Now
-						Now -> writeTVar end End
-						_ -> pure ()
-				_ -> pure ()
-			) "nos.lol" "443" do
-		waitFor (request "foobar" flt)
-		_ <- readingEventE `break` await EndReq (const ())
-		waitFor . adjust $ await HaltReq (const ())
+	run display "nos.lol" "443" do
+		waitFor $ request "req-p" flt
+		void $ parList (spawn evPair) `break` end
+		waitFor halt
 	where
-	printEvPair :: Int -> (Event.E, Maybe Event.E) -> IO ()
-	printEvPair n (ev, mev) = do
-		putStrLn $ "*** " ++ show n ++ "***"
+	display e ms = prp `mapM_` ms >> atomically case ms of
+		[] -> readTVar e >>= \case Now -> writeTVar e End; _ -> pure ()
+		_ -> readTVar e >>= \case Pre -> writeTVar e Now; _ -> pure ()
+	prp (ev, mev) = do
 		print ev
 		T.putStrLn $ Event.content ev
 		print $ lookupE ev
 		case mev of
 			Nothing -> putStrLn "NO ROOT MESSAGE"
 			Just ev' -> print ev' >> T.putStrLn (Event.content ev')
-	readingEventE :: Sig s Events [(Event.E, Maybe Event.E)] ()
-	readingEventE = void . parList . spawn $ awaitNameEventESig "foobar"
-	awaitNameEventESig :: T.Text -> Sig s Events (Event.E, Maybe Event.E) ()
-	awaitNameEventESig nm0 = do
-		ev <- waitFor $ awaitNameEvent nm0
-		case lookupE ev of
-			Nothing -> emit (ev, Nothing)
-			Just e -> do
-				let	nm = "bar" <> e
-				waitFor $ request nm (filterId e)
-				emit (ev, Nothing)
-				ev' <- waitFor $ awaitNameEvent nm
-				emit (ev, Just ev')
+	evPair = waitFor (awaitNameEvent "req-p") >>= \ev -> case lookupE ev of
+		Nothing -> emit (ev, Nothing)
+		Just e -> do
+			emit (ev, Nothing)
+			waitFor $ request nm (filterId e)
+			emit . (ev ,) . Just =<< waitFor (awaitNameEvent nm)
+			where nm = "id-" <> e
 
-run :: (TVar BeforeNowEnd -> a -> IO ()) -> String -> String -> Sig s Events a r -> IO ()
+run :: (TVar PreNowEnd -> a -> IO ()) -> String -> String -> Sig s Events a r -> IO ()
 run pr raddr rprt s = do
-	end <- atomically $ newTVar Before
+	vend <- atomically $ newTVar Pre
 	cr <- atomically newTChan
 	co <- atomically newTChan
 	_ <- forkIO $ do
-		_ <- interpret (handleTChan cr co) (pr end) s
+		_ <- interpret (handleTChan cr co) (pr vend) s
 		pure ()
-	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co end
+	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co vend
 	where
 	handleTChan :: TChan (EvReqs es) -> TChan (EvOccs es) -> Handle IO es
 	handleTChan cr co rq = do
@@ -95,44 +77,35 @@ run pr raddr rprt s = do
 
 ws :: T.Text ->
 	TChan (EvReqs Events) -> TChan (EvOccs Events) ->
-	TVar BeforeNowEnd -> Ws.ClientApp ()
-ws _pub cr co end cnn = do
-	doWhile $ do
-		putStrLn "before readTChan"
-		e <- atomically $ readTVar end
-		putStrLn $ "end = " ++ show e
-		atomically (readTChan cr) >>= \r -> do
-			putStrLn "readTChan done"
-			a <- case OOM.project r of
-				Nothing -> pure True
-				Just (ReqReq nm fltr) -> do
-					T.putStrLn nm
-					let	r1 = req nm fltr
-					Ws.sendTextData cnn r1
-					atomically . writeTChan co . expand $ Singleton OccReq
-					pure True
-			b <- case OOM.project r of
-				Nothing -> pure True
-				Just HaltReq -> do
-					putStrLn "HALT"
-					atomically . writeTChan co . expand $ Singleton OccHalt
-					pure False
-			c <- case OOM.project r of
-				Nothing -> pure True
-				Just EventReq -> do
-					putStrLn "BEFORE READ POST"
-					_ <- timeout 1000000 $ readPost co cnn
-					pure True
-			_ <- case OOM.project r of
-				Nothing -> pure True
-				Just EndReq -> do
-					putStrLn "END REQ"
-					e' <- atomically $ readTVar end
-					putStrLn $ "END VAR: " ++ show e
-					atomically . when (e' == End) . writeTChan co . expand $ Singleton OccEnd
-					pure True
-			print $ a && b && c
-			pure $ a && b && c
+	TVar PreNowEnd -> Ws.ClientApp ()
+ws _pub cr co vend cnn = do
+	doWhile $ atomically (readTChan cr) >>= \r -> do
+		a <- case OOM.project r of
+			Nothing -> pure True
+			Just (ReqReq nm fltr) -> do
+				T.putStrLn nm
+				let	r1 = req nm fltr
+				Ws.sendTextData cnn r1
+				atomically . writeTChan co . expand $ Singleton OccReq
+				pure True
+		b <- case OOM.project r of
+			Nothing -> pure True
+			Just HaltReq -> do
+				putStrLn "HALT"
+				atomically . writeTChan co . expand $ Singleton OccHalt
+				pure False
+		c <- case OOM.project r of
+			Nothing -> pure True
+			Just EventReq -> do
+				_ <- timeout 1000000 $ readPost co cnn
+				pure True
+		_ <- case OOM.project r of
+			Nothing -> pure True
+			Just EndReq -> do
+				e' <- atomically $ readTVar vend
+				atomically . when (e' == End) . writeTChan co . expand $ Singleton OccEnd
+				pure True
+		pure $ a && b && c
 	putStrLn "BYEBYE"
 	Ws.sendClose cnn ("Bye!" :: T.Text)
 	where
@@ -156,7 +129,7 @@ readPost co cnn = Ws.receiveData cnn >>= \rdt -> do
 				. Singleton $ OccEvent nm ev
 		Just _ -> pure (); Nothing -> error "bad"
 
-data BeforeNowEnd = Before | Now | End deriving (Show, Eq)
+data PreNowEnd = Pre | Now | End deriving (Show, Eq)
 
 lookupE :: Event.E -> Maybe T.Text
 lookupE = (fst <$>) . lookup "e" . Event.tags

@@ -54,3 +54,9 @@ awaitNameEvent :: T.Text -> React s Events Event.E
 awaitNameEvent nm0 = do
 	(nm, ev) <- awaitEvent
 	if nm == nm0 then pure ev else awaitNameEvent nm0
+
+end :: React s (Singleton End) ()
+end = await EndReq $ const ()
+
+halt :: React s Events ()
+halt = adjust . await HaltReq $ const ()
