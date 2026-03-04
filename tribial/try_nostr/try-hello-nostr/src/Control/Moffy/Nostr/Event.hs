@@ -13,6 +13,7 @@ module Control.Moffy.Nostr.Event where
 import Prelude hiding (break, scanl)
 import Control.Moffy
 import Data.Type.Set
+import Data.Bool
 import Data.Text qualified as T
 import Nostr.Event qualified as Event
 import Nostr.Filter qualified as Filter
@@ -60,3 +61,9 @@ end = await EndReq $ const ()
 
 halt :: React s Events ()
 halt = adjust . await HaltReq $ const ()
+
+awaitEose :: React s Events T.Text
+awaitEose = adjust $ await EoseReq \(OccEose nm) -> nm
+
+awaitNameEose :: T.Text -> React s Events ()
+awaitNameEose nm0 = bool (awaitNameEose nm0) (pure ()) . (== nm0) =<< awaitEose
