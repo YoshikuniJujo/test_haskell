@@ -13,7 +13,7 @@ module Control.Moffy.Nostr (
 	sample1,
 	sampleFilter1, sampleFilterUntilEose, sampleFilterPair,
 
-	authorFilter
+	authorFilter, kindFilter
 
 	) where
 
@@ -29,11 +29,8 @@ import Nostr.Event qualified as Event
 import Nostr.Filter qualified as Filter
 
 sample1 :: IO ()
-sample1 = sampleFilter1 Filter.Filter {
-	Filter.ids = Nothing, Filter.authors = Nothing,
-	Filter.kinds = Just [1], Filter.tags = [],
-	Filter.since = Nothing, Filter.until = Nothing,
-	Filter.limit = Just 5 }
+sample1 = sampleFilter1
+	nullFilter { Filter.kinds = Just [1], Filter.limit = Just 5 }
 
 sampleFilter1 :: Filter.Filter -> IO ()
 sampleFilter1 flt = run (const print) "nos.lol" "443" do
@@ -67,11 +64,18 @@ print2Req (evs1, evs2) = printEvent `mapM_` evs1 >> printEvent `mapM_` evs2
 emitEv :: T.Text -> Sig s Events Event.E ()
 emitEv nm = emit =<< waitFor (awaitNameEvent nm)
 
+nullFilter :: Filter.Filter
+nullFilter = Filter.Filter {
+	Filter.ids = Nothing, Filter.authors = Nothing,
+	Filter.kinds = Just [1], Filter.tags = [],
+	Filter.since = Nothing, Filter.until = Nothing, Filter.limit = Nothing }
+
 authorFilter :: FilePath -> IO Filter.Filter
 authorFilter fp = do
 	Right pk <- Event.publicFromBech32 <$> T.readFile fp
-	pure Filter.Filter {
-		Filter.ids = Nothing, Filter.authors = Just [pk],
-		Filter.kinds = Just [1], Filter.tags = [],
-		Filter.since = Nothing, Filter.until = Nothing,
-		Filter.limit = Just 5 }
+	pure nullFilter {
+		Filter.authors = Just [pk],
+		Filter.kinds = Just [1], Filter.limit = Just 5 }
+
+kindFilter :: Int -> Filter.Filter
+kindFilter k = nullFilter { Filter.kinds = Just [k], Filter.limit = Just 5 }
