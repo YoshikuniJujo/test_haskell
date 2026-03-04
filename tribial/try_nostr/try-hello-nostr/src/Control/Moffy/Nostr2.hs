@@ -5,8 +5,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+{-# LANGUAGE ExplicitForAll, RequiredTypeArguments #-}
 
 module Control.Moffy.Nostr2 (sampleId2) where
 
@@ -17,6 +20,7 @@ import Control.Concurrent.STM
 import Control.Moffy
 import Control.Moffy.Run
 import Control.Moffy.Nostr.Event
+import Data.Type.Set
 import Data.OneOrMore qualified as OOM
 import Data.OneOrMoreApp
 import Data.Vector qualified as V
@@ -74,38 +78,27 @@ ws :: TChan (EvReqs Events) ->
 	TChan (EvOccs Events) -> TVar PreNowEnd -> Ws.ClientApp ()
 ws cr co vend cnn = do
 	doWhile $ atomically (readTChan cr) >>= \r -> do
-		proj () r \(ReqReq nm f) -> do
-			Ws.sendTextData cnn $ req nm f
-			occ . expand $ Singleton OccReq
+		proj () r \(ReqReq nm f) ->
+			Ws.sendTextData cnn (req nm f) >> occ Req co OccReq
 		proj () r \EventReq -> void . timeout 1000000 $ readPost co cnn
-		proj () r \EndReq -> do
-			e' <- atomically $ readTVar vend
-			when (e' == End) .
-				occ . expand $ Singleton OccEnd
-		proj True r \HaltReq -> False <$
-			occ (expand $ Singleton OccHalt)
+		proj () r \EndReq -> flip when (occ (type End) co OccEnd)
+			. (== End) =<< atomically (readTVar vend)
+		proj True r \HaltReq -> False <$ occ Halt co OccHalt
 	Ws.sendClose cnn ("Bye!" :: T.Text)
 	where
 	proj d = flip (maybe $ pure d) . OOM.project
-	occ = atomically . writeTChan co
 	req nm = A.encode . A.Array . V.fromList
 		. ([A.String "REQ", A.String nm] ++) . (: []) . FlJsn.encode
 
 readPost :: TChan (EvOccs Events) -> Ws.Connection -> IO ()
-readPost co cnn = Ws.receiveData cnn >>= \rdt -> do
-	case A.decode rdt of
-		Just (A.Array (V.toList -> [
-				A.String "EOSE",
-				A.String nm ])) ->
-			atomically . writeTChan co . expand . Singleton $ OccEose nm
-		Just (A.Array (V.toList -> [
-				A.String "EVENT",
-				A.String nm,
-				A.Object jsn ])) -> do
-			Just ev <- pure $ EvJsn.decode jsn
-			atomically . writeTChan co . expand
-				. Singleton $ OccEvent nm ev
-		Just _ -> pure (); Nothing -> error "bad"
+readPost co cnn = Ws.receiveData cnn >>= \rdt -> case A.decode rdt of
+	Just (A.Array (V.toList -> [A.String "EOSE", A.String nm])) ->
+		occ Eose co $ OccEose nm
+	Just (A.Array (V.toList ->
+			[A.String "EVENT", A.String nm, A.Object jsn ])) -> do
+		Just ev <- pure $ EvJsn.decode jsn
+		occ Event co $ OccEvent nm ev
+	Just _ -> pure (); Nothing -> error "bad"
 
 data PreNowEnd = Pre | Now | End deriving (Show, Eq)
 
@@ -125,7 +118,10 @@ filterP a = do
 filterId :: T.Text -> Filter.Filter
 filterId a = Filter.Filter {
 	Filter.ids = Just [fromHex a],
-	Filter.authors = Nothing, Filter.kinds = Just [1],
-	Filter.tags = [],
-	Filter.since = Nothing, Filter.until = Nothing,
-	Filter.limit = Just 1 }
+	Filter.authors = Nothing, Filter.kinds = Just [1], Filter.tags = [],
+	Filter.since = Nothing, Filter.until = Nothing, Filter.limit = Just 1 }
+
+occ :: forall e -> Expandable Occurred (Singleton e) Events =>
+	TChan (EvOccs Events) -> Occurred e -> IO ()
+occ e co = atomically
+	. writeTChan co . expand @(Singleton (Occurred e)) . Singleton
