@@ -45,32 +45,7 @@ import Network.WebSockets qualified as Ws
 import Tools
 import TryBech32
 
-data Req = ReqReq T.Text Filter.Filter deriving (Show, Eq, Ord)
-numbered [t| Req |]
-instance Request Req where
-	data Occurred Req = OccReq deriving Show
-
-data Event = EventReq deriving (Show, Eq, Ord)
-numbered [t| Event |]
-instance Request Event where
-	data Occurred Event = OccEvent T.Text Event.E deriving Show
-
-data Eose = EoseReq deriving (Show, Eq, Ord)
-numbered [t| Eose |]
-instance Request Eose where
-	data Occurred Eose = OccEose T.Text deriving Show
-
-data Halt = HaltReq deriving (Show, Eq, Ord)
-numbered [t| Halt |]
-instance Request Halt where
-	data Occurred Halt = OccHalt deriving Show
-
-data End = EndReq deriving (Show, Eq, Ord)
-numbered [t| End |]
-instance Request End where
-	data Occurred End = OccEnd deriving Show
-
-type Events = Req :- Event :- Eose :- Halt :- End :- 'Nil
+import Control.Moffy.Nostr.Event
 
 type EventsThread = Events :+: (GetThreadId :- 'Nil)
 
@@ -105,22 +80,23 @@ sampleFilter flt = run (const print) "nos.lol" "443" $ do
 sampleFilter' :: Filter.Filter -> IO ()
 sampleFilter' flt = run (const printEvent) "nos.lol" "443" do
 	waitFor $ request "foobar" flt
-	untilEose "foobar" flt `break` awaitNameEose "foobar"
+	_ <- untilEose "foobar" `break` awaitNameEose "foobar"
 	waitFor . adjust $ await HaltReq (const ())
 
 sampleFilter2 :: Filter.Filter -> Filter.Filter -> IO ()
 sampleFilter2 flt1 flt2 = run (const print2Req) "nos.lol" "443" do
 	waitFor $ request "foobar" flt1
 	waitFor $ request "hogepiyo" flt2
-	((,)	<$%> scanl (flip (:)) [] (untilEose "foobar" flt1)
-		<*%> scanl (flip (:)) [] (untilEose "hogepiyo" flt2))
+	_ <- ((,)
+		<$%> scanl (flip (:)) [] (untilEose "foobar")
+		<*%> scanl (flip (:)) [] (untilEose "hogepiyo"))
 		`break` ((\_ _ -> ()) <$> awaitNameEose "foobar" <*> awaitNameEose "hogepiyo")
 	waitFor . adjust $ await HaltReq (const ())
 
 sampleId :: FilePath -> IO ()
 sampleId fp = do
 	Just flt <- filterP <$> T.readFile fp
-	run (\end ms -> do
+	run (\_ ms -> do
 			print (length ms)
 			zipWithM_ printEventE' [0 ..] ms
 			atomically case ms of
@@ -128,8 +104,7 @@ sampleId fp = do
 				_ -> pure ()
 			) "nos.lol" "443" do
 		waitFor (request "foobar" flt)
-		readingEventE flt `break` await EndReq (const ())
---		untilEose "foobar" flt `break` awaitNameEose "foobar"
+		_ <- readingEventE `break` await EndReq (const ())
 		waitFor . adjust $ await HaltReq (const ())
 
 sampleIdT :: FilePath -> IO ()
@@ -137,8 +112,7 @@ sampleIdT fp = do
 	Just flt <- filterP <$> T.readFile fp
 	run'' (printEventE `mapM_`) "nos.lol" "443" do
 		waitFor . adjust $ request "foobar" flt
-		readingEventET flt -- `break` adjust (awaitNameEose "barbarbar")
---		untilEose "foobar" flt `break` awaitNameEose "foobar"
+		readingEventET
 		waitFor . adjust $ await HaltReq (const ())
 
 sampleId' :: FilePath -> IO ()
@@ -146,8 +120,7 @@ sampleId' fp = do
 	Just flt <- filterP <$> T.readFile fp
 	run' (printEventE `mapM_`) "nos.lol" "443" do
 		waitFor . adjust $ request "foobar" flt
-		readingEventE' flt -- `break` awaitNameEose' "barbarbar"
---		untilEose "foobar" flt `break` awaitNameEose "foobar"
+		readingEventE'
 		waitFor . adjust $ await HaltReq (const ())
 
 printEvent :: Event.E -> IO ()
@@ -196,34 +169,24 @@ print2Req (evs1, evs2) = do
 	printEvent `mapM_` evs1
 	printEvent `mapM_` evs2
 
-untilEose :: T.Text -> Filter.Filter -> Sig s Events Event.E ()
-untilEose nm flt = do
---	waitFor $ request nm flt
+untilEose :: T.Text -> Sig s Events Event.E ()
+untilEose nm = do
 	void $ (forever $ emit =<< (waitFor $ awaitNameEvent nm)) -- `break` awaitNameEose nm
 
-readingEventE :: Filter.Filter -> Sig s Events [(Event.E, Maybe Event.E)] ()
-readingEventE flt = do
---	void . parList . spawn $ emit =<< (waitFor $ awaitNameEventE "foobar")
+readingEventE :: Sig s Events [(Event.E, Maybe Event.E)] ()
+readingEventE = do
 	void . parList . spawn $ awaitNameEventESig "foobar"
 
-readingEventET :: Filter.Filter -> Sig s EventsThread [(Event.E, Maybe Event.E)] ()
-readingEventET flt = do
+readingEventET :: Sig s EventsThread [(Event.E, Maybe Event.E)] ()
+readingEventET = do
 	void . parList . spawn $ emit =<< (waitFor $ awaitNameEventET "foobar")
 
-readingEventE' :: Filter.Filter -> Sig s EventsRnd [(Event.E, Maybe Event.E)] ()
-readingEventE' flt = do
+readingEventE' :: Sig s EventsRnd [(Event.E, Maybe Event.E)] ()
+readingEventE' = do
 	void . parList . spawn $ emit =<< (waitFor $ awaitNameEventE' "foobar")
-
-request :: T.Text -> Filter.Filter -> React s Events ()
-request nm flt = adjust $ await (ReqReq nm flt) (const ())
 
 awaitEvent :: React s Events (T.Text, Event.E)
 awaitEvent = adjust $ await EventReq \(OccEvent nm ev) -> (nm, ev)
-
-awaitNameEvent :: T.Text -> React s Events Event.E
-awaitNameEvent nm0 = do
-	(nm, ev) <- awaitEvent
-	if nm == nm0 then pure ev else awaitNameEvent nm0
 
 awaitNameEventE :: T.Text -> React s Events (Event.E, Maybe Event.E)
 awaitNameEventE nm0 = do
@@ -345,53 +308,42 @@ handle'' cr co = Handle.retry
 
 run :: (TVar Bool -> a -> IO ()) -> String -> String -> Sig s Events a r -> IO ()
 run pr raddr rprt s = do
-	end <- atomically $ newTVar False
+	ed <- atomically $ newTVar False
 	cr <- atomically newTChan
 	co <- atomically newTChan
 	_ <- forkIO $ do
-		_ <- interpret (handleTChan cr co) (pr end) s
+		_ <- interpret (handleTChan cr co) (pr ed) s
 		pure ()
-		{-
-	forkIO $ doWhile do
-		threadDelay 1000000
-		e <- atomically $ readTVar end
---		atomically . when e . writeTChan co . expand $ Singleton OccEnd
-		putStrLn $ "END CHECKER: " ++ show e
---		atomically . when e . writeTChan cr . OOM.expand $ OOM.Singleton EndReq
-		pure $ not e
-		-}
-	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co end
+	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co ed
 
 run' :: (a -> IO ()) -> String -> String -> Sig s EventsRnd a r -> IO ()
 run' pr raddr rprt s = do
-	end <- atomically $ newTVar False
+	ed <- atomically $ newTVar False
 	cr <- atomically newTChan
 	co <- atomically newTChan
 	_ <- forkIO $ do
 		_ <- interpretSt (handle' cr co) pr s (mkStdGen 8)
 		pure ()
-	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co end
+	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co ed
 
 run'' :: (a -> IO ()) -> String -> String -> Sig s EventsThread a r -> IO ()
 run'' pr raddr rprt s = do
-	end <- atomically $ newTVar False
+	ed <- atomically $ newTVar False
 	cr <- atomically newTChan
 	co <- atomically newTChan
 	_ <- forkIO $ do
 		_ <- interpret (handle'' cr co) pr s
 		pure ()
-	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co end
+	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co ed
 
 ws :: T.Text ->
 	TChan (EvReqs Events) -> TChan (EvOccs Events) ->
 	TVar Bool -> Ws.ClientApp ()
-ws _pub cr co end cnn = do
-	-- atomically . writeTChan co . expand $ Singleton OccEnd
+ws _pub cr co ed cnn = do
 	doWhile $ do
 		putStrLn "before readTChan"
-		e <- atomically $ readTVar end
-		putStrLn $ "end = " ++ show e
---		atomically . when e . writeTChan co . expand $ Singleton OccEnd
+		e <- atomically $ readTVar ed
+		putStrLn $ "ed = " ++ show e
 		atomically (readTChan cr) >>= \r -> do
 			putStrLn "readTChan done"
 			a <- case OOM.project r of
@@ -412,15 +364,15 @@ ws _pub cr co end cnn = do
 				Nothing -> pure True
 				Just EventReq -> do
 					putStrLn "BEFORE READ POST"
-					timeout 1000000 $ readPost co cnn
+					_ <- timeout 1000000 $ readPost co cnn
 					pure True
-			case OOM.project r of
+			_ <- case OOM.project r of
 				Nothing -> pure True
 				Just EndReq -> do
 					putStrLn "END REQ"
-					e <- atomically $ readTVar end
-					putStrLn $ "END VAR: " ++ show e
-					atomically . when e . writeTChan co . expand $ Singleton OccEnd
+					e' <- atomically $ readTVar ed
+					putStrLn $ "END VAR: " ++ show e'
+					atomically . when e' . writeTChan co . expand $ Singleton OccEnd
 					pure True
 			print $ a && b && c
 --			pure $ a && b && c && (not e)
