@@ -20,7 +20,6 @@ import Control.Moffy.Nostr.Event
 import Data.OneOrMore qualified as OOM
 import Data.OneOrMoreApp
 import Data.Vector qualified as V
-import Data.ByteString.Lazy.Char8 qualified as LBSC
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Data.Aeson qualified as A
@@ -60,56 +59,35 @@ sampleId2 fp = do
 			emit . (ev ,) . Just =<< waitFor (awaitNameEvent nm)
 			where nm = "id-" <> e
 
-run :: (TVar PreNowEnd -> a -> IO ()) -> String -> String -> Sig s Events a r -> IO ()
-run pr raddr rprt s = do
-	vend <- atomically $ newTVar Pre
+run :: (TVar PreNowEnd -> a -> IO ()) ->
+	String -> String -> Sig s Events a r -> IO ()
+run pr rad rprt s = do
+	ve <- atomically $ newTVar Pre
 	cr <- atomically newTChan
 	co <- atomically newTChan
-	_ <- forkIO $ do
-		_ <- interpret (handleTChan cr co) (pr vend) s
-		pure ()
-	Ws.runSecureClient raddr (read rprt) "/" $ ws "foo" cr co vend
-	where
-	handleTChan :: TChan (EvReqs es) -> TChan (EvOccs es) -> Handle IO es
-	handleTChan cr co rq = do
-		atomically $ writeTChan cr rq
-		atomically $ readTChan co
+	_ <- forkIO . void $ interpret (handleCh cr co) (pr ve) s
+	Ws.runSecureClient rad (read rprt) "/" $ ws cr co ve
+	where handleCh cr co rq =
+		atomically (writeTChan cr rq) >> atomically (readTChan co)
 
-ws :: T.Text ->
-	TChan (EvReqs Events) -> TChan (EvOccs Events) ->
-	TVar PreNowEnd -> Ws.ClientApp ()
-ws _pub cr co vend cnn = do
+ws :: TChan (EvReqs Events) ->
+	TChan (EvOccs Events) -> TVar PreNowEnd -> Ws.ClientApp ()
+ws cr co vend cnn = do
 	doWhile $ atomically (readTChan cr) >>= \r -> do
-		a <- case OOM.project r of
-			Nothing -> pure True
-			Just (ReqReq nm fltr) -> do
-				T.putStrLn nm
-				let	r1 = req nm fltr
-				Ws.sendTextData cnn r1
-				atomically . writeTChan co . expand $ Singleton OccReq
-				pure True
-		b <- case OOM.project r of
-			Nothing -> pure True
-			Just HaltReq -> do
-				putStrLn "HALT"
-				atomically . writeTChan co . expand $ Singleton OccHalt
-				pure False
-		c <- case OOM.project r of
-			Nothing -> pure True
-			Just EventReq -> do
-				_ <- timeout 1000000 $ readPost co cnn
-				pure True
-		_ <- case OOM.project r of
-			Nothing -> pure True
-			Just EndReq -> do
-				e' <- atomically $ readTVar vend
-				atomically . when (e' == End) . writeTChan co . expand $ Singleton OccEnd
-				pure True
-		pure $ a && b && c
-	putStrLn "BYEBYE"
+		proj () r \(ReqReq nm f) -> do
+			Ws.sendTextData cnn $ req nm f
+			occ . expand $ Singleton OccReq
+		proj () r \EventReq -> void . timeout 1000000 $ readPost co cnn
+		proj () r \EndReq -> do
+			e' <- atomically $ readTVar vend
+			when (e' == End) .
+				occ . expand $ Singleton OccEnd
+		proj True r \HaltReq -> False <$
+			occ (expand $ Singleton OccHalt)
 	Ws.sendClose cnn ("Bye!" :: T.Text)
 	where
-	req :: T.Text -> Filter.Filter -> LBSC.ByteString
+	proj d = flip (maybe $ pure d) . OOM.project
+	occ = atomically . writeTChan co
 	req nm = A.encode . A.Array . V.fromList
 		. ([A.String "REQ", A.String nm] ++) . (: []) . FlJsn.encode
 
