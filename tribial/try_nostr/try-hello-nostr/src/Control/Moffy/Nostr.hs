@@ -13,18 +13,24 @@ module Control.Moffy.Nostr (
 	sample1,
 	sampleFilter1, sampleFilterUntilEose, sampleFilterPair,
 
-	authorFilter, kindFilter
+	authorFilter, kindFilter,
+	sinceUntilFilter, japaneseTime, exampleSince, exampleUntil
 
 	) where
 
 import Prelude hiding (break, scanl)
+import Foreign.C.Types
 import Control.Monad
 import Control.Moffy
 import Control.Moffy.Nostr.Event
 import Control.Moffy.Nostr.Run
 import Data.Type.Flip
+import Data.Fixed
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
+import Data.Time
+import Data.Time.Clock.POSIX
+import Data.UnixTime
 import Nostr.Event qualified as Event
 import Nostr.Filter qualified as Filter
 
@@ -79,3 +85,26 @@ authorFilter fp = do
 
 kindFilter :: Int -> Filter.Filter
 kindFilter k = nullFilter { Filter.kinds = Just [k], Filter.limit = Just 5 }
+
+zonedToUnixTime :: ZonedTime -> UnixTime
+zonedToUnixTime = fromEpochTime
+	. CTime . truncate . utcTimeToPOSIXSeconds . zonedTimeToUTC
+
+sinceUntilFilter :: FilePath -> ZonedTime -> ZonedTime -> IO Filter.Filter
+sinceUntilFilter fp s u = do
+	Right pk <- Event.publicFromBech32 <$> T.readFile fp
+	pure nullFilter {
+		Filter.authors = Just [pk],
+		Filter.kinds = Just [1],
+		Filter.since = Just $ zonedToUnixTime s,
+		Filter.until = Just $ zonedToUnixTime u,
+		Filter.limit = Just 100 }
+
+japaneseTime :: Integer -> Int -> Int -> Int -> Int -> Pico -> ZonedTime
+japaneseTime y mt d h m s = ZonedTime
+	(LocalTime (fromGregorian y mt d) (TimeOfDay h m s))
+	(TimeZone 540 False "JST")
+
+exampleSince, exampleUntil :: ZonedTime
+exampleSince = japaneseTime 2025 4 4 12 15 15
+exampleUntil = japaneseTime 2025 4 5 0 5 15

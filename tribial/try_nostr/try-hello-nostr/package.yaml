@@ -27,6 +27,7 @@ dependencies:
 - bytestring
 - text
 - random
+- time
 - unix-time
 - aeson
 - websockets

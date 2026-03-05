@@ -51,6 +51,7 @@ library
     , random
     , stm
     , text
+    , time
     , try-nostr-event-ng
     , type-flip
     , type-set
@@ -77,6 +78,7 @@ executable medama-muter
     , random
     , stm
     , text
+    , time
     , try-hello-nostr
     , try-nostr-event-ng
     , type-flip
@@ -104,6 +106,7 @@ executable post
     , random
     , stm
     , text
+    , time
     , try-hello-nostr
     , try-nostr-event-ng
     , type-flip
@@ -135,6 +138,7 @@ executable try-hello-nostr-exe
     , random
     , stm
     , text
+    , time
     , try-hello-nostr
     , try-nostr-event-ng
     , type-flip
@@ -167,6 +171,7 @@ test-suite try-hello-nostr-test
     , random
     , stm
     , text
+    , time
     , try-hello-nostr
     , try-nostr-event-ng
     , type-flip
