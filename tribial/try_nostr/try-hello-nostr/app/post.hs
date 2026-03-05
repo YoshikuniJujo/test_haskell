@@ -34,15 +34,19 @@ main = do
 
 ws :: T.Text -> T.Text -> Bool -> T.Text -> ClientApp ()
 ws sc pb fsnd msg cnn = do
+	putStrLn "CONNECTED"
 	idnt <- T.pack . strToHexStr . BSC.unpack <$> write fsnd sc pb cnn msg
+	putStrLn "AFTER WRITE"
 	when fsnd $ doWhile do
 		Just r <- A.decode <$> receiveData cnn
+		print r
 		pure case r of
 			A.Array (V.toList -> [
 					A.String "OK", A.String idnt',
 					A.Bool True, A.String _ ])
 				| idnt' == idnt -> False
 			_ -> True
+	putStrLn "BYE!"
 	sendClose cnn ("Bye!" :: T.Text)
 
 write :: Bool -> T.Text -> T.Text -> Connection -> T.Text -> IO BS.ByteString
