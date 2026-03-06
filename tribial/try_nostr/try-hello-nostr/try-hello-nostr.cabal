@@ -28,6 +28,7 @@ library
       Control.Moffy.Nostr
       Control.Moffy.Nostr.Event
       Control.Moffy.Nostr.Run
+      Control.Moffy.Nostr.TryDecodeFilter
       Control.Moffy.Nostr2
       Control.Moffy.NostrBak
       Tools
