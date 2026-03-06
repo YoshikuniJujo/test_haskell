@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Nostr.Event (
@@ -54,6 +55,12 @@ parseSecret :: BS.ByteString -> Either String Secret
 parseSecret = (Secret <$>) . maybe (Left "parse_int256 error") Right . parse_int256
 
 newtype Secret = Secret Wider deriving Show
+
+instance Eq Secret where
+	Secret (from_vartime -> w1) == Secret (from_vartime -> w2) = w1 == w2
+
+instance Ord Secret where
+	Secret (from_vartime -> w1) <= Secret (from_vartime -> w2) = w1 <= w2
 
 publicFromBech32 :: T.Text -> Either String Pub
 publicFromBech32 =
