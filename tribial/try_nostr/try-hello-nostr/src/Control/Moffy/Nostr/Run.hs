@@ -30,6 +30,7 @@ import Data.OneOrMoreApp
 import Data.Vector qualified as V
 import Data.Text qualified as T
 import Data.Aeson qualified as A
+import Data.Aeson.KeyMap qualified as A
 import System.Timeout
 import Network.WebSockets qualified as Ws
 import Wuss qualified as Ws
@@ -70,6 +71,7 @@ readPost co cnn = Ws.receiveData cnn >>= \rdt -> case A.decode rdt of
 		occ Eose co $ OccEose nm
 	Just (A.Array (V.toList ->
 			[A.String "EVENT", A.String nm, A.Object jsn ])) -> do
+		print $ A.lookup "id" jsn
 		Just ev <- pure $ EvJsn.decode jsn
 		occ Event co $ OccEvent nm ev
 	Just _ -> pure (); Nothing -> error "bad"
