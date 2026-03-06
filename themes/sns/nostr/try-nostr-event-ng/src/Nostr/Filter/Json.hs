@@ -36,3 +36,17 @@ encode f = A.Object . A.fromList $ catMaybes [
 
 tagToValue :: Char -> [T.Text] -> (A.Key, A.Value)
 tagToValue k vs = (fromString ['#', k], A.Array . V.fromList $ A.String <$> vs)
+
+decode :: A.Value -> Maybe Filter.Filter
+decode = undefined
+
+null :: Filter.Filter
+null = Filter.Filter {
+	Filter.ids = Nothing, Filter.authors = Nothing, Filter.kinds = Nothing,
+	Filter.tags = [],
+	Filter.since = Nothing, Filter.until = Nothing, Filter.limit = Nothing }
+
+addId :: Filter.Filter -> BS.ByteString -> Filter.Filter
+addId f@Filter.Filter { Filter.ids = Nothing } i = f { Filter.ids = Just [i] }
+addId f@Filter.Filter { Filter.ids = Just is } i =
+	f { Filter.ids = Just $ i : is }
