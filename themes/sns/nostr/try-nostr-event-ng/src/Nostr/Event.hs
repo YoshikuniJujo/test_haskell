@@ -43,7 +43,26 @@ data E = E {
 	kind :: Int,
 	tags :: [(T.Text, (T.Text, [T.Text]))],
 	content :: T.Text }
-	deriving Show
+	deriving (Show, Eq)
+
+instance Ord E where
+	(eToE' -> e1) <= (eToE' -> e2) = e1 <= e2
+
+eToE' :: E -> E'
+eToE' e = E' {
+	pubkey' = serialize_point $ pubkey e,
+	created_at' = created_at e,
+	kind' = kind e,
+	tags' = tags e,
+	content' = content e }
+
+data E' = E' {
+	pubkey' :: BS.ByteString,
+	created_at' :: UnixTime,
+	kind' :: Int,
+	tags' :: [(T.Text, (T.Text, [T.Text]))],
+	content' :: T.Text }
+	deriving (Show, Eq, Ord)
 
 signature :: Secret -> E -> IO (Maybe BS.ByteString)
 signature (Secret sec) ev = sign_schnorr sec (hash ev) <$> getEntropy 32
