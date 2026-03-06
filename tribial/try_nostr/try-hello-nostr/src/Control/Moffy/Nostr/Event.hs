@@ -14,6 +14,7 @@ import Prelude hiding (break, scanl)
 import Control.Moffy
 import Data.Type.Set
 import Data.Bool
+import Data.ByteString qualified as BS
 import Data.Text qualified as T
 import Nostr.Event qualified as Event
 import Nostr.Filter qualified as Filter
@@ -43,7 +44,12 @@ numbered [t| End |]
 instance Request End where
 	data Occurred End = OccEnd deriving Show
 
-type Events = Req :- Event :- Eose :- Halt :- End :- 'Nil
+data Signature = SignatureReq Event.Secret Event.E deriving (Show, Eq, Ord)
+numbered [t| Signature |]
+instance Request Signature where
+	data Occurred Signature = OccSignature (Maybe BS.ByteString)
+
+type Events = Req :- Event :- Eose :- Halt :- End :- Signature :- 'Nil
 
 request :: T.Text -> Filter.Filter -> React s Events ()
 request nm flt = adjust $ await (ReqReq nm flt) (const ())
@@ -67,3 +73,8 @@ awaitEose = adjust $ await EoseReq \(OccEose nm) -> nm
 
 awaitNameEose :: T.Text -> React s Events ()
 awaitNameEose nm0 = bool (awaitNameEose nm0) (pure ()) . (== nm0) =<< awaitEose
+
+awaitSignature ::
+	Event.Secret -> Event.E -> React s Events (Maybe BS.ByteString)
+awaitSignature sc ev =
+	adjust $ await (SignatureReq sc ev) \(OccSignature msg) -> msg

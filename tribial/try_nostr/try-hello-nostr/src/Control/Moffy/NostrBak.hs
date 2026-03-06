@@ -43,7 +43,7 @@ import Control.Moffy.Nostr.Run
 
 type EventsThread = Events :+: (GetThreadId :- 'Nil)
 
-type EventsRnd = Req :- Event :- Eose :- Halt :- End :- Rnd.RandomEv
+type EventsRnd = Req :- Event :- Eose :- Halt :- End :- Signature :- Rnd.RandomEv
 
 sample :: IO ()
 sample = run (const print) "nos.lol" "443" $ do

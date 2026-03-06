@@ -34,6 +34,7 @@ import Data.Aeson.KeyMap qualified as A
 import System.Timeout
 import Network.WebSockets qualified as Ws
 import Wuss qualified as Ws
+import Nostr.Event qualified as Event
 import Nostr.Event.Json qualified as EvJsn
 import Nostr.Filter.Json qualified as FlJsn
 import Tools
@@ -58,6 +59,9 @@ ws cr co vend cnn = do
 		proj () r \EventReq -> void . timeout 1000000 $ readPost co cnn
 		proj () r \EndReq -> flip when (occ (type End) co OccEnd)
 			. (== End) =<< atomically (readTVar vend)
+		proj () r \(SignatureReq sc ev) -> do
+			sg <- Event.signature sc ev
+			occ Signature co $ OccSignature sg
 		proj True r \HaltReq -> False <$ occ Halt co OccHalt
 	Ws.sendClose cnn ("Bye!" :: T.Text)
 	where
@@ -72,6 +76,7 @@ readPost co cnn = Ws.receiveData cnn >>= \rdt -> case A.decode rdt of
 	Just (A.Array (V.toList ->
 			[A.String "EVENT", A.String nm, A.Object jsn ])) -> do
 		print $ A.lookup "id" jsn
+		print $ A.lookup "sig" jsn
 		Just ev <- pure $ EvJsn.decode jsn
 		occ Event co $ OccEvent nm ev
 	Just _ -> pure (); Nothing -> error "bad"

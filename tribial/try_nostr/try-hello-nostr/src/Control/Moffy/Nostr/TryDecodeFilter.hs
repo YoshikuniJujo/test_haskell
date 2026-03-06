@@ -13,6 +13,8 @@ import Nostr.Event qualified as Event
 import Nostr.Filter qualified as Filter
 import Nostr.Filter.Json qualified as FltJsn
 
+import Tools
+
 sample :: IO ()
 sample = run (const print) "nos.lol" "443" do
 	waitFor $ request "req-1" FltJsn.null
@@ -34,5 +36,9 @@ sampleAuthor scfp pbfp = do
 		waitFor $ request "req-1" flt
 		ev <- waitFor (awaitNameEvent "req-1")
 		emit . T.unpack $ Event.content ev
---		emit . show =<< Event.signature sc ev
+		emit . T.unpack . toHex $ Event.hash ev
+		msg <- waitFor (awaitSignature sc ev)
+		emit . show $ T.unpack . toHex <$> msg
+		emit . show . (T.unpack . toHex <$>) =<< waitFor (awaitSignature sc ev)
+		emit . show $ Event.verify ev <$> msg
 		waitFor halt
