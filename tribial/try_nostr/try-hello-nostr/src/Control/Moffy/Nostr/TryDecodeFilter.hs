@@ -36,9 +36,15 @@ sampleAuthor scfp pbfp = do
 		waitFor $ request "req-1" flt
 		ev <- waitFor (awaitNameEvent "req-1")
 		emit . T.unpack $ Event.content ev
+		emit "\nHASH: "
 		emit . T.unpack . toHex $ Event.hash ev
+		emit ""
 		msg <- waitFor (awaitSignature sc ev)
 		emit . show $ T.unpack . toHex <$> msg
 		emit . show . (T.unpack . toHex <$>) =<< waitFor (awaitSignature sc ev)
 		emit . show $ Event.verify ev <$> msg
+		emit ""
+		emit $ show FltJsn.null { Filter.ids = Just [Event.hash ev] }
+		emit . show $ FltJsn.encode FltJsn.null { Filter.ids = Just [Event.hash ev] }
+		emit . show . FltJsn.decode $ FltJsn.encode FltJsn.null { Filter.ids = Just [Event.hash ev] }
 		waitFor halt
