@@ -4,6 +4,7 @@
 
 module Nostr.Filter.Json where
 
+import Prelude hiding (null)
 import Foreign.C.Types
 import Data.Maybe
 import Data.Vector qualified as V
@@ -38,7 +39,10 @@ tagToValue :: Char -> [T.Text] -> (A.Key, A.Value)
 tagToValue k vs = (fromString ['#', k], A.Array . V.fromList $ A.String <$> vs)
 
 decode :: A.Value -> Maybe Filter.Filter
-decode = undefined
+decode (A.Object km) = do
+	let	Just (A.Array ids) = km A.!? "ids"
+	pure null  {
+		Filter.ids = Just . ((\(A.String t) -> fromHex t) <$>) $ V.toList ids }
 
 null :: Filter.Filter
 null = Filter.Filter {

@@ -5,12 +5,21 @@ module Tools where
 
 import Data.Bool
 import Data.Char
+import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Data.Text qualified as T
 import Numeric
 
 bsToHexText :: BSC.ByteString -> T.Text
 bsToHexText = T.pack . strToHexStr . BSC.unpack
+
+{-
+hexTextToBs :: T.Text -> BSC.ByteString
+hexTextToBs = BSC.pack . hexStrToStr . T.unpack
+-}
+
+fromHex :: T.Text -> BS.ByteString
+fromHex = BS.pack . (fst . head . readHex <$>) . separate 2 . T.unpack
 
 strToHexStr :: String -> String
 strToHexStr = concat . (sh <$>) . map ord
