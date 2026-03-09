@@ -278,7 +278,8 @@ resizeSwapchainSet(
 	uint32_t ic,
 	VkImage *backbuffers_ret,
 	VkRenderPass *rp, VkImageView *views,
-	VkFramebuffer *fbs
+	VkFramebuffer *fbs,
+	VkCommandPool *cps
 	)
 {
 	wd->Width = wdt; wd->Height = hgt;
@@ -295,6 +296,7 @@ resizeSwapchainSet(
 	ImGui_ImplVulkanH_CopyImageViewsToWd(wd, views);
 	ImGui_ImplVulkanH_CopyFramebufferToWd(
 		wd->UseDynamicRendering, wd, ic, fbs);
+	ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyCommandPool(wd, cps);
 }
 
 void
@@ -368,9 +370,7 @@ resizeSwapchain(
     ImGui_ImplVulkanH_CreateWindowCommandBuffersSemaphoresCreate(dvc, g_Allocator, sc, iasmps, rcsmps);
 
 	resizeSwapchainSet(
-		wd, wdt, hgt, *pscsrc, ic, backbuffers_ret, rp, views, fbs);
-
-	ImGui_ImplVulkanH_CreateWindowCommandBuffersCopyCommandPool(wd, cps);
+		wd, wdt, hgt, *pscsrc, ic, backbuffers_ret, rp, views, fbs, cps);
 
 	ImGui_ImplVulkanH_CreateWindowCommandBuffersFramesCopyCommandBuffers(
 		wd, cbs );
