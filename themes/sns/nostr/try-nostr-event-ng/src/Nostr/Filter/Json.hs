@@ -46,8 +46,15 @@ decode (A.Object km) = do
 		Just at -> do
 			ts <- maybeStringArray at
 			pure . Just $ fromHex <$> ts
+	as <- case km A.!? "authors" of
+		Nothing -> pure Nothing
+		Just at -> do
+			ts <- maybeStringArray at
+			pk <- hexToPubkey `mapM` ts
+			pure $ Just pk
 	pure null  {
-		Filter.ids = is
+		Filter.ids = is,
+		Filter.authors = as
 		}
 decode _ = Nothing
 

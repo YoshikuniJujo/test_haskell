@@ -50,8 +50,7 @@ decode' obj = do
 	tgs <- A.lookup "tags" obj
 	cnt <- getString <$> A.lookup "content" obj
 	A.String sig <- A.lookup "sig" obj
-	pk' <- parse_point . BS.pack
-		. (fst . head . readHex <$>) . separate 2 $ T.unpack pk
+	pk' <- hexToPubkey pk
 	let	idnt' = BS.pack . (fst . head . readHex <$>)
 			. separate 2 $ T.unpack idnt
 		sig' = BS.pack . (fst . head . readHex <$>)

@@ -9,6 +9,11 @@ import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Data.Text qualified as T
 import Numeric
+import Crypto.Curve.Secp256k1
+
+hexToPubkey :: T.Text -> Maybe Pub
+hexToPubkey = parse_point
+	. BS.pack . (fst . head . readHex <$>) . separate 2 . T.unpack
 
 bsToHexText :: BSC.ByteString -> T.Text
 bsToHexText = T.pack . strToHexStr . BSC.unpack
