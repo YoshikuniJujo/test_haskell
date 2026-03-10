@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE LambdaCase, OverloadedStrings, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -13,6 +13,7 @@ import Data.ByteString qualified as BS
 import Data.Text qualified as T
 import Data.String
 import Data.Aeson qualified as A
+import Data.Aeson.Key qualified as A
 import Data.Aeson.KeyMap qualified as A
 import Data.UnixTime
 import Crypto.Curve.Secp256k1
@@ -40,7 +41,7 @@ tagToValue :: Char -> [T.Text] -> (A.Key, A.Value)
 tagToValue k vs = (fromString ['#', k], A.Array . V.fromList $ A.String <$> vs)
 
 decode :: A.Value -> Maybe Filter.Filter
-decode (A.Object km) = do
+decode v@(A.Object km) = do
 	is <- case km A.!? "ids" of
 		Nothing -> pure Nothing
 		Just at -> do
@@ -60,9 +61,19 @@ decode (A.Object km) = do
 	pure null  {
 		Filter.ids = is,
 		Filter.authors = as,
-		Filter.kinds = ks
+		Filter.kinds = ks,
+		Filter.tags = lookupTags v
 		}
 decode _ = Nothing
+
+lookupTags :: A.Value -> [(Char, [T.Text])]
+lookupTags v = (`mapMaybe` (['a' .. 'z'] ++ ['A' .. 'Z'])) \c ->
+	(c ,) <$> lookupTag v c
+
+lookupTag :: A.Value -> Char -> Maybe [T.Text]
+lookupTag (A.Object km) c =
+	maybeStringArray =<< km A.!? (A.fromText $ "#" T.:> c)
+lookupTag _ _ = Nothing
 
 maybeStringArray :: A.Value -> Maybe [T.Text]
 maybeStringArray (A.Array (V.toList -> ts)) = maybeString `mapM` ts
