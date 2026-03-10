@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE OverloadedStrings, TupleSections #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -52,9 +52,15 @@ decode (A.Object km) = do
 			ts <- maybeStringArray at
 			pk <- hexToPubkey `mapM` ts
 			pure $ Just pk
+	ks <- case km A.!? "kinds" of
+		Nothing -> pure Nothing
+		Just ai -> do
+			ns <- maybeNumberArray ai
+			pure $ Just ns
 	pure null  {
 		Filter.ids = is,
-		Filter.authors = as
+		Filter.authors = as,
+		Filter.kinds = ks
 		}
 decode _ = Nothing
 
@@ -62,9 +68,15 @@ maybeStringArray :: A.Value -> Maybe [T.Text]
 maybeStringArray (A.Array (V.toList -> ts)) = maybeString `mapM` ts
 maybeStringArray _ = Nothing
 
+maybeNumberArray :: A.Value -> Maybe [Int]
+maybeNumberArray (A.Array (V.toList -> ns)) = maybeNumber `mapM` ns
+maybeNumberArray _ = Nothing
+
 maybeString :: A.Value -> Maybe T.Text
-maybeString (A.String t) = Just t
-maybeString _ = Nothing
+maybeString = \case A.String t -> Just t; _ -> Nothing
+
+maybeNumber :: A.Value -> Maybe Int
+maybeNumber = \case A.Number n -> Just $ truncate n; _ -> Nothing
 
 null :: Filter.Filter
 null = Filter.Filter {
