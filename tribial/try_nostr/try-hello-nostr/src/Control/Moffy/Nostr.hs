@@ -34,6 +34,8 @@ import Data.UnixTime
 import Nostr.Event qualified as Event
 import Nostr.Filter qualified as Filter
 
+import Tools
+
 sample1 :: IO ()
 sample1 = sampleFilter1
 	nullFilter { Filter.kinds = Just [1], Filter.limit = Just 5 }
@@ -86,10 +88,6 @@ authorFilter fp = do
 kindFilter :: Int -> Filter.Filter
 kindFilter k = nullFilter { Filter.kinds = Just [k], Filter.limit = Just 5 }
 
-zonedToUnixTime :: ZonedTime -> UnixTime
-zonedToUnixTime = fromEpochTime
-	. CTime . truncate . utcTimeToPOSIXSeconds . zonedTimeToUTC
-
 sinceUntilFilter :: FilePath -> ZonedTime -> ZonedTime -> IO Filter.Filter
 sinceUntilFilter fp s u = do
 	Right pk <- Event.publicFromBech32 <$> T.readFile fp
@@ -99,11 +97,6 @@ sinceUntilFilter fp s u = do
 		Filter.since = Just $ zonedToUnixTime s,
 		Filter.until = Just $ zonedToUnixTime u,
 		Filter.limit = Just 100 }
-
-japaneseTime :: Integer -> Int -> Int -> Int -> Int -> Pico -> ZonedTime
-japaneseTime y mt d h m s = ZonedTime
-	(LocalTime (fromGregorian y mt d) (TimeOfDay h m s))
-	(TimeZone 540 False "JST")
 
 exampleSince, exampleUntil :: ZonedTime
 exampleSince = japaneseTime 2025 4 4 12 15 15

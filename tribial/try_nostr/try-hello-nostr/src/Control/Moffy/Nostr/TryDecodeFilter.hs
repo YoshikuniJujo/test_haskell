@@ -50,16 +50,24 @@ sampleAuthor scfp pbfp = do
 		emit . show $ Event.verify ev <$> msg
 		emit ""
 		emit $ show FltJsn.null { Filter.ids = Just [Event.hash ev] }
-		emit . show $ FltJsn.encode FltJsn.null {
+		emit . show $ FltJsn.encode Filter.Filter {
 			Filter.ids = Just [Event.hash ev],
 			Filter.authors = Just [pk],
 			Filter.kinds = Just [1],
-			Filter.tags = [('x', ["hello", "world"])]
-			}
-		emit . show . FltJsn.decode $ FltJsn.encode FltJsn.null {
+			Filter.tags = [('x', ["hello", "world"])],
+			Filter.since = Just . zonedToUnixTime
+				$ japaneseTime 2025 4 4 12 15 15,
+			Filter.until = Just . zonedToUnixTime
+				$ japaneseTime 2025 4 5 0 5 15,
+			Filter.limit = Just 5 }
+		emit . show . FltJsn.decode $ FltJsn.encode Filter.Filter {
 			Filter.ids = Just [Event.hash ev],
 			Filter.authors = Just [pk],
 			Filter.kinds = Just [1],
-			Filter.tags = [('x', ["hello", "world"])]
-			}
+			Filter.tags = [('x', ["hello", "world"])],
+			Filter.since = Just . zonedToUnixTime
+				$ japaneseTime 2025 4 4 12 15 15,
+			Filter.until = Just . zonedToUnixTime
+				$ japaneseTime 2025 4 5 0 5 15,
+			Filter.limit = Just 5 }
 		waitFor halt

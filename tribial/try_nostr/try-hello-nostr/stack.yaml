@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 77d374522e16c5580fdbcfd2942b9e6eab9f2eeb
+    commit: bc1767287547845636a7e64fd0e5856ff9555400
     subdirs:
     - themes/sns/nostr/try-nostr-event-ng
 
