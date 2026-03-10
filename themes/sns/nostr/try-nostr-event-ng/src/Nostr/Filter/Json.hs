@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings, TupleSections #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Nostr.Filter.Json where
@@ -40,9 +41,23 @@ tagToValue k vs = (fromString ['#', k], A.Array . V.fromList $ A.String <$> vs)
 
 decode :: A.Value -> Maybe Filter.Filter
 decode (A.Object km) = do
-	let	Just (A.Array ids) = km A.!? "ids"
+	is <- case km A.!? "ids" of
+		Nothing -> pure Nothing
+		Just at -> do
+			ts <- maybeStringArray at
+			pure . Just $ fromHex <$> ts
 	pure null  {
-		Filter.ids = Just . ((\(A.String t) -> fromHex t) <$>) $ V.toList ids }
+		Filter.ids = is
+		}
+decode _ = Nothing
+
+maybeStringArray :: A.Value -> Maybe [T.Text]
+maybeStringArray (A.Array (V.toList -> ts)) = maybeString `mapM` ts
+maybeStringArray _ = Nothing
+
+maybeString :: A.Value -> Maybe T.Text
+maybeString (A.String t) = Just t
+maybeString _ = Nothing
 
 null :: Filter.Filter
 null = Filter.Filter {
