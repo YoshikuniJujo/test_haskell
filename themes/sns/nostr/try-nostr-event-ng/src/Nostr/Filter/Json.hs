@@ -58,12 +58,29 @@ decode v@(A.Object km) = do
 		Just ai -> do
 			ns <- maybeNumberArray ai
 			pure $ Just ns
-	pure null  {
+	sn <- case km A.!? "since" of
+		Nothing -> pure Nothing
+		Just s -> do
+			n <- maybeNumber s
+			pure . Just $ intToUnixTime n
+	ut <- case km A.!? "until" of
+		Nothing -> pure Nothing
+		Just u -> do
+			n <- maybeNumber u
+			pure . Just $ intToUnixTime n
+	lmt <- case km A.!? "limit" of
+		Nothing -> pure Nothing
+		Just l -> do
+			n <- maybeNumber l
+			pure $ Just n
+	pure Filter.Filter {
 		Filter.ids = is,
 		Filter.authors = as,
 		Filter.kinds = ks,
-		Filter.tags = lookupTags v
-		}
+		Filter.tags = lookupTags v,
+		Filter.since = sn,
+		Filter.until = ut,
+		Filter.limit = lmt }
 decode _ = Nothing
 
 lookupTags :: A.Value -> [(Char, [T.Text])]

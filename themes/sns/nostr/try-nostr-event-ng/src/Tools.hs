@@ -3,11 +3,13 @@
 
 module Tools where
 
+import Foreign.C.Types
 import Data.Bool
 import Data.Char
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
 import Data.Text qualified as T
+import Data.UnixTime
 import Numeric
 import Crypto.Curve.Secp256k1
 
@@ -30,6 +32,9 @@ strToHexStr :: String -> String
 strToHexStr = concat . (sh <$>) . map ord
 	where
 	sh n = let s = showHex n "" in replicate (2 - length s) '0' ++ s
+
+intToUnixTime :: Integral i => i -> UnixTime
+intToUnixTime = fromEpochTime . CTime . fromIntegral
 
 separate :: Int -> String -> [String]
 separate _ "" = []

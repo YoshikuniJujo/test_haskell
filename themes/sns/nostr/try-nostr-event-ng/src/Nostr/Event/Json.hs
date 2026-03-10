@@ -61,7 +61,7 @@ decode' obj = do
 	pure Signed.E {
 		Signed.idnt = idnt',
 		Signed.pubkey = pk',
-		Signed.created_at = fromEpochTime . CTime $ fromIntegral crat,
+		Signed.created_at = intToUnixTime crat,
 		Signed.kind = knd,
 		Signed.tags = decodeTags tgs,
 		Signed.content = cnt,
