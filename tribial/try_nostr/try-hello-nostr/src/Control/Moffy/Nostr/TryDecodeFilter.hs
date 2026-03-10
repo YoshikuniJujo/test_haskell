@@ -52,10 +52,12 @@ sampleAuthor scfp pbfp = do
 		emit $ show FltJsn.null { Filter.ids = Just [Event.hash ev] }
 		emit . show $ FltJsn.encode FltJsn.null {
 			Filter.ids = Just [Event.hash ev],
-			Filter.authors = Just [pk]
+			Filter.authors = Just [pk],
+			Filter.kinds = Just [1]
 			}
 		emit . show . FltJsn.decode $ FltJsn.encode FltJsn.null {
 			Filter.ids = Just [Event.hash ev],
-			Filter.authors = Just [pk]
+			Filter.authors = Just [pk],
+			Filter.kinds = Just [1]
 			}
 		waitFor halt
