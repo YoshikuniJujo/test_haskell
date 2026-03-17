@@ -1,12 +1,18 @@
 {-# LANGUAGE LambdaCase, TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 
 module Database.SmplstSQLite3 (
+
 	-- * Functions
 	withSQLite, withPrepared,
-	step, reset, bind, SQLiteData(..), SQLiteDataList(..), columnType,
+	step, reset, bind,
+	SQLiteData(..), SQLiteDataList(..), columnType,
+	Bindable(..), Columnable(..),
+
 	-- * Types
 	SQLite, Stmt, Result(..), Type(..), SQLiteException(..),
+
 	) where
 
 import Control.Monad
@@ -118,6 +124,12 @@ class SQLiteData a where
 	bindN :: Stmt -> Int -> a -> IO ()
 	column :: Stmt -> Int -> IO a
 
+class Bindable a where bindN' :: Stmt -> Int -> a -> IO ()
+class Columnable a where column' :: Stmt -> Int -> IO a
+
+instance SQLiteData a => Bindable a where bindN' = bindN
+instance SQLiteData a => Columnable a where column' = column
+
 instance SQLiteData a => SQLiteData (Maybe a) where
 	bindN stmt i Nothing = sqlite3BindNull stmt i ()
 	bindN stmt i (Just x) = bindN stmt i x
@@ -198,8 +210,8 @@ foreign import ccall unsafe "sqlite3.h sqlite3_bind_text" c_sqlite3_bind_text ::
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_blob" c_sqlite3_bind_blob ::
 	Ptr Stmt -> CInt -> CString -> CInt -> Ptr a -> IO CInt
 
-bind :: SQLiteData a => Stmt -> String -> a -> IO ()
-bind sm ph x = flip (bindN sm) x =<< sqlite3BindParameterIndex sm ph
+bind :: Bindable a => Stmt -> String -> a -> IO ()
+bind sm ph x = flip (bindN' sm) x =<< sqlite3BindParameterIndex sm ph
 
 sqlite3BindNull :: Stmt -> Int -> () -> IO ()
 sqlite3BindNull (Stmt sm) i _ = do
