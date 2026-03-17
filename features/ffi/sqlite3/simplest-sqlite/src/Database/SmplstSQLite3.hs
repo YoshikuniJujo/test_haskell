@@ -127,8 +127,11 @@ class SQLiteData a where
 class Bindable a where bindN' :: Stmt -> Int -> a -> IO ()
 class Columnable a where column' :: Stmt -> Int -> IO a
 
-instance SQLiteData a => Bindable a where bindN' = bindN
-instance SQLiteData a => Columnable a where column' = column
+instance {-# OVERLAPPABLE #-} SQLiteData a => Bindable a where
+	bindN' = bindN
+
+instance {-# OVERLAPPABLE #-} SQLiteData a => Columnable a where
+	column' = column
 
 instance SQLiteData a => SQLiteData (Maybe a) where
 	bindN stmt i Nothing = sqlite3BindNull stmt i ()
