@@ -79,6 +79,7 @@ library
       Number.Floating
       OneThirdOfTheYearIsOver
       PiRatio
+      Posix.File
       PrintableClass
       PseudoPrime
       Qualified
@@ -207,6 +208,7 @@ library
     , time
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -234,6 +236,7 @@ executable adv20251201
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -261,6 +264,7 @@ executable chokkaku
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -288,6 +292,7 @@ executable endless
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -315,6 +320,7 @@ executable quine
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -342,6 +348,7 @@ executable quine2
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -369,6 +376,7 @@ executable quine3
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -395,6 +403,7 @@ executable tribial-trials-exe
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -422,6 +431,7 @@ executable tryGzip
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -449,6 +459,7 @@ executable tryGzipCompress
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -476,6 +487,7 @@ executable tryGzipLegacy
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -503,6 +515,7 @@ executable tryRecursionOverModules
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010
 
@@ -530,5 +543,6 @@ test-suite tribial-trials-test
     , tribial-trials
     , try-freer-base-classes
     , try-ftcqueue
+    , unix
     , vector
   default-language: Haskell2010

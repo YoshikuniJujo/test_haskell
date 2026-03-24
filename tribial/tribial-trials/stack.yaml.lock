@@ -32,7 +32,7 @@ packages:
     subdir: themes/freer-effects/common/try-freer-base-classes
 snapshots:
 - completed:
-    sha256: 5dd2b0a478a9113dad0f9dcebf35841033966ad834b91c7b4cc3d8a6848bf0e6
-    size: 733114
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2026/3/13.yaml
-  original: nightly-2026-03-13
+    sha256: 4b725ac72cddc2f4c726b7c348ea30343a459c3f22738923818c08f3e77e8fec
+    size: 733133
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2026/3/23.yaml
+  original: nightly-2026-03-23
