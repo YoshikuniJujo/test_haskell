@@ -118,6 +118,34 @@ executable post
     , wuss
   default-language: Haskell2010
 
+executable reply
+  main-is: reply.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bech32
+    , bytestring
+    , containers
+    , moffy
+    , moffy-samples-events
+    , ppad-secp256k1
+    , random
+    , stm
+    , text
+    , time
+    , try-hello-nostr
+    , try-nostr-event-ng
+    , type-flip
+    , type-set
+    , unix-time
+    , vector
+    , websockets
+    , wuss
+  default-language: Haskell2010
+
 executable try-hello-nostr-exe
   main-is: Main.hs
   other-modules:
