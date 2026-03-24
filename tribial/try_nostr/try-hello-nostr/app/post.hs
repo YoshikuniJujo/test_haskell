@@ -7,7 +7,6 @@
 module Main (main) where
 
 import Prelude hiding (until)
-import Control.Monad
 import Data.Vector qualified as V
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
@@ -26,18 +25,18 @@ import "try-hello-nostr" Tools
 
 main :: IO ()
 main = do
-	scr : adr : prt : pb : sc : ((== "--send") -> fsnd) : msg : _ <- getArgs
+	scr : adr : prt : pb : sc : msg : _ <- getArgs
 	pub <- T.readFile pb; sec <- T.readFile sc
 	if (scr == "secure") 
-	then runSecureClient adr (read prt) "/" (ws sec pub fsnd $ T.pack msg)
-	else runClient adr (read prt) "/" (ws sec pub fsnd $ T.pack msg)
+	then runSecureClient adr (read prt) "/" (ws sec pub $ T.pack msg)
+	else runClient adr (read prt) "/" (ws sec pub $ T.pack msg)
 
-ws :: T.Text -> T.Text -> Bool -> T.Text -> ClientApp ()
-ws sc pb fsnd msg cnn = do
+ws :: T.Text -> T.Text -> T.Text -> ClientApp ()
+ws sc pb msg cnn = do
 	putStrLn "CONNECTED"
-	idnt <- T.pack . strToHexStr . BSC.unpack <$> write fsnd sc pb cnn msg
+	idnt <- T.pack . strToHexStr . BSC.unpack <$> write sc pb cnn msg
 	putStrLn "AFTER WRITE"
-	when fsnd $ doWhile do
+	doWhile do
 		Just r <- A.decode <$> receiveData cnn
 		print r
 		pure case r of
@@ -49,15 +48,20 @@ ws sc pb fsnd msg cnn = do
 	putStrLn "BYE!"
 	sendClose cnn ("Bye!" :: T.Text)
 
-write :: Bool -> T.Text -> T.Text -> Connection -> T.Text -> IO BS.ByteString
-write fsnd sc pb cnn msg = do
+write :: T.Text -> T.Text -> Connection -> T.Text -> IO BS.ByteString
+write sc pb cnn msg = do
 	Right sk <- pure $ Event.secretFromBech32 sc
 	Right pk <- pure $ Event.publicFromBech32 pb
+	writeMessage cnn sk pk msg
+
+writeMessage ::
+	Connection -> Event.Secret -> Event.Pub -> T.Text -> IO BS.ByteString
+writeMessage cnn sk pk msg = do
 	ut <- getUnixTime
 	ev <- Signed.signature sk Event.E {
 		Event.pubkey = pk, Event.created_at = ut,
 		Event.kind = 1, Event.tags = [], Event.content = msg }
 	Just jsn <- pure $ EvJs.encode' ev
-	when fsnd . sendTextData cnn . A.encode
+	sendTextData cnn . A.encode
 		. A.Array $ V.fromList [A.String "EVENT", A.Object jsn]
 	pure $ Signed.idnt ev
