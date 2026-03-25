@@ -1,4 +1,8 @@
 module Main (main) where
 
 main :: IO ()
-main = putStrLn =<< readFile "hello.txt"
+main = do
+	putStrLn "*** BEGIN HELLO ***"
+	putStrLn =<< readFile "world.txt"
+	putStrLn =<< readFile "hello.txt"
+	putStrLn "*** END HELLO ***"

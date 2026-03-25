@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
-
 module Main (main) where
 
 import Data.Time
@@ -7,4 +5,4 @@ import Data.Time
 main :: IO ()
 main = do
 	now <- getCurrentTime
-	writeFile "hello.txt" $ "Hello: " ++ show now
+	writeFile "world.txt" $ "WORLD: " ++ show now

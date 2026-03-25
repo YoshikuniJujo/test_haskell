@@ -11,10 +11,21 @@ RUN ghcup install ghc 9.14.1
 RUN ghcup install cabal 3.16.1.0
 RUN ghcup install stack 3.9.3
 
+RUN mkdir /opt/try-hello
+
+COPY try-world /opt/try-world
+WORKDIR "/opt/try-world"
+RUN stack install
+ENV PATH=/root/.local/bin:$PATH
+
+WORKDIR "/opt/try-hello"
+RUN try-world-exe
+
 COPY try-hello-haskell /opt/try-hello-haskell
 WORKDIR "/opt/try-hello-haskell"
-RUN stack build
+RUN stack install
 
-RUN stack exec makeFile
+WORKDIR "/opt/try-hello"
+RUN makeFile
 
-CMD ["stack", "exec", "try-hello-haskell-exe"]
+CMD ["try-hello-haskell-exe"]
