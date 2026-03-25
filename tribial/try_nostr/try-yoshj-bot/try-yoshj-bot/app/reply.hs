@@ -55,14 +55,17 @@ ws sk pk cnn = do
 						mcnt = Signed.content <$> mev
 						b = maybe False ("/yoshj-bot hello" `T.isPrefixOf`) mcnt
 					print mev
-					Just ev' <- maybe (pure Nothing) ((Just <$>) . mkReply sk pk) mev
+					mev' <- maybe (pure Nothing) ((Just <$>) . mkReply sk pk) mev
 					print mev
-					print ev'
-					print mcnt
-					sev <- Signed.signature sk ev'
-					Just jsn <- pure $ EvJsn.encode' sev
-					when b . sendTextData cnn . A.encode
-						. A.Array $ V.fromList [A.String "EVENT", A.Object jsn]
+					case mev' of
+						Nothing -> putStrLn "NOTHING"
+						Just ev' -> do
+							print ev'
+							print mcnt
+							sev <- Signed.signature sk ev'
+							Just jsn <- pure $ EvJsn.encode' sev
+							when b . sendTextData cnn . A.encode
+								. A.Array $ V.fromList [A.String "EVENT", A.Object jsn]
 			_ -> print rdt
 
 mkReply :: Event.Secret -> Event.Pub -> Signed.E -> IO Event.E
