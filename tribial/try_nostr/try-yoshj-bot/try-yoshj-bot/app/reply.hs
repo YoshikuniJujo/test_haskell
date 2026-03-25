@@ -50,9 +50,11 @@ ws sk pk cnn = do
 				A.String "EVENT",
 				A.String "foobar12345",
 				A.Object jsn ])) -> do
+					print jsn
 					let	mev = EvJsn.decode' jsn
 						mcnt = Signed.content <$> mev
 						b = maybe False ("/yoshj-bot hello" `T.isPrefixOf`) mcnt
+					print mev
 					Just ev' <- maybe (pure Nothing) ((Just <$>) . mkReply sk pk) mev
 					print mev
 					print ev'
