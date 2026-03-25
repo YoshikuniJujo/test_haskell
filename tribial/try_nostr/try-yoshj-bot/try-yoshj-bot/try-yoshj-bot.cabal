@@ -25,8 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
-      Pair
       Tools
   other-modules:
       Paths_try_yoshj_bot
@@ -46,29 +44,8 @@ library
     , unix
   default-language: Haskell2010
 
-executable makeKeyPair
-  main-is: makeKeyPair.hs
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , bech32
-    , bytestring
-    , entropy
-    , ppad-fixed
-    , ppad-secp256k1
-    , text
-    , try-yoshj-bot
-    , unix
-  default-language: Haskell2010
-
 executable try-yoshj-bot-exe
   main-is: Main.hs
-  other-modules:
-      Paths_try_yoshj_bot
-  autogen-modules:
-      Paths_try_yoshj_bot
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
