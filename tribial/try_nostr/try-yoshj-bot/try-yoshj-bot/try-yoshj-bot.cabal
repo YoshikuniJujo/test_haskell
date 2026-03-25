@@ -34,14 +34,43 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , bech32
     , bytestring
     , entropy
     , ppad-fixed
     , ppad-secp256k1
     , text
+    , try-nostr-event-ng
     , unix
+    , unix-time
+    , vector
+    , websockets
+    , wuss
+  default-language: Haskell2010
+
+executable reply
+  main-is: reply.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bech32
+    , bytestring
+    , entropy
+    , ppad-fixed
+    , ppad-secp256k1
+    , text
+    , try-nostr-event-ng
+    , try-yoshj-bot
+    , unix
+    , unix-time
+    , vector
+    , websockets
+    , wuss
   default-language: Haskell2010
 
 executable try-yoshj-bot-exe
@@ -50,15 +79,21 @@ executable try-yoshj-bot-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , bech32
     , bytestring
     , entropy
     , ppad-fixed
     , ppad-secp256k1
     , text
+    , try-nostr-event-ng
     , try-yoshj-bot
     , unix
+    , unix-time
+    , vector
+    , websockets
+    , wuss
   default-language: Haskell2010
 
 test-suite try-yoshj-bot-test
@@ -72,13 +107,19 @@ test-suite try-yoshj-bot-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , bech32
     , bytestring
     , entropy
     , ppad-fixed
     , ppad-secp256k1
     , text
+    , try-nostr-event-ng
     , try-yoshj-bot
     , unix
+    , unix-time
+    , vector
+    , websockets
+    , wuss
   default-language: Haskell2010
