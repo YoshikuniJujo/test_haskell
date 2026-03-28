@@ -12,7 +12,9 @@ import Network.Wai.Handler.Warp
 import Network.HTTP.Types
 
 main :: IO ()
-main = runEnv 10000 app
+main = do
+	putStrLn "try-warp-hello"
+	runEnv 10000 app
 
 app :: Application
 app req respond = bracket_
