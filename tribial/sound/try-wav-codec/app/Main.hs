@@ -29,12 +29,13 @@ enum "FormatTag" ''Word16 [''Show, ''Read, ''Eq] [
 
 main :: IO ()
 main = do
-	fp : (read -> dx) : (read -> dy) : (read -> dr) : as <- getArgs
+	fp : wav : (read -> dx) : (read -> dy) : (read -> dr) : as <- getArgs
 	let	tk = case as of
 			[a] -> Just $ read a
 			[] -> Nothing
 			_ -> error "bad arguments"
-	ewv <- stripRiff <$> BS.readFile "/home/tatsuya/tmp/aaaaa.wav"
+--	ewv <- stripRiff <$> BS.readFile "/home/tatsuya/tmp/aaaaa.wav"
+	ewv <- stripRiff <$> BS.readFile wav
 --	either error (\wv -> checkStriped wv 20000 Nothing 0.0068 0.1) ewv
 	either error (\wv -> checkStriped fp wv dr tk dx dy) ewv
 
