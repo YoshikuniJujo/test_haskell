@@ -36,6 +36,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , c-enum
   default-language: Haskell2010
 
 executable try-wav-codec-exe
@@ -50,6 +51,7 @@ executable try-wav-codec-exe
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , c-enum
     , try-wav-codec
   default-language: Haskell2010
 
@@ -66,5 +68,6 @@ test-suite try-wav-codec-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , c-enum
     , try-wav-codec
   default-language: Haskell2010
