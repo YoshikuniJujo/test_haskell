@@ -21,8 +21,14 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- primitive
 - bytestring
 - c-enum
+- simple-cairo
+- cairo-image
+- union-color
+- JuicyPixels
+- JuicyCairo
 
 ghc-options:
 - -Wall
@@ -41,6 +47,17 @@ library:
 executables:
   try-wav-codec-exe:
     main:                Main.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-wav-codec
+  helloWriteImageSurface:
+    main:                helloWriteImageSurface.hs
+    other-modules:       []
     source-dirs:         app
     ghc-options:
     - -threaded

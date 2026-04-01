@@ -4,7 +4,7 @@
 {-# LANGUAGE ExplicitForAll, ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE RequiredTypeArguments #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -16,6 +16,11 @@ import Data.Word
 import Data.Int
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BSC
+import System.Environment
+
+import Data.JuicyCairo
+import Codec.Picture
+import SampleImages
 
 enum "FormatTag" ''Word16 [''Show, ''Read, ''Eq] [
 	("WaveFormatPcm", 1),
@@ -24,17 +29,30 @@ enum "FormatTag" ''Word16 [''Show, ''Read, ''Eq] [
 
 main :: IO ()
 main = do
+	fp : (read -> dx) : (read -> dy) : (read -> dr) : as <- getArgs
+	let	tk = case as of
+			[a] -> Just $ read a
+			[] -> Nothing
+			_ -> error "bad arguments"
 	ewv <- stripRiff <$> BS.readFile "/home/tatsuya/tmp/aaaaa.wav"
-	either error checkStriped ewv
+--	either error (\wv -> checkStriped wv 20000 Nothing 0.0068 0.1) ewv
+	either error (\wv -> checkStriped fp wv dr tk dx dy) ewv
 
-checkStriped :: BS.ByteString -> IO ()
-checkStriped bs = do
+checkStriped :: FilePath -> BS.ByteString -> Int -> Maybe Int -> Double -> Double -> IO ()
+checkStriped fp bs dr tk dx dy = do
 	let	(fmt, chs) = BS.splitAt 4 bs
 		(fch, r1) = chunk chs
+		Chunk { chunkPayload = (l, r) } = (readData <$>) . fst $ chunk r1
 	print fmt
 	print $ pop @WaveFormatEx <$> fch
 --	printSome . fst $ chunk r1
-	print . (readData <$>) . fst $ chunk r1
+--	print . (readData <$>) . fst $ chunk r1
+	print l
+	print r
+	writePng fp . cairoArgb32ToJuicyRGBA8
+--	writePng "fromWav.png" . cairoArgb32ToJuicyRGBA8
+		. simpleGlaph 1536 768 10 384 dx dy
+		. maybe id take tk $ drop dr l
 
 readData :: BS.ByteString -> ([Int16], [Int16])
 readData bs
