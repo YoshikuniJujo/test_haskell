@@ -5,26 +5,19 @@
 
 packages:
 - completed:
-    hackage: JuicyCairo-0.1.0.1@sha256:615451d7df8b99b87f7e9f68f6866f9bd0b4497bddc7aa8d263d93134c8dd9ac,1467
-    pantry-tree:
-      sha256: 0e5c330b113d018644090a39b276b414cf2f53edf3bef17278473c1041f1020b
-      size: 367
-  original:
-    hackage: JuicyCairo-0.1.0.1
-- completed:
-    commit: d3193db7979f391f1a307849236b870fd8933709
+    commit: 70edd153322c32129edcbd8219b0511a60dbe486
     git: https://github.com/tanakh/optparse-declarative
     name: optparse-declarative
     pantry-tree:
-      sha256: fb9e8378d1025a1615f77e3411c098253031b0381cc8ff04c71eb595bcb79ec0
-      size: 1291
-    version: 0.4.2
+      sha256: e1d970e6c01efaa358c1c8fd54753eac3333e92a5838762d53f6c808939b094f
+      size: 1555
+    version: 0.4.3
   original:
-    commit: d3193db7979f391f1a307849236b870fd8933709
+    commit: 70edd153322c32129edcbd8219b0511a60dbe486
     git: https://github.com/tanakh/optparse-declarative
 snapshots:
 - completed:
-    sha256: c2a3e3fb880af83cc500ea1d4e04791d1bdde428e95b24c54b68a51257b2fa69
-    size: 712234
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2025/5/21.yaml
-  original: nightly-2025-05-21
+    sha256: bb4573472231346b68dc23e6db1bf8f0355bb3e3f38a19ba00503f2d71441e95
+    size: 735726
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2026/4/1.yaml
+  original: nightly-2026-04-01
