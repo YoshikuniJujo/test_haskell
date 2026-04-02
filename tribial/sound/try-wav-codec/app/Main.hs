@@ -43,13 +43,17 @@ checkStriped :: FilePath -> BS.ByteString -> Int -> Maybe Int -> Double -> Doubl
 checkStriped fp bs dr tk dx dy = do
 	let	(fmt, chs) = BS.splitAt 4 bs
 		(fch, r1) = chunk chs
-		Chunk { chunkPayload = (l, r) } = (readData <$>) . fst $ chunk r1
+		ch = channels $ fst . pop @WaveFormatEx <$> fch
+		Chunk { chunkPayload = (l, r) } = case ch of
+			1 -> (readData' <$>) . fst $ chunk r1
+			2 -> (readData <$>) . fst $ chunk r1
 	print fmt
 	print $ pop @WaveFormatEx <$> fch
 --	printSome . fst $ chunk r1
 --	print . (readData <$>) . fst $ chunk r1
 	print l
 	print r
+	print . channels $ fst . pop @WaveFormatEx <$> fch
 	writePng fp . cairoArgb32ToJuicyRGBA8
 --	writePng "fromWav.png" . cairoArgb32ToJuicyRGBA8
 		. simpleGlaph 1536 768 10 384 dx dy
@@ -61,6 +65,12 @@ readData bs
 	| otherwise = let
 		(l, r1) = pop bs
 		(r, r2) = pop r1 in (l :) *** (r :) $ readData r2
+
+readData' :: BS.ByteString -> ([Int16], [Int16])
+readData' bs
+	| BS.null bs = ([], [])
+	| otherwise = let
+		(l, r1) = pop bs in (l :) `first` readData' r1
 
 stripRiff :: BS.ByteString -> Either String BS.ByteString
 stripRiff bs = case BS.splitAt 4 bs of
@@ -87,6 +97,9 @@ data Chunk a = Chunk {
 	chunkFourCC :: BS.ByteString,
 	chunkPayload :: a }
 	deriving Show
+
+channels :: Chunk WaveFormatEx -> Word16
+channels Chunk { chunkPayload = wf } = nChannels wf
 
 instance Functor Chunk where
 	f `fmap` Chunk { chunkFourCC = fcc, chunkPayload = x } = Chunk {
