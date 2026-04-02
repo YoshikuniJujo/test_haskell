@@ -93,6 +93,7 @@ main = withPortAudio do
 					'a' -> "lla"
 					's' -> "lti"
 					'd' -> "do"
+					'r' -> "dos"
 					'f' -> "re"
 					'g' -> "mi"
 					'h' -> "fa"
