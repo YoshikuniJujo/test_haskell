@@ -11,6 +11,7 @@ module Main (main) where
 
 import Foreign.C.Enum
 import Control.Arrow
+import Control.Monad
 import Data.Bits
 import Data.Word
 import Data.Int
@@ -55,9 +56,18 @@ checkStriped fp bs dr tk dx dy = do
 	print r
 	print . channels $ fst . pop @WaveFormatEx <$> fch
 	writePng fp . cairoArgb32ToJuicyRGBA8
---	writePng "fromWav.png" . cairoArgb32ToJuicyRGBA8
 		. simpleGlaph 1536 768 10 384 dx dy
 		. maybe id take tk $ drop dr l
+	print $ pop @WaveFormatEx <$> fch
+	when (ch == 1) $ printMonoral16 Monoral16 {
+		waveFormat = chunkPayload $ fst . pop <$> fch,
+		waveData = l }
+
+writeWave :: FilePath -> Monoral16 -> Int -> Maybe Int -> Double -> Double -> IO ()
+writeWave fp Monoral16 { waveData = wv } dr tk dx dy =
+	writePng fp . cairoArgb32ToJuicyRGBA8
+		. simpleGlaph 1536 768 10 384 dx dy
+		. maybe id take tk $ drop dr wv
 
 readData :: BS.ByteString -> ([Int16], [Int16])
 readData bs
@@ -169,3 +179,23 @@ instance Poppable WaveFormatEx where
 		nBlockAlign = balgn,
 		wBitsPerSample = bps }
 --		cbSize = cbs }
+
+sampleWaveFormatEx = WaveFormatEx {
+	wFormatTag = WaveFormatPcm,
+	nChannels = 1,
+	nSamplePerSec = 48000,
+	nAvgBytesPerSec = 96000,
+	nBlockAlign = 2,
+	wBitsPerSample = 16 }
+
+data Monoral16 = Monoral16 {
+	waveFormat :: WaveFormatEx,
+	waveData :: [Int16] }
+	deriving Show
+
+printMonoral16 :: Monoral16 -> IO ()
+printMonoral16 = putStrLn . showMonoral16
+
+showMonoral16 :: Monoral16 -> String
+showMonoral16 m =
+	"(Monoral16 { waveFormat = " ++ show (waveFormat m) ++ ", waveData = " ++ take 200 (show $ waveData m) ++ "... }"
