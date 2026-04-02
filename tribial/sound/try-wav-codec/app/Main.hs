@@ -9,24 +9,20 @@
 
 module Main (main) where
 
-import Foreign.C.Enum
 import Control.Arrow
 import Control.Monad
 import Data.Bits
 import Data.Word
 import Data.Int
 import Data.ByteString qualified as BS
-import Data.ByteString.Char8 qualified as BSC
 import System.Environment
 
 import Data.JuicyCairo
 import Codec.Picture
 import SampleImages
 
-enum "FormatTag" ''Word16 [''Show, ''Read, ''Eq] [
-	("WaveFormatPcm", 1),
-	("WaveFormatIeeeFloat", 3),
-	("WaveFormatMulaw", 7) ]
+import Waveform
+import Poppable
 
 main :: IO ()
 main = do
@@ -48,6 +44,7 @@ checkStriped fp bs dr tk dx dy = do
 		Chunk { chunkPayload = (l, r) } = case ch of
 			1 -> (readData' <$>) . fst $ chunk r1
 			2 -> (readData <$>) . fst $ chunk r1
+			_ -> error "not yet implemented"
 	print fmt
 	print $ pop @WaveFormatEx <$> fch
 --	printSome . fst $ chunk r1
@@ -62,12 +59,6 @@ checkStriped fp bs dr tk dx dy = do
 	when (ch == 1) $ printMonoral16 Monoral16 {
 		waveFormat = chunkPayload $ fst . pop <$> fch,
 		waveData = l }
-
-writeWave :: FilePath -> Monoral16 -> Int -> Maybe Int -> Double -> Double -> IO ()
-writeWave fp Monoral16 { waveData = wv } dr tk dx dy =
-	writePng fp . cairoArgb32ToJuicyRGBA8
-		. simpleGlaph 1536 768 10 384 dx dy
-		. maybe id take tk $ drop dr wv
 
 readData :: BS.ByteString -> ([Int16], [Int16])
 readData bs
@@ -89,7 +80,7 @@ stripRiff bs = case BS.splitAt 4 bs of
 				foldr (\x -> (fromIntegral x .|.) . (`shiftL` 8)
 				) 0 . BS.unpack )
 			$ BS.splitAt 4 r1
-		(pl, r3) = BS.splitAt sz r2 in
+		(pl, _r3) = BS.splitAt sz r2 in
 		Right pl
 	_ -> Left "no RIFF magic number"
 
@@ -115,87 +106,3 @@ instance Functor Chunk where
 	f `fmap` Chunk { chunkFourCC = fcc, chunkPayload = x } = Chunk {
 		chunkFourCC = fcc,
 		chunkPayload = f x }
-
-printSome :: Show a => Chunk a -> IO ()
-printSome = putStrLn . showSome
-
-showSome :: Show a => Chunk a -> String
-showSome Chunk { chunkFourCC = fcc, chunkPayload = pl } =
-	"(Chunk " ++ BSC.unpack fcc ++ " " ++ take 100 (show pl) ++ "...)"
-
-pop :: forall a . Poppable a => BS.ByteString -> (a, BS.ByteString)
-pop bs = fromByteString `first` (BS.splitAt (byteLength @a) bs)
-
-class Poppable a where
-	byteLength :: Int
-	fromByteString :: BS.ByteString -> a
-
-instance Poppable Word16 where
-	byteLength = 2
-	fromByteString bs = let
-		[a, b] = fromIntegral <$> BS.unpack (BS.take 2 bs) in
-		a .|. b `shiftL` 8
-
-instance Poppable Int16 where
-	byteLength = 2
-	fromByteString bs = let
-		[a, b] = fromIntegral <$> BS.unpack (BS.take 2 bs) in
-		a .|. b `shiftL` 8
-
-instance Poppable Word32 where
-	byteLength = 4
-	fromByteString =
-		foldr (\x -> (fromIntegral x .|.) . (`shiftL` 8)) 0 . BS.unpack
-
-instance Poppable FormatTag where
-	byteLength = 2
-	fromByteString = FormatTag . fromByteString
-
-data WaveFormatEx = WaveFormatEx {
-	wFormatTag :: FormatTag,
-	nChannels :: Word16,
-	nSamplePerSec :: Word32,
-	nAvgBytesPerSec :: Word32,
-	nBlockAlign :: Word16,
-	wBitsPerSample :: Word16 }
---	cbSize :: Word16 }
-	deriving Show
-
-instance Poppable WaveFormatEx where
-	byteLength = 16
-	fromByteString bs = let
-		(ft, r1) = pop bs
-		(cnns, r2) = pop r1
-		(sps, r3) = pop r2
-		(abps, r4) = pop r3
-		(balgn, r5) = pop r4
-		(bps, r6) = pop r5
---		(cbs, r7) = pop r6
-		in WaveFormatEx {
-		wFormatTag = ft,
-		nChannels = cnns,
-		nSamplePerSec = sps,
-		nAvgBytesPerSec = abps,
-		nBlockAlign = balgn,
-		wBitsPerSample = bps }
---		cbSize = cbs }
-
-sampleWaveFormatEx = WaveFormatEx {
-	wFormatTag = WaveFormatPcm,
-	nChannels = 1,
-	nSamplePerSec = 48000,
-	nAvgBytesPerSec = 96000,
-	nBlockAlign = 2,
-	wBitsPerSample = 16 }
-
-data Monoral16 = Monoral16 {
-	waveFormat :: WaveFormatEx,
-	waveData :: [Int16] }
-	deriving Show
-
-printMonoral16 :: Monoral16 -> IO ()
-printMonoral16 = putStrLn . showMonoral16
-
-showMonoral16 :: Monoral16 -> String
-showMonoral16 m =
-	"(Monoral16 { waveFormat = " ++ show (waveFormat m) ++ ", waveData = " ++ take 200 (show $ waveData m) ++ "... }"
