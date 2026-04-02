@@ -50,6 +50,9 @@ instance Poppable FormatTag where
 	byteLength = 2
 	fromByteString = FormatTag . fromByteString
 
+instance ToByteString FormatTag where
+	toByteString (FormatTag ft) = toByteString ft
+
 data WaveFormatEx = WaveFormatEx {
 	wFormatTag :: FormatTag,
 	nChannels :: Word16,
@@ -78,6 +81,17 @@ instance Poppable WaveFormatEx where
 		nBlockAlign = balgn,
 		wBitsPerSample = bps }
 --		cbSize = cbs }
+
+instance ToByteString WaveFormatEx where
+	toByteString WaveFormatEx {
+		wFormatTag = ft,
+		nChannels = cnns,
+		nSamplePerSec = sps,
+		nAvgBytesPerSec = abps,
+		nBlockAlign = balgn,
+		wBitsPerSample = bps } =
+		toByteString ft <> toByteString cnns <> toByteString sps <>
+		toByteString abps <> toByteString balgn <> toByteString bps
 
 data Monoral16 = Monoral16 {
 	waveFormat :: WaveFormatEx,

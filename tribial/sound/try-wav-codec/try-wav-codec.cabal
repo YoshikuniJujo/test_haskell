@@ -29,6 +29,7 @@ library
       Poppable
       SampleImages
       Waveform
+      WriteMonoral16
   other-modules:
       Paths_try_wav_codec
   autogen-modules:

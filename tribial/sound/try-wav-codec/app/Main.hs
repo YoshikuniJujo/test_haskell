@@ -10,7 +10,6 @@
 module Main (main) where
 
 import Control.Arrow
-import Control.Monad
 import Data.Bits
 import Data.Word
 import Data.Int
@@ -31,24 +30,21 @@ main = do
 			[a] -> Just $ read a
 			[] -> Nothing
 			_ -> error "bad arguments"
---	ewv <- stripRiff <$> BS.readFile "/home/tatsuya/tmp/aaaaa.wav"
 	ewv <- stripRiff <$> BS.readFile wav
---	either error (\wv -> checkStriped wv 20000 Nothing 0.0068 0.1) ewv
 	either error (\wv -> checkStriped fp wv dr tk dx dy) ewv
 
 checkStriped :: FilePath -> BS.ByteString -> Int -> Maybe Int -> Double -> Double -> IO ()
 checkStriped fp bs dr tk dx dy = do
 	let	(fmt, chs) = BS.splitAt 4 bs
 		(fch, r1) = chunk chs
-		ch = channels $ fst . pop @WaveFormatEx <$> fch
+		fmth = fst . pop @WaveFormatEx <$> fch
+		ch = channels fmth
 		Chunk { chunkPayload = (l, r) } = case ch of
 			1 -> (readData' <$>) . fst $ chunk r1
 			2 -> (readData <$>) . fst $ chunk r1
 			_ -> error "not yet implemented"
 	print fmt
 	print $ pop @WaveFormatEx <$> fch
---	printSome . fst $ chunk r1
---	print . (readData <$>) . fst $ chunk r1
 	print l
 	print r
 	print . channels $ fst . pop @WaveFormatEx <$> fch
@@ -56,9 +52,10 @@ checkStriped fp bs dr tk dx dy = do
 		. simpleGlaph 1536 768 10 384 dx dy
 		. maybe id take tk $ drop dr l
 	print $ pop @WaveFormatEx <$> fch
-	when (ch == 1) $ printMonoral16 Monoral16 {
-		waveFormat = chunkPayload $ fst . pop <$> fch,
-		waveData = l }
+	let	mm = if (ch == 1) then Just Monoral16 {
+			waveFormat = chunkPayload $ fst . pop <$> fch,
+			waveData = l } else Nothing
+	maybe (pure ()) printMonoral16 mm
 
 readData :: BS.ByteString -> ([Int16], [Int16])
 readData bs
