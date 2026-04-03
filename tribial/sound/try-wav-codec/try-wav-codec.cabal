@@ -85,6 +85,24 @@ executable try-wav-codec-exe
     , union-color
   default-language: Haskell2010
 
+executable writeBoin
+  main-is: writeBoin.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , try-wav-codec
+    , union-color
+  default-language: Haskell2010
+
 executable writeWave
   main-is: writeWave.hs
   hs-source-dirs:
