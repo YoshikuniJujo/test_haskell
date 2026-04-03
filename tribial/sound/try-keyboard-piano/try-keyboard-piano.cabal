@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      KeyLog
       Lib
   other-modules:
       Paths_try_keyboard_piano
