@@ -7,12 +7,14 @@ module Main (main) where
 import Control.Monad
 import Control.Concurrent.STM
 import Data.Function
+import System.Environment
 import Graphics.UI.GLFW qualified as Glfw
 
 import KeyLog
 
 main :: IO ()
 main = do
+	klfp : _ <- getArgs
 	end <- atomically $ newTVar False
 	kl <- atomically $ newTVar []
 	print =<< Glfw.init
@@ -30,6 +32,6 @@ main = do
 		e <- atomically $ readTVar end
 		when (not e) go
 	Glfw.terminate
-	writeKeyLog "foo.keys"
+	writeKeyLog klfp
 		. filter ((/= Glfw.Key'Q) . klKey)
 		. filter ((/= Glfw.KeyState'Repeating) . klAction) =<< atomically (readTVar kl)

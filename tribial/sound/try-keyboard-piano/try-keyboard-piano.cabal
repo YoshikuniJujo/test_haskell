@@ -25,8 +25,14 @@ source-repository head
 
 library
   exposed-modules:
+      Hz
       KeyLog
       Lib
+      Poppable
+      SampleImages
+      Waveform
+      WriteMonoral16
+      WriteWave
   other-modules:
       Paths_try_keyboard_piano
   autogen-modules:
@@ -36,8 +42,36 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       GLFW-b
+    , JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , cairo-image
+    , primitive
+    , simple-cairo
     , stm
+    , union-color
+  default-language: Haskell2010
+
+executable keyLogToWav
+  main-is: keyLogToWav.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , stm
+    , try-keyboard-piano
+    , union-color
   default-language: Haskell2010
 
 executable try-keyboard-piano-exe
@@ -51,9 +85,17 @@ executable try-keyboard-piano-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , cairo-image
+    , primitive
+    , simple-cairo
     , stm
     , try-keyboard-piano
+    , union-color
   default-language: Haskell2010
 
 test-suite try-keyboard-piano-test
@@ -68,7 +110,15 @@ test-suite try-keyboard-piano-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , cairo-image
+    , primitive
+    , simple-cairo
     , stm
     , try-keyboard-piano
+    , union-color
   default-language: Haskell2010
