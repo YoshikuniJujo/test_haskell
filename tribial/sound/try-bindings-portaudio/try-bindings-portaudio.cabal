@@ -1,0 +1,70 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.39.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-bindings-portaudio
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-bindings-portaudio#readme>
+homepage:       https://github.com/YoshikuniJujo/try-bindings-portaudio#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-bindings-portaudio/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      (c) 2025 Yoshikuni Jujo
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-bindings-portaudio
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_try_bindings_portaudio
+  autogen-modules:
+      Paths_try_bindings_portaudio
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , bindings-portaudio
+  default-language: Haskell2010
+
+executable try-bindings-portaudio-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_bindings_portaudio
+  autogen-modules:
+      Paths_try_bindings_portaudio
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bindings-portaudio
+    , try-bindings-portaudio
+  default-language: Haskell2010
+
+test-suite try-bindings-portaudio-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_bindings_portaudio
+  autogen-modules:
+      Paths_try_bindings_portaudio
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bindings-portaudio
+    , try-bindings-portaudio
+  default-language: Haskell2010
