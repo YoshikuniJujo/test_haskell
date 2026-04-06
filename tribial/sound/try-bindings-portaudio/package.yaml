@@ -21,7 +21,11 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
+- stm
+- vector
+- linear
 - bindings-portaudio
+- optparse-applicative
 
 ghc-options:
 - -Wall
@@ -40,6 +44,16 @@ library:
 executables:
   try-bindings-portaudio-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-bindings-portaudio
+  bak:
+    main:                main_bak.hs
+    other-modules:       []
     source-dirs:         app
     ghc-options:
     - -threaded

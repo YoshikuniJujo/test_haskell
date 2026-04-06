@@ -36,6 +36,25 @@ library
   build-depends:
       base >=4.7 && <5
     , bindings-portaudio
+    , linear
+    , optparse-applicative
+    , stm
+    , vector
+  default-language: Haskell2010
+
+executable bak
+  main-is: main_bak.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bindings-portaudio
+    , linear
+    , optparse-applicative
+    , stm
+    , try-bindings-portaudio
+    , vector
   default-language: Haskell2010
 
 executable try-bindings-portaudio-exe
@@ -50,7 +69,11 @@ executable try-bindings-portaudio-exe
   build-depends:
       base >=4.7 && <5
     , bindings-portaudio
+    , linear
+    , optparse-applicative
+    , stm
     , try-bindings-portaudio
+    , vector
   default-language: Haskell2010
 
 test-suite try-bindings-portaudio-test
@@ -66,5 +89,9 @@ test-suite try-bindings-portaudio-test
   build-depends:
       base >=4.7 && <5
     , bindings-portaudio
+    , linear
+    , optparse-applicative
+    , stm
     , try-bindings-portaudio
+    , vector
   default-language: Haskell2010
