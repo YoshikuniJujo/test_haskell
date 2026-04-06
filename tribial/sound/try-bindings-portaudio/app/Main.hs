@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ViewPatterns, LambdaCase #-}
 {-# LANGUAGE ApplicativeDo #-}
 import System.PortAudio
