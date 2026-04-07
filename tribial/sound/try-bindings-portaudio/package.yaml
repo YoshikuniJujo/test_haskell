@@ -82,8 +82,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-bindings-portaudio
-  piano:
-    main:                piano.hs
+  singleNote:
+    main:                singleNote.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:

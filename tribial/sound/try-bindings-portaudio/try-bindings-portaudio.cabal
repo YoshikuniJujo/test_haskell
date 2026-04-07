@@ -79,8 +79,8 @@ executable keyevent
     , vector
   default-language: Haskell2010
 
-executable piano
-  main-is: piano.hs
+executable piano_bak
+  main-is: piano_bak.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -95,8 +95,8 @@ executable piano
     , vector
   default-language: Haskell2010
 
-executable piano_bak
-  main-is: piano_bak.hs
+executable singleNote
+  main-is: singleNote.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
