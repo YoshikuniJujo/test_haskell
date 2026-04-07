@@ -29,6 +29,7 @@ library
       KeyEvent
       Lib
       PlaySound
+      Tools
   other-modules:
       Paths_try_bindings_portaudio
   autogen-modules:
@@ -80,6 +81,22 @@ executable keyevent
 
 executable piano
   main-is: piano.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , base >=4.7 && <5
+    , bindings-portaudio
+    , linear
+    , optparse-applicative
+    , stm
+    , try-bindings-portaudio
+    , vector
+  default-language: Haskell2010
+
+executable piano_bak
+  main-is: piano_bak.hs
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N

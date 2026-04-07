@@ -62,8 +62,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-bindings-portaudio
-  piano:
-    main:                piano.hs
+  piano_bak:
+    main:                piano_bak.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:
@@ -74,6 +74,16 @@ executables:
     - try-bindings-portaudio
   keyevent:
     main:                keyevent.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-bindings-portaudio
+  piano:
+    main:                piano.hs
     other-modules:       []
     source-dirs:         app
     ghc-options:
