@@ -2,7 +2,8 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module KeyEvent (withKeyActions, KeyActions, KeyAction(..)) where
+module KeyEvent (
+	withKeyActions, KeyActions, KeyAction(..), Action(..) ) where
 
 import Control.Monad
 import Control.Concurrent
