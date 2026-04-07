@@ -28,6 +28,7 @@ library
       Hz
       KeyEvent
       Lib
+      PlaySound
   other-modules:
       Paths_try_bindings_portaudio
   autogen-modules:
