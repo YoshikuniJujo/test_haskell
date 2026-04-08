@@ -28,6 +28,7 @@ library
       Hz
       KeyEvent
       Lib
+      Loudness
       PlaySound
       Tools
   other-modules:

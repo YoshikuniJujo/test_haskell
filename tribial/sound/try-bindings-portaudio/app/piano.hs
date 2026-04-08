@@ -12,9 +12,8 @@ type Sound = Map.Map Doremi PhaseLoudness
 
 data Doremi = Do | Re | Mi | Fa | So | La | Ti | HDo deriving Show
 
-data PhaseLoudness = PhaseLoudness {
-	plPhase :: Int,
-	plLoudness :: Loudness }
+data PhaseLoudness =
+	PhaseLoudness { plPhase :: Int, plLoudness :: Loudness }
 	deriving Show
 
 data Loudness

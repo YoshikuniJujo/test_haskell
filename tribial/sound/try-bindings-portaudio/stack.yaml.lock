@@ -13,8 +13,7 @@ packages:
     hackage: bindings-portaudio-0.3
 snapshots:
 - completed:
-    sha256: a6882445afe04fd38791656e3667b491d92b9c27bcf18cda7e01c73016e828ee
-    size: 728959
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/36.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/36.yaml
+    sha256: 07376babe3dd4ce5f096e3b770ab18b896492c5c537b363ba08d1d03ccfafe11
+    size: 736595
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2026/4/7.yaml
+  original: nightly-2026-04-07

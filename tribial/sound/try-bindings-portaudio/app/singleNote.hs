@@ -18,6 +18,8 @@ import KeyEvent
 import PlaySound
 import Hz qualified as Hz
 
+import Loudness
+
 main :: IO ()
 main = do
 	print =<< Glfw.getTime
@@ -37,7 +39,7 @@ main = do
 	snd <- atomically $ newTVar Sound {
 		soundDoremi = La,
 		soundPhase = 0,
-		soundLoudness = Constant 0 }
+		soundLoudness = Silent }
 
 	print =<< Glfw.getTime
 
@@ -218,42 +220,6 @@ singleNote s n chs = go 0 (soundLoudness s) chs
 		Re -> Hz.re
 		Mi -> Hz.mi
 		La -> Hz.la
-
-data Loudness
-	= Constant Float
-	| Changing {
-		changingNow :: Float,
-		changingDiff :: Float,
-		changingTo :: Float }
-	deriving Show
-
-currentLoudness :: Loudness -> Float
-currentLoudness = \case
-	(Constant l) -> l
-	Changing { changingNow = l } -> l
-
-nextLoudness :: Loudness -> Loudness
-nextLoudness = \case
-	l@(Constant _) -> l
-	Changing {	changingNow = n,
-			changingDiff = d,
-			changingTo = t }
-		| between n (n + d) t -> Constant t
-		| otherwise -> Changing (n + d) d t
-
-changeLoudness :: Loudness -> Float -> Float -> Loudness
-changeLoudness l d t = case l of
-	Constant n -> Changing {
-		changingNow = n,
-		changingDiff = d,
-		changingTo = t }
-	Changing { changingNow = n } -> Changing {
-		changingNow = n,
-		changingDiff = d,
-		changingTo = t }
-
-between :: Ord n => n -> n -> n -> Bool
-between mn mx nw = mn <= nw && nw <= mx || mx <= nw && nw <= mn
 
 data Doremi
 	= Mu
