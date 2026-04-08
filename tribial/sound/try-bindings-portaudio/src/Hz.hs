@@ -20,8 +20,6 @@ period :: Hz -> Double
 period 0 = 1
 period hz = samplingRate / hz
 
-doo, re, mi, la :: Hz
-doo = 262
-re = 294
-mi = 330
-la = 440
+lla, lti, doo, re, mi, fa, so, la, ti, hdo :: Hz
+lla = 220; lti = 247; doo = 262; re = 294; mi = 330
+fa = 349; so = 392; la = 440; ti = 494; hdo = 523

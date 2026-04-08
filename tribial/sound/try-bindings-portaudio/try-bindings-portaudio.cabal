@@ -25,11 +25,13 @@ source-repository head
 
 library
   exposed-modules:
+      Doremi
       Hz
       KeyEvent
       Lib
       Loudness
       PlaySound
+      Sound
       Tools
   other-modules:
       Paths_try_bindings_portaudio

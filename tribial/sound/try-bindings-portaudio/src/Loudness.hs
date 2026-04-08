@@ -7,7 +7,7 @@
 
 module Loudness (
 
-	Loudness, pattern Silent,
+	Loudness, pattern Silent, zero,
 	currentLoudness, nextLoudness, changeLoudness
 
 	) where
@@ -22,6 +22,12 @@ data Changing = Changing {
 
 pattern Silent :: Loudness
 pattern Silent = Constant 0
+
+zero :: Loudness -> Bool
+zero = \case
+	Constant 0 -> True
+	Gradation Changing { changingNow = 0, changingDiff = d } -> d <= 0
+	_ -> False
 
 currentLoudness :: Loudness -> Float
 currentLoudness = \case
@@ -42,15 +48,14 @@ nextLoudness = \case
 			changingTo = t }
 
 changeLoudness :: Loudness -> Float -> Float -> Loudness
-changeLoudness l d t = case l of
-	Constant n -> Gradation Changing {
-		changingNow = n,
-		changingDiff = d,
-		changingTo = t }
-	Gradation Changing { changingNow = n } -> Gradation Changing {
-		changingNow = n,
-		changingDiff = d,
-		changingTo = t }
+changeLoudness l d t
+	| doesApproach n d t = Gradation
+		Changing { changingNow = n, changingDiff = d, changingTo = t }
+	| otherwise = Constant n
+	where n = currentLoudness l
+
+doesApproach :: Float -> Float -> Float -> Bool
+doesApproach n d t = (t - n) * signum d > 0
 
 between :: Ord n => n -> n -> n -> Bool
 between mn mx nw = mn <= nw && nw <= mx || mx <= nw && nw <= mn
