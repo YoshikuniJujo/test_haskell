@@ -1,9 +1,10 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LAnGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Sound (
 
-	Sound, noTouch
+	Sound, zeroSound, noTouch, sound
 
 	) where
 
@@ -13,6 +14,9 @@ import Doremi
 import Loudness
 
 type Sound = Map.Map Doremi PhaseLoudness
+
+zeroSound :: Sound
+zeroSound = Map.empty
 
 removeZeros :: Sound -> Sound
 removeZeros = Map.filter (not . zero . plLoudness)
@@ -24,6 +28,17 @@ nextPhaseLoudness :: PhaseLoudness -> PhaseLoudness
 nextPhaseLoudness PhaseLoudness {
 	plPhase = phs, plLoudness = l } = PhaseLoudness {
 	plPhase = phs + 1, plLoudness = nextLoudness l }
+
+{-
+mapLoudness :: (Loudness -> Loudness) -> PhaseLoudness -> PhaseLoudness
+mapLoudness f pl = pl { plLoudness = f $ plLoudness pl }
+-}
+
+mapLoudness' ::
+	(Maybe Loudness -> Loudness) -> Maybe PhaseLoudness -> PhaseLoudness
+mapLoudness' f = \case
+	Nothing -> PhaseLoudness { plPhase = 0, plLoudness = f Nothing }
+	Just pl -> pl { plLoudness = f . Just $ plLoudness pl }
 
 currentPhaseLoudness :: PhaseLoudness -> (Int, Float)
 currentPhaseLoudness = plPhase &&& currentLoudness . plLoudness
@@ -56,3 +71,26 @@ unfoldr' f s n
 
 noTouch :: Sound -> Int -> ([Float], Sound)
 noTouch = unfoldr' uncons'
+
+event :: Sound -> Doremi -> Float -> Float -> Sound
+event s nt df to = Map.alter change nt s
+	where
+	change = Just . mapLoudness' (\ml -> changeLoudness' ml df to)
+
+sound :: Sound -> Int -> [(Int, (Doremi, Float, Float))] -> ([Float], Sound)
+sound s n chs
+	| n < 1 = ([], s)
+	| otherwise = let (mch, chs') = head' n chs in case mch of
+		Nothing -> let (p, s') = uncons' s in
+			(p :) `first` sound s' (n - 1) chs'
+		Just ch -> let (p, s') = uncons' $ uncurry3 (event s) ch in
+			(p :) `first` sound s' (n - 1) chs'
+
+head' :: Ord n => n -> [(n, a)] -> (Maybe a, [(n, a)])
+head' _ [] = (Nothing, [])
+head' n0 nxa@((n, x) : nxs)
+	| n <= n0 = (Just x, nxs)
+	| otherwise = (Nothing, nxa)
+
+uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
+uncurry3 f (x, y, z) = f x y z

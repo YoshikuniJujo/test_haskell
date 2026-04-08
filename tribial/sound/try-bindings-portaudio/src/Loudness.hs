@@ -8,7 +8,7 @@
 module Loudness (
 
 	Loudness, pattern Silent, zero,
-	currentLoudness, nextLoudness, changeLoudness
+	currentLoudness, nextLoudness, changeLoudness, changeLoudness'
 
 	) where
 
@@ -53,6 +53,13 @@ changeLoudness l d t
 		Changing { changingNow = n, changingDiff = d, changingTo = t }
 	| otherwise = Constant n
 	where n = currentLoudness l
+
+changeLoudness' :: Maybe Loudness -> Float -> Float -> Loudness
+changeLoudness' ml d t = case ml of
+	Nothing	| d > 0 && t > 0 -> Gradation
+		Changing { changingNow = 0, changingDiff = d, changingTo = t }
+	Just l -> changeLoudness l d t
+	_ -> Constant 0
 
 doesApproach :: Float -> Float -> Float -> Bool
 doesApproach n d t = (t - n) * signum d > 0
