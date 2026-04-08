@@ -12,17 +12,19 @@ import Control.Exception
 import Data.Function
 import Graphics.UI.GLFW qualified as Glfw
 
-withKeyActions :: Int -> Int -> String -> IO (TVar KeyActions)
+withKeyActions :: Int -> Int -> String -> IO (TVar KeyActions, TChan KeyAction)
 withKeyActions wdt hgt ttl = do
 	vkas <- newKeyActions
+	cka <- atomically newTChan
 	(print =<<) . forkIO . glfwWith $ glfwWithWindow wdt hgt ttl \win -> do
 			Glfw.setKeyCallback win $ Just \_w k _n ks _mks -> do
 				Just t <- Glfw.getTime
 				maybe (pure ()) (putKeyAction vkas . mkKeyAction t k) $ keyStateToAction ks
+				maybe (pure ()) (atomically . writeTChan cka . mkKeyAction t k) $ keyStateToAction ks
 
 			fix \go -> threadDelay 100000 >> Glfw.waitEvents >> go
 
-	pure vkas
+	pure (vkas, cka)
 
 glfwWith :: IO a -> IO a
 glfwWith = bracket_

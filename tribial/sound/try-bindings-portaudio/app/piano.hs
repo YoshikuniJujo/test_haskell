@@ -6,6 +6,7 @@
 module Main (main) where
 
 import Control.Monad
+import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Foldable
 import Data.Maybe
@@ -24,7 +25,8 @@ main = do
 	time <- atomically $ newTVar 0
 	sd <- atomically $ newTVar zeroSound
 	print =<< Glfw.getTime
-	vkas <- withKeyActions 100 100 "Hello"
+	(vkas, cka) <- withKeyActions 100 100 "Hello"
+	forkIO . forever $ appendFile "tmp.txt" . keyLogToText =<< atomically (readTChan cka)
 --	playSound 0 48000 \(o :: MV.IOVector (V2 Float)) -> do
 	playSound 0 4800 \(o :: MV.IOVector (V2 Float)) -> do
 		mtm <- Glfw.getTime
@@ -70,3 +72,7 @@ keyDoremiTable =
 		Glfw.Key'Apostrophe
 		] `zip`
 	[LLa, LTi, Do, Re, Mi, Fa, So, La, Ti, HDo, HRe]
+
+keyLogToText :: KeyAction -> String
+keyLogToText KeyAction { keyActionTime = t, keyActionKey = k, keyActionAction = a } =
+	show t ++ " " ++ show k ++ " " ++ show a ++ "\n"

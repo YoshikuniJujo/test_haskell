@@ -26,7 +26,7 @@ main = do
 	time <- atomically $ newTVar 0
 	end <- atomically $ newTVar False
 	la <- atomically $ newTVar Mu
-	vkas <- withKeyActions 100 100 "Hello"
+	(vkas, _) <- withKeyActions 100 100 "Hello"
 	{-
 	snd <- atomically $ newTVar Sound {
 		soundDoremi = La,

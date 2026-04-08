@@ -16,7 +16,7 @@ import KeyEvent
 main :: IO ()
 main = do
 	end <- atomically $ newTVar False
-	vkas <- withKeyActions 100 100 "Hello"
+	(vkas, _) <- withKeyActions 100 100 "Hello"
 	fix \go -> do
 		threadDelay 100000
 		kas <- atomically $ readTVar vkas <* writeTVar vkas []
