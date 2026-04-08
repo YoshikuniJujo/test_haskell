@@ -44,7 +44,7 @@ currentPhaseLoudness :: PhaseLoudness -> (Int, Float)
 currentPhaseLoudness = plPhase &&& currentLoudness . plLoudness
 
 singleNote :: Doremi -> Int -> Float -> Float
-singleNote nt phs l = soundPressure nt phs * l
+singleNote nt phs l = soundPressure' nt phs * l
 
 uncurry' :: (a -> b -> c -> d) -> (a, (b, c)) -> d
 uncurry' = (uncurry $) . (uncurry .)
@@ -77,14 +77,14 @@ event s nt df to = Map.alter change nt s
 	where
 	change = Just . mapLoudness' (\ml -> changeLoudness' ml df to)
 
-sound :: Sound -> Int -> [(Int, (Doremi, Float, Float))] -> ([Float], Sound)
-sound s n chs
-	| n < 1 = ([], s)
-	| otherwise = let (mch, chs') = head' n chs in case mch of
+sound :: Sound -> Int -> Int -> [(Int, (Doremi, Float, Float))] -> ([Float], Sound)
+sound s m n chs
+	| n < 1 = ([], foldl event' s $ snd <$> chs)
+	| otherwise = let (mch, chs') = head' (m - n) chs in case mch of
 		Nothing -> let (p, s') = uncons' s in
-			(p :) `first` sound s' (n - 1) chs'
+			(p :) `first` sound s' m (n - 1) chs'
 		Just ch -> let (p, s') = uncons' $ uncurry3 (event s) ch in
-			(p :) `first` sound s' (n - 1) chs'
+			(p :) `first` sound s' m (n - 1) chs'
 
 head' :: Ord n => n -> [(n, a)] -> (Maybe a, [(n, a)])
 head' _ [] = (Nothing, [])
@@ -94,3 +94,5 @@ head' n0 nxa@((n, x) : nxs)
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z
+
+event' s = uncurry3 (event s)

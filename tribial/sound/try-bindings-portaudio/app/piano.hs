@@ -1,52 +1,71 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
-import Control.Arrow
-import Data.Map qualified as Map
+import Control.Monad
+import Control.Concurrent.STM
+import Data.Foldable
+import Data.Maybe
+import Data.Vector.Storable.Mutable qualified as MV
+import System.PortAudio
+import Graphics.UI.GLFW qualified as Glfw
+import Linear (V2(..))
+import KeyEvent
+import PlaySound
+import Sound
 import Doremi
-import Loudness
+-- import Loudness
 
 main :: IO ()
-main = putStrLn "piano"
+main = do
+	time <- atomically $ newTVar 0
+	sd <- atomically $ newTVar zeroSound
+	print =<< Glfw.getTime
+	vkas <- withKeyActions 100 100 "Hello"
+--	playSound 0 48000 \(o :: MV.IOVector (V2 Float)) -> do
+	playSound 0 4800 \(o :: MV.IOVector (V2 Float)) -> do
+		mtm <- Glfw.getTime
+		tm0 <- atomically do
+			t <- readTVar time
+			maybe (pure ()) (writeTVar time) mtm
+			pure t
+		print tm0
+		kas <- atomically $ readTVar vkas <* writeTVar vkas []
+		print kas
+		s <- atomically $ readTVar sd
+		let	evs = keyActionToChanger tm0 `mapMaybe` kas
+			(wf, s') = sound s (MV.length o) (MV.length o) evs
 
-type Sound = Map.Map Doremi PhaseLoudness
+		print evs
+		for_ ([0 ..] `zip` wf) \(i, v) -> do
+			when (v < - 1 || v > 1) $ putStrLn "OVER"
+			MV.write o i (V2 v v)
+		atomically $ writeTVar sd s'
+		print s'
+		print $ length wf
 
-removeZeros :: Sound -> Sound
-removeZeros = Map.filter (not . zero . plLoudness)
+		pure if endKey kas then Complete else Continue
 
-data PhaseLoudness =
-	PhaseLoudness { plPhase :: Int, plLoudness :: Loudness } deriving Show
+endKey :: [KeyAction] -> Bool
+endKey = not . null . filter ((== Glfw.Key'Q) . keyActionKey)
 
-nextPhaseLoudness PhaseLoudness {
-	plPhase = phs, plLoudness = l } = PhaseLoudness {
-	plPhase = phs + 1, plLoudness = nextLoudness l }
+keyActionToChanger :: Double -> KeyAction -> Maybe (Int, (Doremi, Float, Float))
+keyActionToChanger tm0 KeyAction {
+	keyActionKey = k, keyActionTime = tm, keyActionAction = pr } = let
+	n = (tm - tm0) * 48000
+	(d, t) = case pr of
+		Press -> (1 / 1000, 0.7)
+		Release -> (- 1 / 36000, 0) in (\nt -> (round n, (nt, d, t))) <$> keyToDoremi k
 
-currentPhaseLoudness :: PhaseLoudness -> (Int, Float)
-currentPhaseLoudness = plPhase &&& currentLoudness . plLoudness
+keyToDoremi :: Glfw.Key -> Maybe Doremi
+keyToDoremi = (`lookup` keyDoremiTable)
 
-singleNote :: Doremi -> Int -> Float -> Float
-singleNote nt phs l = soundPressure nt phs * l
-
-uncurry' :: (a -> b -> c -> d) -> (a, (b, c)) -> d
-uncurry' = (uncurry $) . (uncurry .)
-
-wholeLoudness :: Sound -> Float
-wholeLoudness = sum . (currentLoudness . plLoudness <$>) . Map.elems
-
-uncons :: Sound -> ([(Doremi, (Int, Float))], Sound)
-uncons =
-	((currentPhaseLoudness `second`) <$>) . Map.toList &&&
-	(nextPhaseLoudness <$>)
-
-uncons' :: Sound -> (Float, Sound)
-uncons' = ((sum . (uncurry' singleNote <$>)) `first`) . uncons
-
-unfoldr' :: (b -> (a, b)) -> b -> Int -> ([a], b)
-unfoldr' f s n
-	| n < 1 = ([], s)
-	| otherwise = let (x, s') = f s in (x :) `first` unfoldr' f s' (n - 1)
-
-noTouch :: Sound -> Int -> ([Float], Sound)
-noTouch = unfoldr' uncons'
+keyDoremiTable :: [(Glfw.Key, Doremi)]
+keyDoremiTable =
+	[	Glfw.Key'A, Glfw.Key'S, Glfw.Key'D, Glfw.Key'F, Glfw.Key'G,
+		Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L, Glfw.Key'Semicolon
+		] `zip`
+	[LLa, LTi, Do, Re, Mi, Fa, So, La, Ti, HDo]
