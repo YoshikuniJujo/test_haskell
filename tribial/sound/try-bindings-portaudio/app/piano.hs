@@ -66,6 +66,7 @@ keyToDoremi = (`lookup` keyDoremiTable)
 keyDoremiTable :: [(Glfw.Key, Doremi)]
 keyDoremiTable =
 	[	Glfw.Key'A, Glfw.Key'S, Glfw.Key'D, Glfw.Key'F, Glfw.Key'G,
-		Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L, Glfw.Key'Semicolon
+		Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L, Glfw.Key'Semicolon,
+		Glfw.Key'Apostrophe
 		] `zip`
-	[LLa, LTi, Do, Re, Mi, Fa, So, La, Ti, HDo]
+	[LLa, LTi, Do, Re, Mi, Fa, So, La, Ti, HDo, HRe]
