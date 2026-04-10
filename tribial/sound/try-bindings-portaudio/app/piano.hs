@@ -9,7 +9,6 @@ import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Foldable
-import Data.Maybe
 import Data.Vector.Storable.Mutable qualified as MV
 import System.PortAudio
 import Graphics.UI.GLFW qualified as Glfw
@@ -37,7 +36,7 @@ main = do
 		kas <- atomically $ readTVar vkas <* writeTVar vkas []
 		print kas
 		s <- atomically $ readTVar sd
-		let	evs = keyActionToChanger tm0 `mapMaybe` kas
+		let	evs = keyActionToChangers tm0 `concatMap` kas
 			(wf, s') = Sound.soundN s (MV.length o) evs
 
 		print evs
