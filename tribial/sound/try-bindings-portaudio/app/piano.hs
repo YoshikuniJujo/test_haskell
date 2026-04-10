@@ -39,7 +39,7 @@ main = do
 		print kas
 		s <- atomically $ readTVar sd
 		let	evs = keyActionToChanger tm0 `mapMaybe` kas
-			(wf, s') = sound s (MV.length o) (MV.length o) evs
+			(wf, s') = sound s (MV.length o) evs
 
 		print evs
 		for_ ([0 ..] `zip` wf) \(i, v) -> do

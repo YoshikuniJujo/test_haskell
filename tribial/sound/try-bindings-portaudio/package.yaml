@@ -24,10 +24,12 @@ dependencies:
 - stm
 - containers
 - vector
+- bytestring
 - linear
 - GLFW-b
 - bindings-portaudio
 - optparse-applicative
+- c-enum
 
 ghc-options:
 - -Wall

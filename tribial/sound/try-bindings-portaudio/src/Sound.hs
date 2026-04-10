@@ -9,6 +9,7 @@ module Sound (
 	) where
 
 import Control.Arrow
+import Data.List qualified as L
 import Data.Map qualified as Map
 import Doremi
 import Loudness
@@ -77,14 +78,31 @@ event s nt df to = Map.alter change nt s
 	where
 	change = Just . mapLoudness' (\ml -> changeLoudness' ml df to)
 
-sound :: Sound -> Int -> Int -> [(Int, (Doremi, Float, Float))] -> ([Float], Sound)
-sound s m n chs
-	| n < 1 = ([], foldl event' s $ snd <$> chs)
-	| otherwise = let (mch, chs') = head' (m - n) chs in case mch of
-		Nothing -> let (p, s') = uncons' s in
-			(p :) `first` sound s' m (n - 1) chs'
-		Just ch -> let (p, s') = uncons' $ uncurry3 (event s) ch in
-			(p :) `first` sound s' m (n - 1) chs'
+sound :: Sound -> Int -> [(Int, (Doremi, Float, Float))] -> ([Float], Sound)
+sound s n chs = sound' n s 0 chs
+
+sound' :: Int -> Sound -> Int -> [(Int, (Doremi, Float, Float))] -> ([Float], Sound)
+sound' m s n chs = case mp of
+	Nothing -> ([], s')
+	Just p -> (p :) `first` uncurry3 (sound' m) snchs
+	where (mp, snchs@(s', _, _)) = sound1 m s n chs
+
+foo :: Int -> (Sound, Int, [(Int, (Doremi, Float, Float))]) -> [Float]
+foo m = L.unfoldr (uncurry3 $ sound1' m)
+	where
+	sound1' m s n chs = let (mp, (s', n', chs')) = sound1 m s n chs in
+		case mp of
+			Nothing -> Nothing
+			Just p -> Just (p, (s', n', chs'))
+
+sound1 :: Int -> Sound -> Int -> [(Int, (Doremi, Float, Float))] ->
+	(Maybe Float, (Sound, Int, [(Int, (Doremi, Float, Float))]))
+sound1 m s n chs
+	| n >= m = (Nothing, (foldl event' s $ snd <$> chs, n + 1, []))
+	| otherwise = let
+		(s', chs') = maybe s (uncurry3 (event s)) `first` head' n chs
+		(p, s'') = uncons' s' in
+		(Just p, (s'',  n + 1, chs'))
 
 head' :: Ord n => n -> [(n, a)] -> (Maybe a, [(n, a)])
 head' _ [] = (Nothing, [])

@@ -31,8 +31,12 @@ library
       Lib
       Loudness
       PlaySound
+      Poppable
       Sound
       Tools
+      Waveform
+      WriteMonoral16
+      WriteWave
   other-modules:
       Paths_try_bindings_portaudio
   autogen-modules:
@@ -44,6 +48,8 @@ library
       GLFW-b
     , base >=4.7 && <5
     , bindings-portaudio
+    , bytestring
+    , c-enum
     , containers
     , linear
     , optparse-applicative
@@ -60,6 +66,8 @@ executable bak
       GLFW-b
     , base >=4.7 && <5
     , bindings-portaudio
+    , bytestring
+    , c-enum
     , containers
     , linear
     , optparse-applicative
@@ -77,6 +85,8 @@ executable keyevent
       GLFW-b
     , base >=4.7 && <5
     , bindings-portaudio
+    , bytestring
+    , c-enum
     , containers
     , linear
     , optparse-applicative
@@ -94,6 +104,8 @@ executable piano
       GLFW-b
     , base >=4.7 && <5
     , bindings-portaudio
+    , bytestring
+    , c-enum
     , containers
     , linear
     , optparse-applicative
@@ -111,6 +123,8 @@ executable piano_bak
       GLFW-b
     , base >=4.7 && <5
     , bindings-portaudio
+    , bytestring
+    , c-enum
     , containers
     , linear
     , optparse-applicative
@@ -128,6 +142,8 @@ executable singleNote
       GLFW-b
     , base >=4.7 && <5
     , bindings-portaudio
+    , bytestring
+    , c-enum
     , containers
     , linear
     , optparse-applicative
@@ -149,6 +165,8 @@ executable try-bindings-portaudio-exe
       GLFW-b
     , base >=4.7 && <5
     , bindings-portaudio
+    , bytestring
+    , c-enum
     , containers
     , linear
     , optparse-applicative
@@ -171,6 +189,8 @@ test-suite try-bindings-portaudio-test
       GLFW-b
     , base >=4.7 && <5
     , bindings-portaudio
+    , bytestring
+    , c-enum
     , containers
     , linear
     , optparse-applicative
