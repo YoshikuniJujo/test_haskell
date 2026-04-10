@@ -16,18 +16,17 @@ import Graphics.UI.GLFW qualified as Glfw
 import Linear (V2(..))
 import KeyEvent
 import PlaySound
-import Sound
-import Doremi
--- import Loudness
+import Sound qualified as Sound
+
+import KeySound
 
 main :: IO ()
 main = do
 	time <- atomically $ newTVar 0
-	sd <- atomically $ newTVar zeroSound
+	sd <- atomically $ newTVar Sound.zeroSound
 	print =<< Glfw.getTime
 	(vkas, cka) <- withKeyActions 100 100 "Hello"
-	forkIO . forever $ appendFile "tmp.txt" . keyLogToText =<< atomically (readTChan cka)
---	playSound 0 48000 \(o :: MV.IOVector (V2 Float)) -> do
+	void . forkIO . forever $ appendFile "tmp.txt" . keyLogToText =<< atomically (readTChan cka)
 	playSound 0 4800 \(o :: MV.IOVector (V2 Float)) -> do
 		mtm <- Glfw.getTime
 		tm0 <- atomically do
@@ -39,7 +38,7 @@ main = do
 		print kas
 		s <- atomically $ readTVar sd
 		let	evs = keyActionToChanger tm0 `mapMaybe` kas
-			(wf, s') = sound s (MV.length o) evs
+			(wf, s') = Sound.soundN s (MV.length o) evs
 
 		print evs
 		for_ ([0 ..] `zip` wf) \(i, v) -> do
@@ -50,29 +49,4 @@ main = do
 		print $ length wf
 
 		pure if endKey kas then Complete else Continue
-
-endKey :: [KeyAction] -> Bool
-endKey = not . null . filter ((== Glfw.Key'Q) . keyActionKey)
-
-keyActionToChanger :: Double -> KeyAction -> Maybe (Int, (Doremi, Float, Float))
-keyActionToChanger tm0 KeyAction {
-	keyActionKey = k, keyActionTime = tm, keyActionAction = pr } = let
-	n = (tm - tm0) * 48000
-	(d, t) = case pr of
-		Press -> (1 / 1000, 0.7)
-		Release -> (- 1 / 36000, 0) in (\nt -> (round n, (nt, d, t))) <$> keyToDoremi k
-
-keyToDoremi :: Glfw.Key -> Maybe Doremi
-keyToDoremi = (`lookup` keyDoremiTable)
-
-keyDoremiTable :: [(Glfw.Key, Doremi)]
-keyDoremiTable =
-	[	Glfw.Key'A, Glfw.Key'S, Glfw.Key'D, Glfw.Key'F, Glfw.Key'G,
-		Glfw.Key'H, Glfw.Key'J, Glfw.Key'K, Glfw.Key'L, Glfw.Key'Semicolon,
-		Glfw.Key'Apostrophe
-		] `zip`
-	[LLa, LTi, Do, Re, Mi, Fa, So, La, Ti, HDo, HRe]
-
-keyLogToText :: KeyAction -> String
-keyLogToText KeyAction { keyActionTime = t, keyActionKey = k, keyActionAction = a } =
-	show t ++ " " ++ show k ++ " " ++ show a ++ "\n"
+	where endKey = not . null . filter ((== Key'Q) . keyActionKey)

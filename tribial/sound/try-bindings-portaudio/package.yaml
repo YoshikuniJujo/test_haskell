@@ -105,6 +105,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-bindings-portaudio
+  keyLogToWave:
+    main:                keyLogToWave.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-bindings-portaudio
 
 tests:
   try-bindings-portaudio-test:

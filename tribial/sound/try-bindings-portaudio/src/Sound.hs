@@ -1,15 +1,14 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LAnGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Sound (
 
-	Sound, zeroSound, noTouch, sound
+	Sound, PhaseLoudness, Event, zeroSound, sound, soundN, soundWhole
 
 	) where
 
 import Control.Arrow
-import Data.List qualified as L
 import Data.Map qualified as Map
 import Doremi
 import Loudness
@@ -65,44 +64,39 @@ uncons' :: Sound -> (Float, Sound)
 uncons' s = ((adjustLoudness s . sum . (uncurry' singleNote <$>)) `first`)
 	$ uncons s
 
-unfoldr' :: (b -> (a, b)) -> b -> Int -> ([a], b)
-unfoldr' f s n
-	| n < 1 = ([], s)
-	| otherwise = let (x, s') = f s in (x :) `first` unfoldr' f s' (n - 1)
-
-noTouch :: Sound -> Int -> ([Float], Sound)
-noTouch = unfoldr' uncons'
-
 event :: Sound -> Doremi -> Float -> Float -> Sound
 event s nt df to = Map.alter change nt s
 	where
 	change = Just . mapLoudness' (\ml -> changeLoudness' ml df to)
 
-sound :: Sound -> Int -> [(Int, (Doremi, Float, Float))] -> ([Float], Sound)
-sound s n chs = sound' n s 0 chs
+soundN :: Sound -> Int -> [(Int, Event)] -> ([Float], Sound)
+soundN s = (((fst3 `second`) .) $) . (`sound` s) . (const $) . (const .) . (>)
 
-sound' :: Int -> Sound -> Int -> [(Int, (Doremi, Float, Float))] -> ([Float], Sound)
-sound' m s n chs = case mp of
-	Nothing -> ([], s')
-	Just p -> (p :) `first` uncurry3 (sound' m) snchs
-	where (mp, snchs@(s', _, _)) = sound1 m s n chs
+soundWhole :: [(Int, Event)] -> [Float]
+soundWhole = fst . sound (\s _ chs -> not (null chs && Map.null s)) zeroSound
 
-foo :: Int -> (Sound, Int, [(Int, (Doremi, Float, Float))]) -> [Float]
-foo m = L.unfoldr (uncurry3 $ sound1' m)
-	where
-	sound1' m s n chs = let (mp, (s', n', chs')) = sound1 m s n chs in
-		case mp of
-			Nothing -> Nothing
-			Just p -> Just (p, (s', n', chs'))
+sound :: (Sound -> Int -> [(Int, Event)] -> Bool) -> Sound ->
+	[(Int, Event)] -> ([Float], (Sound, Int, [(Int, Event)]))
+sound p = ($ 0) . flip . curry3 . unfoldrWithSt . uncurry3 $ sound1' p
 
-sound1 :: Int -> Sound -> Int -> [(Int, (Doremi, Float, Float))] ->
-	(Maybe Float, (Sound, Int, [(Int, (Doremi, Float, Float))]))
-sound1 m s n chs
-	| n >= m = (Nothing, (foldl event' s $ snd <$> chs, n + 1, []))
-	| otherwise = let
+unfoldrWithSt :: (b -> (Maybe a, b)) -> b -> ([a], b)
+unfoldrWithSt f st = let (mx, st') = f st in
+	maybe ([], st') (\x -> (x :) `first` unfoldrWithSt f st') mx
+
+fst3 :: (a, b, c) -> a
+fst3 (x, _, _) = x
+
+type Event = (Doremi, Float, Float)
+
+sound1' :: (Sound -> Int -> [(Int, Event)] -> Bool) ->
+	Sound -> Int -> [(Int, Event)] ->
+	(Maybe Float, (Sound, Int, [(Int, Event)]))
+sound1' p s n chs
+	| p s n chs = let
 		(s', chs') = maybe s (uncurry3 (event s)) `first` head' n chs
-		(p, s'') = uncons' s' in
-		(Just p, (s'',  n + 1, chs'))
+		(sp, s'') = uncons' s' in
+		(Just sp, (s'',  n + 1, chs'))
+	| otherwise = (Nothing, (foldl event' s $ snd <$> chs, n, []))
 
 head' :: Ord n => n -> [(n, a)] -> (Maybe a, [(n, a)])
 head' _ [] = (Nothing, [])
@@ -113,4 +107,8 @@ head' n0 nxa@((n, x) : nxs)
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z
 
+curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
+curry3 f x y z = f (x, y, z)
+
+event' :: Sound -> (Doremi, Float, Float) -> Sound
 event' s = uncurry3 (event s)

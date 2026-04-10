@@ -7,7 +7,11 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module WriteMonoral16 (putMonoral16) where
+module WriteMonoral16 (
+
+putMonoral16, putFloatList
+
+) where
 
 import Data.Word
 import Data.ByteString qualified as BS
@@ -15,6 +19,9 @@ import Data.ByteString qualified as BS
 
 import Waveform
 import Poppable
+
+putFloatList :: FilePath -> [Float] -> IO ()
+putFloatList fp = putMonoral16 fp . floatListToMonoral16
 
 putMonoral16 :: FilePath -> Monoral16 -> IO ()
 putMonoral16 fp = BS.writeFile fp . encodeMonoral16

@@ -1,9 +1,17 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module KeyEvent (
-	withKeyActions, KeyActions, KeyAction(..), Action(..) ) where
+
+	withKeyActions, KeyActions, KeyAction(..), Action(..),
+
+	keyLogToText, textToKeyLog, readKeyActions,
+
+	Glfw.Key(..)
+
+	) where
 
 import Control.Monad
 import Control.Concurrent
@@ -58,7 +66,7 @@ data KeyAction = KeyAction {
 	keyActionAction :: Action }
 	deriving Show
 
-data Action = Press | Release deriving Show
+data Action = Press | Release deriving (Show, Read)
 
 keyStateToAction :: Glfw.KeyState -> Maybe Action
 keyStateToAction Glfw.KeyState'Pressed = Just Press
@@ -66,3 +74,18 @@ keyStateToAction Glfw.KeyState'Released = Just Release
 keyStateToAction _ = Nothing
 
 type KeyActions = [KeyAction]
+
+keyLogToText :: KeyAction -> String
+keyLogToText KeyAction { keyActionTime = t, keyActionKey = k, keyActionAction = a } =
+	show t ++ " " ++ show k ++ " " ++ show a ++ "\n"
+
+textToKeyLog :: String -> KeyAction
+textToKeyLog str = case words str of
+	[t, k, a] -> toKeyLog t k a
+	_ -> error "bad file format"
+
+toKeyLog :: String -> String -> String -> KeyAction
+toKeyLog (read -> t) (read -> k) (read -> st) = KeyAction t k st
+
+readKeyActions :: FilePath -> IO [KeyAction]
+readKeyActions fp = (textToKeyLog <$>) . lines <$> readFile fp

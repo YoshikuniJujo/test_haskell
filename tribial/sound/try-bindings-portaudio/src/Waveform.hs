@@ -8,10 +8,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Waveform (
+
 	Monoral16(..), printMonoral16, addHorizontal,
 	WaveFormatEx(..), sampleWaveFormatEx,
 	FormatTag(..),
-	pattern WaveFormatPcm, pattern WaveFormatIeeeFloat, pattern WaveFormatMulaw
+	pattern WaveFormatPcm, pattern WaveFormatIeeeFloat, pattern WaveFormatMulaw,
+
+	floatListToMonoral16
 	) where
 
 import Foreign.C.Enum
@@ -87,6 +90,9 @@ data Monoral16 = Monoral16 {
 	waveFormat :: WaveFormatEx,
 	waveData :: [Int16] }
 	deriving Show
+
+floatListToMonoral16 :: [Float] -> Monoral16
+floatListToMonoral16 = Monoral16 sampleWaveFormatEx . (round . (* 32767) <$>)
 
 addHorizontal :: Monoral16 -> Monoral16 -> Monoral16
 addHorizontal
