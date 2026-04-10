@@ -50,6 +50,15 @@ keyDoremiTable2 :: [(Key, [Doremi])]
 keyDoremiTable2 = [
 	Key'Slash, Key'Period, Key'Comma, Key'M,
 	Key'J, Key'K, Key'L, Key'O, Key'Semicolon,
-	Key'P, Key'U, Key'I ] `zip` [
+	Key'P, Key'U, Key'I ,
+
+	Key'A, Key'S, Key'D, Key'E, Key'F, Key'R
+
+	] `zip` [
+
 	[LFa], [LSo], [LLa], [LTi],
-	[Do], [Re], [Mi], [Fa], [So], [La], [Ti], [HDo] ]
+	[Do], [Re], [Mi], [Fa], [So], [La], [Ti], [HDo],
+
+	[LDo], [LRe], [LMi], [LFa], [LSo], [LLa]
+
+	]
