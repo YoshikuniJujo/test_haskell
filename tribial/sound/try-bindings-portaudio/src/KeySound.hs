@@ -7,7 +7,6 @@ module KeySound (
 	keyActionToChanger
 	) where
 
-import Data.Maybe
 import KeyEvent
 import Sound
 import Doremi
@@ -44,7 +43,7 @@ keyDoremiTable :: [(Key, Doremi)]
 keyDoremiTable =
 	[	Key'A, Key'S, Key'D, Key'F, Key'G,
 		Key'H, Key'J, Key'K, Key'L, Key'Semicolon, Key'Apostrophe
-		] `zip` [LLa, LTi, Do, Re, Mi, Fa, So, La, Ti, HDo, HRe]
+		] `zip` [lla, lti, doo, re, mi, fa, so, la, ti, hdo, hre]
 
 keyDoremiTable2 :: [(Key, [Doremi])]
 keyDoremiTable2 = [
@@ -56,9 +55,9 @@ keyDoremiTable2 = [
 
 	] `zip` [
 
-	[LFa], [LSo], [LLa], [LTi],
-	[Do], [Re], [Mi], [Fa], [So], [La], [Ti], [HDo],
+	[lfa], [lso], [lla], [lti],
+	[doo], [re], [mi], [fa], [so], [la], [ti], [hdo],
 
-	[LDo], [LRe], [LMi], [LFa], [LSo], [LLa]
+	[ldo], [lre], [lmi], [lfa], [lso], [lla]
 
 	]

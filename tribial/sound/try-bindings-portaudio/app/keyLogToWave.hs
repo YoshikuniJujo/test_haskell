@@ -1,10 +1,9 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
 import System.Environment
-
-import Graphics.UI.GLFW qualified as Glfw
 
 import KeyEvent
 import KeySound
