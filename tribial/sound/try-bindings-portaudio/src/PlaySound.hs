@@ -11,7 +11,7 @@ import Control.Monad
 import Data.Vector.Storable.Mutable qualified as MV
 import System.PortAudio
 
-import Hz qualified as Hz
+import Doremi qualified as Hz
 
 playSound :: (
 	Applicative f, Foldable f, MV.Storable (f a), PortAudioSample a ) =>

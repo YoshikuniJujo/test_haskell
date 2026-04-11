@@ -16,6 +16,7 @@ import Graphics.UI.GLFW qualified as Glfw
 import Linear (V2(..))
 import KeyEvent
 import PlaySound
+import Doremi qualified as Doremi
 import Hz qualified as Hz
 
 import Loudness
@@ -103,7 +104,7 @@ main = do
 					Re -> waveformRe
 					Mi -> waveformMi
 					La -> waveformLa
-				prd = round $ Hz.period case b of
+				prd = round $ Doremi.period case b of
 					Do -> Hz.doo
 					Re -> Hz.re
 					Mi -> Hz.mi
@@ -153,7 +154,7 @@ sound s n = go 0 $ soundLoudness s
 		Re -> waveformRe
 		Mi -> waveformMi
 		La -> waveformLa
-	prd = round $ Hz.period case soundDoremi s of
+	prd = round $ Doremi.period case soundDoremi s of
 		Do -> Hz.doo
 		Re -> Hz.re
 		Mi -> Hz.mi
@@ -177,7 +178,7 @@ sound' s n = go 0 $ soundLoudness s
 		Re -> waveformRe
 		Mi -> waveformMi
 		La -> waveformLa
-	prd = round $ Hz.period case soundDoremi s of
+	prd = round $ Doremi.period case soundDoremi s of
 		Do -> Hz.doo
 		Re -> Hz.re
 		Mi -> Hz.mi
@@ -215,7 +216,7 @@ singleNote s n chs = go 0 (soundLoudness s) chs
 		Re -> waveformRe
 		Mi -> waveformMi
 		La -> waveformLa
-	prd = round $ Hz.period case soundDoremi s of
+	prd = round $ Doremi.period case soundDoremi s of
 		Do -> Hz.doo
 		Re -> Hz.re
 		Mi -> Hz.mi
@@ -231,7 +232,7 @@ waveformDoremi = \case
 	La -> waveformLa
 
 waveformDo, waveformRe, waveformMi, waveformLa :: V.Vector Float
-waveformDo = Hz.waveform Hz.doo
-waveformRe = Hz.waveform Hz.re
-waveformMi = Hz.waveform Hz.mi
-waveformLa = Hz.waveform Hz.la
+waveformDo = Doremi.hzWaveform Hz.doo
+waveformRe = Doremi.hzWaveform Hz.re
+waveformMi = Doremi.hzWaveform Hz.mi
+waveformLa = Doremi.hzWaveform Hz.la

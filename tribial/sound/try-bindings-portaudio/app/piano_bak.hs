@@ -14,6 +14,7 @@ import System.PortAudio
 import Linear (V2(..))
 import Options.Applicative
 
+import Doremi qualified as Doremi
 import Hz qualified as Hz
 import PlaySound
 import Tools
@@ -44,10 +45,10 @@ run device buf = do
 			MV.write o i $ V2 v v
 		pure if (i0 > 370000) then Complete else Continue
 	where
-	prd :: Int; prd = round $ Hz.period Hz.la
+	prd :: Int; prd = round $ Doremi.period Hz.la
 
 waveformLa :: V.Vector Float
-waveformLa = Hz.waveform Hz.la
+waveformLa = Doremi.hzWaveform Hz.la
 
 size :: Int -> Float
 size n	| n < 1000 = fromIntegral n / 2000
