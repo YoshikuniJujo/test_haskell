@@ -4,7 +4,6 @@ module KeySound (
 
 	keyLogToChangers,
 	keyActionToChangers,
-	keyActionToChanger
 	) where
 
 import KeyEvent
@@ -15,15 +14,7 @@ keyLogToChangers :: Double -> [KeyAction] -> [(Int, Sound.Event)]
 keyLogToChangers tm0 = concatMap $ keyActionToChangers' tm0
 
 keyActionToChangers :: Double -> KeyAction -> [(Int, Sound.Event)]
-keyActionToChangers tm0 = keyActionToChangers' tm0 -- maybeToList . keyActionToChanger tm0
-
-keyActionToChanger :: Double -> KeyAction -> Maybe (Int, Sound.Event)
-keyActionToChanger tm0 KeyAction {
-	keyActionKey = k, keyActionTime = tm, keyActionAction = pr } = let
-	n = (tm - tm0) * 48000
-	(d, t) = case pr of
-		Press -> (1 / 1000, 0.7)
-		Release -> (- 1 / 36000, 0) in (\nt -> (round n, (nt, d, t))) <$> keyToDoremi k
+keyActionToChangers tm0 = keyActionToChangers' tm0
 
 keyActionToChangers' :: Double -> KeyAction -> [(Int, Sound.Event)]
 keyActionToChangers' tm0 KeyAction {
@@ -32,9 +23,6 @@ keyActionToChangers' tm0 KeyAction {
 	(d, t) = case pr of
 		Press -> (1 / 1000, 0.7)
 		Release -> (- 1 / 36000, 0) in (\nt -> (round n, (nt, d, t))) <$> keyToDoremi' k
-
-keyToDoremi :: Key -> Maybe Doremi
-keyToDoremi = (`lookup` keyDoremiTable)
 
 keyToDoremi' :: Key -> [Doremi]
 keyToDoremi' = maybe [] id . (`lookup` keyDoremiTable2)
