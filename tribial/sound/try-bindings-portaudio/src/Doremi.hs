@@ -8,10 +8,19 @@ module Doremi where
 import Data.Vector qualified as V
 import Data.Map qualified as Map
 
-data Doremi = Hz Float (V.Vector Float) deriving (Show, Eq, Ord)
+data Doremi = Hz Float deriving (Show, Eq, Ord)
+
+semitone :: Int -> Doremi -> Doremi
+semitone n d = d `mul` (2 ** (fromIntegral n / 12))
+
+octave :: Int -> Doremi -> Doremi
+octave n d = d `mul` (2 ^ n)
+
+mul :: Doremi -> Float -> Doremi
+Hz d `mul` m = Hz $ d * m
 
 fromHz :: Double -> Doremi
-fromHz = Hz <$> realToFrac <*> hzWaveform
+fromHz = Hz . realToFrac
 
 ldo, lre, lmi, lfa, lso, lla, lti :: Doremi
 ldo = fromHz 131; lre = fromHz 147; lmi = fromHz 165; lfa = fromHz 175;
@@ -31,7 +40,7 @@ waveform :: Map.Map Doremi (V.Vector Float)
 waveform = Map.fromList . zip whole $ hzWaveform <$> []
 
 soundPressure' :: Doremi -> Int -> Float
-soundPressure' (Hz hz wf) phs =
+soundPressure' (Hz hz) phs =
 	wave0 $ fromIntegral phs * hz / realToFrac samplingRate * 2 * pi
 	-- wf V.! (phs `mod` V.length wf)
 
