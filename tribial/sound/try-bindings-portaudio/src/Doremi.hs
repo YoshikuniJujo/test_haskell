@@ -8,10 +8,10 @@ module Doremi where
 import Data.Vector qualified as V
 import Data.Map qualified as Map
 
-data Doremi = Hz (V.Vector Float) deriving (Show, Eq, Ord)
+data Doremi = Hz Float (V.Vector Float) deriving (Show, Eq, Ord)
 
 fromHz :: Double -> Doremi
-fromHz = Hz . hzWaveform
+fromHz = Hz <$> realToFrac <*> hzWaveform
 
 ldo, lre, lmi, lfa, lso, lla, lti :: Doremi
 ldo = fromHz 131; lre = fromHz 147; lmi = fromHz 165; lfa = fromHz 175;
@@ -31,17 +31,19 @@ waveform :: Map.Map Doremi (V.Vector Float)
 waveform = Map.fromList . zip whole $ hzWaveform <$> []
 
 soundPressure' :: Doremi -> Int -> Float
-soundPressure' (Hz wf) phs = wf V.! (phs `mod` V.length wf)
+soundPressure' (Hz hz wf) phs =
+	wave0 $ fromIntegral phs * hz / realToFrac samplingRate * 2 * pi
+	-- wf V.! (phs `mod` V.length wf)
 
 hzWaveform :: Double -> V.Vector Float
 hzWaveform 0 = V.fromList [0]
 -- waveform hz = V.fromList [ sin $ realToFrac t |
 hzWaveform hz = V.fromList [ wave0 $ realToFrac t |
-	i <- [0 .. period hz - 1],
+	i <- [0 .. period hz - 0.9],
 	let	t = i * hz / samplingRate * 2 * pi ]
 
 wave0 :: Float -> Float
-wave0 x = 0.54 * sin x + 0.18 * sin (2 * x) + 0.06 * sin (3 * x)
+wave0 x = 0.45 * sin x + 0.15 * sin (2 * x) + 0.05 * sin (3 * x)
 
 samplingRate :: Double
 samplingRate = 48000
