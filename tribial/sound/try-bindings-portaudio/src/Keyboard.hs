@@ -5,6 +5,7 @@ module Keyboard where
 
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Bits
@@ -25,9 +26,12 @@ withKeyboard = do
 	h <- getKeyboardHandle
 	(print =<<) . forkIO $ allocaBytes 3 \p -> fix \go -> do
 		t <- getTime Monotonic
-		3 <- hGetBuf h p 3
-		[st, n, v] <- peekArray 3 p
-		atomically $ writeTChan c (t, readNote st n v)
+		1 <- hGetBuf h p 1
+		st <- peek p
+		if st == 248 || st == 254 then pure () else do
+			2 <- hGetBuf h p 2
+			[n, v] <- peekArray 2 p
+			atomically $ writeTChan c (t, readNote st n v)
 		go
 	pure c
 
