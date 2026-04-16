@@ -6,6 +6,7 @@
 module Main where
 
 import Control.Monad
+import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Foldable
 import Data.Maybe
@@ -24,6 +25,8 @@ main = do
 	time <- atomically $ newTVar 0
 	sd <- atomically $ newTVar Sound.zeroSound
 	c <- withKeyboard
+	c' <- atomically $ dupTChan c
+	void . forkIO . forever $ appendFile "keyboard.txt" . (++ "\n") . show =<< atomically (readTChan c')
 	playSound 0 4800 \(o :: MV.IOVector (V2 Float)) -> do
 		tm <- getTime Monotonic
 		tm0 <- atomically $ readTVar time <* writeTVar time tm
