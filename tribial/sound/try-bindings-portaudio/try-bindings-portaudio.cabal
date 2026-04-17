@@ -141,6 +141,26 @@ executable keyevent
     , vector
   default-language: Haskell2010
 
+executable noteLogToWave
+  main-is: noteLogToWave.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , base >=4.7 && <5
+    , bindings-portaudio
+    , bytestring
+    , c-enum
+    , clock
+    , containers
+    , linear
+    , optparse-applicative
+    , stm
+    , try-bindings-portaudio
+    , vector
+  default-language: Haskell2010
+
 executable piano
   main-is: piano.hs
   hs-source-dirs:

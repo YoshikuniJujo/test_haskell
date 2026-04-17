@@ -25,8 +25,8 @@ withKeyboard = do
 	c <- atomically newTChan
 	h <- getKeyboardHandle
 	(print =<<) . forkIO $ allocaBytes 3 \p -> fix \go -> do
-		t <- getTime Monotonic
 		1 <- hGetBuf h p 1
+		t <- getTime Monotonic
 		st <- peek p
 		if st == 248 || st == 254 then pure () else do
 			2 <- hGetBuf h p 2
@@ -40,9 +40,15 @@ type NoteEvent = (TimeSpec, Note)
 data Note
 	= Note Word8 Word8 Word8
 	| NoNote Word8 Word8 Word8
-	deriving (Show, Eq)
+	deriving (Show, Eq, Read)
 
 readNote :: Word8 -> Word8 -> Word8 -> Note
 readNote st n v
 	| st `shiftR` 4 == 9 = Note (st .&. 0xf) n v
 	| otherwise = NoNote st n v
+
+textToNoteEvent :: String -> NoteEvent
+textToNoteEvent = read
+
+readNoteEvent :: FilePath -> IO [NoteEvent]
+readNoteEvent fp = (textToNoteEvent <$>) . lines <$> readFile fp

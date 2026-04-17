@@ -2,12 +2,16 @@
 
 module KeyboardSound where
 
+import Data.Maybe
 import Data.Word
 import System.Clock
 
 import Keyboard
 import Sound
 import Doremi
+
+noteToChangers :: TimeSpec -> [NoteEvent] -> [(Int, Sound.Event)]
+noteToChangers = mapMaybe . noteToChanger
 
 noteToChanger :: TimeSpec -> NoteEvent -> Maybe (Int, Sound.Event)
 noteToChanger tm0 (tm, Note _ n v) = let
