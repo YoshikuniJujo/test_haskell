@@ -18,7 +18,7 @@ noteToChanger tm0 (tm, Note _ n v) = let
 	i = toNanoSecs (tm - tm0) * 48000 `div` 1000000000
 	v' = fromIntegral v / 127
 	(d, t) = case v of
-		0 -> (- 1 / 36000, 0)
+		0 -> (- 1 / 18000, 0)
 		_ -> (1 / 1000 * v', 0.7 * v') in
 	(\drm -> (fromIntegral i, (drm, d, t))) <$> noteToDoremi n
 noteToChanger _ (_, NoNote _ _ _) = Nothing
