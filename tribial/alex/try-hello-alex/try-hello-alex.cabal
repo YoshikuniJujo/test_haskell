@@ -27,6 +27,7 @@ library
   exposed-modules:
       Foo
       Lib
+      Yoskell
   other-modules:
       Paths_try_hello_alex
   autogen-modules:
