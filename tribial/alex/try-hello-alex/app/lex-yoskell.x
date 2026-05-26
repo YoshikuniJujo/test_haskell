@@ -1,4 +1,8 @@
 {
+
+{-# LANGUAGE LambdaCase #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module Main (main) where
 }
 
@@ -34,9 +38,29 @@ data Token
 	| String String
 	deriving Show
 
+data Token'
+	= OParen | CParen | OBrace | CBrace
+	| ColonColon | Equal
+	| VarId' String | ConId' String
+	| Integer' Integer
+	| String' String
+	| TokenError Token
+	deriving Show
+
+tokenToToken' :: Token -> Token'
+tokenToToken' = \case
+	Special "(" -> OParen; Special ")" -> CParen
+	Special "{" -> OBrace; Special "}" -> CBrace
+	ReservedOp "::" -> ColonColon
+	ReservedOp "=" -> Equal
+	VarId i -> VarId' i; ConId i -> ConId' i
+	Integer i -> Integer' i
+	String s -> String' s
+	tkn -> TokenError tkn
+
 main :: IO ()
 main = do
 	s <- getContents
-	print $ alexScanTokens s
+	print $ tokenToToken' <$> alexScanTokens s
 
 }
