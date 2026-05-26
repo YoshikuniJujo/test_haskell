@@ -22,45 +22,45 @@ tokens :-
 	$white+				;
 	$special			{ Special }
 	\:\: | \=			{ ReservedOp }
-	$lower $alphaNum*		{ VarId }
-	$upper $alphaNum*		{ ConId }
-	$digit+				{ Integer . read }
-	\" ($graphicS | $space)* \"	{ String . read }
+	$lower $alphaNum*		{ VarIdRaw }
+	$upper $alphaNum*		{ ConIdRaw }
+	$digit+				{ IntegerRaw . read }
+	\" ($graphicS | $space)* \"	{ StringRaw . read }
 
 {
 
-data Token
+data TokenRaw
 	= Special String
 	| ReservedOp String
-	| VarId String
-	| ConId String
-	| Integer Integer
-	| String String
+	| VarIdRaw String
+	| ConIdRaw String
+	| IntegerRaw Integer
+	| StringRaw String
 	deriving Show
 
-data Token'
+data Token
 	= OParen | CParen | OBrace | CBrace
 	| ColonColon | Equal
-	| VarId' String | ConId' String
-	| Integer' Integer
-	| String' String
-	| TokenError Token
+	| VarId String | ConId String
+	| Integer Integer
+	| String String
+	| TokenError TokenRaw
 	deriving Show
 
-tokenToToken' :: Token -> Token'
-tokenToToken' = \case
+fromRaw :: TokenRaw -> Token
+fromRaw = \case
 	Special "(" -> OParen; Special ")" -> CParen
 	Special "{" -> OBrace; Special "}" -> CBrace
 	ReservedOp "::" -> ColonColon
 	ReservedOp "=" -> Equal
-	VarId i -> VarId' i; ConId i -> ConId' i
-	Integer i -> Integer' i
-	String s -> String' s
+	VarIdRaw i -> VarId i; ConIdRaw i -> ConId i
+	IntegerRaw i -> Integer i
+	StringRaw s -> String s
 	tkn -> TokenError tkn
 
 main :: IO ()
 main = do
 	s <- getContents
-	print $ tokenToToken' <$> alexScanTokens s
+	print $ fromRaw <$> alexScanTokens s
 
 }
