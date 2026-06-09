@@ -10,6 +10,14 @@ module Main where
 	let		{ TokenLet }
 	in		{ TokenIn }
 	int		{ TokenInt $$ }
+	var		{ TokenVar $$ }
+	'='		{ TokenEq }
+	'+'		{ TokenPlus }
+	'-'		{ TokenMinus }
+	'*'		{ TokenTimes }
+	'/'		{ TokenDiv }
+	'('		{ TokenOB }
+	')'		{ TokenCB }
 
 %%
 
@@ -25,6 +33,14 @@ data Token
 	= TokenLet
 	| TokenIn
 	| TokenInt Int	
+	| TokenVar String
+	| TokenEq
+	| TokenPlus
+	| TokenMinus
+	| TokenTimes
+	| TokenDiv
+	| TokenOB
+	| TokenCB
 	deriving Show
 
 data Exp
