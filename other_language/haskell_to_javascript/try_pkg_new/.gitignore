@@ -1,4 +1,5 @@
 /mkHasonConf
 /mkPackageConf
 /compile
+/clean
 hason.conf

@@ -1,0 +1,51 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module JSPackage.ReadConf (
+	processArgs, readConf,
+	packageName, packageVersion,
+	exposedModules, modules ) where
+
+import Data.Maybe
+import Data.Char
+import System.Directory
+import System.FilePath
+
+import Hason
+import Hason.Eval
+
+processArgs :: [String] -> IO FilePath
+processArgs [] = getCurrentDirectory
+processArgs [dp] = (</> dp) <$> getCurrentDirectory
+processArgs _ = error "bad"
+
+readConf :: FilePath -> IO Hason
+readConf dp = do
+	Right conf <- eval <$> readFile (dp </> hasonName (takeBaseName dp))
+	pure conf
+
+packageName :: Hason -> Maybe String
+packageName cnf = (\(Str s) -> s) <$> lookup (KStr "name") cnf
+
+packageVersion :: Hason -> Maybe String
+packageVersion cnf = (\(Str s) -> s) <$> lookup (KStr "version") cnf
+
+exposedModules :: FilePath -> Hason -> [FilePath]
+exposedModules dp cnf = let
+	Seq emds = fromMaybe (Seq []) $ lookup (KStr "exposed-modules") cnf in
+	moduleNameToFilePath dp <$> emds
+
+modules :: FilePath -> Hason -> [FilePath]
+modules dp cnf = let
+	Seq omds = fromMaybe (Seq []) $ lookup (KStr "other-modules") cnf
+	omds' = moduleNameToFilePath dp <$> omds in
+	exposedModules dp cnf ++ omds'
+
+moduleNameToFilePath :: FilePath -> HasonValue -> FilePath
+moduleNameToFilePath dp (Str s) = dp </> "src" </> s <.> "hs"
+
+hasonName :: FilePath -> String
+hasonName = (++ ".hason") . capitalize . takeBaseName
+
+capitalize :: String -> String
+capitalize "" = ""
+capitalize (c : cs) = toUpper c : cs

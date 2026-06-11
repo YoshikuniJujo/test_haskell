@@ -2,35 +2,21 @@
 
 module JSPackage.Compile (compile) where
 
-import Data.Maybe
-import Data.Char
 import System.Environment
-import System.Directory
-import System.FilePath
 import System.Process
 
-import Hason
-import Hason.Eval
+import JSPackage.ReadConf
 
 compile :: IO ()
 compile = do
 	dp <- processArgs =<< getArgs
-	let	hn = dp </> hasonName (takeBaseName dp)
-	Right conf <- eval <$> readFile hn
-	let	Seq emds = fromMaybe (Seq []) $ lookup (KStr "exposed-modules") conf
-		Seq omds = fromMaybe (Seq []) $ lookup (KStr "other-modules") conf
-		mds = (\(Str s) -> dp </> "src" </> s <.> "hs") <$> emds ++ omds
-	putStrLn =<< readCreateProcess (proc "javascript-unknown-ghcjs-ghc-9.12.4" mds) ""
-	print =<< getDirectoryContents "."
-
-processArgs :: [String] -> IO FilePath
-processArgs [] = getCurrentDirectory
-processArgs [dp] = (</> dp) <$> getCurrentDirectory
-processArgs _ = error "bad"
-
-hasonName :: FilePath -> String
-hasonName = (++ ".hason") . capitalize . takeBaseName
-
-capitalize :: String -> String
-capitalize "" = ""
-capitalize (c : cs) = toUpper c : cs
+	conf <- readConf dp
+	let	Just nm = packageName conf
+		Just vsn = packageVersion conf
+		pn = nm ++ "-" ++ vsn ++ "-inplace"
+	let	mds = modules dp conf
+	print . proc "javascript-unknown-ghcjs-ghc-9.12.4"
+		$ ["-package-name", pn] ++ mds
+	(putStrLn =<<) . (`readCreateProcess` "")
+		. proc "javascript-unknown-ghcjs-ghc-9.12.4"
+		$ ["-package-name", pn] ++ mds
