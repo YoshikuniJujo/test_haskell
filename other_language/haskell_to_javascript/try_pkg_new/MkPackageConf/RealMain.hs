@@ -53,7 +53,7 @@ mkModules mstrs = fromString <$> mstrs
 
 mkPkgDir :: String -> String
 mkPkgDir vsn =
-	"${pkgroot}/../lib/javascript-ghcjs-ghc-" ++ vsn ++ "/"
+	"${pkgroot}/../lib/javascript-ghcjs-ghc-" ++ vsn ++ "-inplace" ++ "/"
 
 mkDepends' :: [(String, String)] -> [UnitId]
 mkDepends' = map mkDepend'
