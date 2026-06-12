@@ -18,7 +18,7 @@ install = do
 	putStrLn ld
 	createDirectoryIfMissing False ld
 	let	ar = archivePath dp conf
-		os = objs dp conf
+		os = his dp conf
 	copy (ar : os) ld
 
 copy :: [FilePath] -> FilePath -> IO ()

@@ -11,4 +11,4 @@ pkg = [	(KStr "name", Str "hello2"),
 	(KStr "other-modules", Seq []),
 	(KStr "depends", Seq [
 		Dct [	(KStr "name", Str "base"),
-			(KStr "version", Str "4.20.0.0") ] ]) ]
+			(KStr "version", Str "4.21.2.0") ] ]) ]

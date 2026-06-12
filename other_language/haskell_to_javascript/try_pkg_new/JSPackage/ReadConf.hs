@@ -4,7 +4,7 @@
 module JSPackage.ReadConf (
 	processArgs, readConf,
 	packageName, packageVersion,
-	exposedModules, modules, objs,
+	exposedModules, modules, objs, his,
 	archivePath, libraryDirectory,
 	hasonToMetaData, MetaData(..),
 	confPath
@@ -48,6 +48,9 @@ modules dp cnf = let
 
 objs :: FilePath -> Hason -> [FilePath]
 objs dp cnf = (-<.> "o") <$> modules dp cnf
+
+his :: FilePath -> Hason -> [FilePath]
+his dp cnf = (-<.> "hi") <$> modules dp cnf
 
 archivePath :: FilePath -> Hason -> FilePath
 archivePath dp cnf = let
