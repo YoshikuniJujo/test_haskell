@@ -3,7 +3,7 @@
 module JSPackage.ReadConf (
 	processArgs, readConf,
 	packageName, packageVersion,
-	exposedModules, modules ) where
+	exposedModules, modules, objs, archivePath ) where
 
 import Data.Maybe
 import Data.Char
@@ -39,6 +39,15 @@ modules dp cnf = let
 	Seq omds = fromMaybe (Seq []) $ lookup (KStr "other-modules") cnf
 	omds' = moduleNameToFilePath dp <$> omds in
 	exposedModules dp cnf ++ omds'
+
+objs :: FilePath -> Hason -> [FilePath]
+objs dp cnf = (-<.> "o") <$> modules dp cnf
+
+archivePath :: FilePath -> Hason -> FilePath
+archivePath dp cnf = let
+	Just nm = packageName cnf
+	Just vsn = packageVersion cnf in
+	dp </> "libHS" ++ nm ++ "-" ++ vsn ++ "-inplace.a"
 
 moduleNameToFilePath :: FilePath -> HasonValue -> FilePath
 moduleNameToFilePath dp (Str s) = dp </> "src" </> s <.> "hs"
