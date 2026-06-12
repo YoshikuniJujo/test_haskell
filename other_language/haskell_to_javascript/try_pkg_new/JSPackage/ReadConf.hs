@@ -3,10 +3,12 @@
 module JSPackage.ReadConf (
 	processArgs, readConf,
 	packageName, packageVersion,
-	exposedModules, modules, objs, archivePath ) where
+	exposedModules, modules, objs,
+	archivePath, libraryDirectory ) where
 
 import Data.Maybe
 import Data.Char
+import System.Environment
 import System.Directory
 import System.FilePath
 
@@ -58,3 +60,12 @@ hasonName = (++ ".hason") . capitalize . takeBaseName
 capitalize :: String -> String
 capitalize "" = ""
 capitalize (c : cs) = toUpper c : cs
+
+libraryDirectory :: Hason -> IO FilePath
+libraryDirectory cnf = do
+	let	Just nm = packageName cnf
+		Just vsn = packageVersion cnf
+	hd <- getEnv "HOME"
+	pure $ hd </>
+		".local/ghc-9.12.4/lib/javascript-ghcjs-ghc-9.12.4-inplace" </>
+		nm ++ "-" ++ vsn ++ "-inplace"
