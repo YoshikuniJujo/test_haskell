@@ -14,8 +14,9 @@ clean = do
 	conf <- readConf dp
 	let	mds = modules dp conf
 		ar = archivePath dp conf
+		Just cnf = confPath dp conf
 	putStrLn =<< readCreateProcess
-		(proc "rm" $ "-f" : ar : filesToRemove mds) ""
+		(proc "rm" $ "-f" : cnf : ar : filesToRemove mds) ""
 
 filesToRemove :: [FilePath] -> [FilePath]
 filesToRemove = ((\fp -> [fp -<.> "hi", fp -<.> "o"]) =<<)
