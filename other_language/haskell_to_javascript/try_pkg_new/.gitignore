@@ -7,4 +7,6 @@
 /mkConf
 /register
 /expose
+/hide
+/unregister
 hason.conf
