@@ -9,9 +9,9 @@ import System.FilePath
 
 import JSPackage.ReadConf
 
-install :: IO ()
-install = do
-	dp <- processArgs =<< getArgs
+install :: [String] -> IO ()
+install ars = do
+	dp <- processArgs ars
 	conf <- readConf dp
 	print conf
 	ld <- libraryDirectory conf

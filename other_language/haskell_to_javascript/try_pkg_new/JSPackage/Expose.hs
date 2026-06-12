@@ -2,14 +2,13 @@
 
 module JSPackage.Expose (expose) where
 
-import System.Environment
 import System.Process
 
 import JSPackage.ReadConf
 
-expose :: IO ()
-expose = do
-	dp <- processArgs =<< getArgs
+expose :: [String] -> IO ()
+expose ars = do
+	dp <- processArgs ars
 	conf <- readConf dp
 	let	Just cp = packageName conf
 		pr = proc "javascript-unknown-ghcjs-ghc-pkg-9.12.4"

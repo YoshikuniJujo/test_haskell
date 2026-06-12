@@ -17,29 +17,31 @@ import System.FilePath
 import Hason
 import JSPackage.ReadConf
 
-mkConf :: IO ()
-mkConf = do
-	(cp, cc) <- pathAndCont
+mkConf :: [String] -> IO ()
+mkConf ars = do
+	(cp, cc) <- pathAndCont ars
 	writeFile cp cc
 
-printConf :: IO ()
-printConf = do
-	(cp, cc) <- pathAndCont
+printConf :: [String] -> IO ()
+printConf ars = do
+	(cp, cc) <- pathAndCont ars
 	putStrLn cp
 	putStr cc
 
-pathAndCont :: IO (FilePath, String)
-pathAndCont = do
-	dp <- processArgs =<< getArgs
+pathAndCont :: [String] -> IO (FilePath, String)
+pathAndCont ars = do
+	dp <- processArgs ars
 	conf <- readConf dp
 	let	Just cp = confPath dp conf
 	(cp ,) <$> getConfFromHason conf
 
+{-
 getConf :: IO String
 getConf = do
 	dp <- processArgs =<< getArgs
 	conf <- readConf dp
 	getConfFromHason conf
+	-}
 
 getConfFromHason :: Hason -> IO String
 getConfFromHason conf = 

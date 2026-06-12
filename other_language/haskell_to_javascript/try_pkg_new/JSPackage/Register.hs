@@ -2,14 +2,13 @@
 
 module JSPackage.Register (register) where
 
-import System.Environment
 import System.Process
 
 import JSPackage.ReadConf
 
-register :: IO ()
-register = do
-	dp <- processArgs =<< getArgs
+register :: [String] -> IO ()
+register ars = do
+	dp <- processArgs ars
 	conf <- readConf dp
 	let	Just cp = confPath dp conf
 		pr = proc "javascript-unknown-ghcjs-ghc-pkg-9.12.4"

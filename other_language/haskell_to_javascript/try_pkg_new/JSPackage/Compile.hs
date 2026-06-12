@@ -2,14 +2,13 @@
 
 module JSPackage.Compile (compile) where
 
-import System.Environment
 import System.Process
 
 import JSPackage.ReadConf
 
-compile :: IO ()
-compile = do
-	dp <- processArgs =<< getArgs
+compile :: [String] -> IO ()
+compile ars = do
+	dp <- processArgs ars
 	conf <- readConf dp
 	let	Just nm = packageName conf
 		Just vsn = packageVersion conf

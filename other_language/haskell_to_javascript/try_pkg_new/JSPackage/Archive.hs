@@ -2,14 +2,13 @@
 
 module JSPackage.Archive (archive) where
 
-import System.Environment
 import System.Process
 
 import JSPackage.ReadConf qualified as C
 
-archive :: IO ()
-archive = do
-	dp <- C.processArgs =<< getArgs
+archive :: [String] -> IO ()
+archive ars = do
+	dp <- C.processArgs ars
 	conf <- C.readConf dp
 	let	Just nm = C.packageName conf
 		Just vsn = C.packageVersion conf

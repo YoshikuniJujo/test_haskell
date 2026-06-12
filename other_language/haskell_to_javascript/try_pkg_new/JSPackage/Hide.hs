@@ -2,14 +2,13 @@
 
 module JSPackage.Hide (hide) where
 
-import System.Environment
 import System.Process
 
 import JSPackage.ReadConf
 
-hide :: IO ()
-hide = do
-	dp <- processArgs =<< getArgs
+hide :: [String] -> IO ()
+hide ars = do
+	dp <- processArgs ars
 	conf <- readConf dp
 	let	Just cp = packageName conf
 		pr = proc "javascript-unknown-ghcjs-ghc-pkg-9.12.4"

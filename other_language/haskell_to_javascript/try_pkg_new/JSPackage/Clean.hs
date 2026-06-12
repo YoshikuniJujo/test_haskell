@@ -2,15 +2,14 @@
 
 module JSPackage.Clean (clean) where
 
-import System.Environment
 import System.FilePath
 import System.Process
 
 import JSPackage.ReadConf
 
-clean :: IO ()
-clean = do
-	dp <- processArgs =<< getArgs
+clean :: [String] -> IO ()
+clean ars = do
+	dp <- processArgs ars
 	conf <- readConf dp
 	let	mds = modules dp conf
 		ar = archivePath dp conf

@@ -2,14 +2,13 @@
 
 module JSPackage.Unregister (unregister) where
 
-import System.Environment
 import System.Process
 
 import JSPackage.ReadConf
 
-unregister :: IO ()
-unregister = do
-	dp <- processArgs =<< getArgs
+unregister :: [String] -> IO ()
+unregister ars = do
+	dp <- processArgs ars
 	conf <- readConf dp
 	let	Just cp = packageName conf
 		pr = proc "javascript-unknown-ghcjs-ghc-pkg-9.12.4"
