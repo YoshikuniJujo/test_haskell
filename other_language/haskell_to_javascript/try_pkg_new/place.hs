@@ -2,7 +2,7 @@ module Main (main) where
 
 import System.Environment
 
-import JSPackage.Install
+import JSPackage.Place
 
 main :: IO ()
-main = install =<< getArgs
+main = place =<< getArgs
