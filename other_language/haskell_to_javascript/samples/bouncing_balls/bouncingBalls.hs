@@ -26,6 +26,7 @@ import CalcBall
 
 main :: IO ()
 main = atomically (newTVar []) >>= \balls -> do
+	putStrLn "BOUNCING BALL START"
 	cvs <- raise "no such canvas" $ (JS.Element.fromE =<<)
 		<$> JS.Document.getElementById document "canvas"
 	(w, (h, h')) <- (second (id &&& subtract 10) .) . (,)
