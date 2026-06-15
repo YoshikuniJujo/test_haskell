@@ -30,11 +30,26 @@ copy fs dr = do
 	when (not b) $ error "This directory is not under the control."
 	zipWithM_ copyFile fs (mkDistFilePath fs dr)
 
+copy' :: FilePath -> [FilePath] -> FilePath -> IO ()
+copy' sdr fs dr = do
+	b <- checkDirectory dr
+	when (not b) $ error "This directory is not under the control."
+	zipWithM_ copyFile' ((sdr </>) <$> fs) (mkDistFilePath' fs dr)
+
 copyFile :: FilePath -> FilePath -> IO ()
 copyFile = D.copyFile
 
+copyFile' :: FilePath -> FilePath -> IO ()
+copyFile' src dst = do
+	let	(ddr, _) = splitFileName dst
+	D.createDirectoryIfMissing True ddr
+	D.copyFile src dst
+
 mkDistFilePath :: [FilePath] -> FilePath -> [FilePath]
 mkDistFilePath fs dr = (dr </>) . snd . splitFileName <$> fs
+
+mkDistFilePath' :: [FilePath] -> FilePath -> [FilePath]
+mkDistFilePath' fs dr = (dr </>) <$> fs
 
 chomp :: String -> String
 chomp s = case last s of '\n' -> init s; _ -> s

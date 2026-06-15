@@ -3,6 +3,7 @@
 module JSPackage.Archive (archive) where
 
 import System.Process
+import System.FilePath
 
 import JSPackage.ReadConf qualified as C
 
@@ -17,9 +18,7 @@ archive ars = do
 		objs = C.objs dp conf
 	print
 		. proc "emar"
-		$ ["qcls"] ++ (C.archivePath dp conf : objs)
+		$ ["qcls"] ++ (uncurry (</>) (C.archivePath dp conf) : objs)
 	(putStrLn =<<) . (`readCreateProcess` "")
 		. proc "emar"
-		$ ["qcls"] ++ (C.archivePath dp conf : objs)
-	print $ C.objs dp conf
-	putStrLn $ C.archivePath dp conf
+		$ ["qcls"] ++ (uncurry (</>) (C.archivePath dp conf) : objs)

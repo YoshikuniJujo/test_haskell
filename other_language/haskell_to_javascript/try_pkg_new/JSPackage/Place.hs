@@ -2,6 +2,8 @@
 
 module JSPackage.Place (place) where
 
+import System.FilePath
+
 import JSPackage.Directory
 import JSPackage.ReadConf
 
@@ -12,4 +14,6 @@ place ars = do
 	ld <- libraryDirectory conf
 	createDirectoryIfMissing ld
 	print $ his dp conf
-	copy (archivePath dp conf : his dp conf) ld
+	print $ his' dp conf
+	copy [uncurry (</>) (archivePath dp conf)] ld
+	uncurry copy' (his' dp conf) ld

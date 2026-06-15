@@ -4,7 +4,7 @@
 module JSPackage.ReadConf (
 	processArgs, readConf,
 	packageName, packageVersion,
-	exposedModules, modules, objs, his,
+	exposedModules, modules, objs, his, his',
 	archivePath, libraryDirectory,
 	hasonToMetaData, MetaData(..),
 	confPath
@@ -43,13 +43,24 @@ packageVersion cnf = (\(Str s) -> s) <$> lookup (KStr "version") cnf
 exposedModules :: FilePath -> Hason -> [FilePath]
 exposedModules dp cnf = let
 	Seq emds = fromMaybe (Seq []) $ lookup (KStr "exposed-modules") cnf in
-	moduleNameToFilePath dp <$> emds
+	((dp </> "src") </>) . moduleNameToFilePath' <$> emds
+
+exposedModules' :: FilePath -> Hason -> (FilePath, [FilePath])
+exposedModules' dp cnf = let
+	Seq emds = fromMaybe (Seq []) $ lookup (KStr "exposed-modules") cnf in
+	(dp </> "src" ,) $ moduleNameToFilePath' <$> emds
 
 modules :: FilePath -> Hason -> [FilePath]
 modules dp cnf = let
 	Seq omds = fromMaybe (Seq []) $ lookup (KStr "other-modules") cnf
-	omds' = moduleNameToFilePath dp <$> omds in
+	omds' = ((dp </> "src") </>) . moduleNameToFilePath' <$> omds in
 	exposedModules dp cnf ++ omds'
+
+modules' :: FilePath -> Hason -> (FilePath, [FilePath])
+modules' dp cnf = let
+	Seq omds = fromMaybe (Seq []) $ lookup (KStr "other-modules") cnf
+	omds' = moduleNameToFilePath' <$> omds in
+	(dp </> "src", snd (exposedModules' dp cnf) ++ omds')
 
 objs :: FilePath -> Hason -> [FilePath]
 objs dp cnf = (-<.> "o") <$> modules dp cnf
@@ -57,14 +68,17 @@ objs dp cnf = (-<.> "o") <$> modules dp cnf
 his :: FilePath -> Hason -> [FilePath]
 his dp cnf = (-<.> "hi") <$> modules dp cnf
 
-archivePath :: FilePath -> Hason -> FilePath
+his' :: FilePath -> Hason -> (FilePath, [FilePath])
+his' dp cnf = ((-<.> "hi") <$>) <$> modules' dp cnf
+
+archivePath :: FilePath -> Hason -> (FilePath, FilePath)
 archivePath dp cnf = let
 	Just nm = packageName cnf
 	Just vsn = packageVersion cnf in
-	dp </> "libHS" ++ nm ++ "-" ++ vsn ++ "-inplace.a"
+	(dp, "libHS" ++ nm ++ "-" ++ vsn ++ "-inplace.a")
 
-moduleNameToFilePath :: FilePath -> HasonValue -> FilePath
-moduleNameToFilePath dp (Str s) = dp </> "src" </> periodToSlash s <.> "hs"
+moduleNameToFilePath' :: HasonValue -> FilePath
+moduleNameToFilePath' (Str s) = periodToSlash s <.> "hs"
 
 periodToSlash :: String -> FilePath
 periodToSlash "" = ""
