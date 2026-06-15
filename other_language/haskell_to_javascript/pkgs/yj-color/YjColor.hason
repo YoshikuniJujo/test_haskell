@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Color(pkg) where
+module YjColor(pkg) where
 
 import Hason
 
