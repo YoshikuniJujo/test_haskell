@@ -1,14 +1,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module JSPackage.Place (place) where
+module JSPackage.Unplace (unplace) where
 
 import JSPackage.Directory
 import JSPackage.ReadConf
 
-place :: [String] -> IO ()
-place ars = do
+unplace :: [String] -> IO ()
+unplace ars = do
 	dp <- processArgs ars
 	conf <- readConf dp
 	ld <- libraryDirectory conf
-	createDirectoryIfMissing ld
-	copy (archivePath dp conf : his dp conf) ld
+	removeDirectoryRecursive ld

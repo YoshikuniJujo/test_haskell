@@ -11,7 +11,6 @@ import JSPackage.Values
 createDirectoryIfMissing :: FilePath -> IO ()
 createDirectoryIfMissing dr = do
 	b <- D.doesDirectoryExist dr
-	print b
 	when b do
 		b' <- checkDirectory dr
 		when (not b') $ error "This directory is not under the control."
@@ -43,3 +42,10 @@ chomp s = case last s of '\n' -> init s; _ -> s
 checkDirectory :: FilePath -> IO Bool
 checkDirectory dr =
 	(== underTheControl) . chomp <$> readFile (dr </> ".yjspkg/uuid")
+
+removeDirectoryRecursive :: FilePath -> IO ()
+removeDirectoryRecursive dr = do
+	b <- checkDirectory dr
+	if b
+	then D.removeDirectoryRecursive dr
+	else error "This directory is not under the control."
