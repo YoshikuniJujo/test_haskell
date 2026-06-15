@@ -10,4 +10,4 @@ pkg = [	(KStr "name", Str "yj-color"),
 	(KStr "exposed-modules", Seq [Str "Data.Color"]),
 	(KStr "depends", Seq [
 		Dct [	(KStr "name", Str "base"),
-			(KStr "version", Str "4.20.0.0") ] ]) ]
+			(KStr "version", Str "4.21.2.0") ] ]) ]
