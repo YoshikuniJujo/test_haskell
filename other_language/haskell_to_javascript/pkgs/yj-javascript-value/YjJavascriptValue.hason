@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module JavascriptValue (pkg) where
+module YjJavascriptValue (pkg) where
 
 import Hason
 
@@ -12,4 +12,4 @@ pkg = [	(KStr "name", Str "yj-javascript-value"),
 		Str "GHC.JS.Value.String" ]),
 	(KStr "depends", Seq [
 		Dct [	(KStr "name", Str "base"),
-			(KStr "version", Str "4.20.0.0") ] ]) ]
+			(KStr "version", Str "4.21.2.0") ] ]) ]
