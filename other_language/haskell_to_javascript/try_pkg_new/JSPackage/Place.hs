@@ -11,4 +11,5 @@ place ars = do
 	conf <- readConf dp
 	ld <- libraryDirectory conf
 	createDirectoryIfMissing ld
+	print $ his dp conf
 	copy (archivePath dp conf : his dp conf) ld

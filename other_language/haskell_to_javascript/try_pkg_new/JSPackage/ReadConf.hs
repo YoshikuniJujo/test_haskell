@@ -21,8 +21,13 @@ import Hason.Eval
 
 processArgs :: [String] -> IO FilePath
 processArgs [] = getCurrentDirectory
-processArgs [dp] = (</> dp) <$> getCurrentDirectory
+processArgs [dp] = (</> toCamel dp) <$> getCurrentDirectory
 processArgs _ = error "bad"
+
+toCamel :: String -> String
+toCamel "" = ""
+toCamel ('-' : c : cs) = toUpper c : toCamel cs
+toCamel (c : cs) = c : toCamel cs
 
 readConf :: FilePath -> IO Hason
 readConf dp = do
@@ -59,10 +64,15 @@ archivePath dp cnf = let
 	dp </> "libHS" ++ nm ++ "-" ++ vsn ++ "-inplace.a"
 
 moduleNameToFilePath :: FilePath -> HasonValue -> FilePath
-moduleNameToFilePath dp (Str s) = dp </> "src" </> s <.> "hs"
+moduleNameToFilePath dp (Str s) = dp </> "src" </> periodToSlash s <.> "hs"
+
+periodToSlash :: String -> FilePath
+periodToSlash "" = ""
+periodToSlash ('.' : cs) = '/' : periodToSlash cs
+periodToSlash (c : cs) = c : periodToSlash cs
 
 hasonName :: FilePath -> String
-hasonName = (++ ".hason") . capitalize . takeBaseName
+hasonName = (++ ".hason") . capitalize . toCamel . takeBaseName
 
 capitalize :: String -> String
 capitalize "" = ""
