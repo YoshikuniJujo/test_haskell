@@ -2,7 +2,9 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIOnS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value.Document (D(..), documentUri, getElementById) where
+module GHC.JS.Value.Document (
+	D(..), documentUri,
+	getElementById, getElementByTagName, getElementsByTagName ) where
 
 import GHC.JS.Prim (JSVal, isNull, isUndefined, toJSString, fromJSString)
 import GHC.JS.Value qualified as JS.Value
@@ -53,3 +55,23 @@ getElementById (D dc) (toJSString -> i) = js_getElementById dc i >>= \case
 
 foreign import javascript "((d, id) => { return d.getElementById(id); })"
 	js_getElementById :: JSVal -> JSVal -> IO JSVal
+
+getElementsByTagName :: D -> String -> IO (Maybe JS.Element.E)
+getElementsByTagName (D dc) (toJSString -> tn) =
+	js_getElementsByTagName dc tn >>= \case
+		e	| isNull e -> pure Nothing
+			| isUndefined e -> error $
+				"Document.getElementsByTagName() " ++
+				"return undefined"
+			| otherwise -> pure . Just $ JS.Element.otherE e
+
+foreign import javascript "((d, tn) => { return d.getElementsByTagName(tn); })"
+	js_getElementsByTagName :: JSVal -> JSVal -> IO JSVal
+
+getElementByTagName :: D -> String -> IO JS.Element.E
+getElementByTagName (D dc) (toJSString -> tn) =
+	JS.Element.otherE <$> js_getElementByTagName dc tn
+
+foreign import javascript
+	"((d, tn) => { const c = d.getElementsByTagName(tn); return c[0]; })"
+	js_getElementByTagName :: JSVal -> JSVal -> IO JSVal
