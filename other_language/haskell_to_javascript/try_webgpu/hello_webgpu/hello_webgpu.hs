@@ -8,6 +8,7 @@ import GHC.JS.Value.Window qualified as JS.Window
 
 import GHC.JS.Value.Gpu qualified as JS.Gpu
 import GHC.JS.Value.GpuAdapter qualified as JS.GpuAdapter
+import GHC.JS.Value.GpuAdapterInfo qualified as JS.GpuAdapterInfo
 
 main :: IO ()
 main = do
@@ -19,4 +20,7 @@ main = do
 	print $ JS.Gpu.getPreferredCanvasFormat g
 	a <- JS.Gpu.requestAdapter g
 	print a
+	let	i = JS.GpuAdapter.info a
+	print i
+	print $ JS.GpuAdapterInfo.architecture i
 	print =<< JS.GpuAdapter.requestDevice a
