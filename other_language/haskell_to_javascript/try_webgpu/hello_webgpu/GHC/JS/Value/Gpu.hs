@@ -3,7 +3,7 @@
 
 module GHC.JS.Value.Gpu where
 
-import GHC.JS.Prim (JSVal)
+import GHC.JS.Prim (JSVal, fromJSString)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.GpuAdapter qualified as JS.GpuAdapter
@@ -24,3 +24,10 @@ requestAdapter (G g) = JS.GpuAdapter.G <$> js_requestAdapter g
 foreign import javascript interruptible
 	"(async function (g, cont) { const a = await g.requestAdapter(); cont(a) })"
 	js_requestAdapter :: JSVal -> IO JSVal
+
+getPreferredCanvasFormat :: G -> String
+getPreferredCanvasFormat (G g) = fromJSString $ js_getPreferredCanvasFormat g
+
+foreign import javascript
+	"((g) => { const r = g.getPreferredCanvasFormat(); return r; })"
+	js_getPreferredCanvasFormat :: JSVal -> JSVal

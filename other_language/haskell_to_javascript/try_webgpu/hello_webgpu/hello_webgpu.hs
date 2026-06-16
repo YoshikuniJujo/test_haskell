@@ -5,8 +5,6 @@ module Main (main) where
 import GHC.JS.Value.Navigator qualified as JS.Navigator
 import GHC.JS.Value.Navigator.Webgpu qualified as JS.Navigator
 import GHC.JS.Value.Window qualified as JS.Window
-import GHC.JS.Value.Document qualified as JS.Document
-import GHC.JS.Value.Date qualified as JS.Date
 
 import GHC.JS.Value.Gpu qualified as JS.Gpu
 import GHC.JS.Value.GpuAdapter qualified as JS.GpuAdapter
@@ -18,6 +16,7 @@ main = do
 	print $ JS.Navigator.n
 	let	Just g = JS.Navigator.gpu JS.Navigator.n
 	print g
+	print $ JS.Gpu.getPreferredCanvasFormat g
 	a <- JS.Gpu.requestAdapter g
 	print a
 	print =<< JS.GpuAdapter.requestDevice a
