@@ -13,6 +13,8 @@ async function go() {
 
 	console.log("GPU adapter found.");
 
+	console.log(adapter.info);
+
 	const device = await adapter.requestDevice();
 
 	console.log(device);
