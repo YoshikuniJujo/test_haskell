@@ -15,4 +15,7 @@ main = do
 	putStrLn "Hello"
 	print $ JS.Window.document JS.Window.w
 	print $ JS.Navigator.n
-	print . JS.Navigator.gpu $ JS.Navigator.n
+	let	Just g = JS.Navigator.gpu JS.Navigator.n
+	print g
+	a <- JS.Gpu.requestAdapter g
+	print a
