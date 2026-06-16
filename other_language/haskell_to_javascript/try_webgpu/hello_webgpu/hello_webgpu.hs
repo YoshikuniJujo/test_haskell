@@ -9,6 +9,7 @@ import GHC.JS.Value.Document qualified as JS.Document
 import GHC.JS.Value.Date qualified as JS.Date
 
 import GHC.JS.Value.Gpu qualified as JS.Gpu
+import GHC.JS.Value.GpuAdapter qualified as JS.GpuAdapter
 
 main :: IO ()
 main = do
@@ -19,3 +20,4 @@ main = do
 	print g
 	a <- JS.Gpu.requestAdapter g
 	print a
+	print =<< JS.GpuAdapter.requestDevice a
