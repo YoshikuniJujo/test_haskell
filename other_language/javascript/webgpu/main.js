@@ -18,6 +18,7 @@ async function go() {
 	const device = await adapter.requestDevice();
 
 	console.log(device);
+	console.log(device.toString());
 
 	const canvas = document.querySelector('canvas');
 	const context = canvas.getContext('webgpu');
