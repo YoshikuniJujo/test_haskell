@@ -1,10 +1,11 @@
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module GHC.JS.Value.Object (
 	O, toValue, fromValue, IsO, toO,
-	isInstanceOf, Class(..), toString, consoleLog ) where
+	isInstanceOf, Class(..), toString, consoleLog, set ) where
 
-import GHC.JS.Prim (JSVal, fromJSString)
+import GHC.JS.Prim (JSVal, fromJSString, toJSString)
 import GHC.JS.Value qualified as JS.Value
 import Data.Typeable (cast)
 import Data.Maybe (fromJust)
@@ -44,3 +45,10 @@ consoleLog o = js_consoleLog $ JS.Value.toJSVal o
 
 foreign import javascript "((o) => { console.log(o); })"
 	js_consoleLog :: JSVal -> IO ()
+
+set :: O -> String -> O -> IO ()
+set (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
+	js_set o k v
+
+foreign import javascript "((o, k, v) => { o[k] = v; })"
+	js_set :: JSVal -> JSVal -> JSVal -> IO ()
