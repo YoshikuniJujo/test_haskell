@@ -10,6 +10,7 @@ import GHC.JS.Prim (JSVal, isNull, isUndefined, toJSString, fromJSString)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
+import GHC.JS.Value.HtmlCollection qualified as JS.HtmlCollection
 import GHC.JS.Value.Node qualified as JS.Node
 import GHC.JS.Value.Element qualified as JS.Element
 
@@ -56,14 +57,16 @@ getElementById (D dc) (toJSString -> i) = js_getElementById dc i >>= \case
 foreign import javascript "((d, id) => { return d.getElementById(id); })"
 	js_getElementById :: JSVal -> JSVal -> IO JSVal
 
-getElementsByTagName :: D -> String -> IO (Maybe JS.Element.E)
+getElementsByTagName :: D -> String -> IO JS.HtmlCollection.H
 getElementsByTagName (D dc) (toJSString -> tn) =
 	js_getElementsByTagName dc tn >>= \case
-		e	| isNull e -> pure Nothing
+		e	| isNull e -> error $
+				"Document.getElementsByTagName() " ++
+				"return null"
 			| isUndefined e -> error $
 				"Document.getElementsByTagName() " ++
 				"return undefined"
-			| otherwise -> pure . Just $ JS.Element.otherE e
+			| otherwise -> pure $ JS.HtmlCollection.H e
 
 foreign import javascript "((d, tn) => { return d.getElementsByTagName(tn); })"
 	js_getElementsByTagName :: JSVal -> JSVal -> IO JSVal
