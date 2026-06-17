@@ -8,7 +8,7 @@ module GHC.JS.Value.HtmlElement.Canvas (
 
 	getHeight, getWidth,
 
-	getContext, ContextType,
+	getContext, ContextType(..),
 	pattern ContextType2d
 
 	) where
