@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module GHC.JS.Value.Object (
-	O, toValue, fromValue, IsO, toO,
+	O, new, toValue, fromValue, IsO, toO,
 	isInstanceOf, Class(..), toString, consoleLog, set ) where
 
 import GHC.JS.Prim (JSVal, fromJSString, toJSString)
@@ -46,9 +46,26 @@ consoleLog o = js_consoleLog $ JS.Value.toJSVal o
 foreign import javascript "((o) => { console.log(o); })"
 	js_consoleLog :: JSVal -> IO ()
 
+new :: IO O
+new = toO . OtherO <$> js_new
+
+foreign import javascript "(() => { return {} })" js_new :: IO JSVal
+
 set :: O -> String -> O -> IO ()
 set (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
 	js_set o k v
 
 foreign import javascript "((o, k, v) => { o[k] = v; })"
 	js_set :: JSVal -> JSVal -> JSVal -> IO ()
+
+instance JS.Value.IsJSVal String where toJSVal = toJSString
+instance JS.Value.V String where toV = toValue; fromV = fromValue
+
+instance IsO String
+
+newtype OtherO = OtherO JSVal
+
+instance JS.Value.IsJSVal OtherO where toJSVal (OtherO v) = v
+instance JS.Value.V OtherO where toV = toValue; fromV = fromValue
+
+instance IsO OtherO
