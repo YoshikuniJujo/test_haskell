@@ -19,6 +19,8 @@ import GHC.JS.Value.GpuAdapterInfo qualified as JS.GpuAdapterInfo
 
 import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
 import GHC.JS.Value.CanvasContext.Gpu qualified as JS.GpuCanvasContext
+import GHC.JS.Value.GpuShaderModule qualified as JS.GpuShaderModule
+import GHC.JS.Value.GpuDevice qualified as JS.GpuDevice
 
 main :: IO ()
 main = do
@@ -76,6 +78,13 @@ main = do
 	maybe (error "bad") (`JS.GpuCanvasContext.configure` o) $ JS.CanvasContext.fromC ctx
 
 	JS.Object.consoleLog $ JS.Object.toO ctx
+
+	shdr <- JS.Object.new
+	JS.Object.set shdr "code" $ JS.Object.toO shaders
+	JS.Object.set shdr "label" $ JS.Object.toO "SHADERS"
+
+	shdrm <- JS.GpuDevice.createShaderModule device shdr
+	JS.Object.consoleLog $ JS.Object.toO shdrm
 
 shaders :: String
 shaders = """
