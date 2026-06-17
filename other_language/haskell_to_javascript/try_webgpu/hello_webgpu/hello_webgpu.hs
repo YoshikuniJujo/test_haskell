@@ -3,6 +3,7 @@
 
 module Main (main) where
 
+import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.Navigator qualified as JS.Navigator
 import GHC.JS.Value.Navigator.Webgpu qualified as JS.Navigator
@@ -66,14 +67,14 @@ main = do
 	JS.Object.consoleLog $ JS.Object.toO canvas
 	JS.Object.consoleLog $ JS.Object.toO a
 
-	print $ JS.Object.toO "Hello"
+	JS.Value.consoleLog $ JS.Value.toV "Hello"
 
 	JS.Object.consoleLog $ JS.Object.toO ctx
 
 	o <- JS.Object.new
-	JS.Object.set o "device" $ JS.Object.toO device
-	JS.Object.set o "format" $ JS.Object.toO format
-	JS.Object.set o "alphaMode" $ JS.Object.toO "premultiplied"
+	JS.Object.set o "device" $ JS.Value.toV device
+	JS.Object.set o "format" $ JS.Value.toV format
+	JS.Object.set o "alphaMode" $ JS.Value.toV "premultiplied"
 
 	JS.Object.consoleLog o
 
@@ -82,16 +83,15 @@ main = do
 	JS.Object.consoleLog $ JS.Object.toO ctx
 
 	shdr <- JS.Object.new
-	JS.Object.set shdr "code" $ JS.Object.toO shaders
-	JS.Object.set shdr "label" $ JS.Object.toO "SHADERS"
+	JS.Object.set shdr "code" $ JS.Value.toV shaders
+	JS.Object.set shdr "label" $ JS.Value.toV "SHADERS"
 
 	shdrm <- JS.GpuDevice.createShaderModule device shdr
 	JS.Object.consoleLog $ JS.Object.toO shdrm
 
-	JS.Object.consoleLog $ JS.Object.toO (123 :: Int)
-	print $ JS.Object.toO (123 :: Int)
+	JS.Value.consoleLog $ JS.Value.toV (123 :: Int)
 
-	print =<< JS.Float32Array.new (JS.Object.toO (10 :: Int))
+	print =<< JS.Float32Array.new (JS.Value.toV (10 :: Int))
 
 shaders :: String
 shaders = """

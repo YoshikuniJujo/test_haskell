@@ -1,9 +1,9 @@
 {-# LANGUAGE ExistentialQuantification, DeriveDataTypeable #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value (V(..), IsJSVal(..), Some, cast) where
+module GHC.JS.Value (V(..), IsJSVal(..), Some, cast, consoleLog) where
 
-import GHC.JS.Prim (JSVal)
+import GHC.JS.Prim (JSVal, toJSString, toJSInt)
 import Data.Typeable qualified as Tp
 
 data Some = forall v . V v => Some v
@@ -19,3 +19,15 @@ instance V Some where toV = id; fromV = Just
 
 cast :: (V v1, V v2) => v1 -> Maybe v2
 cast = fromV . toV
+
+instance IsJSVal String where toJSVal = toJSString
+instance V String
+
+instance IsJSVal Int where toJSVal = toJSInt
+instance V Int
+
+consoleLog :: Some -> IO ()
+consoleLog o = js_consoleLog $ toJSVal o
+
+foreign import javascript "((o) => { console.log(o); })"
+	js_consoleLog :: JSVal -> IO ()

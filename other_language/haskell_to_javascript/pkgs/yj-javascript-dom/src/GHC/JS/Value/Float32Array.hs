@@ -17,7 +17,7 @@ instance JS.Value.V F where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
 instance JS.Object.IsO F
 
-new :: JS.Object.O -> IO F
+new :: JS.Value.Some -> IO F
 new (JS.Value.toJSVal -> o) = F <$> js_new o
 
 foreign import javascript "((o) => { const r = new Float32Array(o); return r })"
