@@ -2,6 +2,7 @@
 
 module Main (main) where
 
+import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.Navigator qualified as JS.Navigator
 import GHC.JS.Value.Navigator.Webgpu qualified as JS.Navigator
 import GHC.JS.Value.Window qualified as JS.Window
@@ -50,3 +51,7 @@ main = do
 	ctx <- JS.HtmlCanvasElement.getContext c
 		JS.HtmlCanvasElement.ContextTypeWebGpu
 	print ctx
+	maybe (error "bad") (JS.Object.consoleLog . JS.Object.toO) ctx
+
+	JS.Object.consoleLog $ JS.Object.toO canvas
+	JS.Object.consoleLog $ JS.Object.toO a

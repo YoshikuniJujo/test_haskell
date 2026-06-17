@@ -2,7 +2,7 @@
 
 module GHC.JS.Value.Object (
 	O, toValue, fromValue, IsO, toO,
-	isInstanceOf, Class(..), toString ) where
+	isInstanceOf, Class(..), toString, consoleLog ) where
 
 import GHC.JS.Prim (JSVal, fromJSString)
 import GHC.JS.Value qualified as JS.Value
@@ -38,3 +38,9 @@ toString obj = fromJSString . js_toString $ JS.Value.toJSVal obj
 
 foreign import javascript "((o) => { return o.toString(); })"
 	js_toString :: JSVal -> JSVal
+
+consoleLog :: O -> IO ()
+consoleLog o = js_consoleLog $ JS.Value.toJSVal o
+
+foreign import javascript "((o) => { console.log(o); })"
+	js_consoleLog :: JSVal -> IO ()
