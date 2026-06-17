@@ -22,6 +22,8 @@ import GHC.JS.Value.CanvasContext.Gpu qualified as JS.GpuCanvasContext
 import GHC.JS.Value.GpuShaderModule qualified as JS.GpuShaderModule
 import GHC.JS.Value.GpuDevice qualified as JS.GpuDevice
 
+import GHC.JS.Value.Float32Array qualified as JS.Float32Array
+
 main :: IO ()
 main = do
 	putStrLn "Hello"
@@ -88,6 +90,8 @@ main = do
 
 	JS.Object.consoleLog $ JS.Object.toO (123 :: Int)
 	print $ JS.Object.toO (123 :: Int)
+
+	print =<< JS.Float32Array.new (JS.Object.toO (10 :: Int))
 
 shaders :: String
 shaders = """
