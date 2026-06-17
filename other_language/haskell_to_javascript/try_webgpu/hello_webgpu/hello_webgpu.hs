@@ -64,7 +64,7 @@ main = do
 	JS.Object.consoleLog $ JS.Object.toO canvas
 	JS.Object.consoleLog $ JS.Object.toO a
 
-	putStrLn . JS.Object.toString $ JS.Object.toO "Hello"
+	print $ JS.Object.toO "Hello"
 
 	JS.Object.consoleLog $ JS.Object.toO ctx
 
@@ -85,6 +85,9 @@ main = do
 
 	shdrm <- JS.GpuDevice.createShaderModule device shdr
 	JS.Object.consoleLog $ JS.Object.toO shdrm
+
+	JS.Object.consoleLog $ JS.Object.toO (123 :: Int)
+	print $ JS.Object.toO (123 :: Int)
 
 shaders :: String
 shaders = """
