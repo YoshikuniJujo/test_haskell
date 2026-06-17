@@ -1,3 +1,4 @@
+{-# LANGUAGE MultilineStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -16,6 +17,9 @@ import GHC.JS.Value.Gpu qualified as JS.Gpu
 import GHC.JS.Value.GpuAdapter qualified as JS.GpuAdapter
 import GHC.JS.Value.GpuAdapterInfo qualified as JS.GpuAdapterInfo
 
+import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
+import GHC.JS.Value.CanvasContext.Gpu qualified as JS.GpuCanvasContext
+
 main :: IO ()
 main = do
 	putStrLn "Hello"
@@ -23,13 +27,15 @@ main = do
 	print $ JS.Navigator.n
 	let	Just g = JS.Navigator.gpu JS.Navigator.n
 	print g
-	print $ JS.Gpu.getPreferredCanvasFormat g
+	let	format = JS.Gpu.getPreferredCanvasFormat g
+	print format
 	a <- JS.Gpu.requestAdapter g
 	print a
 	let	i = JS.GpuAdapter.info a
 	print i
 	print $ JS.GpuAdapterInfo.architecture i
-	print =<< JS.GpuAdapter.requestDevice a
+	device <- JS.GpuAdapter.requestDevice a
+	print device
 
 	let document = JS.Window.document JS.Window.w
 	print document
@@ -48,10 +54,50 @@ main = do
 	let	Just c = JS.Element.fromE cvs
 	print =<< JS.HtmlCanvasElement.getWidth c
 	print =<< JS.HtmlCanvasElement.getHeight c
-	ctx <- JS.HtmlCanvasElement.getContext c
+	Just ctx <- JS.HtmlCanvasElement.getContext c
 		JS.HtmlCanvasElement.ContextTypeWebGpu
 	print ctx
-	maybe (error "bad") (JS.Object.consoleLog . JS.Object.toO) ctx
+--	maybe (error "bad") (JS.Object.consoleLog . JS.Object.toO) ctx
 
 	JS.Object.consoleLog $ JS.Object.toO canvas
 	JS.Object.consoleLog $ JS.Object.toO a
+
+	putStrLn . JS.Object.toString $ JS.Object.toO "Hello"
+
+	JS.Object.consoleLog $ JS.Object.toO ctx
+
+	o <- JS.Object.new
+	JS.Object.set o "device" $ JS.Object.toO device
+	JS.Object.set o "format" $ JS.Object.toO format
+	JS.Object.set o "alphaMode" $ JS.Object.toO "premultiplied"
+
+	JS.Object.consoleLog o
+
+	maybe (error "bad") (`JS.GpuCanvasContext.configure` o) $ JS.CanvasContext.fromC ctx
+
+	JS.Object.consoleLog $ JS.Object.toO ctx
+
+shaders :: String
+shaders = """
+	struct VertexOut {
+		@builtin(position) position : vec4f,
+		@location(0) color : vec4f
+	}
+
+	@vertex
+	fn vertex_main(
+		@location(0) position: vec4f,
+		@location(1) color: vec4f) -> VertexOut
+	{
+		var output : VertexOut;
+		output.position = position;
+		output.color = color;
+		return output;
+	}
+
+	@fragment
+	fn fragment_main(fragData: VertexOut) -> @location(0) vec4f
+	{
+		return fragData.color;
+	}
+	"""
