@@ -47,3 +47,6 @@ main = do
 	let	Just c = JS.Element.fromE cvs
 	print =<< JS.HtmlCanvasElement.getWidth c
 	print =<< JS.HtmlCanvasElement.getHeight c
+	ctx <- JS.HtmlCanvasElement.getContext c
+		JS.HtmlCanvasElement.ContextTypeWebGpu
+	print ctx

@@ -12,6 +12,9 @@ import Data.Maybe (fromJust)
 
 data C = forall cc . JS.Value.V cc => C cc
 
+instance Show C where
+	show c = "(" ++ JS.Object.toString (JS.Object.toO c) ++ ")"
+
 instance JS.Value.IsJSVal C where toJSVal (C cc) = JS.Value.toJSVal cc
 instance JS.Value.V C where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
