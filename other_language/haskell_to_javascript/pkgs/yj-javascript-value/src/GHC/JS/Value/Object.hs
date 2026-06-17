@@ -5,12 +5,14 @@ module GHC.JS.Value.Object (
 	O, new, toValue, fromValue, IsO, toO,
 	isInstanceOf, Class(..), toString, consoleLog, set ) where
 
-import GHC.JS.Prim (JSVal, fromJSString, toJSString)
+import GHC.JS.Prim (JSVal, fromJSString, toJSString, toJSInt)
 import GHC.JS.Value qualified as JS.Value
 import Data.Typeable (cast)
 import Data.Maybe (fromJust)
 
 data O = forall o . JS.Value.V o => O o
+
+instance Show O where show = toString
 
 instance JS.Value.IsJSVal O where toJSVal (O o) = JS.Value.toJSVal o
 instance JS.Value.V O
@@ -58,14 +60,19 @@ set (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
 foreign import javascript "((o, k, v) => { o[k] = v; })"
 	js_set :: JSVal -> JSVal -> JSVal -> IO ()
 
-instance JS.Value.IsJSVal String where toJSVal = toJSString
-instance JS.Value.V String where toV = toValue; fromV = fromValue
-
-instance IsO String
-
 newtype OtherO = OtherO JSVal
 
 instance JS.Value.IsJSVal OtherO where toJSVal (OtherO v) = v
 instance JS.Value.V OtherO where toV = toValue; fromV = fromValue
 
 instance IsO OtherO
+
+instance JS.Value.IsJSVal String where toJSVal = toJSString
+instance JS.Value.V String where toV = toValue; fromV = fromValue
+
+instance IsO String
+
+instance JS.Value.IsJSVal Int where toJSVal = toJSInt
+instance JS.Value.V Int where toV = toValue; fromV = fromValue
+
+instance IsO Int
