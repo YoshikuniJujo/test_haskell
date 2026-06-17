@@ -6,6 +6,10 @@ import GHC.JS.Value.Navigator qualified as JS.Navigator
 import GHC.JS.Value.Navigator.Webgpu qualified as JS.Navigator
 import GHC.JS.Value.Window qualified as JS.Window
 import GHC.JS.Value.Document qualified as JS.Document
+import GHC.JS.Value.Element qualified as JS.Element
+import GHC.JS.Value.HtmlCollection qualified as JS.HtmlCollection
+import GHC.JS.Value.HtmlElement.Canvas qualified as JS.HtmlCanvasElement
+import GHC.JS.Value.HtmlElement.Canvas.WebGpu qualified as JS.HtmlCanvasElement
 
 import GHC.JS.Value.Gpu qualified as JS.Gpu
 import GHC.JS.Value.GpuAdapter qualified as JS.GpuAdapter
@@ -36,7 +40,10 @@ main = do
 
 	print canvas
 	print canvasList
+	print =<< JS.HtmlCollection.length canvasList
+	cvs <- JS.HtmlCollection.item canvasList 0
+	print cvs
 
-	pure ()
-
---	print canvas
+	let	Just c = JS.Element.fromE cvs
+	print =<< JS.HtmlCanvasElement.getWidth c
+	print =<< JS.HtmlCanvasElement.getHeight c
