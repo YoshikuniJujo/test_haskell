@@ -3,9 +3,10 @@
 
 module GHC.JS.Value.Object (
 	O, new, toValue, fromValue, IsO, toO, otherO,
-	isInstanceOf, Class(..), toString, consoleLog, set ) where
+	isInstanceOf, Class(..), toString, consoleLog, set, getInt
+	) where
 
-import GHC.JS.Prim (JSVal, fromJSString, toJSString)
+import GHC.JS.Prim (JSVal, fromJSString, toJSString, fromJSInt)
 import GHC.JS.Value qualified as JS.Value
 import Data.Typeable (cast)
 import Data.Maybe (fromJust)
@@ -63,10 +64,16 @@ foreign import javascript "((o, k, v) => { o[k] = v; })"
 foreign import javascript "((o, k) => { return o[k]; })"
 	js_get :: JSVal -> JSVal -> IO JSVal
 
-{-
-get :: JS.Value.V v => O -> String -> IO (Maybe v)
-get (JS.Value.toJSVal -> o) (toJSString -> k) = k
--}
+getInt :: O -> String -> IO (Maybe Int)
+getInt (JS.Value.toJSVal -> o) (toJSString -> k) = fromJSInt' <$> js_get o k
+
+fromJSInt' :: JSVal -> Maybe Int
+fromJSInt' v
+	| js_isInteger v = Just $ fromJSInt v
+	| otherwise = Nothing
+
+foreign import javascript "((v) => { return Number.isInteger(v) })"
+	js_isInteger :: JSVal -> Bool
 
 newtype OtherO = OtherO JSVal
 
