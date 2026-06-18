@@ -25,6 +25,8 @@ import GHC.JS.Value.GpuDevice qualified as JS.GpuDevice
 
 import GHC.JS.Value.Float32Array qualified as JS.Float32Array
 
+import GHC.JS.Value.GpuBufferUsage qualified as JS.GpuBufferUsage
+
 main :: IO ()
 main = do
 	putStrLn "Hello"
