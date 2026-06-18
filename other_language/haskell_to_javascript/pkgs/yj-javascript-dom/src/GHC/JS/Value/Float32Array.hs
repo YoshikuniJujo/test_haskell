@@ -39,3 +39,9 @@ byteLength = js_byteLength . unF
 
 foreign import javascript "((f) => { return f.byteLength })"
 	js_byteLength :: JSVal -> Int
+
+length :: F -> Int
+length = js_length . unF
+
+foreign import javascript "((f) => { return f.length })"
+	js_length :: JSVal -> Int
