@@ -11,6 +11,7 @@ import GHC.JS.Value.EventTarget qualified as JS.EventTarget
 import GHC.JS.Value.GpuShaderModule qualified as JS.GpuShaderModule
 
 import GHC.JS.Value.GpuBuffer qualified as JS.GpuBuffer
+import GHC.JS.Value.GpuQueue qualified as JS.GpuQueue
 
 newtype G = G JSVal
 
@@ -38,3 +39,9 @@ createBuffer (G g) (JS.Value.toJSVal -> d) =
 
 foreign import javascript "((g, d) => { return g.createBuffer(d); })"
 	js_createBuffer :: JSVal -> JSVal -> IO JSVal
+
+queue :: G -> JS.GpuQueue.G
+queue (G g) = JS.GpuQueue.G $ js_queue g
+
+foreign import javascript "((g) => { return g.queue; })"
+	js_queue :: JSVal -> JSVal

@@ -28,6 +28,7 @@ import GHC.JS.Value.GpuDevice qualified as JS.GpuDevice
 import GHC.JS.Value.Float32Array qualified as JS.Float32Array
 
 import GHC.JS.Value.GpuBufferUsage qualified as JS.GpuBufferUsage
+import GHC.JS.Value.GpuQueue qualified as JS.GpuQueue
 
 main :: IO ()
 main = do
@@ -97,13 +98,13 @@ main = do
 
 	print =<< JS.Float32Array.new (JS.Value.toV (10 :: Int))
 
-	vertex <- JS.Float32Array.fromFloatList [
+	vertices <- JS.Float32Array.fromFloatList [
 		0, 0.6, 0, 1, 1, 0,
 		0, 1, -0.5, -0.6,  0, 1,
 		0, 1, 0, 1, 0.5, -0.6,
 		0, 1, 0, 0, 1, 1 ]
-	print vertex
-	print $ JS.Float32Array.byteLength vertex
+	print vertices
+	print $ JS.Float32Array.byteLength vertices
 
 	print JS.GpuBufferUsage.copySrc
 	print JS.GpuBufferUsage.copyDst
@@ -112,15 +113,22 @@ main = do
 	print JS.GpuBufferUsage.queryResolve
 	print JS.GpuBufferUsage.vertex
 
-	bffr <- JS.Object.new
-	JS.Object.set bffr "label" "VERTEX BUFFER"
-	JS.Object.set bffr "size" $ JS.Float32Array.byteLength vertex
-	JS.Object.set bffr "usage"
+	bffrd <- JS.Object.new
+	JS.Object.set bffrd "label" "VERTEX BUFFER"
+	JS.Object.set bffrd "size" $ JS.Float32Array.byteLength vertices
+	JS.Object.set bffrd "usage"
 		$ JS.GpuBufferUsage.vertex .|. JS.GpuBufferUsage.copyDst
 
-	bffr <- JS.GpuDevice.createBuffer device bffr
+	bffr <- JS.GpuDevice.createBuffer device bffrd
 	print bffr
 	JS.Value.consoleLog $ JS.Value.toV bffr
+
+	let	queue = JS.GpuDevice.queue device
+		bffrln = JS.Float32Array.length vertices
+	print bffr
+	print queue
+	print bffrln
+	JS.GpuQueue.writeBuffer queue bffr 0 vertices 0 bffrln
 
 shaders :: String
 shaders = """
