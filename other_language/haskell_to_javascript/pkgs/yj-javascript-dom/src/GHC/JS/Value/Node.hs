@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module GHC.JS.Value.Node (
@@ -12,11 +12,13 @@ module GHC.JS.Value.Node (
 	NodeType, pattern ElementNode, pattern TextNode, pattern DocumentNode,
 	parentNode,
 
-	appendChild, hasChildNodes, removeChild
+	appendChild, hasChildNodes, removeChild,
+
+
 
 	) where
 
-import GHC.JS.Prim (JSVal, isUndefined, isNull, fromJSString)
+import GHC.JS.Prim (JSVal, isUndefined, isNull, fromJSString, toJSString)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
@@ -147,3 +149,10 @@ removeChild p c =
 
 foreign import javascript "((n, c) => { n.removeChild(c); })"
 	js_removeChild :: JSVal -> JSVal -> IO JSVal
+
+foreign import javascript "((o, k) => { return o[k]; })"
+	js_get :: JSVal -> JSVal -> IO JSVal
+
+get :: IsN n => JS.Object.O -> String -> IO (Maybe n)
+get (JS.Value.toJSVal -> o) (toJSString -> k) =
+	fromN . toN . OtherN <$> js_get o k
