@@ -29,6 +29,14 @@ fromList xs = do
 	pure a
 
 push :: A -> JS.Value.Some -> IO ()
-push (A a) (JS.Value.toJSVal -> x) =js_push a x
+push (A a) (JS.Value.toJSVal -> x) = js_push a x
 
 foreign import javascript "((a, x) => { a.push(x); })" js_push :: JSVal -> JSVal -> IO ()
+
+fromFloatList :: [Float] -> IO A
+fromFloatList fs = new >>= \a -> a <$ mapM_ (pushFloat a) fs
+
+pushFloat :: A -> Float -> IO ()
+pushFloat (A a) f = js_push_float a f
+
+foreign import javascript "((a, f) => { a.push(f); })" js_push_float :: JSVal -> Float -> IO ()

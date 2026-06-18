@@ -93,6 +93,12 @@ main = do
 
 	print =<< JS.Float32Array.new (JS.Value.toV (10 :: Int))
 
+	print =<< JS.Float32Array.fromFloatList [
+		0, 0.6, 0, 1, 1, 0,
+		0, 1, -0.5, -0.6,  0, 1,
+		0, 1, 0, 1, 0.5, -0.6,
+		0, 1, 0, 0, 1, 1 ]
+
 shaders :: String
 shaders = """
 	struct VertexOut {

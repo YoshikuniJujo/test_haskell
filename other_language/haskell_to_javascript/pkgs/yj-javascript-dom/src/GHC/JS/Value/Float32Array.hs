@@ -6,6 +6,7 @@ module GHC.JS.Value.Float32Array where
 import GHC.JS.Prim (JSVal)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
+import GHC.JS.Value.Array qualified as JS.Array
 
 newtype F = F { unF :: JSVal }
 
@@ -19,6 +20,16 @@ instance JS.Object.IsO F
 
 new :: JS.Value.Some -> IO F
 new (JS.Value.toJSVal -> o) = F <$> js_new o
+
+fromList :: JS.Value.V a => [a] -> IO F
+fromList xs = F <$> do
+	JS.Array.A a <- JS.Array.fromList xs
+	js_new a
+
+fromFloatList :: [Float] -> IO F
+fromFloatList fs = F <$> do
+	JS.Array.A a <- JS.Array.fromFloatList fs
+	js_new a
 
 foreign import javascript "((o) => { const r = new Float32Array(o); return r })"
 	js_new :: JSVal -> IO JSVal
