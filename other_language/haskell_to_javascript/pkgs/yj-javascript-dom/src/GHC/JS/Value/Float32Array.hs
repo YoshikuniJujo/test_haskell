@@ -33,3 +33,9 @@ fromFloatList fs = F <$> do
 
 foreign import javascript "((o) => { const r = new Float32Array(o); return r })"
 	js_new :: JSVal -> IO JSVal
+
+byteLength :: F -> Int
+byteLength = js_byteLength . unF
+
+foreign import javascript "((f) => { return f.byteLength })"
+	js_byteLength :: JSVal -> Int
