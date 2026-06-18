@@ -103,6 +103,13 @@ main = do
 	print vertex
 	print $ JS.Float32Array.byteLength vertex
 
+	print JS.GpuBufferUsage.copySrc
+	print JS.GpuBufferUsage.copyDst
+	print JS.GpuBufferUsage.index
+	print JS.GpuBufferUsage.mapRead
+	print JS.GpuBufferUsage.queryResolve
+	print JS.GpuBufferUsage.vertex
+
 shaders :: String
 shaders = """
 	struct VertexOut {
