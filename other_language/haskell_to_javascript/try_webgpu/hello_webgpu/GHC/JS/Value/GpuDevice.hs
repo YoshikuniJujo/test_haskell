@@ -10,6 +10,8 @@ import GHC.JS.Value.EventTarget qualified as JS.EventTarget
 
 import GHC.JS.Value.GpuShaderModule qualified as JS.GpuShaderModule
 
+import GHC.JS.Value.GpuBuffer qualified as JS.GpuBuffer
+
 newtype G = G JSVal
 
 instance Show G where
@@ -29,3 +31,10 @@ createShaderModule (G g) (JS.Value.toJSVal -> as) =
 
 foreign import javascript "((g, as) => { return g.createShaderModule(as); })"
 	js_createShaderModule :: JSVal -> JSVal -> IO JSVal
+
+createBuffer :: G -> JS.Object.O -> IO JS.GpuBuffer.G
+createBuffer (G g) (JS.Value.toJSVal -> d) =
+	JS.GpuBuffer.G <$> js_createBuffer g d
+
+foreign import javascript "((g, d) => { return g.createBuffer(d); })"
+	js_createBuffer :: JSVal -> JSVal -> IO JSVal

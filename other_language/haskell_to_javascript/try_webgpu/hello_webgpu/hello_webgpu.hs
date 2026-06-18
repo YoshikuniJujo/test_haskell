@@ -3,6 +3,8 @@
 
 module Main (main) where
 
+import Data.Bits
+
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.Navigator qualified as JS.Navigator
@@ -109,6 +111,16 @@ main = do
 	print JS.GpuBufferUsage.mapRead
 	print JS.GpuBufferUsage.queryResolve
 	print JS.GpuBufferUsage.vertex
+
+	bffr <- JS.Object.new
+	JS.Object.set bffr "label" "VERTEX BUFFER"
+	JS.Object.set bffr "size" $ JS.Float32Array.byteLength vertex
+	JS.Object.set bffr "usage"
+		$ JS.GpuBufferUsage.vertex .|. JS.GpuBufferUsage.copyDst
+
+	bffr <- JS.GpuDevice.createBuffer device bffr
+	print bffr
+	JS.Value.consoleLog $ JS.Value.toV bffr
 
 shaders :: String
 shaders = """
