@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module GHC.JS.Value.Object (
-	O, new, toValue, fromValue, IsO, toO,
+	O, new, toValue, fromValue, IsO, toO, otherO,
 	isInstanceOf, Class(..), toString, consoleLog, set ) where
 
 import GHC.JS.Prim (JSVal, fromJSString, toJSString)
@@ -53,12 +53,20 @@ new = toO . OtherO <$> js_new
 
 foreign import javascript "(() => { return {} })" js_new :: IO JSVal
 
-set :: O -> String -> JS.Value.Some -> IO ()
+set :: JS.Value.V v => O -> String -> v -> IO ()
 set (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
 	js_set o k v
 
 foreign import javascript "((o, k, v) => { o[k] = v; })"
 	js_set :: JSVal -> JSVal -> JSVal -> IO ()
+
+foreign import javascript "((o, k) => { return o[k]; })"
+	js_get :: JSVal -> JSVal -> IO JSVal
+
+{-
+get :: JS.Value.V v => O -> String -> IO (Maybe v)
+get (JS.Value.toJSVal -> o) (toJSString -> k) = k
+-}
 
 newtype OtherO = OtherO JSVal
 
@@ -66,3 +74,6 @@ instance JS.Value.IsJSVal OtherO where toJSVal (OtherO v) = v
 instance JS.Value.V OtherO where toV = toValue; fromV = fromValue
 
 instance IsO OtherO
+
+otherO :: JSVal -> O
+otherO = toO . OtherO
