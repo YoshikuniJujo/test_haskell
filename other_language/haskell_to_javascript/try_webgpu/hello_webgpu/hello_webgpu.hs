@@ -80,9 +80,11 @@ main = do
 	let	conf = (JS.GpuCanvasContext.configuration device
 			. fromJust $ JS.GpuCanvasContext.fromString format) {
 			JS.GpuCanvasContext.alphaMode =
-				Just JS.GpuCanvasContext.AlphaModePremultiplied }
+				Just JS.GpuCanvasContext.AlphaModePremultiplied
+			}
 		
-	maybe (error "bad") (`JS.GpuCanvasContext.configure` conf) $ JS.CanvasContext.fromC ctx
+	maybe (error "bad") (`JS.GpuCanvasContext.configure` conf)
+		$ JS.CanvasContext.fromC ctx
 
 	JS.Object.consoleLog $ JS.Object.toO ctx
 
