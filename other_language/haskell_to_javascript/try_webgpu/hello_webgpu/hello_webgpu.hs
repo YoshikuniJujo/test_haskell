@@ -4,6 +4,7 @@
 module Main (main) where
 
 import Data.Bits
+import Data.Maybe
 
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
@@ -76,14 +77,12 @@ main = do
 
 	JS.Object.consoleLog $ JS.Object.toO ctx
 
-	o <- JS.Object.new
-	JS.Object.set o "device" $ JS.Value.toV device
-	JS.Object.set o "format" $ JS.Value.toV format
-	JS.Object.set o "alphaMode" $ JS.Value.toV "premultiplied"
-
-	JS.Object.consoleLog o
-
-	maybe (error "bad") (`JS.GpuCanvasContext.configure` o) $ JS.CanvasContext.fromC ctx
+	let	conf = (JS.GpuCanvasContext.configuration device
+			. fromJust $ JS.GpuCanvasContext.fromString format) {
+			JS.GpuCanvasContext.alphaMode =
+				Just JS.GpuCanvasContext.AlphaModePremultiplied }
+		
+	maybe (error "bad") (`JS.GpuCanvasContext.configure` conf) $ JS.CanvasContext.fromC ctx
 
 	JS.Object.consoleLog $ JS.Object.toO ctx
 
