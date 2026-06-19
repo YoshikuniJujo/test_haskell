@@ -8,7 +8,6 @@ pkg :: Hason
 pkg = [	(KStr "name", Str "yj-javascript-dom"),
 	(KStr "version", Str "0.1.0.0"),
 	(KStr "exposed-modules", Seq [
-		Str "GHC.JS.Value.Array",
 		Str "GHC.JS.Value.Float32Array",
 		Str "GHC.JS.Value.HtmlCollection",
 		Str "GHC.JS.Value.Navigator",
