@@ -26,8 +26,8 @@ instance JS.Value.V G where
 instance JS.Object.IsO G
 instance JS.EventTarget.IsE G
 
-createShaderModule :: G -> JS.Object.O -> IO JS.GpuShaderModule.G
-createShaderModule (G g) (JS.Value.toJSVal -> as) =
+createShaderModule' :: G -> JS.Object.O -> IO JS.GpuShaderModule.G
+createShaderModule' (G g) (JS.Value.toJSVal -> as) =
 	JS.GpuShaderModule.G <$> js_createShaderModule g as
 
 foreign import javascript "((g, as) => { return g.createShaderModule(as); })"
