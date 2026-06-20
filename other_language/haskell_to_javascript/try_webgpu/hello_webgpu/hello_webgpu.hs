@@ -88,11 +88,12 @@ main = do
 
 	JS.Object.consoleLog $ JS.Object.toO ctx
 
-	shdr <- JS.Object.new
-	JS.Object.set shdr "code" $ JS.Value.toV shaders
-	JS.Object.set shdr "label" $ JS.Value.toV "SHADERS"
 
-	shdrm <- JS.GpuDevice.createShaderModule' device shdr
+	shdrm <- JS.GpuDevice.createShaderModule device
+		$ (JS.GpuDevice.shaderModuleDescriptor shaders) {
+			JS.GpuDevice.shaderModuleDescriptorLabel = Just "GOOD SHADERS"
+			}
+
 	JS.Object.consoleLog $ JS.Object.toO shdrm
 
 	JS.Value.consoleLog $ JS.Value.toV (123 :: Int)

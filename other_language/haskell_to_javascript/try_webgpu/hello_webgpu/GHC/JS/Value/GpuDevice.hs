@@ -26,12 +26,42 @@ instance JS.Value.V G where
 instance JS.Object.IsO G
 instance JS.EventTarget.IsE G
 
+createShaderModule :: G -> ShaderModuleDescriptor -> IO JS.GpuShaderModule.G
+createShaderModule g smd = do
+	o <- shaderModuleDescriptorToObject smd
+	createShaderModule' g o
+
 createShaderModule' :: G -> JS.Object.O -> IO JS.GpuShaderModule.G
 createShaderModule' (G g) (JS.Value.toJSVal -> as) =
 	JS.GpuShaderModule.G <$> js_createShaderModule g as
 
 foreign import javascript "((g, as) => { return g.createShaderModule(as); })"
 	js_createShaderModule :: JSVal -> JSVal -> IO JSVal
+
+shaderModuleDescriptorToObject :: ShaderModuleDescriptor -> IO JS.Object.O
+shaderModuleDescriptorToObject smd = do
+	o <- JS.Object.new
+	JS.Object.set o "code" $ shaderModuleDescriptorCode smd
+	maybe (pure ()) (JS.Object.set o "label")
+		$ shaderModuleDescriptorLabel smd
+	maybe (pure ()) (JS.Object.set o "hints")
+		$ shaderModuleDescriptorHints smd
+	maybe (pure ()) (JS.Object.set o "sourceMap")
+		$ shaderModuleDescriptorSourceMap smd
+	pure o
+
+data ShaderModuleDescriptor = ShaderModuleDescriptor {
+	shaderModuleDescriptorCode :: String,
+	shaderModuleDescriptorLabel :: Maybe String,
+	shaderModuleDescriptorHints :: Maybe JS.Object.O,
+	shaderModuleDescriptorSourceMap :: Maybe JS.Object.O }
+
+shaderModuleDescriptor :: String -> ShaderModuleDescriptor
+shaderModuleDescriptor cd = ShaderModuleDescriptor {
+	shaderModuleDescriptorCode = cd,
+	shaderModuleDescriptorLabel = Nothing,
+	shaderModuleDescriptorHints = Nothing,
+	shaderModuleDescriptorSourceMap = Nothing }
 
 createBuffer :: G -> JS.Object.O -> IO JS.GpuBuffer.G
 createBuffer (G g) (JS.Value.toJSVal -> d) =

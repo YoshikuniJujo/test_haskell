@@ -20,7 +20,7 @@ instance V Some where toV = id; fromV = Just
 cast :: (V v1, V v2) => v1 -> Maybe v2
 cast = fromV . toV
 
-instance IsJSVal String where toJSVal = toJSString
+instance IsJSVal String where toJSVal = (toJSString $!)
 instance V String
 
 instance IsJSVal Int where toJSVal = toJSInt
