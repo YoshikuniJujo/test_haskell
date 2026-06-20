@@ -115,17 +115,13 @@ main = do
 	print JS.GpuBufferUsage.queryResolve
 	print JS.GpuBufferUsage.vertex
 
-	bffrd <- JS.Object.new
-	JS.Object.set bffrd "label" "VERTEX BUFFER"
-	JS.Object.set bffrd "size" $ JS.Float32Array.byteLength vertices
-	JS.Object.set bffrd "usage"
-		$ JS.GpuBufferUsage.vertex .|. JS.GpuBufferUsage.copyDst
-
 	bffr <- JS.GpuDevice.createBuffer device
 		$ (JS.GpuDevice.bufferDescriptor
 			(JS.Float32Array.byteLength vertices)
-			(JS.GpuBufferUsage.Vertex .|. JS.GpuBufferUsage.CopyDst) ) {
-			JS.GpuDevice.bufferDescriptorLabel = Just "VERTEX BUFFER" }
+			(	JS.GpuBufferUsage.Vertex .|.
+				JS.GpuBufferUsage.CopyDst )) {
+			JS.GpuDevice.bufferDescriptorLabel =
+				Just "VERTEX BUFFER" }
 	print bffr
 	JS.Value.consoleLog $ JS.Value.toV bffr
 
