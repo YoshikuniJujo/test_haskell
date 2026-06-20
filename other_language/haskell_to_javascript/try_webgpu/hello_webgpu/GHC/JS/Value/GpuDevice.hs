@@ -12,6 +12,7 @@ import GHC.JS.Value.GpuShaderModule qualified as JS.GpuShaderModule
 
 import GHC.JS.Value.GpuBuffer qualified as JS.GpuBuffer
 import GHC.JS.Value.GpuQueue qualified as JS.GpuQueue
+import GHC.JS.Value.GpuBufferUsage qualified as JS.GpuBufferUsage
 
 newtype G = G JSVal
 
@@ -63,12 +64,42 @@ shaderModuleDescriptor cd = ShaderModuleDescriptor {
 	shaderModuleDescriptorHints = Nothing,
 	shaderModuleDescriptorSourceMap = Nothing }
 
-createBuffer :: G -> JS.Object.O -> IO JS.GpuBuffer.G
-createBuffer (G g) (JS.Value.toJSVal -> d) =
+createBuffer :: G -> BufferDescriptor -> IO JS.GpuBuffer.G
+createBuffer g d = createBuffer' g =<< bufferDescriptorToObject d
+
+createBuffer' :: G -> JS.Object.O -> IO JS.GpuBuffer.G
+createBuffer' (G g) (JS.Value.toJSVal -> d) =
 	JS.GpuBuffer.G <$> js_createBuffer g d
 
 foreign import javascript "((g, d) => { return g.createBuffer(d); })"
 	js_createBuffer :: JSVal -> JSVal -> IO JSVal
+
+bufferDescriptorToObject :: BufferDescriptor -> IO JS.Object.O
+bufferDescriptorToObject d = do
+	o <- JS.Object.new
+	o <$ do	maybe (pure ()) (JS.Object.set o "label")
+			$ bufferDescriptorLabel d
+		maybe (pure ()) (JS.Object.set o "mappedAtCreation")
+			$ bufferDescriptorMappedAtCreation d
+		JS.Object.set o "size" $ bufferDescriptorSize d
+		JS.Object.set o "usage" $ bufferDescriptorUsage d
+
+data BufferDescriptor = BufferDescriptor {
+	bufferDescriptorLabel :: Maybe String,
+	bufferDescriptorMappedAtCreation :: Maybe Bool,
+	bufferDescriptorSize :: Int,
+	bufferDescriptorUsage :: JS.GpuBufferUsage.G }
+	deriving Show
+
+bufferDescriptor :: Int -> JS.GpuBufferUsage.G -> BufferDescriptor
+bufferDescriptor s u = BufferDescriptor {
+	bufferDescriptorLabel = Nothing,
+	bufferDescriptorMappedAtCreation = Nothing,
+	bufferDescriptorSize = s,
+	bufferDescriptorUsage = u }
+
+foreign import javascript "(() => { return false })" js_false :: JSVal
+foreign import javascript "(() => { return true })" js_true :: JSVal
 
 queue :: G -> JS.GpuQueue.G
 queue (G g) = JS.GpuQueue.G $ js_queue g
