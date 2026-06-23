@@ -31,6 +31,12 @@ import GHC.JS.Value.Float32Array qualified as JS.Float32Array
 import GHC.JS.Value.GpuBufferUsage qualified as JS.GpuBufferUsage
 import GHC.JS.Value.GpuQueue qualified as JS.GpuQueue
 
+import GHC.JS.Value.GpuVertexFormat qualified as JS.GpuFormat
+import GHC.JS.Value.GpuVertexInputAttributeDescription qualified as
+	JS.GpuVertexInputAttributeDescription
+import GHC.JS.Value.GpuVertexInputBindingDescription qualified as
+	JS.GpuVertexInputBindingDescription
+
 main :: IO ()
 main = do
 	putStrLn "Hello"
