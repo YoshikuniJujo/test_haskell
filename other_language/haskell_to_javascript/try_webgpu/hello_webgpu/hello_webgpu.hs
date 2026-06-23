@@ -31,7 +31,7 @@ import GHC.JS.Value.Float32Array qualified as JS.Float32Array
 import GHC.JS.Value.GpuBufferUsage qualified as JS.GpuBufferUsage
 import GHC.JS.Value.GpuQueue qualified as JS.GpuQueue
 
-import GHC.JS.Value.GpuVertexFormat qualified as JS.GpuFormat
+import GHC.JS.Value.GpuVertexFormat qualified as JS.GpuVertexFormat
 import GHC.JS.Value.GpuVertexInputAttributeDescription qualified as
 	JS.GpuVertexInputAttributeDescription
 import GHC.JS.Value.GpuVertexInputBindingDescription qualified as
@@ -137,6 +137,31 @@ main = do
 	print queue
 	print bffrln
 	JS.GpuQueue.writeBuffer queue bffr 0 vertices 0 bffrln
+
+	let	attributes = [
+			JS.GpuVertexInputAttributeDescription.G {
+				JS.GpuVertexInputAttributeDescription.shaderLocation = 0,
+				JS.GpuVertexInputAttributeDescription.offset = 0,
+				JS.GpuVertexInputAttributeDescription.format =
+					JS.GpuVertexFormat.GFloat32x4
+				},
+			JS.GpuVertexInputAttributeDescription.G {
+				JS.GpuVertexInputAttributeDescription.shaderLocation = 1,
+				JS.GpuVertexInputAttributeDescription.offset = 16,
+				JS.GpuVertexInputAttributeDescription.format =
+					JS.GpuVertexFormat.GFloat32x4
+				}
+			]
+		vertexBuffers = [
+			JS.GpuVertexInputBindingDescription.G {
+				JS.GpuVertexInputBindingDescription.attributes =
+					attributes,
+				JS.GpuVertexInputBindingDescription.arrayStride = 32,
+				JS.GpuVertexInputBindingDescription.stepMode =
+					JS.GpuVertexInputBindingDescription.StepModeVertex
+				}
+			]
+	pure ()
 
 shaders :: String
 shaders = """
