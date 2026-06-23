@@ -194,7 +194,7 @@ packages:
     hackage: glfw-group-0.1.0.6
 snapshots:
 - completed:
-    sha256: c2fc9383886086db01bea00a4a5d148eaf89918baf6cabfcd3cbb4a0f8b9c524
-    size: 721519
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2026/1/24.yaml
-  original: nightly-2026-01-24
+    sha256: 26504b113016bff86ea8678fc3e477ee8a73ac066912c176a241e0f162c31f76
+    size: 761077
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2026/6/22.yaml
+  original: nightly-2026-06-22
