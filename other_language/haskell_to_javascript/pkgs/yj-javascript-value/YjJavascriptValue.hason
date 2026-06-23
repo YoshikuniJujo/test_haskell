@@ -11,7 +11,9 @@ pkg = [	(KStr "name", Str "yj-javascript-value"),
 		Str "GHC.JS.Value",
 		Str "GHC.JS.Value.String",
 		Str "GHC.JS.Value.Object",
-		Str "GHC.JS.Value.Array" ]),
+		Str "GHC.JS.Value.Array",
+		Str "GHC.JS.Value.Float32Array"
+		]),
 	(KStr "depends", Seq [
 		Dct [	(KStr "name", Str "base"),
 			(KStr "version", Str "4.21.2.0") ] ]) ]
