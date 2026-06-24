@@ -106,3 +106,6 @@ queue (G g) = JS.GpuQueue.G $ js_queue g
 
 foreign import javascript "((g) => { return g.queue; })"
 	js_queue :: JSVal -> JSVal
+
+data PipelineDescriptor = PipelineDescriptor {
+	}
