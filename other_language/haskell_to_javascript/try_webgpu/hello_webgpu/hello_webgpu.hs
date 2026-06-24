@@ -32,10 +32,11 @@ import GHC.JS.Value.GpuBufferUsage qualified as JS.GpuBufferUsage
 import GHC.JS.Value.GpuQueue qualified as JS.GpuQueue
 
 import GHC.JS.Value.GpuVertexFormat qualified as JS.GpuVertexFormat
-import GHC.JS.Value.GpuVertexInputAttributeDescription qualified as
-	JS.GpuVertexInputAttributeDescription
-import GHC.JS.Value.GpuVertexInputBindingDescription qualified as
-	JS.GpuVertexInputBindingDescription
+import GHC.JS.Value.GpuVertexBufferAttributeLayout qualified as
+	JS.GpuVertexBufferAttributeLayout
+import GHC.JS.Value.GpuVertexBufferLayout qualified as JS.GpuVertexBufferLayout
+
+import GHC.JS.Value.GpuDepthStencilObject qualified as JS.GpuDepthStencilObject
 
 main :: IO ()
 main = do
@@ -138,29 +139,30 @@ main = do
 	print bffrln
 	JS.GpuQueue.writeBuffer queue bffr 0 vertices 0 bffrln
 
-	let	attributes = [
-			JS.GpuVertexInputAttributeDescription.G {
-				JS.GpuVertexInputAttributeDescription.shaderLocation = 0,
-				JS.GpuVertexInputAttributeDescription.offset = 0,
-				JS.GpuVertexInputAttributeDescription.format =
+	let	attrs = [
+			JS.GpuVertexBufferAttributeLayout.G {
+				JS.GpuVertexBufferAttributeLayout.shaderLocation = 0,
+				JS.GpuVertexBufferAttributeLayout.offset = 0,
+				JS.GpuVertexBufferAttributeLayout.format =
 					JS.GpuVertexFormat.GFloat32x4
 				},
-			JS.GpuVertexInputAttributeDescription.G {
-				JS.GpuVertexInputAttributeDescription.shaderLocation = 1,
-				JS.GpuVertexInputAttributeDescription.offset = 16,
-				JS.GpuVertexInputAttributeDescription.format =
+			JS.GpuVertexBufferAttributeLayout.G {
+				JS.GpuVertexBufferAttributeLayout.shaderLocation = 1,
+				JS.GpuVertexBufferAttributeLayout.offset = 16,
+				JS.GpuVertexBufferAttributeLayout.format =
 					JS.GpuVertexFormat.GFloat32x4
 				}
 			]
 		vertexBuffers = [
-			JS.GpuVertexInputBindingDescription.G {
-				JS.GpuVertexInputBindingDescription.attributes =
-					attributes,
-				JS.GpuVertexInputBindingDescription.arrayStride = 32,
-				JS.GpuVertexInputBindingDescription.stepMode =
-					JS.GpuVertexInputBindingDescription.StepModeVertex
+			JS.GpuVertexBufferLayout.G {
+				JS.GpuVertexBufferLayout.attributes = attrs,
+				JS.GpuVertexBufferLayout.arrayStride = 32,
+				JS.GpuVertexBufferLayout.stepMode =
+					JS.GpuVertexBufferLayout.StepModeVertex
 				}
 			]
+		pipelineDescriptor = JS.GpuDevice.PipelineDescriptor {
+			}
 	pure ()
 
 shaders :: String

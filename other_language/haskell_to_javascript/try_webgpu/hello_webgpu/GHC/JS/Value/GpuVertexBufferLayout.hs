@@ -1,17 +1,17 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value.GpuVertexInputBindingDescription where
+module GHC.JS.Value.GpuVertexBufferLayout where
 
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.Array qualified as JS.Array
-import GHC.JS.Value.GpuVertexInputAttributeDescription qualified as
-	JS.GpuVertexInputAttributeDescription
+import GHC.JS.Value.GpuVertexBufferAttributeLayout qualified as
+	JS.GpuVertexBufferAttributeLayout
 
 data G = G {
 	arrayStride :: Int,
-	attributes :: [JS.GpuVertexInputAttributeDescription.G],
+	attributes :: [JS.GpuVertexBufferAttributeLayout.G],
 	stepMode :: StepMode
 	}
 
@@ -21,7 +21,7 @@ toObject g = do
 	JS.Object.set o "arrayStrinde" $ arrayStride g
 	JS.Object.set o "attributes"
 		=<< JS.Array.fromList
-		=<< (JS.GpuVertexInputAttributeDescription.toObject
+		=<< (JS.GpuVertexBufferAttributeLayout.toObject
 			`mapM` attributes g)
 	JS.Object.set o "stepMode" $ stepMode g
 	pure o
