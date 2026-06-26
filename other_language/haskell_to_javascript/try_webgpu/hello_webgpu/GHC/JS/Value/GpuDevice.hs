@@ -14,6 +14,8 @@ import GHC.JS.Value.GpuBuffer qualified as JS.GpuBuffer
 import GHC.JS.Value.GpuQueue qualified as JS.GpuQueue
 import GHC.JS.Value.GpuBufferUsage qualified as JS.GpuBufferUsage
 
+import GHC.JS.Value.GpuDepthStencilObject qualified as JS.GpuDepthStencilObject
+
 newtype G = G JSVal
 
 instance Show G where
@@ -107,5 +109,7 @@ queue (G g) = JS.GpuQueue.G $ js_queue g
 foreign import javascript "((g) => { return g.queue; })"
 	js_queue :: JSVal -> JSVal
 
-data PipelineDescriptor = PipelineDescriptor {
+data RenderPipelineDescriptor = RenderPipelineDescriptor {
+	renderPipelineDescriptorDepthStencil :: JS.GpuDepthStencilObject.G
+--	renderPipelineDescriptorFragment :: ,
 	}

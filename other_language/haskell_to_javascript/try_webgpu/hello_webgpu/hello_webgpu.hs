@@ -161,7 +161,7 @@ main = do
 					JS.GpuVertexBufferLayout.StepModeVertex
 				}
 			]
-		pipelineDescriptor = JS.GpuDevice.PipelineDescriptor {
+		pipelineDescriptor = JS.GpuDevice.RenderPipelineDescriptor {
 			}
 	pure ()
 

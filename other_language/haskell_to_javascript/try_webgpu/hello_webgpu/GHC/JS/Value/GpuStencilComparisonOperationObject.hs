@@ -11,19 +11,19 @@ import GHC.JS.Value.GpuDepthStencilCompare qualified as
 	JS.GpuDepthStencilCompare
 
 data G = G {
-	compare :: JS.GpuDepthStencilCompare.G,
-	depthFailOp :: StencilOperation,
-	failOp :: StencilOperation,
-	passOp :: StencilOperation }
+	compare :: Maybe JS.GpuDepthStencilCompare.G,
+	depthFailOp :: Maybe StencilOperation,
+	failOp :: Maybe StencilOperation,
+	passOp :: Maybe StencilOperation }
 	deriving Show
 
 toObject :: G -> IO JS.Object.O
 toObject g = do
 	o <- JS.Object.new
-	JS.Object.set o "compare" $ compare g
-	JS.Object.set o "depthFailOp" $ depthFailOp g
-	JS.Object.set o "failOp" $ failOp g
-	JS.Object.set o "passOp" $ passOp g
+	maybe (pure ()) (JS.Object.set o "compare") $ compare g
+	maybe (pure ()) (JS.Object.set o "depthFailOp") $ depthFailOp g
+	maybe (pure ()) (JS.Object.set o "failOp") $ failOp g
+	maybe (pure ()) (JS.Object.set o "passOp") $ passOp g
 	pure o
 
 data StencilOperation
