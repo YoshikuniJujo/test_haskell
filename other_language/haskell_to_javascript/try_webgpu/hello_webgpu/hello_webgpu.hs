@@ -162,6 +162,8 @@ main = do
 				}
 			]
 		pipelineDescriptor = JS.GpuDevice.RenderPipelineDescriptor {
+			JS.GpuDevice.renderPipelineDescriptorDepthStencil =
+				Nothing
 			}
 	pure ()
 
