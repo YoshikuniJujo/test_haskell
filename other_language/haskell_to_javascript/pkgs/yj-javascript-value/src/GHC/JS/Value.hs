@@ -5,6 +5,7 @@ module GHC.JS.Value (V(..), IsJSVal(..), Some, cast, consoleLog) where
 
 import Data.Typeable qualified as Tp
 import Data.Bool
+import Data.Word
 
 import GHC.JS.Prim (JSVal, toJSString, toJSInt)
 
@@ -27,6 +28,9 @@ instance V String
 
 instance IsJSVal Int where toJSVal = toJSInt
 instance V Int
+
+instance IsJSVal Word32 where toJSVal = toJSInt . fromIntegral
+instance V Word32
 
 instance IsJSVal Bool where toJSVal = bool js_false js_true
 instance V Bool
