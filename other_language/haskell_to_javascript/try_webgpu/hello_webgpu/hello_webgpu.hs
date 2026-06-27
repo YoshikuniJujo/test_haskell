@@ -165,6 +165,7 @@ main = do
 			JS.GpuDevice.renderPipelineDescriptorDepthStencil =
 				Nothing
 			}
+--	JS.Value.consoleLog $ JS.Value.toV vertexBuffers
 	pure ()
 
 shaders :: String

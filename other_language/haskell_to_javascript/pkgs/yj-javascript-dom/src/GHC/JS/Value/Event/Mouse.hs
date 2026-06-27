@@ -1,3 +1,4 @@
+{-# LANGUAGE UndecidableSuperClasses #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module GHC.JS.Value.Event.Mouse (

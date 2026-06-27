@@ -23,7 +23,7 @@ new (JS.Value.toJSVal -> o) = F <$> js_new o
 
 fromList :: JS.Value.V a => [a] -> IO F
 fromList xs = F <$> do
-	JS.Array.A a <- JS.Array.fromList xs
+	JS.Array.A a <- JS.Array.fromListIO xs
 	js_new a
 
 fromFloatList :: [Float] -> IO F

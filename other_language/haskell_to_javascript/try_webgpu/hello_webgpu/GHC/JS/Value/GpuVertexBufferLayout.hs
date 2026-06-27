@@ -20,7 +20,7 @@ toObject g = do
 	o <- JS.Object.new
 	JS.Object.set o "arrayStrinde" $ arrayStride g
 	JS.Object.set o "attributes"
-		=<< JS.Array.fromList
+		=<< JS.Array.fromListIO
 		=<< (JS.GpuVertexBufferAttributeLayout.toObject
 			`mapM` attributes g)
 	JS.Object.set o "stepMode" $ stepMode g

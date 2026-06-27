@@ -55,7 +55,7 @@ configurationToObject c = do
 	JS.Object.set o "format" . toString $ format c
 	maybe (pure ()) (JS.Object.set o "usage" . toInt) $ usage c
 	marr <- maybe (pure Nothing)
-		((Just <$>) . JS.Array.fromList) $ viewFormats c
+		((Just <$>) . JS.Array.fromListIO) $ viewFormats c
 	maybe (pure ()) (JS.Object.set o "viewFormats") marr
 	pure o
 

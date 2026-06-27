@@ -3,6 +3,8 @@
 
 module GHC.JS.Value.Array where
 
+import System.IO.Unsafe
+
 import GHC.JS.Prim (JSVal)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
@@ -22,8 +24,11 @@ new = A <$> js_new
 
 foreign import javascript "(() => { return Array() })" js_new :: IO JSVal
 
-fromList :: JS.Value.V a => [a] -> IO A
-fromList xs = do
+fromList :: JS.Value.V a => [a] -> A
+fromList xs = unsafePerformIO $ fromListIO xs
+
+fromListIO :: JS.Value.V a => [a] -> IO A
+fromListIO xs = do
 	a <- new
 	mapM_ (push a) (JS.Value.toV <$> xs)
 	pure a
@@ -40,3 +45,8 @@ pushFloat :: A -> Float -> IO ()
 pushFloat (A a) f = js_push_float a f
 
 foreign import javascript "((a, f) => { a.push(f); })" js_push_float :: JSVal -> Float -> IO ()
+
+{-
+instance JS.Value.V a => JS.Value.IsJSVal [a] where toJSVal = JS.Value.toJSVal . fromList
+instance JS.Value.V a => JS.Value.V [a]
+-}
