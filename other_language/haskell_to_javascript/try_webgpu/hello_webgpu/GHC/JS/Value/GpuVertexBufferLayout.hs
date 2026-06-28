@@ -3,6 +3,8 @@
 
 module GHC.JS.Value.GpuVertexBufferLayout where
 
+import System.IO.Unsafe
+
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.Array qualified as JS.Array
@@ -25,6 +27,11 @@ toObject g = do
 			`mapM` attributes g)
 	JS.Object.set o "stepMode" $ stepMode g
 	pure o
+
+instance JS.Value.IsJSVal G where
+	toJSVal = unsafePerformIO . (JS.Value.toJSVal <$>) . toObject
+
+instance JS.Value.V G where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
 data StepMode = StepModeInstance | StepModeVertex deriving Show
 

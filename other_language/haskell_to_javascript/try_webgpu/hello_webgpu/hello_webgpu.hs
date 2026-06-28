@@ -166,9 +166,7 @@ main = do
 				Nothing
 			}
 	JS.Value.consoleLog $ JS.Value.toV attrs
---	JS.Value.consoleLog $ JS.Value.toV vertexBuffers
-	JS.Value.consoleLog $ JS.Value.toV ["hello", "world"]
-	pure ()
+	JS.Value.consoleLog $ JS.Value.toV vertexBuffers
 
 shaders :: String
 shaders = """
