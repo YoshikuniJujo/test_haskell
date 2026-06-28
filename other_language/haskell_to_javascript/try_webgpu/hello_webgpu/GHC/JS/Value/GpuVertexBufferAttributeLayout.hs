@@ -2,7 +2,9 @@
 
 module GHC.JS.Value.GpuVertexBufferAttributeLayout where
 
--- import GHC.JS.Value qualified as JS.Value
+import System.IO.Unsafe
+
+import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.GpuVertexFormat qualified as JS.GpuVertexFormat
 
@@ -19,3 +21,8 @@ toObject g = do
 	JS.Object.set o "offset" $ offset g
 	JS.Object.set o "shaderLocation" $ shaderLocation g
 	pure o
+
+instance JS.Value.IsJSVal G where
+	toJSVal = unsafePerformIO . (JS.Value.toJSVal <$>) . toObject
+
+instance JS.Value.V G where toV = JS.Object.toValue; fromV = JS.Object.fromValue
