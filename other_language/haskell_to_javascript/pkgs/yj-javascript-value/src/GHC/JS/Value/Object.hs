@@ -6,12 +6,34 @@ module GHC.JS.Value.Object (
 	isInstanceOf, Class(..), toString, consoleLog, set, getInt
 	) where
 
+import Prelude qualified as P
+import Prelude hiding (IO)
 import GHC.JS.Prim (JSVal, fromJSString, toJSString, fromJSInt)
 import GHC.JS.Value qualified as JS.Value
 import Data.Typeable (cast)
 import Data.Maybe (fromJust)
 
 data O = forall o . JS.Value.V o => O o
+
+class M o m where
+	new_ :: m o
+	set_ :: JS.Value.V v => o -> String -> v -> m ()
+	freeze :: o -> m O
+	thaw :: O -> m o
+
+newtype IO = IO O deriving JS.Value.IsJSVal
+
+instance M IO P.IO where
+	new_ = toIO . OtherO <$> js_new
+	set_ (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
+		js_set o k v
+--	freeze (JS.Value.toJSVal ->
+
+{-
+set :: JS.Value.V v => O -> String -> v -> P.IO ()
+set (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
+	js_set o k v
+	-}
 
 instance Show O where show = toString
 
@@ -26,6 +48,9 @@ fromValue v = JS.Value.fromV v >>= \(O o) -> cast o
 
 toO :: IsO o => o -> O
 toO = fromJust . JS.Value.cast
+
+toIO :: IsO o => o -> IO
+toIO = IO . toO
 
 class JS.Value.V o => IsO o
 
@@ -43,28 +68,28 @@ toString obj = fromJSString . js_toString $ JS.Value.toJSVal obj
 foreign import javascript "((o) => { return o.toString(); })"
 	js_toString :: JSVal -> JSVal
 
-consoleLog :: O -> IO ()
+consoleLog :: O -> P.IO ()
 consoleLog o = js_consoleLog $ JS.Value.toJSVal o
 
 foreign import javascript "((o) => { console.log(o); })"
-	js_consoleLog :: JSVal -> IO ()
+	js_consoleLog :: JSVal -> P.IO ()
 
-new :: IO O
+new :: P.IO O
 new = toO . OtherO <$> js_new
 
-foreign import javascript "(() => { return {} })" js_new :: IO JSVal
+foreign import javascript "(() => { return {} })" js_new :: P.IO JSVal
 
-set :: JS.Value.V v => O -> String -> v -> IO ()
+set :: JS.Value.V v => O -> String -> v -> P.IO ()
 set (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
 	js_set o k v
 
 foreign import javascript "((o, k, v) => { o[k] = v; })"
-	js_set :: JSVal -> JSVal -> JSVal -> IO ()
+	js_set :: JSVal -> JSVal -> JSVal -> P.IO ()
 
 foreign import javascript "((o, k) => { return o[k]; })"
-	js_get :: JSVal -> JSVal -> IO JSVal
+	js_get :: JSVal -> JSVal -> P.IO JSVal
 
-getInt :: O -> String -> IO (Maybe Int)
+getInt :: O -> String -> P.IO (Maybe Int)
 getInt (JS.Value.toJSVal -> o) (toJSString -> k) = fromJSInt' <$> js_get o k
 
 fromJSInt' :: JSVal -> Maybe Int
