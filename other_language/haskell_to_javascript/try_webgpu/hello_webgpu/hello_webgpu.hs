@@ -38,6 +38,8 @@ import GHC.JS.Value.GpuVertexBufferLayout qualified as JS.GpuVertexBufferLayout
 
 import GHC.JS.Value.GpuDepthStencilObject qualified as JS.GpuDepthStencilObject
 
+import GHC.JS.Value.GpuOverridableConstant qualified as JS.GpuOverridableConstant
+
 main :: IO ()
 main = do
 	putStrLn "Hello"
@@ -167,6 +169,8 @@ main = do
 			}
 	JS.Value.consoleLog $ JS.Value.toV attrs
 	JS.Value.consoleLog $ JS.Value.toV vertexBuffers
+	JS.Value.js_consoleLog . JS.GpuOverridableConstant.fromValue
+		$ JS.GpuOverridableConstant.I32 (- 5)
 
 shaders :: String
 shaders = """

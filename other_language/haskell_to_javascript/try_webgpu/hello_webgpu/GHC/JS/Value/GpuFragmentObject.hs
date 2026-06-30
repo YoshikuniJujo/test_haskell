@@ -2,7 +2,12 @@
 
 module GHC.JS.Value.GpuFragmentObject where
 
+import GHC.JS.Value.GpuShaderModule qualified as JS.GpuShaderModule
 import GHC.JS.Value.GpuOverridableConstant
+	qualified as JS.GpuOverridableConstant
 
 data G = G {
+	constants :: Maybe JS.GpuOverridableConstant.G,
+	entryPoint :: Maybe String,
+	gModule :: JS.GpuShaderModule.G
 	}

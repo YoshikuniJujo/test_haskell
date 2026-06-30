@@ -1,7 +1,7 @@
 {-# LANGUAGE ExistentialQuantification, DeriveDataTypeable #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GHC.JS.Value (V(..), IsJSVal(..), Some, cast, consoleLog) where
+module GHC.JS.Value (V(..), IsJSVal(..), Some, cast, consoleLog, js_consoleLog) where
 
 import Data.Typeable qualified as Tp
 import Data.Bool
@@ -47,6 +47,11 @@ instance V Int
 
 instance IsJSVal Word32 where toJSVal = toJSInt . fromIntegral
 instance V Word32
+
+instance IsJSVal Double where toJSVal = toJSDouble
+instance V Double
+
+foreign import javascript "((o) => { return o })" toJSDouble :: Double -> JSVal
 
 instance IsJSVal Bool where toJSVal = bool js_false js_true
 instance V Bool
