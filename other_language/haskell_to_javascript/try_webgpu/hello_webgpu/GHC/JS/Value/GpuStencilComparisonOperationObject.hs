@@ -19,12 +19,12 @@ data G = G {
 
 toObject :: G -> IO JS.Object.O
 toObject g = do
-	o <- JS.Object.new
+	o <- JS.Object.new @JS.Object.IO
 	maybe (pure ()) (JS.Object.set o "compare") $ compare g
 	maybe (pure ()) (JS.Object.set o "depthFailOp") $ depthFailOp g
 	maybe (pure ()) (JS.Object.set o "failOp") $ failOp g
 	maybe (pure ()) (JS.Object.set o "passOp") $ passOp g
-	pure o
+	JS.Object.freeze o
 
 data StencilOperation
 	= Zero | Keep | Replace | Invert

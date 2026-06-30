@@ -44,7 +44,7 @@ foreign import javascript "((g, as) => { return g.createShaderModule(as); })"
 
 shaderModuleDescriptorToObject :: ShaderModuleDescriptor -> IO JS.Object.O
 shaderModuleDescriptorToObject smd = do
-	o <- JS.Object.new
+	o <- JS.Object.new @JS.Object.IO
 	JS.Object.set o "code" $ shaderModuleDescriptorCode smd
 	maybe (pure ()) (JS.Object.set o "label")
 		$ shaderModuleDescriptorLabel smd
@@ -52,7 +52,7 @@ shaderModuleDescriptorToObject smd = do
 		$ shaderModuleDescriptorHints smd
 	maybe (pure ()) (JS.Object.set o "sourceMap")
 		$ shaderModuleDescriptorSourceMap smd
-	pure o
+	JS.Object.freeze o
 
 data ShaderModuleDescriptor = ShaderModuleDescriptor {
 	shaderModuleDescriptorCode :: String,
@@ -79,13 +79,14 @@ foreign import javascript "((g, d) => { return g.createBuffer(d); })"
 
 bufferDescriptorToObject :: BufferDescriptor -> IO JS.Object.O
 bufferDescriptorToObject d = do
-	o <- JS.Object.new
-	o <$ do	maybe (pure ()) (JS.Object.set o "label")
-			$ bufferDescriptorLabel d
-		maybe (pure ()) (JS.Object.set o "mappedAtCreation")
-			$ bufferDescriptorMappedAtCreation d
-		JS.Object.set o "size" $ bufferDescriptorSize d
-		JS.Object.set o "usage" $ bufferDescriptorUsage d
+	o <- JS.Object.new @JS.Object.IO
+	maybe (pure ()) (JS.Object.set o "label")
+		$ bufferDescriptorLabel d
+	maybe (pure ()) (JS.Object.set o "mappedAtCreation")
+		$ bufferDescriptorMappedAtCreation d
+	JS.Object.set o "size" $ bufferDescriptorSize d
+	JS.Object.set o "usage" $ bufferDescriptorUsage d
+	JS.Object.freeze o
 
 data BufferDescriptor = BufferDescriptor {
 	bufferDescriptorLabel :: Maybe String,

@@ -19,14 +19,14 @@ data G = G {
 
 toObject :: G -> IO JS.Object.O
 toObject g = do
-	o <- JS.Object.new
+	o <- JS.Object.new @JS.Object.IO
 	JS.Object.set o "arrayStrinde" $ arrayStride g
 	JS.Object.set o "attributes"
 		=<< JS.Array.fromList
 		=<< (JS.GpuVertexBufferAttributeLayout.toObject
 			`mapM` attributes g)
 	JS.Object.set o "stepMode" $ stepMode g
-	pure o
+	JS.Object.freeze o
 
 instance JS.Value.IsJSVal G where
 	toJSVal = unsafePerformIO . (JS.Value.toJSVal <$>) . toObject

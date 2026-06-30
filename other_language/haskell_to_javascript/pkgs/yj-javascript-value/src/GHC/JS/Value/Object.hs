@@ -2,12 +2,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module GHC.JS.Value.Object (
-	O, new, toValue, fromValue, IsO, toO, otherO,
-	isInstanceOf, Class(..), toString, consoleLog, set, getInt
+	O, toValue, fromValue, IsO, toO, otherO,
+	isInstanceOf, Class(..), toString, consoleLog, getInt,
+
+	M(..), IO, ST
 	) where
 
 import Prelude qualified as P
 import Prelude hiding (IO)
+import Control.Monad.ST qualified as ST
+import Control.Monad.ST.Unsafe qualified as ST
 import GHC.JS.Prim (JSVal, fromJSString, toJSString, fromJSInt)
 import GHC.JS.Value qualified as JS.Value
 import Data.Typeable (cast)
@@ -16,24 +20,33 @@ import Data.Maybe (fromJust)
 data O = forall o . JS.Value.V o => O o
 
 class M o m where
-	new_ :: m o
-	set_ :: JS.Value.V v => o -> String -> v -> m ()
+	new :: m o
+	set :: JS.Value.V v => o -> String -> v -> m ()
 	freeze :: o -> m O
 	thaw :: O -> m o
 
 newtype IO = IO O deriving JS.Value.IsJSVal
 
 instance M IO P.IO where
-	new_ = toIO . OtherO <$> js_new
-	set_ (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
+	new = toIO . OtherO <$> js_new
+	set (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
 		js_set o k v
---	freeze (JS.Value.toJSVal ->
+	freeze (JS.Value.toJSVal -> o) = toO . OtherO <$> js_shallowCopy o
+	thaw (JS.Value.toJSVal -> o) = toIO . OtherO <$> js_shallowCopy o
 
-{-
-set :: JS.Value.V v => O -> String -> v -> P.IO ()
-set (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
-	js_set o k v
-	-}
+newtype ST s = ST O deriving JS.Value.IsJSVal
+
+instance M (ST s) (ST.ST s) where
+	new = ST.unsafeIOToST $ toST . OtherO <$> js_new
+	set (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
+		ST.unsafeIOToST $ js_set o k v
+	freeze (JS.Value.toJSVal -> o) =
+		ST.unsafeIOToST $ toO . OtherO <$> js_shallowCopy o
+	thaw (JS.Value.toJSVal -> o) =
+		ST.unsafeIOToST $ toST . OtherO <$> js_shallowCopy o
+
+foreign import javascript "((o) => { return { ...o }; })"
+	js_shallowCopy :: JSVal -> P.IO JSVal
 
 instance Show O where show = toString
 
@@ -51,6 +64,9 @@ toO = fromJust . JS.Value.cast
 
 toIO :: IsO o => o -> IO
 toIO = IO . toO
+
+toST :: IsO o => o -> ST s
+toST = ST . toO
 
 class JS.Value.V o => IsO o
 
@@ -74,14 +90,7 @@ consoleLog o = js_consoleLog $ JS.Value.toJSVal o
 foreign import javascript "((o) => { console.log(o); })"
 	js_consoleLog :: JSVal -> P.IO ()
 
-new :: P.IO O
-new = toO . OtherO <$> js_new
-
 foreign import javascript "(() => { return {} })" js_new :: P.IO JSVal
-
-set :: JS.Value.V v => O -> String -> v -> P.IO ()
-set (JS.Value.toJSVal -> o) (toJSString -> k) (JS.Value.toJSVal -> v) =
-	js_set o k v
 
 foreign import javascript "((o, k, v) => { o[k] = v; })"
 	js_set :: JSVal -> JSVal -> JSVal -> P.IO ()

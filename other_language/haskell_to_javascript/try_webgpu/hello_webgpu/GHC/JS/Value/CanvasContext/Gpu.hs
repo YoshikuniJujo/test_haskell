@@ -48,7 +48,7 @@ foreign import javascript "((g, as) => { g.configure(as); })"
 
 configurationToObject :: Configuration -> IO JS.Object.O
 configurationToObject c = do
-	o <- JS.Object.new
+	o <- JS.Object.new @JS.Object.IO
 	maybe (pure ()) (JS.Object.set o "alphaMode" . toString) $ alphaMode c
 	maybe (pure ()) (JS.Object.set o "colorSpace" . toString) $ colorSpace c
 	JS.Object.set o "device" $ device c
@@ -57,7 +57,7 @@ configurationToObject c = do
 	marr <- maybe (pure Nothing)
 		((Just <$>) . JS.Array.fromList) $ viewFormats c
 	maybe (pure ()) (JS.Object.set o "viewFormats") marr
-	pure o
+	JS.Object.freeze o
 
 data Configuration = Configuration {
 	alphaMode :: Maybe AlphaMode,

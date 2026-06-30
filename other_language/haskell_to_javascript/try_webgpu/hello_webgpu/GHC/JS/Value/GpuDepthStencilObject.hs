@@ -27,7 +27,7 @@ data G = G {
 
 toObject :: G -> IO JS.Object.O
 toObject g = do
-	o <- JS.Object.new
+	o <- JS.Object.new @JS.Object.IO
 	sb <- maybe (pure Nothing)
 		((Just <$>) . JS.GpuStencilComparisonOperationObject.toObject)
 		$ stencilBack g
@@ -46,4 +46,4 @@ toObject g = do
 	maybe (pure ()) (JS.Object.set o "stencilFront") sf
 	maybe (pure ()) (JS.Object.set o "stencilReadMask") $ stencilReadMask g
 	maybe (pure ()) (JS.Object.set o "stencilWriteMask") $ stencilWriteMask g
-	pure o
+	JS.Object.freeze o
