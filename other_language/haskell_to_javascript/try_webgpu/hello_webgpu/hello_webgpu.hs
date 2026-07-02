@@ -42,6 +42,7 @@ import GHC.JS.Value.GpuOverridableConstant qualified as JS.GpuOverridableConstan
 import GHC.JS.Value.GpuBlendComponent qualified as JS.GpuBlendComponent
 
 import GHC.JS.Value.GpuBlendState qualified as JS.GpuBlendSttae
+import GHC.JS.Value.GpuFragmentObject qualified as JS.GpuFragmentObject
 
 main :: IO ()
 main = do
@@ -175,6 +176,11 @@ main = do
 	JS.Value.js_consoleLog . JS.GpuOverridableConstant.fromValue
 		$ JS.GpuOverridableConstant.I32 (- 5)
 	JS.Value.consoleLog . JS.Value.toV $ JS.GpuBlendComponent.def
+	print JS.GpuFragmentObject.js_red
+	print JS.GpuFragmentObject.js_green
+	print JS.GpuFragmentObject.js_blue
+	print JS.GpuFragmentObject.js_alpha
+	print JS.GpuFragmentObject.js_all
 
 shaders :: String
 shaders = """
