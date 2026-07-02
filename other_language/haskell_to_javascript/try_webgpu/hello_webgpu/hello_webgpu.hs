@@ -41,6 +41,8 @@ import GHC.JS.Value.GpuDepthStencilObject qualified as JS.GpuDepthStencilObject
 import GHC.JS.Value.GpuOverridableConstant qualified as JS.GpuOverridableConstant
 import GHC.JS.Value.GpuBlendComponent qualified as JS.GpuBlendComponent
 
+import GHC.JS.Value.GpuBlendState qualified as JS.GpuBlendSttae
+
 main :: IO ()
 main = do
 	putStrLn "Hello"
