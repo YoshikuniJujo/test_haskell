@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module GHC.JS.Value.GpuFragmentObject where
@@ -8,6 +10,7 @@ import GHC.JS.Value.GpuOverridableConstant
 import GHC.JS.Value.GpuBlendState qualified as JS.GpuBlendState
 import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
 
+import Data.Bits
 import Data.Int
 
 data G = G {
@@ -19,11 +22,28 @@ data G = G {
 
 data Target = Target {
 	blend :: JS.GpuBlendState.G,
-	format :: JS.GpuTextureFormat.G
-	}
+	format :: JS.GpuTextureFormat.G,
+	writeMask :: ColorWrite }
 	deriving Show
 
-newtype WriteMask = WiteMask Int32
+newtype ColorWrite = ColorWrite Int32
+
+instance Show ColorWrite where
+	show = \case
+		ColorWriteRed -> "ColorWriteRed"
+		ColorWriteGreen -> "ColorWriteGreen"
+		ColorWriteBlue -> "ColorWriteBlue"
+		ColorWriteAlpha -> "ColorWriteAlpha"
+		ColorWriteAll -> "ColorWriteAll"
+		ColorWrite cw -> "(ColorWrite " ++ show cw ++ ")"
+
+pattern ColorWriteRed, ColorWriteGreen, ColorWriteBlue,
+	ColorWriteAlpha, ColorWriteAll :: ColorWrite
+pattern ColorWriteRed = ColorWrite 0x01
+pattern ColorWriteGreen = ColorWrite 0x02
+pattern ColorWriteBlue = ColorWrite 0x04
+pattern ColorWriteAlpha = ColorWrite 0x08
+pattern ColorWriteAll = ColorWrite 0x0f
 
 foreign import javascript "(() => { return GPUColorWrite.RED })"
 	js_red :: Int32
