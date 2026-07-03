@@ -4,27 +4,46 @@
 
 module GHC.JS.Value.GpuFragmentObject where
 
+import GHC.JS.Value qualified as JS.Value
+import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.GpuShaderModule qualified as JS.GpuShaderModule
 import GHC.JS.Value.GpuOverridableConstant
 	qualified as JS.GpuOverridableConstant
 import GHC.JS.Value.GpuBlendState qualified as JS.GpuBlendState
 import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
 
+import Control.Monad.ST
 import Data.Bits
 import Data.Int
 
 data G = G {
 	constants :: Maybe JS.GpuOverridableConstant.G,
 	entryPoint :: Maybe String,
-	gModule :: JS.GpuShaderModule.G
+	gModule :: JS.GpuShaderModule.G,
+	targets :: Targets
 	}
 	deriving Show
 
+type Targets = [Target]
+
 data Target = Target {
-	blend :: JS.GpuBlendState.G,
+	blend :: Maybe JS.GpuBlendState.G,
 	format :: JS.GpuTextureFormat.G,
-	writeMask :: ColorWrite }
+	writeMask :: Maybe ColorWrite }
 	deriving Show
+
+targetToObject :: Target -> ST s (JS.Object.ST s)
+targetToObject t = do
+	o <- JS.Object.new
+	maybe (pure ()) (JS.Object.set o "blend") $ blend t
+	JS.Object.set o "format" $ format t
+	maybe (pure ()) (JS.Object.set o "writeMask") $ writeMask t
+	pure o
+
+instance JS.Value.IsJSVal Target where
+	toJSVal t = runST $ JS.Value.toJSVal <$> targetToObject t
+instance JS.Value.V Target where
+	toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
 newtype ColorWrite = ColorWrite Int32
 
@@ -36,6 +55,10 @@ instance Show ColorWrite where
 		ColorWriteAlpha -> "ColorWriteAlpha"
 		ColorWriteAll -> "ColorWriteAll"
 		ColorWrite cw -> "(ColorWrite " ++ show cw ++ ")"
+
+instance JS.Value.IsJSVal ColorWrite where
+	toJSVal (ColorWrite i) = JS.Value.toJSVal i
+instance JS.Value.V ColorWrite
 
 pattern ColorWriteRed, ColorWriteGreen, ColorWriteBlue,
 	ColorWriteAlpha, ColorWriteAll :: ColorWrite

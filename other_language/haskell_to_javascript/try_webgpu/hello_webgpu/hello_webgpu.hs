@@ -43,6 +43,7 @@ import GHC.JS.Value.GpuBlendComponent qualified as JS.GpuBlendComponent
 
 import GHC.JS.Value.GpuBlendState qualified as JS.GpuBlendSttae
 import GHC.JS.Value.GpuFragmentObject qualified as JS.GpuFragmentObject
+import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
 
 main :: IO ()
 main = do
@@ -181,6 +182,12 @@ main = do
 	print JS.GpuFragmentObject.js_blue
 	print JS.GpuFragmentObject.js_alpha
 	print JS.GpuFragmentObject.js_all
+	JS.Value.consoleLog $ JS.Value.toV [
+		JS.GpuFragmentObject.Target {
+			JS.GpuFragmentObject.blend = Nothing,
+			JS.GpuFragmentObject.format =
+				JS.GpuTextureFormat.R8Unorm,
+			JS.GpuFragmentObject.writeMask = Nothing } ]
 
 shaders :: String
 shaders = """
