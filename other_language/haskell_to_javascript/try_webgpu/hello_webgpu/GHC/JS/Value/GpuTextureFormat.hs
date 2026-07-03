@@ -11,9 +11,17 @@ newtype G = G String
 pattern R8Unorm :: G
 pattern R8Unorm = G "r8unorm"
 
+pattern Rgba8Unorm :: G
+pattern Rgba8Unorm = G "rgba8unorm"
+
+pattern Bgra8Unorm :: G
+pattern Bgra8Unorm = G "bgra8unorm"
+
 instance Show G where
 	show = \case
 		R8Unorm -> "r8unorm"
+		Rgba8Unorm -> "rgba8unorm"
+		Bgra8Unorm -> "bgra8unorm"
 		G g -> "(G " ++ show g ++ ")"
 
 instance JS.Value.IsJSVal G where toJSVal (G g) = JS.Value.toJSVal g

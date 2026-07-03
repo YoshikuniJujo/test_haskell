@@ -52,8 +52,11 @@ main = do
 	print $ JS.Navigator.n
 	let	Just g = JS.Navigator.gpu JS.Navigator.n
 	print g
-	let	format = JS.Gpu.getPreferredCanvasFormat g
+	format <- JS.Gpu.getPreferredCanvasFormat g
+	let	formatStr = JS.Gpu.preferredCanvasFormatToString format
+		formatTxt = JS.Gpu.preferredCanvasFormatToTextureFormat format
 	print format
+	print formatStr
 	a <- JS.Gpu.requestAdapter g
 	print a
 	let	i = JS.GpuAdapter.info a
@@ -92,7 +95,7 @@ main = do
 	JS.Object.consoleLog $ JS.Object.toO ctx
 
 	let	conf = (JS.GpuCanvasContext.configuration device
-			. fromJust $ JS.GpuCanvasContext.fromString format) {
+			. fromJust $ JS.GpuCanvasContext.fromString formatStr) {
 			JS.GpuCanvasContext.alphaMode =
 				Just JS.GpuCanvasContext.AlphaModePremultiplied
 			}
@@ -176,7 +179,14 @@ main = do
 					JS.GpuFragmentObject.constants = Nothing,
 					JS.GpuFragmentObject.entryPoint =
 						Just "fragment_main",
-					JS.GpuFragmentObject.gModule = shdrm },
+					JS.GpuFragmentObject.gModule = shdrm,
+					JS.GpuFragmentObject.targets = [
+						JS.GpuFragmentObject.Target {
+							JS.GpuFragmentObject.blend = Nothing,
+							JS.GpuFragmentObject.format = formatTxt,
+							JS.GpuFragmentObject.writeMask = Nothing
+							} ]
+					},
 			JS.GpuDevice.renderPipelineDescriptorLabel = Nothing
 			}
 	JS.Value.consoleLog $ JS.Value.toV attrs
@@ -195,6 +205,7 @@ main = do
 			JS.GpuFragmentObject.format =
 				JS.GpuTextureFormat.R8Unorm,
 			JS.GpuFragmentObject.writeMask = Nothing } ]
+	print =<< JS.Gpu.getPreferredCanvasFormat g
 
 shaders :: String
 shaders = """
