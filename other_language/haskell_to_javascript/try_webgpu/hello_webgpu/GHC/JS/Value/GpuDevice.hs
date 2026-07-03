@@ -112,6 +112,8 @@ foreign import javascript "((g) => { return g.queue; })"
 	js_queue :: JSVal -> JSVal
 
 data RenderPipelineDescriptor = RenderPipelineDescriptor {
-	renderPipelineDescriptorDepthStencil :: Maybe JS.GpuDepthStencilObject.G
---	renderPipelineDescriptorFragment :: ,
+	renderPipelineDescriptorDepthStencil ::
+		Maybe JS.GpuDepthStencilObject.G,
+	renderPipelineDescriptorFragment :: Maybe JS.GpuFragmentObject.G,
+	renderPipelineDescriptorLabel :: Maybe String
 	}

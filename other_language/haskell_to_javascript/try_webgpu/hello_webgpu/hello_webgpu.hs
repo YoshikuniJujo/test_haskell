@@ -23,7 +23,7 @@ import GHC.JS.Value.GpuAdapterInfo qualified as JS.GpuAdapterInfo
 
 import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
 import GHC.JS.Value.CanvasContext.Gpu qualified as JS.GpuCanvasContext
-import GHC.JS.Value.GpuShaderModule qualified as JS.GpuShaderModule
+-- import GHC.JS.Value.GpuShaderModule qualified as JS.GpuShaderModule
 import GHC.JS.Value.GpuDevice qualified as JS.GpuDevice
 
 import GHC.JS.Value.Float32Array qualified as JS.Float32Array
@@ -36,12 +36,12 @@ import GHC.JS.Value.GpuVertexBufferAttributeLayout qualified as
 	JS.GpuVertexBufferAttributeLayout
 import GHC.JS.Value.GpuVertexBufferLayout qualified as JS.GpuVertexBufferLayout
 
-import GHC.JS.Value.GpuDepthStencilObject qualified as JS.GpuDepthStencilObject
+-- import GHC.JS.Value.GpuDepthStencilObject qualified as JS.GpuDepthStencilObject
 
 import GHC.JS.Value.GpuOverridableConstant qualified as JS.GpuOverridableConstant
 import GHC.JS.Value.GpuBlendComponent qualified as JS.GpuBlendComponent
 
-import GHC.JS.Value.GpuBlendState qualified as JS.GpuBlendSttae
+-- import GHC.JS.Value.GpuBlendState qualified as JS.GpuBlendSttae
 import GHC.JS.Value.GpuFragmentObject qualified as JS.GpuFragmentObject
 import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
 
@@ -170,7 +170,14 @@ main = do
 			]
 		pipelineDescriptor = JS.GpuDevice.RenderPipelineDescriptor {
 			JS.GpuDevice.renderPipelineDescriptorDepthStencil =
-				Nothing
+				Nothing,
+			JS.GpuDevice.renderPipelineDescriptorFragment =
+				Just JS.GpuFragmentObject.G {
+					JS.GpuFragmentObject.constants = Nothing,
+					JS.GpuFragmentObject.entryPoint =
+						Just "fragment_main",
+					JS.GpuFragmentObject.gModule = shdrm },
+			JS.GpuDevice.renderPipelineDescriptorLabel = Nothing
 			}
 	JS.Value.consoleLog $ JS.Value.toV attrs
 	JS.Value.consoleLog $ JS.Value.toV vertexBuffers
