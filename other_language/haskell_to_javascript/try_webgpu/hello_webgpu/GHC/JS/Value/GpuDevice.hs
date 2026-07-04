@@ -17,6 +17,8 @@ import GHC.JS.Value.GpuBufferUsage qualified as JS.GpuBufferUsage
 import GHC.JS.Value.GpuDepthStencilObject qualified as JS.GpuDepthStencilObject
 import GHC.JS.Value.GpuFragmentObject qualified as JS.GpuFragmentObject
 
+import GHC.JS.Value.GpuPipelineLayout qualified as JS.GpuPipelineLayout
+
 newtype G = G JSVal
 
 instance Show G where
@@ -115,5 +117,8 @@ data RenderPipelineDescriptor = RenderPipelineDescriptor {
 	renderPipelineDescriptorDepthStencil ::
 		Maybe JS.GpuDepthStencilObject.G,
 	renderPipelineDescriptorFragment :: Maybe JS.GpuFragmentObject.G,
-	renderPipelineDescriptorLabel :: Maybe String
+	renderPipelineDescriptorLabel :: Maybe String,
+	renderPipelineDescriptorLayout :: PipelineLayout
 	}
+
+data PipelineLayout = Auto | Explicit JS.GpuPipelineLayout.G deriving Show

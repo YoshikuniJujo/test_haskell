@@ -187,7 +187,8 @@ main = do
 							JS.GpuFragmentObject.writeMask = Nothing
 							} ]
 					},
-			JS.GpuDevice.renderPipelineDescriptorLabel = Nothing
+			JS.GpuDevice.renderPipelineDescriptorLabel = Nothing,
+			JS.GpuDevice.renderPipelineDescriptorLayout = JS.GpuDevice.Auto
 			}
 	JS.Value.consoleLog $ JS.Value.toV attrs
 	JS.Value.consoleLog $ JS.Value.toV vertexBuffers
