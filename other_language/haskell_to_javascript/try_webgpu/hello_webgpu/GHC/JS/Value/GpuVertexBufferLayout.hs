@@ -14,8 +14,8 @@ import GHC.JS.Value.GpuVertexBufferAttributeLayout qualified as
 data G = G {
 	arrayStride :: Int,
 	attributes :: [JS.GpuVertexBufferAttributeLayout.G],
-	stepMode :: StepMode
-	}
+	stepMode :: StepMode }
+	deriving Show
 
 toObject :: G -> IO JS.Object.O
 toObject g = do

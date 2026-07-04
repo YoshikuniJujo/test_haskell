@@ -35,6 +35,7 @@ import GHC.JS.Value.GpuVertexFormat qualified as JS.GpuVertexFormat
 import GHC.JS.Value.GpuVertexBufferAttributeLayout qualified as
 	JS.GpuVertexBufferAttributeLayout
 import GHC.JS.Value.GpuVertexBufferLayout qualified as JS.GpuVertexBufferLayout
+import GHC.JS.Value.GpuVertexObject qualified as JS.GpuVertexObject
 
 -- import GHC.JS.Value.GpuDepthStencilObject qualified as JS.GpuDepthStencilObject
 
@@ -188,7 +189,14 @@ main = do
 							} ]
 					},
 			JS.GpuDevice.renderPipelineDescriptorLabel = Nothing,
-			JS.GpuDevice.renderPipelineDescriptorLayout = JS.GpuDevice.Auto
+			JS.GpuDevice.renderPipelineDescriptorLayout = JS.GpuDevice.Auto,
+			JS.GpuDevice.renderPipelineDescriptorVertex =
+				JS.GpuVertexObject.G {
+					JS.GpuVertexObject.constants = Nothing,
+					JS.GpuVertexObject.entryPoint =
+						Just "vertex_main",
+					JS.GpuVertexObject.gModule = shdrm,
+					JS.GpuVertexObject.buffers = vertexBuffers }
 			}
 	JS.Value.consoleLog $ JS.Value.toV attrs
 	JS.Value.consoleLog $ JS.Value.toV vertexBuffers

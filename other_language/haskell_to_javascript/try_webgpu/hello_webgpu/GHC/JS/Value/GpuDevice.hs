@@ -16,6 +16,7 @@ import GHC.JS.Value.GpuBufferUsage qualified as JS.GpuBufferUsage
 
 import GHC.JS.Value.GpuDepthStencilObject qualified as JS.GpuDepthStencilObject
 import GHC.JS.Value.GpuFragmentObject qualified as JS.GpuFragmentObject
+import GHC.JS.Value.GpuVertexObject qualified as JS.GpuVertexObject
 
 import GHC.JS.Value.GpuPipelineLayout qualified as JS.GpuPipelineLayout
 
@@ -118,7 +119,8 @@ data RenderPipelineDescriptor = RenderPipelineDescriptor {
 		Maybe JS.GpuDepthStencilObject.G,
 	renderPipelineDescriptorFragment :: Maybe JS.GpuFragmentObject.G,
 	renderPipelineDescriptorLabel :: Maybe String,
-	renderPipelineDescriptorLayout :: PipelineLayout
+	renderPipelineDescriptorLayout :: PipelineLayout,
+	renderPipelineDescriptorVertex :: JS.GpuVertexObject.G
 	}
 
 data PipelineLayout = Auto | Explicit JS.GpuPipelineLayout.G deriving Show
