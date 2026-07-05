@@ -113,14 +113,3 @@ queue (G g) = JS.GpuQueue.G $ js_queue g
 
 foreign import javascript "((g) => { return g.queue; })"
 	js_queue :: JSVal -> JSVal
-
-data RenderPipelineDescriptor = RenderPipelineDescriptor {
-	renderPipelineDescriptorDepthStencil ::
-		Maybe JS.GpuDepthStencilObject.G,
-	renderPipelineDescriptorFragment :: Maybe JS.GpuFragmentObject.G,
-	renderPipelineDescriptorLabel :: Maybe String,
-	renderPipelineDescriptorLayout :: PipelineLayout,
-	renderPipelineDescriptorVertex :: JS.GpuVertexObject.G
-	}
-
-data PipelineLayout = Auto | Explicit JS.GpuPipelineLayout.G deriving Show

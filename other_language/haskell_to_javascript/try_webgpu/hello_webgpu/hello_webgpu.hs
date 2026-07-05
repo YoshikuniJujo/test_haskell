@@ -46,6 +46,8 @@ import GHC.JS.Value.GpuBlendComponent qualified as JS.GpuBlendComponent
 import GHC.JS.Value.GpuFragmentObject qualified as JS.GpuFragmentObject
 import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
 
+import GHC.JS.Value.GpuRenderPipeline qualified as JS.GpuRenderPipeline
+
 main :: IO ()
 main = do
 	putStrLn "Hello"
@@ -172,10 +174,10 @@ main = do
 					JS.GpuVertexBufferLayout.StepModeVertex
 				}
 			]
-		pipelineDescriptor = JS.GpuDevice.RenderPipelineDescriptor {
-			JS.GpuDevice.renderPipelineDescriptorDepthStencil =
+		pipelineDescriptor = JS.GpuRenderPipeline.Descriptor {
+			JS.GpuRenderPipeline.descriptorDepthStencil =
 				Nothing,
-			JS.GpuDevice.renderPipelineDescriptorFragment =
+			JS.GpuRenderPipeline.descriptorFragment =
 				Just JS.GpuFragmentObject.G {
 					JS.GpuFragmentObject.constants = Nothing,
 					JS.GpuFragmentObject.entryPoint =
@@ -188,9 +190,9 @@ main = do
 							JS.GpuFragmentObject.writeMask = Nothing
 							} ]
 					},
-			JS.GpuDevice.renderPipelineDescriptorLabel = Nothing,
-			JS.GpuDevice.renderPipelineDescriptorLayout = JS.GpuDevice.Auto,
-			JS.GpuDevice.renderPipelineDescriptorVertex =
+			JS.GpuRenderPipeline.descriptorLabel = Nothing,
+			JS.GpuRenderPipeline.descriptorLayout = JS.GpuRenderPipeline.Auto,
+			JS.GpuRenderPipeline.descriptorVertex =
 				JS.GpuVertexObject.G {
 					JS.GpuVertexObject.constants = Nothing,
 					JS.GpuVertexObject.entryPoint =
