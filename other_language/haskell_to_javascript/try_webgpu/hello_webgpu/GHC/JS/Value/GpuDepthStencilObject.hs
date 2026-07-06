@@ -25,14 +25,15 @@ data G = G {
 	stencilReadMask :: Maybe Word32, stencilWriteMask :: Maybe Word32 }
 	deriving Show
 
+-- toObject :: JS.Object.M o m => G -> m o -- IO JS.Object.O
 toObject :: G -> IO JS.Object.O
 toObject g = do
 	o <- JS.Object.new @JS.Object.IO
 	sb <- maybe (pure Nothing)
-		((Just <$>) . JS.GpuStencilComparisonOperationObject.toObject)
+		((Just <$>) . JS.GpuStencilComparisonOperationObject.toObject')
 		$ stencilBack g
 	sf <- maybe (pure Nothing)
-		((Just <$>) . JS.GpuStencilComparisonOperationObject.toObject)
+		((Just <$>) . JS.GpuStencilComparisonOperationObject.toObject')
 		$ stencilFront g
 	maybe (pure ()) (JS.Object.set o "depthBias") $ depthBias g
 	maybe (pure ()) (JS.Object.set o "depthBiasClamp") $ depthBiasClamp g
@@ -46,4 +47,5 @@ toObject g = do
 	maybe (pure ()) (JS.Object.set o "stencilFront") sf
 	maybe (pure ()) (JS.Object.set o "stencilReadMask") $ stencilReadMask g
 	maybe (pure ()) (JS.Object.set o "stencilWriteMask") $ stencilWriteMask g
+--	pure o
 	JS.Object.freeze o

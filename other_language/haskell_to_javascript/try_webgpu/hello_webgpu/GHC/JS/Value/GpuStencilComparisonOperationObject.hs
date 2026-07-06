@@ -17,14 +17,19 @@ data G = G {
 	passOp :: Maybe StencilOperation }
 	deriving Show
 
-toObject :: G -> IO JS.Object.O
+toObject :: (Monad m, JS.Object.M o m) => G -> m o -- IO JS.Object.O
+-- toObject :: G -> IO JS.Object.O
 toObject g = do
-	o <- JS.Object.new @JS.Object.IO
+	o <- JS.Object.new -- @JS.Object.IO
 	maybe (pure ()) (JS.Object.set o "compare") $ compare g
 	maybe (pure ()) (JS.Object.set o "depthFailOp") $ depthFailOp g
 	maybe (pure ()) (JS.Object.set o "failOp") $ failOp g
 	maybe (pure ()) (JS.Object.set o "passOp") $ passOp g
-	JS.Object.freeze o
+	pure o
+--	JS.Object.freeze o
+
+toObject' :: G -> IO JS.Object.O
+toObject' g = JS.Object.freeze =<< toObject @IO @JS.Object.IO g
 
 data StencilOperation
 	= Zero | Keep | Replace | Invert
