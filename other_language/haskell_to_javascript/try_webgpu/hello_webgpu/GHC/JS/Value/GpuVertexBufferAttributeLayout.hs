@@ -2,7 +2,7 @@
 
 module GHC.JS.Value.GpuVertexBufferAttributeLayout where
 
-import System.IO.Unsafe
+import Control.Monad.ST
 
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
@@ -14,15 +14,16 @@ data G = G {
 	shaderLocation :: Int }
 	deriving Show
 
-toObject :: G -> IO JS.Object.O
+toObject :: (Monad m, JS.Object.M o m) => G -> m o
 toObject g = do
-	o <- JS.Object.new @JS.Object.IO
+	o <- JS.Object.new
 	JS.Object.set o "format" $ format g
 	JS.Object.set o "offset" $ offset g
 	JS.Object.set o "shaderLocation" $ shaderLocation g
-	JS.Object.freeze o
+	pure o
 
 instance JS.Value.IsJSVal G where
-	toJSVal = unsafePerformIO . (JS.Value.toJSVal <$>) . toObject
+	toJSVal g = JS.Value.toJSVal $ runST $ JS.Object.freeze =<< toO
+		where toO :: forall s . ST s (JS.Object.ST s); toO = toObject g
 
 instance JS.Value.V G where toV = JS.Object.toValue; fromV = JS.Object.fromValue

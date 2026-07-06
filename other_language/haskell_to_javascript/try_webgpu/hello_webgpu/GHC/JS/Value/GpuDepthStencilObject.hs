@@ -3,6 +3,7 @@
 
 module GHC.JS.Value.GpuDepthStencilObject where
 
+import Control.Monad
 import Data.Word
 
 import GHC.JS.Value.Object qualified as JS.Object
@@ -30,10 +31,10 @@ toObject :: G -> IO JS.Object.O
 toObject g = do
 	o <- JS.Object.new @JS.Object.IO
 	sb <- maybe (pure Nothing)
-		((Just <$>) . JS.GpuStencilComparisonOperationObject.toObject')
+		((Just <$>) . (JS.Object.freeze @JS.Object.IO @IO <=< JS.GpuStencilComparisonOperationObject.toObject))
 		$ stencilBack g
 	sf <- maybe (pure Nothing)
-		((Just <$>) . JS.GpuStencilComparisonOperationObject.toObject')
+		((Just <$>) . (JS.Object.freeze @JS.Object.IO @IO <=< JS.GpuStencilComparisonOperationObject.toObject))
 		$ stencilFront g
 	maybe (pure ()) (JS.Object.set o "depthBias") $ depthBias g
 	maybe (pure ()) (JS.Object.set o "depthBiasClamp") $ depthBiasClamp g

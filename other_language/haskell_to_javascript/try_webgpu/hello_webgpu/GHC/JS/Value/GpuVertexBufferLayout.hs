@@ -3,6 +3,7 @@
 
 module GHC.JS.Value.GpuVertexBufferLayout where
 
+import Control.Monad
 import System.IO.Unsafe
 
 import GHC.JS.Value qualified as JS.Value
@@ -23,7 +24,7 @@ toObject g = do
 	JS.Object.set o "arrayStrinde" $ arrayStride g
 	JS.Object.set o "attributes"
 		=<< JS.Array.fromList
-		=<< (JS.GpuVertexBufferAttributeLayout.toObject
+		=<< ((JS.Object.freeze @JS.Object.IO @IO <=< JS.GpuVertexBufferAttributeLayout.toObject)
 			`mapM` attributes g)
 	JS.Object.set o "stepMode" $ stepMode g
 	JS.Object.freeze o
