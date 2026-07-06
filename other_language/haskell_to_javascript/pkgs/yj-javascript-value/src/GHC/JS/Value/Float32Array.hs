@@ -23,13 +23,13 @@ new (JS.Value.toJSVal -> o) = F <$> js_new o
 
 fromListIO :: JS.Value.V a => [a] -> IO F
 fromListIO xs = F <$> do
-	JS.Array.A a <- JS.Array.fromListIO xs
-	js_new a
+	a <- JS.Array.fromListIO xs
+	js_new $ JS.Value.toJSVal a
 
 fromFloatList :: [Float] -> IO F
 fromFloatList fs = F <$> do
-	JS.Array.A a <- JS.Array.fromFloatList fs
-	js_new a
+	a <- JS.Array.fromFloatList fs
+	js_new $ JS.Value.toJSVal a
 
 foreign import javascript "((o) => { const r = new Float32Array(o); return r })"
 	js_new :: JSVal -> IO JSVal

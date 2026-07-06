@@ -1,10 +1,14 @@
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module GHC.JS.Value.Array where
 
 import Prelude hiding (IO)
 import Prelude qualified as P
+
+import Control.Monad.ST qualified as ST
+
 import GHC.JS.Prim (JSVal)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
@@ -19,32 +23,55 @@ instance JS.Value.V A where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
 instance JS.Object.IsO A
 
-newtype IO = IO A
+newtype IO = IO A deriving JS.Value.IsJSVal
 
-newtype ST = ST A
+instance JS.Value.V IO where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
-class M a m where
+newtype ST s = ST A deriving JS.Value.IsJSVal
+
+-- instance JS.Value.V (ST s) where toV = JS.Object.toValue; fromV = JS.Object.fromValue
+
+class M a m | m -> a where
 	new_ :: m a
 	push_ :: JS.Value.V v => a -> v -> m ()
 	freeze :: a -> m A; thaw :: A -> m a
 
-new :: P.IO A
-new = A <$> js_new
+instance M IO P.IO where
+	new_ = IO . A <$> js_newIO
+	push_ (IO (A a)) (JS.Value.toJSVal -> x) = js_pushIO a x
+	freeze (JS.Value.toJSVal -> a) = A <$> js_shallowCopy a
+	thaw (JS.Value.toJSVal -> a) = IO . A <$> js_shallowCopy a
 
-foreign import javascript "(() => { return Array() })" js_new :: P.IO JSVal
+foreign import javascript "((o) => { return { ...o }; })"
+	js_shallowCopy :: JSVal -> P.IO JSVal
 
-fromListIO :: JS.Value.V a => [a] -> P.IO A
-fromListIO xs = do
-	a <- new
-	mapM_ (push a) (JS.Value.toV <$> xs)
+foreign import javascript "((o) => { return { ...o }; })"
+	js_shallowCopyST :: JSVal -> ST.ST s JSVal
+
+instance M (ST s) (ST.ST s) where
+	new_ = ST . A <$> js_newST
+	push_ (ST (A a)) (JS.Value.toJSVal -> x) = js_pushST a x
+	freeze (JS.Value.toJSVal -> a) = A <$> js_shallowCopyST a
+	thaw (JS.Value.toJSVal -> a) = ST . A <$> js_shallowCopyST a
+
+foreign import javascript "(() => { return Array() })" js_newIO :: P.IO JSVal
+foreign import javascript "(() => { return Array() })" js_newST :: ST.ST s JSVal
+
+fromListM :: (Monad m, M a m, JS.Value.V x) => [x] -> m a
+fromListM xs = do
+	a <- new_
+	mapM_ (push_ a) (JS.Value.toV <$> xs)
 	pure a
 
-push :: JS.Value.V v => A -> v -> P.IO ()
-push (A a) (JS.Value.toJSVal -> x) = js_push a x
+fromListIO :: JS.Value.V a => [a] -> P.IO IO
+fromListIO = fromListM
 
-foreign import javascript "((a, x) => { a.push(x); })" js_push :: JSVal -> JSVal -> P.IO ()
+foreign import javascript "((a, x) => { a.push(x); })"
+	js_pushIO :: JSVal -> JSVal -> P.IO ()
+foreign import javascript "((a, x) => { a.push(x); })"
+	js_pushST :: JSVal -> JSVal -> ST.ST s ()
 
-fromFloatList :: [Float] -> P.IO A
-fromFloatList fs = new >>= \a -> a <$ mapM_ (push a) fs
+fromFloatList :: [Float] -> P.IO IO
+fromFloatList fs = new_ >>= \a -> a <$ mapM_ (push_ a) fs
 
 foreign import javascript "((a, f) => { a.push(f); })" js_push_float :: JSVal -> Float -> P.IO ()

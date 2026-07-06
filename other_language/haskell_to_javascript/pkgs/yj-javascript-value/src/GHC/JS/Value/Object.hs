@@ -1,3 +1,4 @@
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -19,7 +20,7 @@ import Data.Maybe (fromJust)
 
 data O = forall o . JS.Value.V o => O o
 
-class M o m where
+class M o m | m -> o where
 	new :: m o
 	set :: JS.Value.V v => o -> String -> v -> m ()
 	freeze :: o -> m O

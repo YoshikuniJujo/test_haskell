@@ -18,19 +18,19 @@ data G = G {
 	stepMode :: StepMode }
 	deriving Show
 
-toObject :: G -> IO JS.Object.O
+toObject :: forall m o a . (Monad m, JS.Object.M o m, JS.Array.M a m, JS.Value.V a) => G -> m o -- IO JS.Object.IO
 toObject g = do
-	o <- JS.Object.new @JS.Object.IO
+	o <- JS.Object.new
 	JS.Object.set o "arrayStrinde" $ arrayStride g
 	JS.Object.set o "attributes"
-		=<< JS.Array.fromListIO
-		=<< ((JS.Object.freeze @JS.Object.IO @IO <=< JS.GpuVertexBufferAttributeLayout.toObject)
+		=<< JS.Array.fromListM
+		=<< ((JS.Object.freeze @o @m <=< JS.GpuVertexBufferAttributeLayout.toObject)
 			`mapM` attributes g)
 	JS.Object.set o "stepMode" $ stepMode g
-	JS.Object.freeze o
+	pure o
 
 instance JS.Value.IsJSVal G where
-	toJSVal = unsafePerformIO . (JS.Value.toJSVal <$>) . toObject
+	toJSVal = unsafePerformIO . (JS.Value.toJSVal @JS.Object.IO <$>) . toObject
 
 instance JS.Value.V G where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
