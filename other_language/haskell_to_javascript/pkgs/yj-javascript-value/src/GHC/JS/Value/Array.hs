@@ -22,8 +22,8 @@ new = A <$> js_new
 
 foreign import javascript "(() => { return Array() })" js_new :: IO JSVal
 
-fromList :: JS.Value.V a => [a] -> IO A
-fromList xs = do
+fromListIO :: JS.Value.V a => [a] -> IO A
+fromListIO xs = do
 	a <- new
 	mapM_ (push a) (JS.Value.toV <$> xs)
 	pure a
