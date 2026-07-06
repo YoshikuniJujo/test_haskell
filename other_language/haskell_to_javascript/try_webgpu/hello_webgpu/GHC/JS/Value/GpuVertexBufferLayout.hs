@@ -18,7 +18,7 @@ data G = G {
 	stepMode :: StepMode }
 	deriving Show
 
-toObject :: forall m o a . (Monad m, JS.Object.M o m, JS.Array.M a m) => G -> m o -- IO JS.Object.IO
+toObject :: forall m o a . (Monad m, JS.Object.M o m, JS.Array.M a m) => G -> m o
 toObject g = do
 	o <- JS.Object.new
 	JS.Object.set o "arrayStrinde" $ arrayStride g
