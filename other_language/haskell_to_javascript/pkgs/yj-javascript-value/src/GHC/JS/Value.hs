@@ -57,6 +57,11 @@ instance V Double
 
 foreign import javascript "((o) => { return o })" toJSDouble :: Double -> JSVal
 
+instance IsJSVal Float where toJSVal = toJSFloat
+instance V Float
+
+foreign import javascript "((o) => { return o })" toJSFloat :: Float -> JSVal
+
 instance IsJSVal Bool where toJSVal = bool js_false js_true
 instance V Bool
 

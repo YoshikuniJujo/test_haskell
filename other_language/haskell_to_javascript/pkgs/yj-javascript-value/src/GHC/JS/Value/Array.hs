@@ -3,6 +3,8 @@
 
 module GHC.JS.Value.Array where
 
+import Prelude hiding (IO)
+import Prelude qualified as P
 import GHC.JS.Prim (JSVal)
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
@@ -17,26 +19,32 @@ instance JS.Value.V A where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
 instance JS.Object.IsO A
 
-new :: IO A
+newtype IO = IO A
+
+newtype ST = ST A
+
+class M a m where
+	new_ :: m a
+	push_ :: JS.Value.V v => a -> v -> m ()
+	freeze :: a -> m A; thaw :: A -> m a
+
+new :: P.IO A
 new = A <$> js_new
 
-foreign import javascript "(() => { return Array() })" js_new :: IO JSVal
+foreign import javascript "(() => { return Array() })" js_new :: P.IO JSVal
 
-fromListIO :: JS.Value.V a => [a] -> IO A
+fromListIO :: JS.Value.V a => [a] -> P.IO A
 fromListIO xs = do
 	a <- new
 	mapM_ (push a) (JS.Value.toV <$> xs)
 	pure a
 
-push :: A -> JS.Value.Some -> IO ()
+push :: JS.Value.V v => A -> v -> P.IO ()
 push (A a) (JS.Value.toJSVal -> x) = js_push a x
 
-foreign import javascript "((a, x) => { a.push(x); })" js_push :: JSVal -> JSVal -> IO ()
+foreign import javascript "((a, x) => { a.push(x); })" js_push :: JSVal -> JSVal -> P.IO ()
 
-fromFloatList :: [Float] -> IO A
-fromFloatList fs = new >>= \a -> a <$ mapM_ (pushFloat a) fs
+fromFloatList :: [Float] -> P.IO A
+fromFloatList fs = new >>= \a -> a <$ mapM_ (push a) fs
 
-pushFloat :: A -> Float -> IO ()
-pushFloat (A a) f = js_push_float a f
-
-foreign import javascript "((a, f) => { a.push(f); })" js_push_float :: JSVal -> Float -> IO ()
+foreign import javascript "((a, f) => { a.push(f); })" js_push_float :: JSVal -> Float -> P.IO ()
