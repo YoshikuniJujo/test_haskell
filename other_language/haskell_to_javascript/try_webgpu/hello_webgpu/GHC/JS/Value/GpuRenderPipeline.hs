@@ -15,7 +15,7 @@ import GHC.JS.Value.GpuPipelineLayout qualified as JS.GpuPipelineLayout
 
 import Control.Monad.ST
 
-data G = G JSVal
+newtype G = G JSVal
 
 instance JS.Value.IsJSVal G where toJSVal (G v) = v
 instance JS.Value.V G where toV = JS.Object.toValue; fromV = JS.Object.fromValue

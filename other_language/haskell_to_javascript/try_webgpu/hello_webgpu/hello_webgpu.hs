@@ -1,4 +1,5 @@
 {-# LANGUAGE MultilineStrings #-}
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -8,6 +9,7 @@ import Data.Maybe
 
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
+import GHC.JS.Value.EventTarget qualified as JS.EventTarget
 import GHC.JS.Value.Navigator qualified as JS.Navigator
 import GHC.JS.Value.Navigator.Webgpu qualified as JS.Navigator
 import GHC.JS.Value.Window qualified as JS.Window
@@ -70,6 +72,10 @@ main = do
 	print i
 	print $ JS.GpuAdapterInfo.architecture i
 	device <- JS.GpuAdapter.requestDevice a
+	JS.EventTarget.addEventListenerSimple
+		(fromJust $ JS.Value.cast device) "uncapturederror" \ev -> do
+		JS.Value.consoleLog $ JS.Value.toV "error error error"
+		putStrLn "error occur"
 	print device
 
 	let document = JS.Window.document JS.Window.w
@@ -242,7 +248,9 @@ main = do
 			}
 	passEncoder <- JS.GpuCommandEncoder.beginRenderPass
 		commandEncoder renderPassDescriptor
+	JS.Value.consoleLog $ JS.Value.toV renderPipeline
 	JS.Value.consoleLog $ JS.Value.toV passEncoder
+	JS.GpuRenderPassEncoder.setPipeline passEncoder renderPipeline
 
 shaders :: String
 shaders = """

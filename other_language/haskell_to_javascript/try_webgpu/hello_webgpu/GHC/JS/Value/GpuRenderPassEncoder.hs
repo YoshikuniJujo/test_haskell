@@ -7,6 +7,7 @@ import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.GpuColorAttachmentObject qualified as
 	JS.GpuColorAttachmentObject
+import GHC.JS.Value.GpuRenderPipeline qualified as JS.GpuRenderPipeline
 
 import Control.Monad.ST
 
@@ -31,3 +32,9 @@ descriptorToObject d = do
 	o <- JS.Object.new
 	JS.Object.set o "colorAttachments" $ colorAttachments d
 	pure o
+
+setPipeline :: G -> JS.GpuRenderPipeline.G -> IO ()
+setPipeline = js_setPipeline
+
+foreign import javascript "((g, p) => { g.setPipeline(p) })"
+	js_setPipeline :: G -> JS.GpuRenderPipeline.G -> IO ()
