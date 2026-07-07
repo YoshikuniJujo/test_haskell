@@ -48,6 +48,8 @@ import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
 
 import GHC.JS.Value.GpuRenderPipeline qualified as JS.GpuRenderPipeline
 
+import GHC.JS.Value.GpuCommandEncoder qualified as JS.GpuCommandEncoder
+
 main :: IO ()
 main = do
 	putStrLn "Hello"
@@ -220,6 +222,8 @@ main = do
 	JS.Value.consoleLog $ JS.Value.toV pipelineDescriptor
 	renderPipeline <- JS.GpuRenderPipeline.create device pipelineDescriptor
 	JS.Value.consoleLog $ JS.Value.toV renderPipeline
+	commandEncoder <- JS.GpuCommandEncoder.create device
+	JS.Value.consoleLog $ JS.Value.toV commandEncoder
 
 shaders :: String
 shaders = """
