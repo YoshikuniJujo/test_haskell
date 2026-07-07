@@ -190,7 +190,7 @@ main = do
 							JS.GpuFragmentObject.writeMask = Nothing
 							} ]
 					},
-			JS.GpuRenderPipeline.descriptorLabel = Nothing,
+			JS.GpuRenderPipeline.descriptorLabel = Just "foobar",
 			JS.GpuRenderPipeline.descriptorLayout = JS.GpuRenderPipeline.Auto,
 			JS.GpuRenderPipeline.descriptorVertex =
 				JS.GpuVertexObject.G {
@@ -217,6 +217,9 @@ main = do
 				JS.GpuTextureFormat.R8Unorm,
 			JS.GpuFragmentObject.writeMask = Nothing } ]
 	print =<< JS.Gpu.getPreferredCanvasFormat g
+	JS.Value.consoleLog $ JS.Value.toV pipelineDescriptor
+	JS.Value.consoleLog . JS.Value.toV
+		=<< JS.GpuRenderPipeline.create device pipelineDescriptor
 
 shaders :: String
 shaders = """

@@ -4,7 +4,7 @@
 module GHC.JS.Value.GpuVertexBufferLayout where
 
 import Control.Monad
-import System.IO.Unsafe
+import Control.Monad.ST
 
 import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
@@ -18,11 +18,12 @@ data G = G {
 	stepMode :: StepMode }
 	deriving Show
 
-toObject :: forall m o a . (Monad m, JS.Object.M o m, JS.Array.M a m, JS.Value.V a) => G -> m o -- IO JS.Object.IO
+toObject :: forall m o a . (Monad m, JS.Object.M o m, JS.Array.M a m) => G -> m o
 toObject g = do
 	o <- JS.Object.new
-	JS.Object.set o "arrayStrinde" $ arrayStride g
+	JS.Object.set o "arrayStride" $ arrayStride g
 	JS.Object.set o "attributes"
+		=<< JS.Array.freeze
 		=<< JS.Array.fromListM
 		=<< ((JS.Object.freeze @o @m <=< JS.GpuVertexBufferAttributeLayout.toObject)
 			`mapM` attributes g)
@@ -30,7 +31,7 @@ toObject g = do
 	pure o
 
 instance JS.Value.IsJSVal G where
-	toJSVal = unsafePerformIO . (JS.Value.toJSVal @JS.Object.IO <$>) . toObject
+	toJSVal g =  JS.Value.toJSVal $ runST $ JS.Object.freeze =<< toObject g
 
 instance JS.Value.V G where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 

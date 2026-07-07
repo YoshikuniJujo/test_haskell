@@ -4,8 +4,10 @@
 module GHC.JS.Value.GpuDepthStencilObject where
 
 import Control.Monad
+import Control.Monad.ST
 import Data.Word
 
+import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
 import GHC.JS.Value.GpuStencilComparisonOperationObject qualified as
@@ -26,15 +28,19 @@ data G = G {
 	stencilReadMask :: Maybe Word32, stencilWriteMask :: Maybe Word32 }
 	deriving Show
 
--- toObject :: JS.Object.M o m => G -> m o -- IO JS.Object.O
-toObject :: G -> IO JS.Object.O
+instance JS.Value.IsJSVal G where
+	toJSVal g = JS.Value.toJSVal $ runST $ JS.Object.freeze =<< toObject g
+
+instance JS.Value.V G where toV = JS.Object.toValue; fromV = JS.Object.fromValue
+
+toObject :: (Monad m, JS.Object.M o m) => G -> m o
 toObject g = do
-	o <- JS.Object.new @JS.Object.IO
+	o <- JS.Object.new
 	sb <- maybe (pure Nothing)
-		((Just <$>) . (JS.Object.freeze @JS.Object.IO @IO <=< JS.GpuStencilComparisonOperationObject.toObject))
+		((Just <$>) . (JS.Object.freeze <=< JS.GpuStencilComparisonOperationObject.toObject))
 		$ stencilBack g
 	sf <- maybe (pure Nothing)
-		((Just <$>) . (JS.Object.freeze @JS.Object.IO @IO <=< JS.GpuStencilComparisonOperationObject.toObject))
+		((Just <$>) . (JS.Object.freeze <=< JS.GpuStencilComparisonOperationObject.toObject))
 		$ stencilFront g
 	maybe (pure ()) (JS.Object.set o "depthBias") $ depthBias g
 	maybe (pure ()) (JS.Object.set o "depthBiasClamp") $ depthBiasClamp g
@@ -48,5 +54,4 @@ toObject g = do
 	maybe (pure ()) (JS.Object.set o "stencilFront") sf
 	maybe (pure ()) (JS.Object.set o "stencilReadMask") $ stencilReadMask g
 	maybe (pure ()) (JS.Object.set o "stencilWriteMask") $ stencilWriteMask g
---	pure o
-	JS.Object.freeze o
+	pure o
