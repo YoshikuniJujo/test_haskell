@@ -21,7 +21,7 @@ data G = G {
 toObject :: forall m o a . (Monad m, JS.Object.M o m, JS.Array.M a m) => G -> m o
 toObject g = do
 	o <- JS.Object.new
-	JS.Object.set o "arrayStrinde" $ arrayStride g
+	JS.Object.set o "arrayStride" $ arrayStride g
 	JS.Object.set o "attributes"
 		=<< JS.Array.freeze
 		=<< JS.Array.fromListM
@@ -31,7 +31,7 @@ toObject g = do
 	pure o
 
 instance JS.Value.IsJSVal G where
-	toJSVal g = runST $ JS.Value.toJSVal <$> toObject g
+	toJSVal g = JS.Value.toJSVal $ runST $ JS.Object.freeze =<< toObject g
 
 instance JS.Value.V G where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
