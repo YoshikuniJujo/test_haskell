@@ -218,8 +218,8 @@ main = do
 			JS.GpuFragmentObject.writeMask = Nothing } ]
 	print =<< JS.Gpu.getPreferredCanvasFormat g
 	JS.Value.consoleLog $ JS.Value.toV pipelineDescriptor
-	JS.Value.consoleLog . JS.Value.toV
-		=<< JS.GpuRenderPipeline.create device pipelineDescriptor
+	renderPipeline <- JS.GpuRenderPipeline.create device pipelineDescriptor
+	JS.Value.consoleLog $ JS.Value.toV renderPipeline
 
 shaders :: String
 shaders = """
