@@ -4,11 +4,7 @@
 
 module Main (main) where
 
-import Data.Bits
-import Data.Maybe
-
 import GHC.JS.Value qualified as JS.Value
-import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.EventTarget qualified as JS.EventTarget
 import GHC.JS.Value.Navigator qualified as JS.Navigator
 import GHC.JS.Value.Navigator.Webgpu qualified as JS.Navigator
@@ -25,7 +21,6 @@ import GHC.JS.Value.GpuAdapterInfo qualified as JS.GpuAdapterInfo
 
 import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
 import GHC.JS.Value.CanvasContext.Gpu qualified as JS.GpuCanvasContext
--- import GHC.JS.Value.GpuShaderModule qualified as JS.GpuShaderModule
 import GHC.JS.Value.GpuDevice qualified as JS.GpuDevice
 
 import GHC.JS.Value.Float32Array qualified as JS.Float32Array
@@ -39,12 +34,9 @@ import GHC.JS.Value.GpuVertexBufferAttributeLayout qualified as
 import GHC.JS.Value.GpuVertexBufferLayout qualified as JS.GpuVertexBufferLayout
 import GHC.JS.Value.GpuVertexObject qualified as JS.GpuVertexObject
 
--- import GHC.JS.Value.GpuDepthStencilObject qualified as JS.GpuDepthStencilObject
-
 import GHC.JS.Value.GpuOverridableConstant qualified as JS.GpuOverridableConstant
 import GHC.JS.Value.GpuBlendComponent qualified as JS.GpuBlendComponent
 
--- import GHC.JS.Value.GpuBlendState qualified as JS.GpuBlendSttae
 import GHC.JS.Value.GpuFragmentObject qualified as JS.GpuFragmentObject
 import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
 
@@ -53,6 +45,9 @@ import GHC.JS.Value.GpuRenderPipeline qualified as JS.GpuRenderPipeline
 import GHC.JS.Value.GpuCommandEncoder qualified as JS.GpuCommandEncoder
 import GHC.JS.Value.GpuRenderPassEncoder qualified as JS.GpuRenderPassEncoder
 import GHC.JS.Value.GpuColorAttachmentObject qualified as JS.GpuColorAttachmentObject
+
+import Data.Bits
+import Data.Maybe
 
 main :: IO ()
 main = do
