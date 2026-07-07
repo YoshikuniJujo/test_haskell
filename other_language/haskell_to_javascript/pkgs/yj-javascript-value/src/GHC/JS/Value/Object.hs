@@ -4,7 +4,7 @@
 
 module GHC.JS.Value.Object (
 	O, toValue, fromValue, IsO, toO, otherO,
-	isInstanceOf, Class(..), toString, consoleLog, getInt,
+	isInstanceOf, Class(..), toString, getInt,
 
 	M(..), IO, ST
 	) where
@@ -84,12 +84,6 @@ toString obj = fromJSString . js_toString $ JS.Value.toJSVal obj
 
 foreign import javascript "((o) => { return o.toString(); })"
 	js_toString :: JSVal -> JSVal
-
-consoleLog :: O -> P.IO ()
-consoleLog o = js_consoleLog $ JS.Value.toJSVal o
-
-foreign import javascript "((o) => { console.log(o); })"
-	js_consoleLog :: JSVal -> P.IO ()
 
 foreign import javascript "(() => { return {} })" js_new :: P.IO JSVal
 

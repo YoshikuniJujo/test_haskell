@@ -74,8 +74,8 @@ main = do
 	device <- JS.GpuAdapter.requestDevice a
 	JS.EventTarget.addEventListenerSimple
 		(fromJust $ JS.Value.cast device) "uncapturederror" \ev -> do
-		JS.Value.consoleLog $ JS.Value.toV "error error error"
-		JS.Value.consoleLog $ JS.Value.toV ev
+		JS.Value.consoleLog "error error error"
+		JS.Value.consoleLog ev
 		putStrLn "error occur"
 	print device
 
@@ -99,14 +99,14 @@ main = do
 	Just ctx <- JS.HtmlCanvasElement.getContext c
 		JS.HtmlCanvasElement.ContextTypeWebGpu
 	print ctx
---	maybe (error "bad") (JS.Object.consoleLog . JS.Object.toO) ctx
+	JS.Value.consoleLog ctx
 
-	JS.Object.consoleLog $ JS.Object.toO canvas
-	JS.Object.consoleLog $ JS.Object.toO a
+	JS.Value.consoleLog canvas
+	JS.Value.consoleLog a
 
-	JS.Value.consoleLog $ JS.Value.toV "Hello"
+	JS.Value.consoleLog "Hello"
 
-	JS.Object.consoleLog $ JS.Object.toO ctx
+	JS.Value.consoleLog ctx
 
 	let	conf = (JS.GpuCanvasContext.configuration device
 			. fromJust $ JS.GpuCanvasContext.fromString formatStr) {
@@ -117,7 +117,7 @@ main = do
 	maybe (error "bad") (`JS.GpuCanvasContext.configure` conf)
 		$ JS.CanvasContext.fromC ctx
 
-	JS.Object.consoleLog $ JS.Object.toO ctx
+	JS.Value.consoleLog ctx
 
 
 	shdrm <- JS.GpuDevice.createShaderModule device
@@ -125,9 +125,9 @@ main = do
 			JS.GpuDevice.shaderModuleDescriptorLabel = Just "GOOD SHADERS"
 			}
 
-	JS.Object.consoleLog $ JS.Object.toO shdrm
+	JS.Value.consoleLog shdrm
 
-	JS.Value.consoleLog $ JS.Value.toV (123 :: Int)
+	JS.Value.consoleLog (123 :: Int)
 
 	print =<< JS.Float32Array.new (JS.Value.toV (10 :: Int))
 
@@ -154,7 +154,7 @@ main = do
 			JS.GpuDevice.bufferDescriptorLabel =
 				Just "VERTEX BUFFER" }
 	print bffr
-	JS.Value.consoleLog $ JS.Value.toV bffr
+	JS.Value.consoleLog bffr
 
 	let	queue = JS.GpuDevice.queue device
 		bffrln = JS.Float32Array.length vertices
@@ -211,31 +211,31 @@ main = do
 					JS.GpuVertexObject.gModule = shdrm,
 					JS.GpuVertexObject.buffers = vertexBuffers }
 			}
-	JS.Value.consoleLog $ JS.Value.toV attrs
-	JS.Value.consoleLog $ JS.Value.toV vertexBuffers
+	JS.Value.consoleLog attrs
+	JS.Value.consoleLog vertexBuffers
 	JS.Value.js_consoleLog . JS.GpuOverridableConstant.fromValue
 		$ JS.GpuOverridableConstant.I32 (- 5)
-	JS.Value.consoleLog . JS.Value.toV $ JS.GpuBlendComponent.def
+	JS.Value.consoleLog JS.GpuBlendComponent.def
 	print JS.GpuFragmentObject.js_red
 	print JS.GpuFragmentObject.js_green
 	print JS.GpuFragmentObject.js_blue
 	print JS.GpuFragmentObject.js_alpha
 	print JS.GpuFragmentObject.js_all
-	JS.Value.consoleLog $ JS.Value.toV [
+	JS.Value.consoleLog $ [
 		JS.GpuFragmentObject.Target {
 			JS.GpuFragmentObject.blend = Nothing,
 			JS.GpuFragmentObject.format =
 				JS.GpuTextureFormat.R8Unorm,
 			JS.GpuFragmentObject.writeMask = Nothing } ]
 	print =<< JS.Gpu.getPreferredCanvasFormat g
-	JS.Value.consoleLog $ JS.Value.toV pipelineDescriptor
+	JS.Value.consoleLog pipelineDescriptor
 	renderPipeline <- JS.GpuRenderPipeline.create device pipelineDescriptor
-	JS.Value.consoleLog $ JS.Value.toV renderPipeline
+	JS.Value.consoleLog renderPipeline
 	commandEncoder <- JS.GpuCommandEncoder.create device
-	JS.Value.consoleLog $ JS.Value.toV commandEncoder
+	JS.Value.consoleLog commandEncoder
 	txtr <- maybe (error "bad") JS.GpuCanvasContext.getCurrentTexture
 		$ JS.CanvasContext.fromC ctx
-	JS.Value.consoleLog $ JS.Value.toV txtr
+	JS.Value.consoleLog txtr
 	let	renderPassDescriptor = JS.GpuRenderPassEncoder.Descriptor {
 			JS.GpuRenderPassEncoder.colorAttachments = [
 				JS.GpuColorAttachmentObject.G {
@@ -248,17 +248,17 @@ main = do
 					}
 				]
 			}
-	JS.Value.consoleLog $ JS.Value.toV renderPassDescriptor
+	JS.Value.consoleLog renderPassDescriptor
 	passEncoder <- JS.GpuCommandEncoder.beginRenderPass
 		commandEncoder renderPassDescriptor
-	JS.Value.consoleLog $ JS.Value.toV renderPipeline
-	JS.Value.consoleLog $ JS.Value.toV passEncoder
+	JS.Value.consoleLog renderPipeline
+	JS.Value.consoleLog passEncoder
 	JS.GpuRenderPassEncoder.setPipeline passEncoder renderPipeline
 	JS.GpuRenderPassEncoder.setVertexBuffer passEncoder 0 bffr
 	JS.GpuRenderPassEncoder.draw passEncoder 3
 	JS.GpuRenderPassEncoder.end passEncoder
 	cbffr <- JS.GpuCommandEncoder.finish commandEncoder
-	JS.Value.consoleLog $ JS.Value.toV cbffr
+	JS.Value.consoleLog cbffr
 	JS.GpuQueue.submit queue [cbffr]
 
 shaders :: String

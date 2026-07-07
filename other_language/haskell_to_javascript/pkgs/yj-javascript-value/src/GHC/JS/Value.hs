@@ -68,7 +68,7 @@ instance V Bool
 foreign import javascript "(() => { return false })" js_false :: JSVal
 foreign import javascript "(() => { return true })" js_true :: JSVal
 
-consoleLog :: Some -> IO ()
+consoleLog :: V v => v -> IO ()
 consoleLog o = js_consoleLog $ toJSVal o
 
 foreign import javascript "((o) => { console.log(o); })"
