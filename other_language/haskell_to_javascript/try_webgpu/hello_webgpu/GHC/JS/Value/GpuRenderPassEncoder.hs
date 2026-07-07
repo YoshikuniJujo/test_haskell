@@ -8,6 +8,7 @@ import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.GpuColorAttachmentObject qualified as
 	JS.GpuColorAttachmentObject
 import GHC.JS.Value.GpuRenderPipeline qualified as JS.GpuRenderPipeline
+import GHC.JS.Value.GpuBuffer qualified as JS.GpuBuffer
 
 import Control.Monad.ST
 
@@ -38,3 +39,20 @@ setPipeline = js_setPipeline
 
 foreign import javascript "((g, p) => { g.setPipeline(p) })"
 	js_setPipeline :: G -> JS.GpuRenderPipeline.G -> IO ()
+
+setVertexBuffer :: G -> Int -> JS.GpuBuffer.G -> IO ()
+setVertexBuffer = js_setVertexBuffer
+
+foreign import javascript "((g, s, b) => { g.setVertexBuffer(s, b) })"
+	js_setVertexBuffer :: G -> Int -> JS.GpuBuffer.G -> IO ()
+
+draw :: G -> Int -> IO ()
+draw = js_draw
+
+foreign import javascript "((g, vc) => { g.draw(vc) })"
+	js_draw :: G -> Int -> IO ()
+
+end :: G -> IO ()
+end = js_end
+
+foreign import javascript "((g) => { g.end() })" js_end :: G -> IO ()

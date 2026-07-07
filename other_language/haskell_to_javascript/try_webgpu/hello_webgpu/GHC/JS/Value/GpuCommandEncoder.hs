@@ -7,6 +7,7 @@ import GHC.JS.Value qualified as JS.Value
 import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.GpuDevice qualified as JS.GpuDevice
 import GHC.JS.Value.GpuRenderPassEncoder qualified as JS.GpuRenderPassEncoder
+import GHC.JS.Value.GpuCommandBuffer qualified as JS.GpuCommandBuffer
 
 newtype G = G JSVal
 
@@ -27,3 +28,9 @@ beginRenderPass g = js_beginRenderPass g . JS.Value.toJSVal
 
 foreign import javascript "((g, d) => { return g.beginRenderPass(d) })"
 	js_beginRenderPass :: G -> JSVal -> IO JS.GpuRenderPassEncoder.G
+
+finish :: G -> IO JS.GpuCommandBuffer.G
+finish = js_finish
+
+foreign import javascript "((g) => { return g.finish() })"
+	js_finish :: G -> IO JS.GpuCommandBuffer.G

@@ -9,6 +9,7 @@ import GHC.JS.Value.Object qualified as JS.Object
 
 import GHC.JS.Value.GpuBuffer qualified as JS.GpuBuffer
 import GHC.JS.Value.Float32Array qualified as JS.Float32Array
+import GHC.JS.Value.GpuCommandBuffer qualified as JS.GpuCommandBuffer
 
 newtype G = G { unG :: JSVal }
 
@@ -32,3 +33,9 @@ instance BufferData JS.Float32Array.F
 foreign import javascript
 	"((g, b, bo, dt, dto, sz) => { g.writeBuffer(b, bo, dt, dto, sz) })"
 	js_writeBuffer :: JSVal -> JSVal -> Int -> JSVal -> Int -> Int -> IO ()
+
+submit :: G -> [JS.GpuCommandBuffer.G] -> IO ()
+submit g (JS.Value.toJSVal -> cbs) = js_submit g cbs
+
+foreign import javascript "((g, cbs) => { g.submit(cbs) })"
+	js_submit :: G -> JSVal -> IO ()

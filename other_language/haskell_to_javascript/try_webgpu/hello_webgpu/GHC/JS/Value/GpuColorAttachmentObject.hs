@@ -22,6 +22,13 @@ instance JS.Value.V G where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 toObject :: G -> ST s (JS.Object.ST s)
 toObject g = do
 	o <- JS.Object.new
+	foo <- JS.Object.new
+	JS.Object.set foo "r" (0 :: Float)
+	JS.Object.set foo "g" (0.5 :: Float)
+	JS.Object.set foo "b" (1 :: Float)
+	JS.Object.set foo "a" (1 :: Float)
+	JS.Object.set o "clearValue" [0 :: Float, 0.5, 1, 1]
+--	JS.Object.set o "clearValue" =<< JS.Object.freeze foo -- [0 :: Float, 0.5, 1, 1]
 	JS.Object.set o "loadOp" $ loadOp g
 	JS.Object.set o "storeOp" $ storeOp g
 	JS.Object.set o "view" $ view g

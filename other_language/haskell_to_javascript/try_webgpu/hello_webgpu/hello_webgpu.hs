@@ -75,6 +75,7 @@ main = do
 	JS.EventTarget.addEventListenerSimple
 		(fromJust $ JS.Value.cast device) "uncapturederror" \ev -> do
 		JS.Value.consoleLog $ JS.Value.toV "error error error"
+		JS.Value.consoleLog $ JS.Value.toV ev
 		putStrLn "error occur"
 	print device
 
@@ -239,18 +240,26 @@ main = do
 			JS.GpuRenderPassEncoder.colorAttachments = [
 				JS.GpuColorAttachmentObject.G {
 					JS.GpuColorAttachmentObject.loadOp =
-						JS.GpuColorAttachmentObject.Load,
+--						JS.GpuColorAttachmentObject.Load,
+						JS.GpuColorAttachmentObject.Clear,
 					JS.GpuColorAttachmentObject.storeOp =
 						JS.GpuColorAttachmentObject.Store,
 					JS.GpuColorAttachmentObject.view = txtr
 					}
 				]
 			}
+	JS.Value.consoleLog $ JS.Value.toV renderPassDescriptor
 	passEncoder <- JS.GpuCommandEncoder.beginRenderPass
 		commandEncoder renderPassDescriptor
 	JS.Value.consoleLog $ JS.Value.toV renderPipeline
 	JS.Value.consoleLog $ JS.Value.toV passEncoder
 	JS.GpuRenderPassEncoder.setPipeline passEncoder renderPipeline
+	JS.GpuRenderPassEncoder.setVertexBuffer passEncoder 0 bffr
+	JS.GpuRenderPassEncoder.draw passEncoder 3
+	JS.GpuRenderPassEncoder.end passEncoder
+	cbffr <- JS.GpuCommandEncoder.finish commandEncoder
+	JS.Value.consoleLog $ JS.Value.toV cbffr
+	JS.GpuQueue.submit queue [cbffr]
 
 shaders :: String
 shaders = """
