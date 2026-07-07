@@ -14,6 +14,7 @@ import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.Array qualified as JS.Array
 import GHC.JS.Value.GpuDevice qualified as JS.GpuDevice
 import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
+import GHC.JS.Value.GpuTexture qualified as JS.GpuTexture
 
 newtype G = G { unG :: JSVal }
 
@@ -133,3 +134,9 @@ pattern GpuTextureUsageRenderAttachment = GpuTextureUsage 0x10
 pattern GpuTextureUsageStorageBinding = GpuTextureUsage 0x08
 pattern GpuTextureUsageTextureBinding = GpuTextureUsage 0x04
 pattern GpuTextureUsageTransientAttachment = GpuTextureUsage 0x20
+
+getCurrentTexture :: G -> IO JS.GpuTexture.G
+getCurrentTexture = js_getCurrentTexture
+
+foreign import javascript "((c) => { return c.getCurrentTexture() })"
+	js_getCurrentTexture :: G -> IO JS.GpuTexture.G

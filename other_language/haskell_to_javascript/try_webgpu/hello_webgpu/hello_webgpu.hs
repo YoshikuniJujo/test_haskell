@@ -49,6 +49,8 @@ import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
 import GHC.JS.Value.GpuRenderPipeline qualified as JS.GpuRenderPipeline
 
 import GHC.JS.Value.GpuCommandEncoder qualified as JS.GpuCommandEncoder
+import GHC.JS.Value.GpuRenderPassEncoder qualified as JS.GpuRenderPassEncoder
+import GHC.JS.Value.GpuColorAttachmentObject qualified as JS.GpuColorAttachmentObject
 
 main :: IO ()
 main = do
@@ -224,6 +226,23 @@ main = do
 	JS.Value.consoleLog $ JS.Value.toV renderPipeline
 	commandEncoder <- JS.GpuCommandEncoder.create device
 	JS.Value.consoleLog $ JS.Value.toV commandEncoder
+	txtr <- maybe (error "bad") JS.GpuCanvasContext.getCurrentTexture
+		$ JS.CanvasContext.fromC ctx
+	JS.Value.consoleLog $ JS.Value.toV txtr
+	let	renderPassDescriptor = JS.GpuRenderPassEncoder.Descriptor {
+			JS.GpuRenderPassEncoder.colorAttachments = [
+				JS.GpuColorAttachmentObject.G {
+					JS.GpuColorAttachmentObject.loadOp =
+						JS.GpuColorAttachmentObject.Load,
+					JS.GpuColorAttachmentObject.storeOp =
+						JS.GpuColorAttachmentObject.Store,
+					JS.GpuColorAttachmentObject.view = txtr
+					}
+				]
+			}
+	passEncoder <- JS.GpuCommandEncoder.beginRenderPass
+		commandEncoder renderPassDescriptor
+	JS.Value.consoleLog $ JS.Value.toV passEncoder
 
 shaders :: String
 shaders = """
