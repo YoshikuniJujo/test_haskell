@@ -48,6 +48,7 @@ import GHC.JS.Value.GpuColorAttachmentObject qualified as JS.GpuColorAttachmentO
 
 import Data.Bits
 import Data.Maybe
+import Data.UnionColor
 
 main :: IO ()
 main = do
@@ -234,6 +235,8 @@ main = do
 	let	renderPassDescriptor = JS.GpuRenderPassEncoder.Descriptor {
 			JS.GpuRenderPassEncoder.colorAttachments = [
 				JS.GpuColorAttachmentObject.G {
+					JS.GpuColorAttachmentObject.clearValue =
+						rgbaDoubleRaw 0 0.5 1 1,
 					JS.GpuColorAttachmentObject.loadOp =
 --						JS.GpuColorAttachmentObject.Load,
 						JS.GpuColorAttachmentObject.Clear,

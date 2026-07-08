@@ -8,8 +8,10 @@ import GHC.JS.Value.Object qualified as JS.Object
 import GHC.JS.Value.GpuTexture qualified as JS.GpuTexture
 
 import Control.Monad.ST
+import Data.UnionColor
 
 data G = G {
+	clearValue :: Maybe (RgbaRaw Float),
 	loadOp :: LoadOp,
 	storeOp :: StoreOp,
 	view :: JS.GpuTexture.G }
@@ -20,18 +22,15 @@ instance JS.Value.IsJSVal G where
 instance JS.Value.V G where toV = JS.Object.toValue; fromV = JS.Object.fromValue
 
 toObject :: G -> ST s (JS.Object.ST s)
-toObject g = do
+toObject gca = do
 	o <- JS.Object.new
-	foo <- JS.Object.new
-	JS.Object.set foo "r" (0 :: Float)
-	JS.Object.set foo "g" (0.5 :: Float)
-	JS.Object.set foo "b" (1 :: Float)
-	JS.Object.set foo "a" (1 :: Float)
-	JS.Object.set o "clearValue" [0 :: Float, 0.5, 1, 1]
---	JS.Object.set o "clearValue" =<< JS.Object.freeze foo -- [0 :: Float, 0.5, 1, 1]
-	JS.Object.set o "loadOp" $ loadOp g
-	JS.Object.set o "storeOp" $ storeOp g
-	JS.Object.set o "view" $ view g
+	let	cv = case clearValue gca of
+			Just (RgbaDoubleRaw r g b a) -> Just [r, g, b, a]
+			Nothing -> Nothing
+	maybe (pure ()) (JS.Object.set o "clearValue") cv
+	JS.Object.set o "loadOp" $ loadOp gca
+	JS.Object.set o "storeOp" $ storeOp gca
+	JS.Object.set o "view" $ view gca
 	pure o
 
 data LoadOp = Clear | Load deriving Show
