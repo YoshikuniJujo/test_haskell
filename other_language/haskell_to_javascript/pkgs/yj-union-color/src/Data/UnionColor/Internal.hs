@@ -23,7 +23,17 @@ module Data.UnionColor.Internal (
 	-- ** From and To Rgb and Alpha
 	toRgba, fromRgba,
 	-- ** Convert Fractional
-	rgbaRealToFrac ) where
+	rgbaRealToFrac,
+	-- ** Raw
+	RgbaRaw(..),
+	pattern RgbaWord8Raw, pattern RgbaWord16Raw,
+	pattern RgbaWord32Raw, pattern RgbaInt32Raw,
+	pattern RgbaDoubleRaw,
+
+	rawAsStraight, rawAsPremultiplied,
+	straightToRaw, premultipliedToRaw
+
+	) where
 
 import Data.Bits
 import Data.Bool
@@ -270,8 +280,187 @@ data Rgba d
 	| RgbaDouble_ d d d d
 	| RgbaPremultipliedWord8_ Word8 Word8 Word8 Word8
 	| RgbaPremultipliedWord16_ Word16 Word16 Word16 Word16
+	| RgbaPremultipliedWord32_ Word32 Word32 Word32 Word32
+	| RgbaPremultipliedInt32_ Int32 Int32 Int32 Int32
 	| RgbaPremultipliedDouble_ d d d d
 	deriving Show
+
+data RgbaRaw d
+	= RgbaWord8Raw_ Word8 Word8 Word8 Word8
+	| RgbaWord16Raw_ Word16 Word16 Word16 Word16
+	| RgbaWord32Raw_ Word32 Word32 Word32 Word32
+	| RgbaInt32Raw_ Int32 Int32 Int32 Int32
+	| RgbaDoubleRaw_ d d d d
+	deriving Show
+
+pattern RgbaWord8Raw :: RealFrac d => Word8 -> Word8 -> Word8 -> Word8 -> RgbaRaw d
+pattern RgbaWord8Raw r g b a <- (fromRgbaWord8Raw -> (r, g, b, a))
+	where RgbaWord8Raw = RgbaWord8Raw_
+
+fromRgbaWord8Raw :: RealFrac d => RgbaRaw d -> (Word8, Word8, Word8, Word8)
+fromRgbaWord8Raw = \case
+	RgbaWord8Raw_ r g b a -> (r, g, b, a)
+	RgbaWord16Raw_ r g b a -> (
+		fromIntegral $ r `shiftR` 8, fromIntegral $ g `shiftR` 8,
+		fromIntegral $ b `shiftR` 8, fromIntegral $ a `shiftR` 8 )
+	RgbaWord32Raw_ r g b a -> (
+		fromIntegral $ r `shiftR` 24, fromIntegral $ g `shiftR` 24,
+		fromIntegral $ b `shiftR` 24, fromIntegral $ a `shiftR` 24 )
+	RgbaInt32Raw_ r g b a -> (
+		fromIntegral $ r `shiftR` 23, fromIntegral $ g `shiftR` 23,
+		fromIntegral $ b `shiftR` 23, fromIntegral $ a `shiftR` 23 )
+	RgbaDoubleRaw_ r g b a -> (r', g', b', a')
+		where (r', g', b', a') = listToTuple4 $ cDoubleToWord8 <$> [r, g, b, a]
+
+pattern RgbaWord16Raw :: RealFrac d => Word16 -> Word16 -> Word16 -> Word16 -> RgbaRaw d
+pattern RgbaWord16Raw r g b a <- (fromRgbaWord16Raw -> (r, g, b, a))
+	where RgbaWord16Raw = RgbaWord16Raw_
+
+fromRgbaWord16Raw :: RealFrac d => RgbaRaw d -> (Word16, Word16, Word16, Word16)
+fromRgbaWord16Raw = \case
+	RgbaWord8Raw_
+		(fromIntegral -> r) (fromIntegral -> g)
+		(fromIntegral -> b) (fromIntegral -> a) -> (
+		r `shiftL` 8 .|. r, g `shiftL` 8 .|. g,
+		b `shiftL` 8 .|. b, a `shiftL` 8 .|. a)
+	RgbaWord16Raw_ r g b a -> (r, g, b, a)
+	RgbaWord32Raw_ r g b a -> (
+		fromIntegral $ r `shiftR` 16, fromIntegral $ g `shiftR` 16,
+		fromIntegral $ b `shiftR` 16, fromIntegral $ a `shiftR` 16 )
+	RgbaInt32Raw_ r g b a -> (
+		fromIntegral $ r `shiftR` 15, fromIntegral $ g `shiftR` 15,
+		fromIntegral $ b `shiftR` 15, fromIntegral $ a `shiftR` 15 )
+	RgbaDoubleRaw_ r g b a ->
+		let (r', g', b', a') = listToTuple4 $ cDoubleToWord16 <$> [r, g, b, a] in (r', g', b', a')
+
+pattern RgbaWord32Raw :: RealFrac d =>
+	Word32 -> Word32 -> Word32 -> Word32 -> RgbaRaw d
+pattern RgbaWord32Raw r g b a <- (fromRgbaWord32Raw -> (r, g, b, a))
+	where RgbaWord32Raw = RgbaWord32Raw_
+
+fromRgbaWord32Raw :: RealFrac d => RgbaRaw d -> (Word32, Word32, Word32, Word32)
+fromRgbaWord32Raw = \case
+	RgbaWord8Raw_
+		(fromIntegral -> r) (fromIntegral -> g)
+		(fromIntegral -> b) (fromIntegral -> a) -> (
+		r `shiftL` 24 .|. r `shiftL` 16 .|. r `shiftL` 8 .|. r,
+		g `shiftL` 24 .|. g `shiftL` 16 .|. g `shiftL` 8 .|. g,
+		b `shiftL` 24 .|. b `shiftL` 16 .|. b `shiftL` 8 .|. b,
+		a `shiftL` 24 .|. a `shiftL` 16 .|. a `shiftL` 8 .|. a )
+	RgbaWord16Raw_
+		(fromIntegral -> r) (fromIntegral -> g)
+		(fromIntegral -> b) (fromIntegral -> a) -> (
+		r `shiftL` 16 .|. r, g `shiftL` 16 .|. g,
+		b `shiftL` 16 .|. b, a `shiftL` 16 .|. a )
+	RgbaWord32Raw_ r g b a -> (r, g, b, a)
+	RgbaInt32Raw_
+		(fromIntegral -> r) (fromIntegral -> g)
+		(fromIntegral -> b) (fromIntegral -> a) -> (
+		r `shiftL` 1 .|. r `shiftR` 30, g `shiftL` 1 .|. g `shiftR` 30,
+		b `shiftL` 1 .|. b `shiftR` 30, a `shiftL` 1 .|. a `shiftR` 30 )
+	RgbaDoubleRaw_ r g b a -> let
+		(r', g', b', a') = listToTuple4 $ cDoubleToWord32 <$> [r, g, b, a] in
+		(r', g', b', a')
+
+{-# COMPLETE RgbaInt32Raw #-}
+
+pattern RgbaInt32Raw :: RealFrac d => Int32 -> Int32 -> Int32 -> Int32 -> RgbaRaw d
+pattern RgbaInt32Raw r g b a <- (fromRgbaInt32Raw -> (r, g, b, a))
+
+fromRgbaInt32Raw :: RealFrac d => RgbaRaw d -> (Int32, Int32, Int32, Int32)
+fromRgbaInt32Raw = \case
+	RgbaWord8Raw_
+		(fromIntegral -> r) (fromIntegral -> g)
+		(fromIntegral -> b) (fromIntegral -> a) -> (
+		r `shiftL` 23 .|. r `shiftL` 15 .|.
+		r `shiftL` 7 .|. r `shiftR` 1,
+		g `shiftL` 23 .|. g `shiftL` 15 .|.
+		g `shiftL` 7 .|. g `shiftR` 1,
+		b `shiftL` 23 .|. b `shiftL` 15 .|.
+		b `shiftL` 7 .|. b `shiftR` 1,
+		a `shiftL` 23 .|. a `shiftL` 15 .|.
+		a `shiftL` 7 .|. a `shiftR` 1 )
+	RgbaWord16Raw_
+		(fromIntegral -> r) (fromIntegral -> g)
+		(fromIntegral -> b) (fromIntegral -> a) -> (
+		r `shiftL` 15 .|. r `shiftR` 1, g `shiftL` 15 .|. g `shiftR` 1,
+		b `shiftL` 15 .|. b `shiftR` 1, a `shiftL` 15 .|. a `shiftR` 1 )
+	RgbaWord32Raw_ r g b a -> (
+		fromIntegral $ r `shiftR` 1, fromIntegral $ g `shiftR` 1,
+		fromIntegral $ b `shiftR` 1, fromIntegral $ a `shiftR` 1 )
+	RgbaInt32Raw_ r g b a -> (r, g, b, a)
+	RgbaDoubleRaw_ r g b a -> let
+		(r', g', b', a') = listToTuple4 $ cDoubleToInt32 <$> [r, g, b, a] in
+		(r', g', b', a')
+
+{-# COMPLETE RgbaDoubleRaw #-}
+
+pattern RgbaDoubleRaw :: (Eq d, Fractional d) => d -> d -> d -> d -> RgbaRaw d
+pattern RgbaDoubleRaw r g b a <- (fromRgbaDoubleRaw -> (r, g, b, a))
+
+fromRgbaDoubleRaw :: (Eq d, Fractional d) => RgbaRaw d -> (d, d, d, d)
+fromRgbaDoubleRaw = \case
+	RgbaWord8Raw_ r g b a -> (r', g', b', a')
+		where (r', g', b', a') = listToTuple4 $ word8ToCDouble <$> [r, g, b, a]
+	RgbaWord16Raw_ r g b a -> (r', g', b', a')
+		where (r', g', b', a') = listToTuple4 $ word16ToCDouble <$> [r, g, b, a]
+	RgbaWord32Raw_ r g b a -> (r', g', b', a')
+		where (r', g', b', a') = listToTuple4 $ word32ToCDouble <$> [r, g, b, a]
+	RgbaInt32Raw_ r g b a -> (r', g', b', a')
+		where (r', g', b', a') = listToTuple4 $ int32ToCDouble <$> [r, g, b, a]
+	RgbaDoubleRaw_ r g b a -> (r, g, b, a)
+
+rawAsStraight :: RgbaRaw d -> Rgba d
+rawAsStraight = \case
+	RgbaWord8Raw_ r g b a -> RgbaWord8_ r g b a
+	RgbaWord16Raw_ r g b a -> RgbaWord16_ r g b a
+	RgbaWord32Raw_ r g b a -> RgbaWord32_ r g b a
+	RgbaInt32Raw_ r g b a -> RgbaInt32_ r g b a
+	RgbaDoubleRaw_ r g b a -> RgbaDouble_ r g b a
+
+straightToRaw :: (Eq d, Fractional d) => Rgba d -> RgbaRaw d
+straightToRaw = \case
+	RgbaWord8_ r g b a -> RgbaWord8Raw_ r g b a
+	RgbaWord16_ r g b a -> RgbaWord16Raw_ r g b a
+	RgbaWord32_ r g b a -> RgbaWord32Raw_ r g b a
+	RgbaInt32_ r g b a -> RgbaInt32Raw_ r g b a
+	RgbaDouble_ r g b a -> RgbaDoubleRaw_ r g b a
+	RgbaPremultipliedWord8_ r g b a -> RgbaWord8Raw_ r' g' b' a'
+		where (r', g', b', a') = listToTuple4 $ unPremultipliedWord8 (r, g, b, a)
+	RgbaPremultipliedWord16_ r g b a -> RgbaWord16Raw_ r' g' b' a'
+		where (r', g', b', a') = listToTuple4 $ unPremultipliedWord16 (r, g, b, a)
+	RgbaPremultipliedWord32_ r g b a -> RgbaWord32Raw_ r' g' b' a'
+		where (r', g', b', a') = listToTuple4 $ unPremultipliedWord32 (r, g, b, a)
+	RgbaPremultipliedInt32_ r g b a -> RgbaInt32Raw_ r' g' b' a'
+		where (r', g', b', a') = listToTuple4 $ unPremultipliedInt32 (r, g, b, a)
+	RgbaPremultipliedDouble_ r g b a -> RgbaDoubleRaw_ r' g' b' a'
+		where (r', g', b', a') = listToTuple4 $ unPremultipliedDouble (r, g, b, a)
+
+premultipliedToRaw :: (Eq d, Fractional d) => Rgba d -> RgbaRaw d
+premultipliedToRaw = \case
+	RgbaWord8_ r g b a -> RgbaWord8Raw_ r' g' b' a'
+		where (r', g', b', a') = toPremultipliedWord8 (r, g, b, a)
+	RgbaWord16_ r g b a -> RgbaWord16Raw_ r' g' b' a'
+		where (r', g', b', a') = toPremultipliedWord16 (r, g, b, a)
+	RgbaWord32_ r g b a -> RgbaWord32Raw_ r' g' b' a'
+		where (r', g', b', a') = toPremultipliedWord32 (r, g, b, a)
+	RgbaInt32_ r g b a -> RgbaInt32Raw_ r' g' b' a'
+		where (r', g', b', a') = toPremultipliedInt32 (r, g, b, a)
+	RgbaDouble_ r g b a -> RgbaDoubleRaw_ r' g' b' a'
+		where (r', g', b', a') = toPremultipliedDouble (r, g, b, a)
+	RgbaPremultipliedWord8_ r g b a -> RgbaWord8Raw_ r g b a
+	RgbaPremultipliedWord16_ r g b a -> RgbaWord16Raw_ r g b a
+	RgbaPremultipliedWord32_ r g b a -> RgbaWord32Raw_ r g b a
+	RgbaPremultipliedInt32_ r g b a -> RgbaInt32Raw_ r g b a
+	RgbaPremultipliedDouble_ r g b a -> RgbaDoubleRaw_ r g b a
+
+rawAsPremultiplied :: RgbaRaw d -> Rgba d
+rawAsPremultiplied = \case
+	RgbaWord8Raw_ r g b a -> RgbaPremultipliedWord8_ r g b a
+	RgbaWord16Raw_ r g b a -> RgbaPremultipliedWord16_ r g b a
+	RgbaWord32Raw_ r g b a -> RgbaPremultipliedWord32_ r g b a
+	RgbaInt32Raw_ r g b a -> RgbaPremultipliedInt32_ r g b a
+	RgbaDoubleRaw_ r g b a -> RgbaPremultipliedDouble_ r g b a
 
 {-# COMPLETE RgbaWord8 #-}
 
@@ -301,6 +490,18 @@ fromRgbaWord8 = \case
 		fromIntegral $ b' `shiftR` 8,
 		fromIntegral $ a' `shiftR` 8 )
 		where (r', g', b', a') = listToTuple4 $ unPremultipliedWord16 (r, g, b, a)
+	RgbaPremultipliedWord32_ r g b a -> (
+		fromIntegral $ r' `shiftR` 24,
+		fromIntegral $ g' `shiftR` 24,
+		fromIntegral $ b' `shiftR` 24,
+		fromIntegral $ a' `shiftR` 24 )
+		where (r', g', b', a') = listToTuple4 $ unPremultipliedWord32 (r, g, b, a)
+	RgbaPremultipliedInt32_ r g b a -> (
+		fromIntegral $ r' `shiftR` 23,
+		fromIntegral $ g' `shiftR` 23,
+		fromIntegral $ b' `shiftR` 23,
+		fromIntegral $ a' `shiftR` 23 )
+		where (r', g', b', a') = listToTuple4 $ unPremultipliedInt32 (r, g, b, a)
 	RgbaPremultipliedDouble_ r g b a -> (r', g', b', a')
 		where (r', g', b', a') =
 			listToTuple4 $ cDoubleToWord8 <$> unPremultipliedDouble (r, g, b, a)
@@ -334,6 +535,18 @@ fromRgbaWord16 = \case
 			listToTuple4 $ fromIntegral <$> unPremultipliedWord8 (r, g, b, a)
 	RgbaPremultipliedWord16_ r g b a -> (r', g', b', a')
 		where (r', g', b', a') = listToTuple4 $ unPremultipliedWord16 (r, g, b, a)
+	RgbaPremultipliedWord32_ r g b a -> (
+		fromIntegral $ r' `shiftR` 16, 
+		fromIntegral $ g' `shiftR` 16, 
+		fromIntegral $ b' `shiftR` 16,
+		fromIntegral $ a' `shiftR` 16 )
+		where (r', g', b', a') = listToTuple4 $ unPremultipliedWord32 (r, g, b, a)
+	RgbaPremultipliedInt32_ r g b a -> (
+		fromIntegral $ r' `shiftR` 15, 
+		fromIntegral $ g' `shiftR` 15, 
+		fromIntegral $ b' `shiftR` 15,
+		fromIntegral $ a' `shiftR` 15 )
+		where (r', g', b', a') = listToTuple4 $ unPremultipliedInt32 (r, g, b, a)
 	RgbaPremultipliedDouble_ r g b a -> (r', g', b', a')
 		where (r', g', b', a') =
 			listToTuple4 $ cDoubleToWord16 <$> unPremultipliedDouble (r, g, b, a)
@@ -380,6 +593,16 @@ fromRgbaWord32 = \case
 		b' `shiftL` 16 .|. b', a' `shiftL` 16 .|. a' )
 		where (r', g', b', a') =
 			listToTuple4 $ fromIntegral <$> unPremultipliedWord16 (r, g, b, a)
+	RgbaPremultipliedWord32_ r g b a -> (r', g', b', a')
+		where (r', g', b', a') =
+			listToTuple4 $ fromIntegral <$> unPremultipliedWord32 (r, g, b, a)
+	RgbaPremultipliedInt32_ r g b a -> (
+		r' `shiftL` 1 .|. r' `shiftR` 31,
+		g' `shiftL` 1 .|. g' `shiftR` 31,
+		b' `shiftL` 1 .|. g' `shiftR` 31,
+		a' `shiftL` 1 .|. a' `shiftR` 31 )
+		where (r', g', b', a') =
+			listToTuple4 $ fromIntegral <$> unPremultipliedInt32 (r, g, b, a)
 	RgbaPremultipliedDouble_ r g b a -> (r', g', b', a')
 		where (r', g', b', a') =
 			listToTuple4 $ cDoubleToWord32 <$> unPremultipliedDouble (r, g, b, a)
@@ -437,6 +660,16 @@ fromRgbaInt32 = \case
 		a' `shiftL` 15 .|. a' `shiftR` 1 )
 		where (r', g', b', a') =
 			listToTuple4 $ fromIntegral <$> unPremultipliedWord16 (r, g, b, a)
+	RgbaPremultipliedWord32_ r g b a -> (
+		r' `shiftR` 1,
+		g' `shiftR` 1,
+		b' `shiftR` 1,
+		a' `shiftR` 1 )
+		where (r', g', b', a') =
+			listToTuple4 $ fromIntegral <$> unPremultipliedWord32 (r, g, b, a)
+	RgbaPremultipliedInt32_ r g b a -> (r', g', b', a')
+		where (r', g', b', a') =
+			listToTuple4 $ fromIntegral <$> unPremultipliedInt32 (r, g, b, a)
 	RgbaPremultipliedDouble_ r g b a -> (r', g', b', a')
 		where (r', g', b', a') =
 			listToTuple4 $ cDoubleToInt32 <$> unPremultipliedDouble (r, g, b, a)
@@ -463,6 +696,12 @@ fromRgbaDouble = \case
 	RgbaPremultipliedWord16_ r g b a -> (r', g', b', a')
 		where (r', g', b', a') =
 			listToTuple4 $ word16ToCDouble <$> unPremultipliedWord16 (r, g, b, a)
+	RgbaPremultipliedWord32_ r g b a -> (r', g', b', a')
+		where (r', g', b', a') =
+			listToTuple4 $ word32ToCDouble <$> unPremultipliedWord32 (r, g, b, a)
+	RgbaPremultipliedInt32_ r g b a -> (r', g', b', a')
+		where (r', g', b', a') =
+			listToTuple4 $ int32ToCDouble <$> unPremultipliedInt32 (r, g, b, a)
 	RgbaPremultipliedDouble_ r g b a -> (r', g', b', a')
 		where (r', g', b', a') = listToTuple4 $ unPremultipliedDouble (r, g, b, a)
 
@@ -483,6 +722,10 @@ fromRgba = \case
 		where (r', g', b', a') = listToTuple4 $ unPremultipliedWord8 (r, g, b, a)
 	RgbaPremultipliedWord16_ r g b a -> (RgbWord16_ r' g' b', AlphaWord16_ a')
 		where (r', g', b', a') = listToTuple4 $ unPremultipliedWord16 (r, g, b, a)
+	RgbaPremultipliedWord32_ r g b a -> (RgbWord32_ r' g' b', AlphaWord32_ a')
+		where (r', g', b', a') = listToTuple4 $ unPremultipliedWord32 (r, g, b, a)
+	RgbaPremultipliedInt32_ r g b a -> (RgbInt32_ r' g' b', AlphaInt32_ a')
+		where (r', g', b', a') = listToTuple4 $ unPremultipliedInt32 (r, g, b, a)
 	RgbaPremultipliedDouble_ r g b a -> (RgbDouble_ r' g' b', AlphaDouble_ a')
 		where (r', g', b', a') = listToTuple4 $ unPremultipliedDouble (r, g, b, a)
 
@@ -503,6 +746,8 @@ rgbaRealToFrac = \case
 		where (r', g', b', a') = listToTuple4 $ realToFrac <$> [r, g, b, a]
 	RgbaPremultipliedWord8_ r g b a -> RgbaPremultipliedWord8_ r g b a
 	RgbaPremultipliedWord16_ r g b a -> RgbaPremultipliedWord16_ r g b a
+	RgbaPremultipliedWord32_ r g b a -> RgbaPremultipliedWord32_ r g b a
+	RgbaPremultipliedInt32_ r g b a -> RgbaPremultipliedInt32_ r g b a
 	RgbaPremultipliedDouble_ r g b a -> RgbaPremultipliedDouble_ r' g' b' a'
 		where (r', g', b', a') = listToTuple4 $ realToFrac <$> [r, g, b, a]
 
@@ -591,6 +836,26 @@ toPremultipliedWord16 (
 		r * a `div` 0xffff, g * a `div` 0xffff, b * a `div` 0xffff,
 		a :: Word32 ]
 
+toPremultipliedWord32 ::
+	(Word32, Word32, Word32, Word32) -> (Word32, Word32, Word32, Word32)
+toPremultipliedWord32 (
+	fromIntegral -> r, fromIntegral -> g,
+	fromIntegral -> b, fromIntegral -> a ) = (r', g', b', a')
+	where
+	(r', g', b', a') = listToTuple4 $ fromIntegral <$> [
+		r * a `div` 0xffffffff, g * a `div` 0xffffffff, b * a `div` 0xffffffff,
+		a :: Word64 ]
+
+toPremultipliedInt32 ::
+	(Int32, Int32, Int32, Int32) -> (Int32, Int32, Int32, Int32)
+toPremultipliedInt32 (
+	fromIntegral -> r, fromIntegral -> g,
+	fromIntegral -> b, fromIntegral -> a ) = (r', g', b', a')
+	where
+	(r', g', b', a') = listToTuple4 $ fromIntegral <$> [
+		r * a `div` 0x7fffffff, g * a `div` 0x7fffffff, b * a `div` 0x7fffffff,
+		a :: Int64 ]
+
 listToTuple3 :: [a] -> (a, a, a)
 listToTuple3 = \case [x, y, z] -> (x, y, z); _ -> error "bad"
 
@@ -603,6 +868,20 @@ unPremultipliedWord16 (
 	fromIntegral -> b, fromIntegral -> a ) = fromIntegral <$> [
 		r * 0xffff `div'` a, g * 0xffff `div'` a, b * 0xff `div'` a,
 		a :: Word32 ]
+
+unPremultipliedWord32 :: (Word32, Word32, Word32, Word32) -> [Word32]
+unPremultipliedWord32 (
+	fromIntegral -> r, fromIntegral -> g,
+	fromIntegral -> b, fromIntegral -> a ) = fromIntegral <$> [
+		r * 0xffff `div'` a, g * 0xffff `div'` a, b * 0xff `div'` a,
+		a :: Word64 ]
+
+unPremultipliedInt32 :: (Int32, Int32, Int32, Int32) -> [Int32]
+unPremultipliedInt32 (
+	fromIntegral -> r, fromIntegral -> g,
+	fromIntegral -> b, fromIntegral -> a ) = fromIntegral <$> [
+		r * 0xffff `div'` a, g * 0xffff `div'` a, b * 0xff `div'` a,
+		a :: Int64 ]
 
 pattern RgbaPremultipliedDouble :: (Eq d, Fractional d) => d -> d -> d -> d -> Rgba d
 pattern RgbaPremultipliedDouble r g b a <-

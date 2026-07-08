@@ -29,6 +29,16 @@ module Data.UnionColor (
 	pattern RgbaPremultipliedWord16, rgbaPremultipliedWord16,
 	pattern RgbaPremultipliedDouble, rgbaPremultipliedDouble,
 
+	-- ** Raw
+
+	RgbaRaw,
+	pattern RgbaWord8Raw, pattern RgbaWord16Raw,
+	pattern RgbaWord32Raw, pattern RgbaInt32Raw,
+	pattern RgbaDoubleRaw,
+
+	rawAsStraight, rawAsPremultiplied,
+	straightToRaw, premultipliedToRaw,
+
 	-- ** From and To Rgb and Alpha
 
 	toRgba, fromRgba,
