@@ -1,5 +1,5 @@
 {-# LANGUAGE MultilineStrings #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -52,11 +52,7 @@ import Data.UnionColor
 
 main :: IO ()
 main = do
-	putStrLn "Hello"
-
-	print $ JS.Navigator.n
-	let	Just g = JS.Navigator.gpu JS.Navigator.n
-	print g
+	g <- maybeError "WebGPU not supported" $ JS.Navigator.gpu JS.Navigator.n
 	format <- JS.Gpu.getPreferredCanvasFormat g
 	let	formatStr = JS.Gpu.preferredCanvasFormatToString format
 		formatTxt = JS.Gpu.preferredCanvasFormatToTextureFormat format
@@ -283,3 +279,6 @@ shaders = """
 		return fragData.color;
 	}
 	"""
+
+maybeError :: MonadFail m => String -> Maybe a -> m a
+maybeError em = \case Nothing -> fail em; Just x -> pure x
