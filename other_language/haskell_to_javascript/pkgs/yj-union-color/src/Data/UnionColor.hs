@@ -34,7 +34,7 @@ module Data.UnionColor (
 	RgbaRaw,
 	pattern RgbaWord8Raw, pattern RgbaWord16Raw,
 	pattern RgbaWord32Raw, pattern RgbaInt32Raw,
-	pattern RgbaDoubleRaw,
+	pattern RgbaDoubleRaw, rgbaDoubleRaw,
 
 	rawAsStraight, rawAsPremultiplied,
 	straightToRaw, premultipliedToRaw,

@@ -28,7 +28,7 @@ module Data.UnionColor.Internal (
 	RgbaRaw(..),
 	pattern RgbaWord8Raw, pattern RgbaWord16Raw,
 	pattern RgbaWord32Raw, pattern RgbaInt32Raw,
-	pattern RgbaDoubleRaw,
+	pattern RgbaDoubleRaw, rgbaDoubleRaw,
 
 	rawAsStraight, rawAsPremultiplied,
 	straightToRaw, premultipliedToRaw
@@ -397,6 +397,12 @@ fromRgbaInt32Raw = \case
 
 pattern RgbaDoubleRaw :: (Eq d, Fractional d) => d -> d -> d -> d -> RgbaRaw d
 pattern RgbaDoubleRaw r g b a <- (fromRgbaDoubleRaw -> (r, g, b, a))
+
+rgbaDoubleRaw :: (Ord d, Num d) => d -> d -> d -> d -> Maybe (RgbaRaw d)
+rgbaDoubleRaw r g b a
+	| from0to1 r && from0to1 g && from0to1 b && from0to1 a =
+		Just $ RgbaDoubleRaw_ r g b a
+	| otherwise = Nothing
 
 fromRgbaDoubleRaw :: (Eq d, Fractional d) => RgbaRaw d -> (d, d, d, d)
 fromRgbaDoubleRaw = \case
