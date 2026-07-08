@@ -16,6 +16,8 @@ import GHC.JS.Value.GpuDevice qualified as JS.GpuDevice
 import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
 import GHC.JS.Value.GpuTexture qualified as JS.GpuTexture
 
+import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
+
 newtype G = G { unG :: JSVal }
 
 instance Show G where
@@ -50,11 +52,11 @@ foreign import javascript "((g, as) => { g.configure(as); })"
 configurationToObject :: Configuration -> IO JS.Object.O
 configurationToObject c = do
 	o <- JS.Object.new @JS.Object.IO
-	maybe (pure ()) (JS.Object.set o "alphaMode" . toString) $ alphaMode c
+	maybe (pure ()) (JS.Object.set o "alphaMode") $ alphaMode c
 	maybe (pure ()) (JS.Object.set o "colorSpace" . toString) $ colorSpace c
 	JS.Object.set o "device" $ device c
-	JS.Object.set o "format" . toString $ format c
-	maybe (pure ()) (JS.Object.set o "usage" . toInt) $ usage c
+	JS.Object.set o "format" $ format c
+	maybe (pure ()) (JS.Object.set o "usage") $ usage c
 	marr <- maybe (pure Nothing)
 		((Just <$>) . JS.Array.fromListIO) $ viewFormats c
 	maybe (pure ()) (JS.Object.set o "viewFormats") marr
@@ -64,12 +66,12 @@ data Configuration = Configuration {
 	alphaMode :: Maybe AlphaMode,
 	colorSpace :: Maybe ColorSpace,
 	device :: JS.GpuDevice.G,
-	format :: Format,
+	format :: JS.GpuTextureFormat.CanvasConfig,
 	usage :: Maybe GpuTextureUsage,
 	viewFormats :: Maybe [String] }
 	deriving Show
 
-configuration :: JS.GpuDevice.G -> Format -> Configuration
+configuration :: JS.GpuDevice.G -> JS.GpuTextureFormat.CanvasConfig -> Configuration
 configuration dvc fmt = Configuration {
 	alphaMode = Nothing, colorSpace = Nothing,
 	device = dvc, format = fmt,
@@ -77,37 +79,33 @@ configuration dvc fmt = Configuration {
 
 data AlphaMode = AlphaModeOpaque | AlphaModePremultiplied deriving Show
 data ColorSpace = ColorSpaceSrgb | ColorSpaceDisplayP3 deriving Show
-data Format
-	= FormatBgra8Unorm | FormatRgba8Unorm | FormatRgba16Float deriving Show
 newtype GpuTextureUsage = GpuTextureUsage Int32 deriving (Eq, Bits)
 
 class ToString a where toString :: a -> String
 class FromString a where fromString :: String -> Maybe a
+
+instance JS.Value.IsJSVal AlphaMode where toJSVal = JS.Value.toJSVal . toString
+instance JS.Value.V AlphaMode
 
 instance ToString AlphaMode where
 	toString = \case
 		AlphaModeOpaque -> "opaque"
 		AlphaModePremultiplied -> "premultiplied"
 
+instance JS.Value.IsJSVal ColorSpace where toJSVal = JS.Value.toJSVal . toString
+instance JS.Value.V ColorSpace
+
 instance ToString ColorSpace where
 	toString = \case
 		ColorSpaceSrgb -> "srgb"
 		ColorSpaceDisplayP3 -> "display-p3"
 
-instance ToString Format where
-	toString = \case
-		FormatBgra8Unorm -> "bgra8unorm"
-		FormatRgba8Unorm -> "rgba8unorm"
-		FormatRgba16Float -> "rgba16float"
-
-instance FromString Format where
-	fromString = \case
-		"bgra8unorm" -> Just FormatBgra8Unorm
-		"rgba8unorm" -> Just FormatRgba8Unorm
-		"rgba16float" -> Just FormatRgba16Float
-		_ -> Nothing
-
 class ToInt a where toInt :: a -> Int
+
+instance JS.Value.IsJSVal GpuTextureUsage where
+	toJSVal = JS.Value.toJSVal . toInt
+
+instance JS.Value.V GpuTextureUsage
 
 instance ToInt GpuTextureUsage where toInt (GpuTextureUsage n) = fromIntegral n
 

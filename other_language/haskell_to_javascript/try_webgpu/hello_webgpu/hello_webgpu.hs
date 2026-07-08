@@ -54,10 +54,7 @@ main :: IO ()
 main = do
 	g <- maybeError "WebGPU not supported" $ JS.Navigator.gpu JS.Navigator.n
 	format <- JS.Gpu.getPreferredCanvasFormat g
-	let	formatStr = JS.Gpu.preferredCanvasFormatToString format
-		formatTxt = JS.Gpu.preferredCanvasFormatToTextureFormat format
 	print format
-	print formatStr
 	a <- JS.Gpu.requestAdapter g
 	print a
 	let	i = JS.GpuAdapter.info a
@@ -101,7 +98,7 @@ main = do
 	JS.Value.consoleLog ctx
 
 	let	conf = (JS.GpuCanvasContext.configuration device
-			. fromJust $ JS.GpuCanvasContext.fromString formatStr) {
+			$ JS.GpuTextureFormat.preferredCanvasToConfig format) {
 			JS.GpuCanvasContext.alphaMode =
 				Just JS.GpuCanvasContext.AlphaModePremultiplied
 			}
@@ -189,7 +186,7 @@ main = do
 					JS.GpuFragmentObject.targets = [
 						JS.GpuFragmentObject.Target {
 							JS.GpuFragmentObject.blend = Nothing,
-							JS.GpuFragmentObject.format = formatTxt,
+							JS.GpuFragmentObject.format = JS.GpuTextureFormat.fromPreferredCanvas format,
 							JS.GpuFragmentObject.writeMask = Nothing
 							} ]
 					},

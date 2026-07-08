@@ -28,26 +28,13 @@ foreign import javascript interruptible
 	"(async function (g, cont) { const a = await g.requestAdapter(); cont(a) })"
 	js_requestAdapter :: JSVal -> IO JSVal
 
-getPreferredCanvasFormat :: G -> IO PreferredCanvasFormat
+getPreferredCanvasFormat :: G -> IO JS.GpuTextureFormat.PreferredCanvas
 getPreferredCanvasFormat (G g) = do
 	str <- fromJSString <$> js_getPreferredCanvasFormat g
 	pure case str of
-		"rgba8unorm" -> Rgba8Unorm
-		"bgra8unorm" -> Bgra8Unorm
+		"rgba8unorm" -> JS.GpuTextureFormat.PreferredCanvasRgba8Unorm
+		"bgra8unorm" -> JS.GpuTextureFormat.PreferredCanvasBgra8Unorm
 		_ -> error "bad"
-
-preferredCanvasFormatToString :: PreferredCanvasFormat -> String
-preferredCanvasFormatToString = \case
-	Rgba8Unorm -> "rgba8unorm"
-	Bgra8Unorm -> "bgra8unorm"
-
-data PreferredCanvasFormat = Rgba8Unorm | Bgra8Unorm deriving Show
-
-preferredCanvasFormatToTextureFormat ::
-	PreferredCanvasFormat -> JS.GpuTextureFormat.G
-preferredCanvasFormatToTextureFormat = \case
-	Rgba8Unorm -> JS.GpuTextureFormat.Rgba8Unorm
-	Bgra8Unorm -> JS.GpuTextureFormat.Bgra8Unorm
 
 foreign import javascript
 	"((g) => { const r = g.getPreferredCanvasFormat(); return r; })"
