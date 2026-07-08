@@ -17,7 +17,6 @@ import GHC.JS.Value.HtmlElement.Canvas.WebGpu qualified as JS.HtmlCanvasElement
 
 import GHC.JS.Value.Gpu qualified as JS.Gpu
 import GHC.JS.Value.GpuAdapter qualified as JS.GpuAdapter
-import GHC.JS.Value.GpuAdapterInfo qualified as JS.GpuAdapterInfo
 
 import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
 import GHC.JS.Value.CanvasContext.Gpu qualified as JS.GpuCanvasContext
@@ -53,13 +52,8 @@ import Data.UnionColor
 main :: IO ()
 main = do
 	g <- maybeError "WebGPU not supported" $ JS.Navigator.gpu JS.Navigator.n
-	format <- JS.Gpu.getPreferredCanvasFormat g
-	print format
 	a <- JS.Gpu.requestAdapter g
 	print a
-	let	i = JS.GpuAdapter.info a
-	print i
-	print $ JS.GpuAdapterInfo.architecture i
 	device <- JS.GpuAdapter.requestDevice a
 	JS.EventTarget.addEventListenerSimple
 		(fromJust $ JS.Value.cast device) "uncapturederror" \ev -> do
@@ -97,6 +91,7 @@ main = do
 
 	JS.Value.consoleLog ctx
 
+	format <- JS.Gpu.getPreferredCanvasFormat g
 	let	conf = (JS.GpuCanvasContext.configuration device
 			$ JS.GpuTextureFormat.preferredCanvasToConfig format) {
 			JS.GpuCanvasContext.alphaMode =
