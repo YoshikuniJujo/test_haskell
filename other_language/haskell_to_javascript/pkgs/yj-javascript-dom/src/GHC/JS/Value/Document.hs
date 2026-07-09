@@ -61,11 +61,9 @@ getElementsByTagName :: D -> String -> IO JS.HtmlCollection.H
 getElementsByTagName (D dc) (toJSString -> tn) =
 	js_getElementsByTagName dc tn >>= \case
 		e	| isNull e -> error $
-				"Document.getElementsByTagName() " ++
-				"return null"
+				"Document.getElementsByTagName(): null"
 			| isUndefined e -> error $
-				"Document.getElementsByTagName() " ++
-				"return undefined"
+				"Document.getElementsByTagName(): undefined"
 			| otherwise -> pure $ JS.HtmlCollection.H e
 
 foreign import javascript "((d, tn) => { return d.getElementsByTagName(tn); })"
