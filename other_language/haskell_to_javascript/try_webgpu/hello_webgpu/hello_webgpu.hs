@@ -81,8 +81,7 @@ main = do
 	JS.GpuQueue.writeBuffer (JS.GpuDevice.queue dvc)
 		bffr 0 vertices 0 (JS.Float32Array.length vertices)
 	cmdEnc <- JS.GpuCommandEncoder.create dvc
-	pssEnc <- JS.GpuCommandEncoder.beginRenderPass cmdEnc
-		. renderPassDescriptor
+	pssEnc <- JS.GpuRenderPassEncoder.begin cmdEnc . renderPassDescriptor
 		=<< JS.GpuCanvasContext.getCurrentTexture ctx
 	JS.GpuRenderPassEncoder.setPipeline pssEnc
 		=<< JS.GpuRenderPipeline.create

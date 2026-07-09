@@ -9,6 +9,7 @@ import GHC.JS.Value.GpuColorAttachmentObject qualified as
 	JS.GpuColorAttachmentObject
 import GHC.JS.Value.GpuRenderPipeline qualified as JS.GpuRenderPipeline
 import GHC.JS.Value.GpuBuffer qualified as JS.GpuBuffer
+import GHC.JS.Value.GpuCommandEncoder qualified as JS.GpuCommandEncoder
 
 import Control.Monad.ST
 
@@ -16,6 +17,13 @@ newtype G = G JSVal
 
 instance JS.Value.IsJSVal G where toJSVal (G v) = v
 instance JS.Value.V G where toV = JS.Object.toValue; fromV = JS.Object.fromValue
+
+begin ::
+	JS.GpuCommandEncoder.G -> Descriptor -> IO G
+begin g = js_begin g . JS.Value.toJSVal
+
+foreign import javascript "((g, d) => { return g.beginRenderPass(d) })"
+	js_begin :: JS.GpuCommandEncoder.G -> JSVal -> IO G
 
 data Descriptor = Descriptor {
 	colorAttachments :: [JS.GpuColorAttachmentObject.G]
