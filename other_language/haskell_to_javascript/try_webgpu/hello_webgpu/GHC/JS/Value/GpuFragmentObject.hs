@@ -13,7 +13,6 @@ import GHC.JS.Value.GpuBlendState qualified as JS.GpuBlendState
 import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
 
 import Control.Monad.ST
-import Data.Bits
 import Data.Int
 
 data G = G {

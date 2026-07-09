@@ -51,10 +51,11 @@ import Data.UnionColor
 
 main :: IO ()
 main = do
-	gpu <- maybeError "WebGPU not supported" $ JS.Navigator.gpu JS.Navigator.n
+	gpu <- maybeError "WebGPU not supported"
+		$ JS.Navigator.gpu JS.Navigator.n
 	dvc <- JS.GpuAdapter.requestDevice =<< JS.Gpu.requestAdapter gpu
-	JS.EventTarget.addEventListenerSimple
-		(fromJust $ JS.Value.cast dvc) "uncapturederror" JS.Value.consoleLog
+	JS.EventTarget.addEventListenerSimple (fromJust $ JS.Value.cast dvc)
+		"uncapturederror" JS.Value.consoleLog
 	cvs <- maybeError "not canvas" . JS.Element.fromE
 		=<< (`JS.HtmlCollection.item` 0)
 		=<< JS.Document.getElementsByTagName
@@ -69,19 +70,16 @@ main = do
 		$ (JS.GpuCanvasContext.configuration dvc fmt) {
 		JS.GpuCanvasContext.alphaMode =
 			Just JS.GpuCanvasContext.AlphaModePremultiplied }
-	shdrm <- JS.GpuDevice.createShaderModule dvc
-		$ (JS.GpuDevice.shaderModuleDescriptor shaders) {
-			JS.GpuDevice.shaderModuleDescriptorLabel =
+	shdrm <- JS.GpuShaderModule.create dvc
+		$ (JS.GpuShaderModule.descriptor shaders) {
+			JS.GpuShaderModule.descriptorLabel =
 				Just "GOOD SHADERS" }
-	vrts <- JS.Float32Array.fromFloatList [
-		0, 0.6, 0, 1, 1, 0, 0, 1, -0.5, -0.6,  0, 1,
-		0, 1, 0, 1, 0.5, -0.6, 0, 1, 0, 0, 1, 1 ]
 	bffr <- JS.GpuDevice.createBuffer dvc $ (JS.GpuDevice.bufferDescriptor
-		(JS.Float32Array.byteLength vrts)
+		(JS.Float32Array.byteLength vertices)
 		(JS.GpuBufferUsage.Vertex .|. JS.GpuBufferUsage.CopyDst)) {
 		JS.GpuDevice.bufferDescriptorLabel = Just "VERTEX BUFFER" }
 	JS.GpuQueue.writeBuffer (JS.GpuDevice.queue dvc)
-		bffr 0 vrts 0 (JS.Float32Array.length vrts)
+		bffr 0 vertices 0 (JS.Float32Array.length vertices)
 	cmdEnc <- JS.GpuCommandEncoder.create dvc
 	pssEnc <- JS.GpuCommandEncoder.beginRenderPass cmdEnc
 		. renderPassDescriptor
@@ -134,6 +132,11 @@ renderPassDescriptor txtr = JS.GpuRenderPassEncoder.Descriptor {
 					}
 				]
 			}
+
+vertices :: JS.Float32Array.F
+vertices = JS.Float32Array.fromList [
+			0, 0.6, 0, 1, 1, 0, 0, 1, -0.5, -0.6,  0, 1,
+			0, 1, 0, 1, 0.5, -0.6, 0, 1, 0, 0, 1, 1 ]
 
 pipelineDescriptor :: JS.GpuShaderModule.G ->
 	JS.GpuTextureFormat.CanvasConfig -> JS.GpuRenderPipeline.Descriptor
