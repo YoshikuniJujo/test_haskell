@@ -24,6 +24,7 @@ import GHC.JS.Value.GpuDevice qualified as JS.GpuDevice
 
 import GHC.JS.Value.Float32Array qualified as JS.Float32Array
 
+import GHC.JS.Value.GpuBuffer qualified as JS.GpuBuffer
 import GHC.JS.Value.GpuBufferUsage qualified as JS.GpuBufferUsage
 import GHC.JS.Value.GpuQueue qualified as JS.GpuQueue
 
@@ -72,12 +73,11 @@ main = do
 			Just JS.GpuCanvasContext.AlphaModePremultiplied }
 	shdrm <- JS.GpuShaderModule.create dvc
 		$ (JS.GpuShaderModule.descriptor shaders) {
-			JS.GpuShaderModule.descriptorLabel =
-				Just "GOOD SHADERS" }
-	bffr <- JS.GpuDevice.createBuffer dvc $ (JS.GpuDevice.bufferDescriptor
+			JS.GpuShaderModule.descriptorLabel = Just "MY SHADERS" }
+	bffr <- JS.GpuBuffer.create dvc $ (JS.GpuBuffer.descriptor
 		(JS.Float32Array.byteLength vertices)
 		(JS.GpuBufferUsage.Vertex .|. JS.GpuBufferUsage.CopyDst)) {
-		JS.GpuDevice.bufferDescriptorLabel = Just "VERTEX BUFFER" }
+		JS.GpuBuffer.descriptorLabel = Just "VERTEX BUFFER" }
 	JS.GpuQueue.writeBuffer (JS.GpuDevice.queue dvc)
 		bffr 0 vertices 0 (JS.Float32Array.length vertices)
 	cmdEnc <- JS.GpuCommandEncoder.create dvc
