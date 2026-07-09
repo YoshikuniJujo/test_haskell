@@ -21,7 +21,6 @@ instance Show A where
 
 instance JS.Value.IsJSVal A where toJSVal (A v) = v
 instance JS.Value.V A where toV = JS.Object.toValue; fromV = JS.Object.fromValue
-
 instance JS.Object.IsO A
 
 newtype IO = IO A deriving JS.Value.IsJSVal
@@ -66,7 +65,10 @@ fromListIO = fromListM
 foreign import javascript "((a, x) => { a.push(x); })"
 	js_pushIO :: JSVal -> JSVal -> P.IO ()
 
-fromFloatList :: [Float] -> P.IO IO
-fromFloatList fs = new_ >>= \a -> a <$ mapM_ (push_ a) fs
+fromFloatList :: [Float] -> A
+fromFloatList fs = ST.runST $ freeze =<< fromFloatListM fs
+
+fromFloatListM :: (Monad m, M a m) => [Float] -> m a
+fromFloatListM = fromListM
 
 foreign import javascript "((a, f) => { a.push(f); })" js_push_float :: JSVal -> Float -> P.IO ()
