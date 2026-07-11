@@ -4,7 +4,8 @@
 
 module GHC.JS.Value.Document (
 	D(..), documentUri,
-	getElementById, getElementByTagName, getElementsByTagName ) where
+	getElementById, getElementByTagName, getElementsByTagName,
+	createElement, body ) where
 
 import GHC.JS.Prim (JSVal, isNull, isUndefined, toJSString, fromJSString)
 import GHC.JS.Value qualified as JS.Value
@@ -76,3 +77,15 @@ getElementByTagName (D dc) (toJSString -> tn) =
 foreign import javascript
 	"((d, tn) => { const c = d.getElementsByTagName(tn); return c[0]; })"
 	js_getElementByTagName :: JSVal -> JSVal -> IO JSVal
+
+createElement :: D -> String -> IO JS.Element.E
+createElement (D dc) (toJSString -> ln) = JS.Element.otherE <$> js_createElement dc ln
+
+foreign import javascript "((d, ln) => { return d.createElement(ln) })"
+	js_createElement :: JSVal -> JSVal -> IO JSVal
+
+body :: D -> JS.Element.E
+body (D dc) = JS.Element.otherE $ js_body dc
+
+foreign import javascript "((d) => { return d.body })"
+	js_body :: JSVal -> JSVal
