@@ -39,21 +39,22 @@ import GHC.JS.Value.GpuTexture qualified as JS.GpuTexture
 import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
 import GHC.JS.Value.GpuColorAttachmentObject qualified as JS.GpuColorAttachmentObject
 
+import GHC.JS.Value.Node qualified as JS.Node
+
 import Data.Bits
 import Data.Maybe
 import Data.UnionColor
 
 main :: IO ()
 main = do
+	let	doc = JS.Window.document JS.Window.w
 	gpu <- maybeError "WebGPU not supported"
 		$ JS.Navigator.gpu JS.Navigator.n
 	dvc <- JS.GpuAdapter.requestDevice =<< JS.Gpu.requestAdapter gpu
 	JS.EventTarget.addEventListenerSimple (fromJust $ JS.Value.cast dvc)
 		"uncapturederror" JS.Value.consoleLog
-	cvs <- maybeError "not canvas" . JS.Element.fromE
-		=<< (`JS.HtmlCollection.item` 0)
-		=<< JS.Document.getElementsByTagName
-			(JS.Window.document JS.Window.w) "canvas"
+	cvs <- maybeError "not canvas" . JS.Element.fromE =<< JS.Document.createElement doc "canvas"
+	JS.Node.appendChild (JS.Node.toN $ JS.Document.body doc) (JS.Node.toN cvs)
 	ctx <- maybeError "Cannot get WebGPU context"
 		. (JS.CanvasContext.fromC =<<)
 		=<< JS.HtmlCanvasElement.getContext cvs
