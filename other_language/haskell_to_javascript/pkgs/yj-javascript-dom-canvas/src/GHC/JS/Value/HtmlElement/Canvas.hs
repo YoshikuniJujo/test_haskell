@@ -9,7 +9,9 @@ module GHC.JS.Value.HtmlElement.Canvas (
 	getHeight, getWidth,
 
 	getContext, ContextType(..),
-	pattern ContextType2d
+	pattern ContextType2d,
+
+	Property(..), Width(..), Height(..)
 
 	) where
 
@@ -87,3 +89,21 @@ newtype ContextType = ContextType String
 
 pattern ContextType2d :: ContextType
 pattern ContextType2d <- ContextType "2d" where ContextType2d = ContextType "2d"
+
+-- PROPERTIES
+
+class Property a where get :: C -> IO a; set :: C -> a -> IO ()
+
+newtype Width = Width Double deriving Show
+newtype Height = Height Double deriving Show
+
+instance Property Width where
+	get c = Width <$> getWidth c
+	set (C c) (Width w) = js_setWidth c w
+
+instance Property Height where
+	get c = Height <$> getHeight c
+	set (C c) (Height h) = js_setHeight c h
+
+foreign import javascript "((c, w) => { c.width = w })" js_setWidth :: JSVal -> Double -> IO ()
+foreign import javascript "((c, h) => { c.height = h })" js_setHeight :: JSVal -> Double -> IO ()
