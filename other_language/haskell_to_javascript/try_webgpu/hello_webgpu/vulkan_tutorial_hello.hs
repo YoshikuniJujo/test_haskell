@@ -55,8 +55,9 @@ main = do
 		"uncapturederror" JS.Value.consoleLog
 	cvs <- maybeError "not canvas" . JS.Element.fromE =<< JS.Document.createElement doc "canvas"
 	JS.Node.appendChild (JS.Node.toN $ JS.Document.body doc) (JS.Node.toN cvs)
-	JS.HtmlCanvasElement.set cvs $ JS.HtmlCanvasElement.Width 800
-	JS.HtmlCanvasElement.set cvs $ JS.HtmlCanvasElement.Height 600
+	JS.HtmlCanvasElement.set cvs (
+		JS.HtmlCanvasElement.Width 800,
+		JS.HtmlCanvasElement.Height 600 )
 	ctx <- maybeError "Cannot get WebGPU context"
 		. (JS.CanvasContext.fromC =<<)
 		=<< JS.HtmlCanvasElement.getContext cvs

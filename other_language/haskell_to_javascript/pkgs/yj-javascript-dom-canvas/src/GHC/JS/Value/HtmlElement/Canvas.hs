@@ -105,5 +105,9 @@ instance Property Height where
 	get c = Height <$> getHeight c
 	set (C c) (Height h) = js_setHeight c h
 
+instance (Property a, Property b) => Property (a, b) where
+	get c = (,) <$> get c <*> get c
+	set c (x, y) = set c x >> set c y
+
 foreign import javascript "((c, w) => { c.width = w })" js_setWidth :: JSVal -> Double -> IO ()
 foreign import javascript "((c, h) => { c.height = h })" js_setHeight :: JSVal -> Double -> IO ()
