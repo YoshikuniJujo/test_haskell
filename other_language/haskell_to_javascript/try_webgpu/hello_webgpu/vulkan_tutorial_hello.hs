@@ -12,7 +12,6 @@ import GHC.JS.Value.Navigator.Webgpu qualified as JS.Navigator
 import GHC.JS.Value.Window qualified as JS.Window
 import GHC.JS.Value.Document qualified as JS.Document
 import GHC.JS.Value.Element qualified as JS.Element
-import GHC.JS.Value.HtmlCollection qualified as JS.HtmlCollection
 import GHC.JS.Value.HtmlElement.Canvas qualified as JS.HtmlCanvasElement
 import GHC.JS.Value.HtmlElement.Canvas.WebGpu qualified as JS.HtmlCanvasElement
 import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
@@ -47,27 +46,17 @@ import Data.UnionColor
 
 main :: IO ()
 main = do
-	let	doc = JS.Window.document JS.Window.w
+	cvs <- initWindow
+
 	gpu <- maybeError "WebGPU not supported"
 		$ JS.Navigator.gpu JS.Navigator.n
 	dvc <- JS.GpuAdapter.requestDevice =<< JS.Gpu.requestAdapter gpu
 	JS.EventTarget.addEventListenerSimple (fromJust $ JS.Value.cast dvc)
 		"uncapturederror" JS.Value.consoleLog
-	cvs <- maybeError "not canvas" . JS.Element.fromE =<< JS.Document.createElement doc "canvas"
-	JS.Node.appendChild (JS.Node.toN $ JS.Document.body doc) (JS.Node.toN cvs)
-	JS.HtmlCanvasElement.set cvs (
-		JS.HtmlCanvasElement.Width 800,
-		JS.HtmlCanvasElement.Height 600 )
-	ctx <- maybeError "Cannot get WebGPU context"
-		. (JS.CanvasContext.fromC =<<)
-		=<< JS.HtmlCanvasElement.getContext cvs
-			JS.HtmlCanvasElement.ContextTypeWebGpu
+
 	fmt <- JS.GpuTextureFormat.preferredCanvasToConfig
 		<$> JS.Gpu.getPreferredCanvasFormat gpu
-	JS.GpuCanvasContext.configure ctx
-		$ (JS.GpuCanvasContext.configuration dvc fmt) {
-		JS.GpuCanvasContext.alphaMode =
-			Just JS.GpuCanvasContext.AlphaModePremultiplied }
+
 	sdm <- JS.GpuShaderModule.create dvc
 		$ (JS.GpuShaderModule.descriptor shaders) {
 			JS.GpuShaderModule.descriptorLabel = Just "MY SHADERS" }
@@ -77,9 +66,21 @@ main = do
 		JS.GpuBuffer.descriptorLabel = Just "VERTEX BUFFER" }
 	JS.GpuQueue.writeBuffer (JS.GpuDevice.queue dvc)
 		bffr 0 vertices 0 (JS.Float32Array.length vertices)
+
+	ctx <- maybeError "Cannot get WebGPU context"
+		. (JS.CanvasContext.fromC =<<)
+		=<< JS.HtmlCanvasElement.getContext cvs
+			JS.HtmlCanvasElement.ContextTypeWebGpu
+
+	JS.GpuCanvasContext.configure ctx
+		$ (JS.GpuCanvasContext.configuration dvc fmt) {
+		JS.GpuCanvasContext.alphaMode =
+			Just JS.GpuCanvasContext.AlphaModePremultiplied }
+
 	cmdEnc <- JS.GpuCommandEncoder.create dvc
 	pssEnc <- JS.GpuRenderPassEncoder.begin cmdEnc . renderPassDescriptor
 		=<< JS.GpuCanvasContext.getCurrentTexture ctx
+
 	JS.GpuRenderPassEncoder.setPipeline pssEnc
 		=<< JS.GpuRenderPipeline.create dvc (pipelineDescriptor sdm fmt)
 	JS.GpuRenderPassEncoder.setVertexBuffer pssEnc 0 bffr
@@ -87,6 +88,18 @@ main = do
 	JS.GpuRenderPassEncoder.end pssEnc
 	JS.GpuQueue.submit (JS.GpuDevice.queue dvc)
 		. (: []) =<< JS.GpuCommandEncoder.finish cmdEnc
+
+initWindow :: IO JS.HtmlCanvasElement.C
+initWindow = do
+	let	doc = JS.Window.document JS.Window.w
+	cvs <- maybeError "not canvas"
+		. JS.Element.fromE =<< JS.Document.createElement doc "canvas"
+	cvs <$ do
+		JS.Node.appendChild
+			(JS.Node.toN $ JS.Document.body doc) (JS.Node.toN cvs)
+		JS.HtmlCanvasElement.set cvs (
+			JS.HtmlCanvasElement.Width 800,
+			JS.HtmlCanvasElement.Height 600 )
 
 shaders :: String
 shaders = """
