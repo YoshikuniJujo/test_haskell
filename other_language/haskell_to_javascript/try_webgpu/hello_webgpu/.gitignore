@@ -1,4 +1,5 @@
 /hello_webgpu
 /vulkan_tutorial_hello
+/trials
 *.hi-boot
 *.o-boot
