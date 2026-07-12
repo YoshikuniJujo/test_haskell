@@ -47,9 +47,8 @@ import Data.UnionColor
 main :: IO ()
 main = do
 	cvs <- initWindow
+	gpu <- initVulkan
 
-	gpu <- maybeError "WebGPU not supported"
-		$ JS.Navigator.gpu JS.Navigator.n
 	dvc <- JS.GpuAdapter.requestDevice =<< JS.Gpu.requestAdapter gpu
 	JS.EventTarget.addEventListenerSimple (fromJust $ JS.Value.cast dvc)
 		"uncapturederror" JS.Value.consoleLog
@@ -91,7 +90,6 @@ main = do
 
 initWindow :: IO JS.HtmlCanvasElement.C
 initWindow = do
-	let	doc = JS.Window.document JS.Window.w
 	cvs <- maybeError "not canvas"
 		. JS.Element.fromE =<< JS.Document.createElement doc "canvas"
 	cvs <$ do
@@ -100,6 +98,10 @@ initWindow = do
 		JS.HtmlCanvasElement.set cvs (
 			JS.HtmlCanvasElement.Width 800,
 			JS.HtmlCanvasElement.Height 600 )
+	where	doc = JS.Window.document JS.Window.w
+
+initVulkan :: IO JS.Gpu.G
+initVulkan = maybeError "WebGPU not supported" $ JS.Navigator.gpu JS.Navigator.n
 
 shaders :: String
 shaders = """
