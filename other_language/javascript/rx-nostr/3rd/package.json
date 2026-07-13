@@ -1,0 +1,21 @@
+{
+  "name": "3rd",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "webpack": "^5.108.4",
+    "webpack-cli": "^7.2.1"
+  },
+  "dependencies": {
+    "@rx-nostr/crypto": "^3.1.6",
+    "rx-nostr": "^3.7.5"
+  }
+}
