@@ -1,6 +1,3 @@
-import { createRxNostr, createRxForwardReq } from "rx-nostr";
-import { verifier } from "@rx-nostr/crypto";
-
 const rxNostr = createRxNostr({ verifier });
 rxNostr.setDefaultRelays([
 	"wss:yabu.me"
@@ -16,4 +13,4 @@ rxReq.emit({ kinds: [1] });
 
 setTimeout(() => {
 	subscription.unsubscribe();
-}, 10 * 1000);
+}, 2 * 1000);
