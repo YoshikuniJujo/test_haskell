@@ -10,9 +10,11 @@ const rxNostr = createRxNostr({
 
 rxNostr.setDefaultRelays(["wss://r.kojira.io"]);
 
+const message = process.argv[2];
+
 rxNostr.send({
 	kind: 1,
-	content: "Hello, from rx-nostr. 今日は2" }).subscribe((packet) => {
+	content: message }).subscribe((packet) => {
 		console.log(`sending to ${packet.from} ${packet.ok ? "succeeded" : "failed"}.`
 		);
 	});
