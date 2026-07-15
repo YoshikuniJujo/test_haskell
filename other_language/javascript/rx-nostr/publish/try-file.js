@@ -14,7 +14,10 @@ const message = process.argv[2];
 
 rxNostr.send({
 	kind: 1,
-	content: message }).subscribe((packet) => {
-		console.log(`sending to ${packet.from} ${packet.ok ? "succeeded" : "failed"}.`
-		);
+	content: message }).subscribe({
+		next: (packet) => {
+			console.log(`sending to ${packet.from} ${packet.ok ? "succeeded" : "failed"}.`); },
+		complete: () => {
+			console.log("終了");
+			rxNostr.dispose(); }
 	});
