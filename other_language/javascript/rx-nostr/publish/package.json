@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@rx-nostr/crypto": "^3.1.6",
+    "rx-nostr": "^3.7.5"
+  },
+  "type": "module"
+}
