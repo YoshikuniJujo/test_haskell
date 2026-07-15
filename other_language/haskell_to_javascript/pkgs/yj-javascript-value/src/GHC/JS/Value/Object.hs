@@ -6,7 +6,9 @@ module GHC.JS.Value.Object (
 	O, toValue, fromValue, IsO, toO, otherO,
 	isInstanceOf, Class(..), toString, getInt,
 
-	M(..), IO, ST
+	M(..), IO, ST,
+
+	js_get
 	) where
 
 import Prelude qualified as P
