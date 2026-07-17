@@ -8,14 +8,16 @@ function updateSloth(sloth, slothSize, reverse, debug) {
 	sloth.style.transform = `scaleX(${Math.sign(Math.cos(phase)) * reverse})`
 }
 
-alert("foobar");
+alert("hogepiyo");
 
-browser.storage.local.get("slothDebug", (items) => {
+async function foobar() {
 
+	const result = await browser.storage.local.get("slothDebug");
 	alert("foobarbaz");
 
-	alert(items.slothDebug);
-const debug = items.slothDebug;
+	alert(result.slothDebug);
+
+	const debug = result.slothDebug
 
 const platform = navigator.userAgent.toLowerCase();
 const reverse = platform.indexOf('android') == -1 ? 1 : - 1;
@@ -38,4 +40,6 @@ updateSloth(sloth, slothSize, reverse, debug);
 document.body.appendChild(sloth);
 
 setInterval(() => updateSloth(sloth, slothSize, reverse, debug), debug ? 1_000 : 60_000);
-});
+}
+
+foobar();

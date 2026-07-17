@@ -1,8 +1,12 @@
+async function foo() {
 const checkForDebug = document.getElementById('debug');
-checkForDebug.addEventListener('change', (event) => {
+checkForDebug.addEventListener('change', async (event) => {
 	if (event.target.checked) {
-		browser.storage.local.set( { slothDebug: true }, () => { });
+		await browser.storage.local.set({ slothDebug: true });
 	} else {
-		browser.storage.local.set( { slothDebug: false }, () => { });
+		await browser.storage.local.set({ slothDebug: false });
 	}
 });
+}
+
+foo();
