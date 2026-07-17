@@ -1,5 +1,8 @@
 const debug = false;
 
+const platform = navigator.userAgent.toLowerCase();
+const reverse = platform.indexOf('android') == -1 ? 1 : - 1;
+
 console.log("BORDERIFY");
 document.body.style.border = "5px solid red";
 
@@ -23,7 +26,7 @@ function updateSloth() {
 	phase = som / 60 * 2 * 3.14;
 
 	sloth.style.left = `${width2 + width2 * Math.sin(phase)}px`;
-	sloth.style.transform = `scaleX(${Math.sign(Math.cos(phase))})`
+	sloth.style.transform = `scaleX(${Math.sign(Math.cos(phase)) * reverse})`
 }
 
 setInterval(updateSloth, debug ? 1_000 : 60_000);
