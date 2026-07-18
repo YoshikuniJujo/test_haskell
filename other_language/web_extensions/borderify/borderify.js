@@ -8,14 +8,9 @@ function updateSloth(sloth, slothSize, reverse, debug) {
 	sloth.style.transform = `scaleX(${Math.sign(Math.cos(phase)) * reverse})`
 }
 
-alert("hogepiyo");
-
 async function foobar() {
 
 	const result = await browser.storage.local.get("slothDebug");
-	alert("foobarbaz");
-
-	alert(result.slothDebug);
 
 	const debug = result.slothDebug
 
@@ -35,7 +30,6 @@ sloth.style.zIndex = "2147483647";
 sloth.style.pointerEvents = "none";
 
 updateSloth(sloth, slothSize, reverse, debug);
-	alert("after");
 
 document.body.appendChild(sloth);
 
