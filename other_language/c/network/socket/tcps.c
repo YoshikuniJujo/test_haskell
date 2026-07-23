@@ -73,6 +73,7 @@ main(int argc, char *argv[])
 				break;
 			}
 
+			recvBuffer[recvMsgSize] = '\0';
 			printf("%s\n", recvBuffer);
 
 			if ((sendMsgSize == send(clitSock, recvBuffer, recvMsgSize, 0)) < 0) {
