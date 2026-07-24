@@ -76,14 +76,14 @@ main(int argc, char *argv[])
 			recvBuffer[recvMsgSize] = '\0';
 			printf("%s\n", recvBuffer);
 
-			if ((sendMsgSize == send(clitSock, recvBuffer, recvMsgSize, 0)) < 0) {
+			if ((sendMsgSize = send(clitSock, recvBuffer, recvMsgSize, 0)) < 0) {
 				perror("send() failed.");
 				exit(EXIT_FAILURE);
 			} else if (sendMsgSize == 0) {
 				fprintf(stderr, "connection closed by foreign host.\n");
 				break;
 			}
-			printf("hrehre\n");
+			printf("herehere\n");
 		}
 		close(clitSock);
 	}
