@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "esbuild": "0.28.1"
+  },
+  "scripts": {
+	  "build": "./node_modules/.bin/esbuild src/tryEsbuild.js --bundle --outfile=dist/tryEsbuild.js",
+	  "run": "npm run build && web-ext run --source-dir dist",
+	  "package": "npm run build && web-ext build --source-dir dist"
+  }
+}

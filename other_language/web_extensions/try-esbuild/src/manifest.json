@@ -1,0 +1,27 @@
+{
+	"manifest_version": 3,
+	"name": "Try Esbuild",
+	"version": "1.0",
+
+	"description": "Try using esbuild",
+
+	"icons": {
+		"48": "icons/border-48.png"
+	},
+
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "try-esbuild@yoshikunijujo.github.io",
+			"data_collection_permissions": {
+				"required": ["none"]
+			}
+		}
+	},
+
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"js": ["tryEsbuild.js"]
+		}
+	]
+}
