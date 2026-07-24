@@ -1,10 +1,11 @@
 {
   "devDependencies": {
-    "esbuild": "0.28.1"
+    "esbuild": "^0.28.1"
   },
   "scripts": {
 	  "build": "./node_modules/.bin/esbuild src/tryEsbuild.js --bundle --outfile=dist/tryEsbuild.js",
 	  "run": "npm run build && web-ext run --source-dir dist",
+	  "android": "npm run build && web-ext run --source-dir dist -t firefox-android --android-device=31091FDH2005N2 --firefox-apk=org.mozilla.fenix",
 	  "package": "npm run build && web-ext build --source-dir dist"
   }
 }
