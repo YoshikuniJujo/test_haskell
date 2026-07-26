@@ -25,7 +25,9 @@ source-repository head
 
 library
   exposed-modules:
+      Examples
       Lib
+      TryDecode
   other-modules:
       Paths_try_bech32
   autogen-modules:
@@ -36,6 +38,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bech32
+    , bytestring
     , text
   default-language: Haskell2010
 
@@ -51,6 +54,7 @@ executable try-bech32-exe
   build-depends:
       base >=4.7 && <5
     , bech32
+    , bytestring
     , text
     , try-bech32
   default-language: Haskell2010
@@ -68,6 +72,7 @@ test-suite try-bech32-test
   build-depends:
       base >=4.7 && <5
     , bech32
+    , bytestring
     , text
     , try-bech32
   default-language: Haskell2010
