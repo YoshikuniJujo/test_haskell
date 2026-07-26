@@ -6,9 +6,16 @@ module Main (main) where
 
 import Data.Text qualified as T
 import Codec.Binary.Bech32
+import Codec.Binary.Bech32.Internal
 
 main :: IO ()
-main = print $ decode example
+main = do
+	print $ decode example
+	Right (hrp, dp) <- pure $ decodeLenient example
+	print hrp
+	print dp
+	print $ dataPartIsValid dp
+	print $ dataPartToBytes dp
 
 example :: T.Text
 example = "ncryptsec1" <>
