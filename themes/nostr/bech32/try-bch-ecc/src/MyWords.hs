@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MyWords where
@@ -5,25 +6,47 @@ module MyWords where
 import Data.Bits
 import Data.Word
 
-newtype Word5 = Word5 Word8 deriving (Show, Eq)
+newtype Word5 = Word5 { unWord5 :: Word8 } deriving (Show, Eq)
 
 instance Bits Word5 where
-	Word5 w1 .&. Word5 w2 = Word5 $ w1 .&. w2
-	Word5 w1 .|. Word5 w2 = Word5 $ w1 .|. w2
-	Word5 w1 `xor` Word5 w2 = Word5 $ w1 `xor` w2
-	complement (Word5 w) = Word5 $ complement w .&. 0x1f
-	Word5 w `shift` i = Word5 $ (w `shift` i) .&. 0x1f
+	(.&.) = op Word5 unWord5 (.&.)
+	(.|.) = op Word5 unWord5 (.|.)
+	xor = op Word5 unWord5 xor
+	complement = fun (Word5 . (.&. 0x1f)) unWord5 complement
+	shift = flip $ fun (Word5 . (.&. 0x1f)) unWord5 . flip shift
 	rotateL = myRotateL; rotateR = myRotateR
 	bitSize _ = 5; bitSizeMaybe _ = Just 5
 	isSigned _ = False
-	Word5 w `testBit` i = w `testBit` i
-	bit i = Word5 $ bit i .&. 0x1f
-	popCount (Word5 w) = popCount w
+	testBit = testBit . unWord5
+	bit = Word5 . (.&. 0x1f) . bit
+	popCount = popCount . unWord5
 
 instance FiniteBits Word5 where
 	finiteBitSize _ = 5
 
-newtype Word30 = Word30 Word32 deriving Show
+newtype Word30 = Word30 { unWord30 :: Word32 } deriving (Show, Eq)
+
+instance Bits Word30 where
+	(.&.) = op Word30 unWord30 (.&.)
+	(.|.) = op Word30 unWord30 (.|.)
+	xor = op Word30 unWord30 xor
+	complement = fun (Word30 . (.&. 0x3fffffff)) unWord30 complement
+	shift = flip $ fun (Word30 . (.&. 0x3fffffff)) unWord30 . flip shift
+	rotateL = myRotateL; rotateR = myRotateR
+	bitSize _ = 30; bitSizeMaybe _ = Just 30
+	isSigned _ = False
+	testBit = testBit . unWord30
+	bit = Word30 . (.&. 0x1f) . bit
+	popCount = popCount . unWord30
+
+instance FiniteBits Word30 where
+	finiteBitSize _ = 30
+
+fun :: (w0 -> w1) -> (w1 -> w0) -> (w0 -> w0) -> w1 -> w1
+fun w unw f w1 = w . f $ unw w1
+
+op :: (w0 -> w1) -> (w1 -> w0) -> (w0 -> w0 -> w0) -> w1 -> w1 -> w1
+op w unw o w1 w2 = w $ unw w1 `o` unw w2
 
 bits :: Bits bs => [Int] -> bs
 bits = foldl setBit zeroBits
