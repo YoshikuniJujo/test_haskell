@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MyWords where
@@ -84,6 +84,54 @@ instance Real Word30 where toRational = toRational . unWord30
 instance Integral Word30 where
 	Word30 w1 `quotRem` Word30 w2 = Word30 *** Word30 $ w1 `quotRem` w2
 	toInteger = toInteger . unWord30
+
+newtype Word40 = Word40 { unWord40 :: Word64 } deriving (Show, Eq, Ord)
+
+instance Bits Word40 where
+	(.&.) = op Word40 unWord40 (.&.)
+	(.|.) = op Word40 unWord40 (.|.)
+	xor = op Word40 unWord40 xor
+	complement = fun Word40 unWord40 complement
+	shift = flip $ fun (Word40 . (.&. 0xffffffffff)) unWord40 . flip shift
+	rotateL = myRotateL; rotateR = myRotateR
+	bitSize _ = 40; bitSizeMaybe _ = Just 40; isSigned _ = False
+	testBit = testBit . unWord40
+	bit = Word40 . bit
+	popCount = popCount . unWord40
+
+instance FiniteBits Word40 where finiteBitSize _ = 40
+
+instance Enum Word40 where
+	toEnum = Word40 . toEnum; fromEnum = fromEnum . unWord40
+
+instance Num Word40 where
+	(+) = op Word40 unWord40 (+)
+	(*) = op Word40 unWord40 (*)
+	abs = fun Word40 unWord40 abs
+	signum = fun Word40 unWord40 signum
+	fromInteger = Word40 . fromInteger
+	negate = fun Word40 unWord40 negate
+
+instance Real Word40 where toRational = toRational . unWord40
+
+instance Integral Word40 where
+	Word40 w1 `quotRem` Word40 w2 = Word40 *** Word40 $ w1 `quotRem` w2
+	toInteger = toInteger . unWord40
+
+-- word5sToWord40s :: [Word5] -> ([Word40], Int)
+-- word5sToWord40s =
+
+each :: Int -> [a] -> ([[a]], Int)
+each _ [] = ([], 0)
+each n (x : xs) = go (n - 1) [x] xs
+	where
+	go i s [] = ([reverse s], i)
+	go i s xa@(x : xs)
+		| i < 1 = (reverse s :) `first` go (n - 1) [x] xs
+		| otherwise = go (i - 1) (x : s) xs
+
+pushToHead :: a -> [[a]] -> [[a]]
+pushToHead x = \case [] -> [[x]]; xs : xss -> (x : xs) : xss
 
 fun :: (w0 -> w1) -> (w1 -> w0) -> (w0 -> w0) -> w1 -> w1
 fun w unw f w1 = w . f $ unw w1
