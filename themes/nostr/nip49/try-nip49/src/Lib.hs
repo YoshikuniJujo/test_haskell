@@ -3,7 +3,9 @@
 
 module Lib where
 
+import Data.Maybe
 import Data.ByteString qualified as BS
+import Crypto.Scrypt
 import Crypto.Error
 import Crypto.Cipher.ChaChaPoly1305 qualified as ChaCha
 
@@ -26,3 +28,7 @@ exampleKey, exampleNonce, examplePlain :: BS.ByteString
 exampleKey = "1234567890abcdefghijklmnopqrstuv"
 exampleNonce = "1234567890abcdefghijklmn"
 examplePlain = "Hello, world!"
+
+params = scryptParamsLen 16 8 1 32
+
+scrypt = encryptPassIO (fromJust params) . Pass
