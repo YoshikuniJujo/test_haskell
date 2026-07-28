@@ -25,7 +25,10 @@ source-repository head
 
 library
   exposed-modules:
+      BchEcc
+      Example
       Lib
+      MyWords
   other-modules:
       Paths_try_nip49
   autogen-modules:
@@ -35,8 +38,11 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , base64
     , bytestring
     , crypton
+    , entropy
+    , mtl
     , scrypt
   default-language: Haskell2010
 
@@ -51,8 +57,11 @@ executable try-nip49-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , base64
     , bytestring
     , crypton
+    , entropy
+    , mtl
     , scrypt
     , try-nip49
   default-language: Haskell2010
@@ -69,8 +78,11 @@ test-suite try-nip49-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , base64
     , bytestring
     , crypton
+    , entropy
+    , mtl
     , scrypt
     , try-nip49
   default-language: Haskell2010

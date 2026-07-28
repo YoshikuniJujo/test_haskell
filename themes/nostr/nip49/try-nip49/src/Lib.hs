@@ -5,7 +5,10 @@ module Lib where
 
 import Data.Maybe
 import Data.ByteString qualified as BS
-import Crypto.Scrypt
+import Data.ByteString.Char8 qualified as BSC
+import Data.ByteString.Base64 qualified as B64
+import System.Entropy
+import Crypto.Scrypt qualified as Scrypt
 import Crypto.Error
 import Crypto.Cipher.ChaChaPoly1305 qualified as ChaCha
 
@@ -29,6 +32,14 @@ exampleKey = "1234567890abcdefghijklmnopqrstuv"
 exampleNonce = "1234567890abcdefghijklmn"
 examplePlain = "Hello, world!"
 
-params = scryptParamsLen 16 8 1 32
+params logN = Scrypt.scryptParamsLen logN 8 1 32
 
-scrypt = encryptPassIO (fromJust params) . Pass
+scryptIO logN pss = do
+	slt <- getEntropy 16
+	pure Scrypted {
+		salt = slt,
+		pass = Scrypt.getHash $ Scrypt.scrypt
+			(fromJust $ params logN) (Scrypt.Salt slt) (Scrypt.Pass pss) }
+
+data Scrypted = Scrypted { salt :: BS.ByteString, pass :: BS.ByteString }
+	deriving Show
