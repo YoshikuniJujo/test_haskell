@@ -118,8 +118,12 @@ instance Integral Word40 where
 	Word40 w1 `quotRem` Word40 w2 = Word40 *** Word40 $ w1 `quotRem` w2
 	toInteger = toInteger . unWord40
 
--- word5sToWord40s :: [Word5] -> ([Word40], Int)
--- word5sToWord40s =
+word5sToWord40s :: [Word5] -> ([Word40], Int)
+word5sToWord40s w5s = let (w58s, n) = each' 8 w5s in (word5sToWord40 <$> w58s, n * 5)
+
+word5sToWord40 :: [Word5] -> Word40
+word5sToWord40 = foldl (.|.) zeroBits
+	. zipWith (\i w5 -> fromIntegral w5 `shiftL` i) [35, 30 ..]
 
 each' :: Int -> [a] -> ([[a]], Int)
 each' n = go n where
