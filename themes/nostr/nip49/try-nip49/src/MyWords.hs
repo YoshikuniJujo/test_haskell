@@ -122,12 +122,12 @@ instance Integral Word40 where
 -- word5sToWord40s =
 
 each' :: Int -> [a] -> ([[a]], Int)
-each' n = go 0 where
+each' n = go n where
 	go i [] = ([], i)
 	go i xa@(x : xs)
-		| i < 1 = go n xa
-		| i < 2 = ([x] :) `first` go 0 xs
-		| otherwise = (x `pushToHead`) `first` go (i - 1) xs
+		| i > n - 1 = go 0 xa
+		| i > n - 2 = ([x] :) `first` go n xs
+		| otherwise = (x `pushToHead`) `first` go (i + 1) xs
 
 pushToHead :: a -> [[a]] -> [[a]]
 pushToHead x = \case [] -> [[x]]; xs : xss -> (x : xs) : xss
