@@ -1,11 +1,16 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module BchEcc where
 
+import Control.Arrow
 import Control.Monad.Identity
 import Control.Monad.State
 import Data.Bits
+import Data.Maybe
+import Data.List qualified as L
+import Data.Char
 
 import MyWords
 
@@ -75,3 +80,47 @@ polymod ws = fst $ polymodM gt `runState` ws
 
 polymodL :: [Word5] -> Word30
 polymodL = polymod . Word5List
+
+polymodNoTailM :: Monad m => m (Maybe Word5) -> m Word30
+polymodNoTailM gt = stepsM gt 1
+
+polymodNoTail :: Pop5Bits a => a -> Word30
+polymodNoTail ws = fst $ polymodNoTailM (StateT $ Identity . pop5Bits) `runState` ws
+
+polymodNoTailL :: [Word5] -> Word30
+polymodNoTailL = polymodNoTail . Word5List
+
+hrpToW5s :: String -> [Word5]
+hrpToW5s hrp =
+	(fromIntegral . (`shiftR` 5) . ord <$> hrp) ++ [0] ++
+	(fromIntegral . (.&. 0x1f) . ord <$> hrp)
+
+dataToW5 :: String -> [Word5]
+dataToW5 = (dict <$>)
+
+dictChars :: [Char]
+dictChars = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
+
+dict :: Char -> Word5
+dict = fromIntegral . fromJust . (`L.elemIndex` dictChars)
+
+undict :: Word5 -> Char
+undict = (dictChars !!) . fromIntegral
+
+word30ToB :: Word30 -> String
+word30ToB = (undict <$>) . word30ToWord5List
+
+hrpDataToW5s :: String -> Maybe [Word5]
+hrpDataToW5s hrpdt = do
+	(hrp, dt) <- sepHrpDt hrpdt
+	pure $ hrpToW5s hrp ++ dataToW5 dt
+
+sepHrpDt :: String -> Maybe (String, String)
+sepHrpDt = either (Just . (init `first`)) (const Nothing) . spanRR (/= '1')
+
+spanRR :: (a -> Bool) -> [a] -> Either ([a], [a]) [a]
+spanRR _ [] = Right []
+spanRR p (x : xs) = case (p x, spanRR p xs) of
+	(_, Left (t, d)) -> Left (x : t, d)
+	(False, Right d) -> Left ([x], d)
+	(True, Right d) -> Right $ x : d

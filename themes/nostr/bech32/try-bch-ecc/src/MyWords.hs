@@ -44,6 +44,12 @@ instance Integral Word5 where
 
 newtype Word30 = Word30 { unWord30 :: Word32 } deriving (Show, Eq)
 
+word30ToWord5List :: Word30 -> [Word5]
+word30ToWord5List w30 = one <$> [5, 4 .. 0]
+	where
+	one i = fromIntegral
+		$ (w30 .&. bits [i * 5, i * 5 + 1 .. i * 5 + 4]) `shiftR` (i * 5)
+
 instance Bits Word30 where
 	(.&.) = op Word30 unWord30 (.&.)
 	(.|.) = op Word30 unWord30 (.|.)
