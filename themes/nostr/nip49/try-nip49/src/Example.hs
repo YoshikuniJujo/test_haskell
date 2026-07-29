@@ -10,6 +10,8 @@ import Data.Maybe
 import Data.Word
 import Data.ByteString qualified as BS
 
+import Crypto.Error
+
 import Lib
 import BchEcc
 
@@ -51,4 +53,4 @@ symmetricKey = case lgN of
 	_ -> error "never occur"
 
 decrypted :: BS.ByteString
-decrypted = decrypt symmetricKey (BS.pack nnc) (BS.pack ksb) (BS.pack ct)
+decrypted = throwCryptoError $ decryptForDebug symmetricKey (BS.pack nnc) (BS.pack ksb) (BS.pack ct)
