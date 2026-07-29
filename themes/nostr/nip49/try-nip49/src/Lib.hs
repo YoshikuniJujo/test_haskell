@@ -5,7 +5,7 @@
 
 module Lib (
 
-	scrypt, decryptForDebug,
+	scrypt, decryptForDebug, encryptUnsafeUnsafeForDebug,
 
 	scryptIO,
 
@@ -39,6 +39,12 @@ decryptForDebug k n aad (splitAtRight 16 -> (cph, etg)) = do
 		<$> (CC.initializeX k =<< CC.nonce24 n)
 	let	(pln, CC.finalize -> Mac.Auth ctg) = CC.decrypt cph st
 	pln <$ traces [show etg, show ctg]
+
+encryptUnsafeUnsafeForDebug k n aad pln =
+	CC.encrypt pln (either (error . show) id $ eitherCryptoError st)
+	where
+	st = CC.finalizeAAD . CC.appendAAD aad <$> CC.initializeX k
+		(either (error . show) id . eitherCryptoError $ CC.nonce24 n)
 
 splitAtRight :: Int -> BS.ByteString -> (BS.ByteString, BS.ByteString)
 splitAtRight n bs = BS.splitAt (BS.length bs - n) bs

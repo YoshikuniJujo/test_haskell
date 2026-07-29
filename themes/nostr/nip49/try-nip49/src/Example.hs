@@ -3,7 +3,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Example (
-	decrypted, hdr, vsn
+	decrypted, hdr, vsn,
+
+	encrypted', ct
 	) where
 
 import Data.Maybe
@@ -54,3 +56,6 @@ symmetricKey = case lgN of
 
 decrypted :: BS.ByteString
 decrypted = throwCryptoError $ decryptForDebug symmetricKey (BS.pack nnc) (BS.pack ksb) (BS.pack ct)
+
+encrypted' :: BS.ByteString
+(encrypted', st) = encryptUnsafeUnsafeForDebug symmetricKey (BS.pack nnc) (BS.pack ksb) decrypted
