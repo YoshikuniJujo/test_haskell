@@ -5,7 +5,7 @@
 module Example (
 	decrypted, hdr, vsn,
 
-	encrypted', ct
+	encrypted', ct, st1234
 	) where
 
 import Data.Maybe
@@ -58,4 +58,4 @@ decrypted :: BS.ByteString
 decrypted = throwCryptoError $ decryptForDebug symmetricKey (BS.pack nnc) (BS.pack ksb) (BS.pack ct)
 
 encrypted' :: BS.ByteString
-(encrypted', st) = encryptUnsafeUnsafeForDebug symmetricKey (BS.pack nnc) (BS.pack ksb) decrypted
+(encrypted', st1234) = encryptUnsafeUnsafeForDebug symmetricKey (BS.pack nnc) (BS.pack ksb) decrypted
