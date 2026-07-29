@@ -128,8 +128,17 @@ word5sToWord40 = foldl (.|.) zeroBits
 -- word40ToWord8 :: [Word40] -> Int -> [Word8]
 -- word40ToWord8
 
--- handleTail40To8 :: Word40 -> Int -> [Word8]
--- handleTail40To8
+handleTail40To8 :: Word40 -> Int -> Maybe [Word8]
+handleTail40To8 w40 n = if checkTail40 w40 n'
+	then Just $ getWord8FromWord40 w40 <$> [4, 3 .. 4 - m + 1]
+	else Nothing
+	where
+	n' = largestMultipleOf8 n
+	m = n' `div` 8
+
+getWord8FromWord40 :: Word40 -> Int -> Word8
+getWord8FromWord40 w40 i = fromIntegral
+	$ (w40 .&. bits [8 * i .. 8 * i + 8 - 1]) `shiftR` (8 * i)
 
 checkTail40:: Word40 -> Int -> Bool
 checkTail40 w40 n = w40 .&. bits [0 .. finiteBitSize w40 - n - 1] == zeroBits
