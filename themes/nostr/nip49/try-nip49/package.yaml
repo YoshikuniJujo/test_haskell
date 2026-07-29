@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - mtl
 - bytestring
+- memory
 - scrypt
 - crypton
 - base64

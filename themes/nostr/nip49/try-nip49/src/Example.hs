@@ -5,12 +5,14 @@
 module Example (
 	decrypted, hdr, vsn,
 
-	encrypted', ct, st1234
+	encrypted', ct, st1234, dt, dt'
 	) where
 
 import Data.Maybe
 import Data.Word
 import Data.ByteString qualified as BS
+
+import Data.ByteArray qualified as BA
 
 import Crypto.Error
 
@@ -59,3 +61,5 @@ decrypted = throwCryptoError $ decryptForDebug symmetricKey (BS.pack nnc) (BS.pa
 
 encrypted' :: BS.ByteString
 (encrypted', st1234) = encryptUnsafeUnsafeForDebug symmetricKey (BS.pack nnc) (BS.pack ksb) decrypted
+
+dt' = vsn <> lgN <> slt <> nnc <> ksb <> BS.unpack encrypted' <> BA.unpack st1234
