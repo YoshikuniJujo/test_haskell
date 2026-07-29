@@ -153,6 +153,9 @@ checkTail40 w40 n = w40 .&. bits [0 .. finiteBitSize w40 - n - 1] == zeroBits
 largestMultipleOf8 :: Int -> Int
 largestMultipleOf8 = (* 8) . (`div` 8)
 
+word8sToWord40s :: [Word8] -> ([Word40], Int)
+word8sToWord40s w8s = let (w85s, n) = each 5 w8s in (word8sToWord40 <$> w85s, n * 8)
+
 word8sToWord40 :: [Word8] -> Word40
 word8sToWord40 = foldl (.|.) zeroBits
 	. zipWith (\i w8 -> fromIntegral w8 `shiftL` i) [32, 24 ..]
