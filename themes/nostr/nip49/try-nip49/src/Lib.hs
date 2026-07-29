@@ -12,6 +12,10 @@ import Crypto.Scrypt qualified as Scrypt
 import Crypto.Error
 import Crypto.Cipher.ChaChaPoly1305 qualified as ChaCha
 
+import Crypto.MAC.Poly1305 qualified as Mac
+
+import Debug.Trace
+
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
@@ -21,11 +25,20 @@ encrypt k n pln = fst
 	st = ChaCha.initializeX k
 		(either (error . show) id . eitherCryptoError $ ChaCha.nonce24 n)
 
-decrypt k n pln = fst
-	$ ChaCha.decrypt pln (either (error . show) id $ eitherCryptoError st)
+decrypt k n aad cph = let
+	(cph', exp) = splitCph cph
+	(pln, st') = ChaCha.decrypt cph' (either (error . show) id $ eitherCryptoError st)
+	ctg = ChaCha.finalize st'
+	Mac.Auth ctg' = ctg
+	in
+	trace (show exp ++ show ctg') . trace (show (BS.length cph')) . trace (show (BS.length exp))
+		$ pln
 	where
-	st = ChaCha.initializeX k
+	st = ChaCha.finalizeAAD . ChaCha.appendAAD aad <$> ChaCha.initializeX k
 		(either (error . show) id . eitherCryptoError $ ChaCha.nonce24 n)
+
+splitCph ::BS.ByteString -> (BS.ByteString, BS.ByteString)
+splitCph cph = BS.splitAt (BS.length cph - 16) cph
 
 exampleKey, exampleNonce, examplePlain :: BS.ByteString
 exampleKey = "1234567890abcdefghijklmnopqrstuv"
@@ -43,3 +56,6 @@ scryptIO logN pss = do
 
 data Scrypted = Scrypted { salt :: BS.ByteString, pass :: BS.ByteString }
 	deriving Show
+
+scrypt lgn slt pss = Scrypt.getHash $ Scrypt.scrypt
+	(fromJust $ params lgn) (Scrypt.Salt slt) (Scrypt.Pass pss)

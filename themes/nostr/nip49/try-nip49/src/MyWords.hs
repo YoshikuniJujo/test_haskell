@@ -118,6 +118,9 @@ instance Integral Word40 where
 	Word40 w1 `quotRem` Word40 w2 = Word40 *** Word40 $ w1 `quotRem` w2
 	toInteger = toInteger . unWord40
 
+word5sToWord8s :: [Word5] -> Maybe [Word8]
+word5sToWord8s = uncurry word40sToWord8s . word5sToWord40s
+
 word5sToWord40s :: [Word5] -> ([Word40], Int)
 word5sToWord40s w5s = let (w58s, n) = each 8 w5s in (word5sToWord40 <$> w58s, n * 5)
 
@@ -125,8 +128,12 @@ word5sToWord40 :: [Word5] -> Word40
 word5sToWord40 = foldl (.|.) zeroBits
 	. zipWith (\i w5 -> fromIntegral w5 `shiftL` i) [35, 30 ..]
 
--- word40ToWord8 :: [Word40] -> Int -> [Word8]
--- word40ToWord8
+word40sToWord8s :: [Word40] -> Int -> Maybe [Word8]
+word40sToWord8s w40s n =
+	((word40ToWord8s =<< init w40s) ++) <$> handleTail40To8 (last w40s) n
+
+word40ToWord8s :: Word40 -> [Word8]
+word40ToWord8s w40 = getWord8FromWord40 w40 <$> [4, 3 .. 0]
 
 handleTail40To8 :: Word40 -> Int -> Maybe [Word8]
 handleTail40To8 w40 n = if checkTail40 w40 n'

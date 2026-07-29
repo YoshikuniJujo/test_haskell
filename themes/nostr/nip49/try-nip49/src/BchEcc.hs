@@ -10,6 +10,7 @@ import Control.Monad.State
 import Data.Bits
 import Data.Maybe
 import Data.List qualified as L
+import Data.Word
 import Data.Char
 
 import MyWords
@@ -95,8 +96,12 @@ hrpToW5s hrp =
 	(fromIntegral . (`shiftR` 5) . ord <$> hrp) ++ [0] ++
 	(fromIntegral . (.&. 0x1f) . ord <$> hrp)
 
-dataToW5 :: String -> [Word5]
+dataToW5, dataToW5DropTail :: String -> [Word5]
 dataToW5 = (dict <$>)
+dataToW5DropTail = (dict <$>) . dropRight 6
+
+dropRight :: Int -> [a] -> [a]
+dropRight n = reverse . drop n . reverse
 
 dictChars :: [Char]
 dictChars = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
@@ -114,6 +119,14 @@ hrpDataToW5s :: String -> Maybe [Word5]
 hrpDataToW5s hrpdt = do
 	Separated { humanReadPart = hrp, dataPart = dt } <- sepHrpDt hrpdt
 	pure $ hrpToW5s hrp ++ dataToW5 dt
+
+checkedToHdrDat :: Checked -> Maybe (String, [Word8])
+checkedToHdrDat (Checked hdr dt) = (hdr ,) <$> word5sToWord8s dt
+
+hrpDataToHprBytes :: String -> Maybe (String, [Word8])
+hrpDataToHprBytes hrpdt = do
+	Separated { humanReadPart = hrp, dataPart = dt } <- sepHrpDt hrpdt
+	(hrp ,) <$> word5sToWord8s (dataToW5DropTail dt)
 
 sepHrpDt :: String -> Maybe Separated
 sepHrpDt = (tupleToSeparated <$>)
