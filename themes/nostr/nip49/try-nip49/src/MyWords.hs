@@ -153,6 +153,16 @@ checkTail40 w40 n = w40 .&. bits [0 .. finiteBitSize w40 - n - 1] == zeroBits
 largestMultipleOf8 :: Int -> Int
 largestMultipleOf8 = (* 8) . (`div` 8)
 
+-- word40ToWord5s :: Word40 -> [Word5]
+-- word40ToWord5s
+
+-- handleTail40To5 :: Word40 -> Int -> [Word5]
+-- handleTail40To5 w40 n
+
+getWord5FromWord40 :: Word40 -> Int -> Word5
+getWord5FromWord40 w40 i = fromIntegral
+	$ (w40 .&. bits [5 * i .. 5 * i + 5 - 1]) `shiftR` (5 * i)
+
 word8sToWord40s :: [Word8] -> ([Word40], Int)
 word8sToWord40s w8s = let (w85s, n) = each 5 w8s in (word8sToWord40 <$> w85s, n * 8)
 
