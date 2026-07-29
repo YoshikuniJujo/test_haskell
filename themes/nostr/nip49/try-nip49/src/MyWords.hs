@@ -119,14 +119,26 @@ instance Integral Word40 where
 	toInteger = toInteger . unWord40
 
 word5sToWord40s :: [Word5] -> ([Word40], Int)
-word5sToWord40s w5s = let (w58s, n) = each' 8 w5s in (word5sToWord40 <$> w58s, n * 5)
+word5sToWord40s w5s = let (w58s, n) = each 8 w5s in (word5sToWord40 <$> w58s, n * 5)
 
 word5sToWord40 :: [Word5] -> Word40
 word5sToWord40 = foldl (.|.) zeroBits
 	. zipWith (\i w5 -> fromIntegral w5 `shiftL` i) [35, 30 ..]
 
-each' :: Int -> [a] -> ([[a]], Int)
-each' n = go n where
+-- word40ToWord8 :: [Word40] -> Int -> [Word8]
+-- word40ToWord8
+
+-- handleTail40To8 :: Word40 -> Int -> [Word8]
+-- handleTail40To8
+
+checkTail40:: Word40 -> Int -> Bool
+checkTail40 w40 n = w40 .&. bits [0 .. finiteBitSize w40 - n - 1] == zeroBits
+
+largestMultipleOf8 :: Int -> Int
+largestMultipleOf8 = (* 8) . (`div` 8)
+
+each :: Int -> [a] -> ([[a]], Int)
+each n = go n where
 	go i [] = ([], i)
 	go i xa@(x : xs)
 		| i > n - 1 = go 0 xa
