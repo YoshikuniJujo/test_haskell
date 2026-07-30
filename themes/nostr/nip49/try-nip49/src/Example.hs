@@ -3,9 +3,11 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Example (
-	decrypted, hdr, vsn,
+	encrypted, checksum, decrypted, hdr, vsn,
 
-	encrypted', ct, st1234, dt, dt', hdrDt
+	encrypted', ct, st1234, dt, dt', hdrDt,
+
+	checked, checked', encryptedRoundTrip
 	) where
 
 import Data.Maybe
@@ -18,6 +20,8 @@ import Crypto.Error
 
 import Lib
 import BchEcc
+
+import MyWords
 
 {-
 password = "nostr"
@@ -36,6 +40,8 @@ example = do
 
 encrypted :: String
 encrypted = "ncryptsec1qgg9947rlpvqu76pj5ecreduf9jxhselq2nae2kghhvd5g7dgjtcxfqtd67p9m0w57lspw8gsq6yphnm8623nsl8xn9j4jdzz84zm3frztj3z7s35vpzmqf6ksu8r89qk5z2zxfmu5gv8th8wclt0h4p"
+
+checksum = drop (length encrypted - 6) encrypted
 
 checked :: Maybe Checked
 checked = check =<< sepHrpDt encrypted
@@ -65,3 +71,9 @@ encrypted' :: BS.ByteString
 dt' = vsn <> lgN <> slt <> nnc <> ksb <> BS.unpack encrypted' <> BA.unpack st1234
 
 hdrDt = ("ncryptsec", dt')
+
+checked' = Checked {
+	checkedHumanReadPart = "ncryptsec",
+	checkedDataPart = word8sToWord5s dt' }
+
+encryptedRoundTrip = checkedToBech32 checked'

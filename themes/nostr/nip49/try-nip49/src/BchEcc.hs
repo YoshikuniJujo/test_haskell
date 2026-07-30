@@ -151,7 +151,7 @@ check Separated { humanReadPart = hrp, dataPart = dp } =
 data Checked = Checked {
 	checkedHumanReadPart :: String,
 	checkedDataPart :: [Word5] }
-	deriving Show
+	deriving (Show, Eq)
 
 data Separated = Separated {
 	humanReadPart :: String,
@@ -159,3 +159,15 @@ data Separated = Separated {
 	deriving Show
 
 tupleToSeparated = uncurry Separated
+
+computeChecksum :: Checked -> [Word5]
+computeChecksum Checked {
+	checkedHumanReadPart = hrp,
+	checkedDataPart = dp } = word30ToWord5List . polymodL $ hrpToW5s hrp ++ dp
+
+checkedToBech32 :: Checked -> String
+checkedToBech32 c@Checked {
+	checkedHumanReadPart = hrp,
+	checkedDataPart = dp } = hrp ++ "1" ++ ((dictChars !!) . fromIntegral <$> (dp ++ cs))
+	where
+	cs = computeChecksum c

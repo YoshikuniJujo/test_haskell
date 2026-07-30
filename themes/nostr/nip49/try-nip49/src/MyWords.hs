@@ -7,7 +7,10 @@ import Control.Arrow
 import Data.Bits
 import Data.Word
 
-newtype Word5 = Word5 { unWord5 :: Word8 } deriving (Show, Eq)
+newtype Word5 = Word5 { unWord5 :: Word8 } deriving Eq
+
+instance Show Word5 where
+	show (Word5 n) = show n
 
 instance Bits Word5 where
 	(.&.) = op Word5 unWord5 (.&.)
