@@ -153,11 +153,24 @@ checkTail40 w40 n = w40 .&. bits [0 .. finiteBitSize w40 - n - 1] == zeroBits
 largestMultipleOf8 :: Int -> Int
 largestMultipleOf8 = (* 8) . (`div` 8)
 
--- word40ToWord5s :: Word40 -> [Word5]
--- word40ToWord5s
+leastMultipleOf5 :: Int -> Int
+leastMultipleOf5 = (* 5) . (+ 1) . (`div` 5) . subtract 1
 
--- handleTail40To5 :: Word40 -> Int -> [Word5]
--- handleTail40To5 w40 n
+word8sToWord5s :: [Word8] -> [Word5]
+word8sToWord5s = uncurry word40sToWord5s . word8sToWord40s
+
+word40sToWord5s :: [Word40] -> Int -> [Word5]
+word40sToWord5s w40s n =
+	(word40ToWord5s =<< init w40s) ++ handleTail40To5 (last w40s) n
+
+word40ToWord5s :: Word40 -> [Word5]
+word40ToWord5s w40 = getWord5FromWord40 w40 <$> [7, 6 .. 0]
+
+handleTail40To5 :: Word40 -> Int -> [Word5]
+handleTail40To5 w40 n = getWord5FromWord40 w40 <$> [7, 6 .. 7 - m + 1]
+	where
+	n' = leastMultipleOf5 n
+	m = n' `div` 5
 
 getWord5FromWord40 :: Word40 -> Int -> Word5
 getWord5FromWord40 w40 i = fromIntegral
