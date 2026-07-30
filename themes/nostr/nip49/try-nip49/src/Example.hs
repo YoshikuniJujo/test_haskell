@@ -53,7 +53,8 @@ foobar enc = do
 	pass <- withNoEcho getLine
 	Just (_, [vn, [lgn], slt, nnc, ad, ct]) <- pure $ getChecked enc
 	print [vn, [lgn], slt, nnc, ad, ct]
-	pure $ getSymmetricKey lgn slt (BSC.pack pass)
+	let	sk = getSymmetricKey lgn slt (BSC.pack pass)
+	throwCryptoErrorIO $ decryptForDebug sk (BS.pack nnc) (BS.pack ad) (BS.pack ct)
 
 withNoEcho = bracket
 	(hGetEcho stdin <* hSetEcho stdin False) (hSetEcho stdin) . const
