@@ -9,7 +9,7 @@ module Example (
 
 	encrypted', ct, st1234, dt, dt', hdrDt,
 
-	checked, checked', encryptedRoundTrip, unbeck32
+	checked, checked', encryptedRoundTrip, unbech32
 	) where
 
 import Control.Arrow
@@ -52,7 +52,6 @@ nsecDecrypt :: String -> IO String
 nsecDecrypt enc = do
 	pass <- withNoEcho getLine
 	Just (_, [vn, [lgn], slt, nnc, ad, ct]) <- pure $ getChecked enc
---	print [vn, [lgn], slt, nnc, ad, ct]
 	let	sk = getSymmetricKey lgn slt (BSC.pack pass)
 	dt <- throwCryptoErrorIO $ decryptForDebug sk (BS.pack nnc) (BS.pack ad) (BS.pack ct)
 	pure . bech32 "nsec" . word8sToWord5s $ BS.unpack dt
@@ -63,8 +62,8 @@ withNoEcho = bracket
 getChecked :: String -> Maybe (String, [[Word8]])
 getChecked = (((`toStructure` structure) `second`) <$>) . (checkedToHdrDat =<<) . (check =<<) . sepHrpDt
 
-unbeck32 :: String -> Maybe (String, [Word8])
-unbeck32 = (checkedToHdrDat =<<) . (check =<<) . sepHrpDt
+unbech32 :: String -> Maybe (String, BS.ByteString)
+unbech32 = ((BS.pack `second`) <$>) . (checkedToHdrDat =<<) . (check =<<) . sepHrpDt
 
 encrypted :: String
 encrypted = "ncryptsec1qgg9947rlpvqu76pj5ecreduf9jxhselq2nae2kghhvd5g7dgjtcxfqtd67p9m0w57lspw8gsq6yphnm8623nsl8xn9j4jdzz84zm3frztj3z7s35vpzmqf6ksu8r89qk5z2zxfmu5gv8th8wclt0h4p"
