@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Example (
-	getChecked, symmetricKey, nsecDecrypt,
+	getChecked, symmetricKey, ncryptsecToNsec,
 
 	encrypted, checksum, decrypted, hdr, vsn,
 
@@ -48,13 +48,14 @@ example = do
 -- decryptDraft :: String -> IO BS.ByteString
 -- decryptDraft encryptedPrivateKey =
 
-nsecDecrypt :: String -> IO String
-nsecDecrypt enc = do
+ncryptsecToNsec :: String -> IO String
+ncryptsecToNsec enc = do
 	pass <- withNoEcho getLine
 	Just (_, [vn, [lgn], slt, nnc, ad, ct]) <- pure $ getChecked enc
 	let	sk = getSymmetricKey lgn slt (BSC.pack pass)
 	dt <- throwCryptoErrorIO $ decryptForDebug sk (BS.pack nnc) (BS.pack ad) (BS.pack ct)
 	pure . bech32 "nsec" . word8sToWord5s $ BS.unpack dt
+
 
 withNoEcho = bracket
 	(hGetEcho stdin <* hSetEcho stdin False) (hSetEcho stdin) . const
