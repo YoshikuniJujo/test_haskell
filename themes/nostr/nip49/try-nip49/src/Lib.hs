@@ -38,7 +38,7 @@ decryptForDebug k n aad (splitAtRight 16 -> (cph, etg)) = do
 	st <- CC.finalizeAAD . CC.appendAAD aad
 		<$> (CC.initializeX k =<< CC.nonce24 n)
 	let	(pln, CC.finalize -> Mac.Auth ctg) = CC.decrypt cph st
-	pln <$ traces [show etg, show ctg]
+	pure pln -- <$ traces [show etg, show ctg]
 
 encryptUnsafeUnsafeForDebug k n aad pln = let
 	(cp, st') = CC.encrypt pln (either (error . show) id $ eitherCryptoError st)
