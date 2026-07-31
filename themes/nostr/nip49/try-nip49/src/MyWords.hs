@@ -121,7 +121,7 @@ instance Integral Word40 where
 	Word40 w1 `quotRem` Word40 w2 = Word40 *** Word40 $ w1 `quotRem` w2
 	toInteger = toInteger . unWord40
 
-word5sToWord8s :: [Word5] -> Maybe [Word8]
+word5sToWord8s :: [Word5] -> Either String [Word8]
 word5sToWord8s = uncurry word40sToWord8s . word5sToWord40s
 
 word5sToWord40s :: [Word5] -> ([Word40], Int)
@@ -131,17 +131,17 @@ word5sToWord40 :: [Word5] -> Word40
 word5sToWord40 = foldl (.|.) zeroBits
 	. zipWith (\i w5 -> fromIntegral w5 `shiftL` i) [35, 30 ..]
 
-word40sToWord8s :: [Word40] -> Int -> Maybe [Word8]
+word40sToWord8s :: [Word40] -> Int -> Either String [Word8]
 word40sToWord8s w40s n =
 	((word40ToWord8s =<< init w40s) ++) <$> handleTail40To8 (last w40s) n
 
 word40ToWord8s :: Word40 -> [Word8]
 word40ToWord8s w40 = getWord8FromWord40 w40 <$> [4, 3 .. 0]
 
-handleTail40To8 :: Word40 -> Int -> Maybe [Word8]
+handleTail40To8 :: Word40 -> Int -> Either String [Word8]
 handleTail40To8 w40 n = if checkTail40 w40 n'
-	then Just $ getWord8FromWord40 w40 <$> [4, 3 .. 4 - m + 1]
-	else Nothing
+	then Right $ getWord8FromWord40 w40 <$> [4, 3 .. 4 - m + 1]
+	else Left "word5sToWord8s: bad padding"
 	where
 	n' = largestMultipleOf8 n
 	m = n' `div` 8

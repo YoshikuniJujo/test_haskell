@@ -115,22 +115,23 @@ undict = (dictChars !!) . fromIntegral
 word30ToB :: Word30 -> String
 word30ToB = (undict <$>) . word30ToWord5List
 
-hrpDataToW5s :: String -> Maybe [Word5]
+hrpDataToW5s :: String -> Either String [Word5]
 hrpDataToW5s hrpdt = do
 	Separated { humanReadPart = hrp, dataPart = dt } <- sepHrpDt hrpdt
 	pure $ hrpToW5s hrp ++ dataToW5 dt
 
-checkedToHdrDat :: Checked -> Maybe (String, [Word8])
-checkedToHdrDat (Checked hdr dt) = (hdr ,) <$> word5sToWord8s dt
+checkedToHdrDat :: Checked -> Either String [Word8]
+checkedToHdrDat (Checked hdr dt) = word5sToWord8s dt
 
-hrpDataToHprBytes :: String -> Maybe (String, [Word8])
+hrpDataToHprBytes :: String -> Either String (String, [Word8])
 hrpDataToHprBytes hrpdt = do
 	Separated { humanReadPart = hrp, dataPart = dt } <- sepHrpDt hrpdt
 	(hrp ,) <$> word5sToWord8s (dataToW5DropTail dt)
 
-sepHrpDt :: String -> Maybe Separated
+sepHrpDt :: String -> Either String Separated
 sepHrpDt = (tupleToSeparated <$>)
-	. either (Just . (init `first`)) (const Nothing) . spanRR (/= '1')
+	. either (Right . (init `first`))
+		(const $ Left "Bech32: no separator 1") . spanRR (/= '1')
 
 spanRR :: (a -> Bool) -> [a] -> Either ([a], [a]) [a]
 spanRR _ [] = Right []
@@ -139,13 +140,14 @@ spanRR p (x : xs) = case (p x, spanRR p xs) of
 	(False, Right d) -> Left ([x], d)
 	(True, Right d) -> Right $ x : d
 
-check :: Separated -> Maybe Checked
-check Separated { humanReadPart = hrp, dataPart = dp } =
+check :: String -> Separated -> Either String Checked
+check hrp0 Separated { humanReadPart = hrp, dataPart = dp } =
 	case polymodNoTailL $ hrpToW5s hrp ++ dp' of
-		1 -> Just Checked {
-			checkedHumanReadPart = hrp,
-			checkedDataPart = take (length dp' - 6) dp' }
-		_ -> Nothing
+		1	| hrp == hrp0 -> Right Checked {
+				checkedHumanReadPart = hrp,
+				checkedDataPart = take (length dp' - 6) dp' }
+			| otherwise -> Left $ "HRP should be " ++ show hrp0
+		_ -> Left "Bech32: Checksum should be 1"
 	where dp' = dataToW5 dp
 
 data Checked = Checked {
