@@ -35,7 +35,7 @@ nsec, ncryptsec :: String
 nsec = "nsec"
 ncryptsec = "ncryptsec"
 
-ncryptsecToNsec :: String -> IO T.Text
+ncryptsecToNsec :: T.Text -> IO T.Text
 ncryptsecToNsec =
 	(bech32 nsec <$>) . either error decryptNcryptsec . unbech32 ncryptsec
 
@@ -55,17 +55,17 @@ decryptNcryptsec cs = withNoEcho getLine >>= \(BSC.pack -> pss) -> do
 bech32 :: String -> BS.ByteString -> T.Text
 bech32 hrp dt = Bech32.encode . Bech32.B hrp . word8sToWord5s $ BS.unpack dt
 
-unbech32 :: String -> String -> Either String BS.ByteString
-unbech32 hrp0 = (BS.pack <$>) . (Bech32.checkedToHdrDat hrp0 =<<) . (Bech32.check =<<) . Bech32.sepHrpDt
+unbech32 :: String -> T.Text -> Either String BS.ByteString
+unbech32 hrp0 = (BS.pack <$>) . (Bech32.checkedToHdrDat hrp0 =<<) . Bech32.decode
 
-encrypted :: String
+encrypted :: T.Text
 encrypted = "ncryptsec1qgg9947rlpvqu76pj5ecreduf9jxhselq2nae2kghhvd5g7dgjtcxfqtd67p9m0w57lspw8gsq6yphnm8623nsl8xn9j4jdzz84zm3frztj3z7s35vpzmqf6ksu8r89qk5z2zxfmu5gv8th8wclt0h4p"
 
-checksum :: String
-checksum = drop (length encrypted - 6) encrypted
+checksum :: T.Text
+checksum = T.drop (T.length encrypted - 6) encrypted
 
 checked :: Either String Bech32.B
-checked = Bech32.check =<< Bech32.sepHrpDt encrypted
+checked = Bech32.check =<< Bech32.sepHrpDt (T.unpack encrypted)
 
 dat :: [Word8]
 dat = either error id $ Bech32.checkedToHdrDat ncryptsec =<< checked

@@ -5,6 +5,7 @@
 module Bech32 where
 
 import Control.Arrow
+import Control.Monad
 import Control.Monad.Identity
 import Control.Monad.State
 import Data.Bits
@@ -142,6 +143,9 @@ spanRR p (x : xs) = case (p x, spanRR p xs) of
 	(_, Left (t, d)) -> Left (x : t, d)
 	(False, Right d) -> Left ([x], d)
 	(True, Right d) -> Right $ x : d
+
+decode :: T.Text -> Either String B
+decode = Bech32.check <=< Bech32.sepHrpDt . T.unpack
 
 check :: Separated -> Either String B
 check Separated { humanReadPart = hrp, dataPart = dp } =
