@@ -21,7 +21,7 @@ nsec = "nsec"
 ncryptsec = "ncryptsec"
 
 toNsec :: MonadFail m => m String -> T.Text -> m T.Text
-toNsec gp = (bech32 nsec <$>) . either error (decrypt gp) . unbech32 ncryptsec
+toNsec gp = (bech32 nsec <$>) . either fail (decrypt gp) . unbech32 ncryptsec
 
 decrypt :: MonadFail m => m String -> BS.ByteString -> m BS.ByteString
 decrypt gp cs = gp >>= \(BSC.pack -> pss) -> do
