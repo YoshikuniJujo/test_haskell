@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module BchEcc where
+module Bech32 where
 
 import Control.Arrow
 import Control.Monad.Identity
@@ -12,6 +12,7 @@ import Data.Maybe
 import Data.List qualified as L
 import Data.Word
 import Data.Char
+import Data.Text qualified as T
 
 import MyWords
 
@@ -120,8 +121,8 @@ hrpDataToW5s hrpdt = do
 	Separated { humanReadPart = hrp, dataPart = dt } <- sepHrpDt hrpdt
 	pure $ hrpToW5s hrp ++ dataToW5 dt
 
-checkedToHdrDat :: Checked -> Either String [Word8]
-checkedToHdrDat (Checked hdr dt) = word5sToWord8s dt
+checkedToHdrDat :: B -> Either String [Word8]
+checkedToHdrDat (B hdr dt) = word5sToWord8s dt
 
 hrpDataToHprBytes :: String -> Either String (String, [Word8])
 hrpDataToHprBytes hrpdt = do
@@ -140,17 +141,17 @@ spanRR p (x : xs) = case (p x, spanRR p xs) of
 	(False, Right d) -> Left ([x], d)
 	(True, Right d) -> Right $ x : d
 
-check :: String -> Separated -> Either String Checked
+check :: String -> Separated -> Either String B
 check hrp0 Separated { humanReadPart = hrp, dataPart = dp } =
 	case polymodNoTailL $ hrpToW5s hrp ++ dp' of
-		1	| hrp == hrp0 -> Right Checked {
+		1	| hrp == hrp0 -> Right B {
 				checkedHumanReadPart = hrp,
 				checkedDataPart = take (length dp' - 6) dp' }
 			| otherwise -> Left $ "HRP should be " ++ show hrp0
 		_ -> Left "Bech32: Checksum should be 1"
 	where dp' = dataToW5 dp
 
-data Checked = Checked {
+data B = B {
 	checkedHumanReadPart :: String,
 	checkedDataPart :: [Word5] }
 	deriving (Show, Eq)
@@ -162,14 +163,14 @@ data Separated = Separated {
 
 tupleToSeparated = uncurry Separated
 
-computeChecksum :: Checked -> [Word5]
-computeChecksum Checked {
+encode :: B -> T.Text
+encode c@B {
 	checkedHumanReadPart = hrp,
-	checkedDataPart = dp } = word30ToWord5List . polymodL $ hrpToW5s hrp ++ dp
-
-checkedToBech32 :: Checked -> String
-checkedToBech32 c@Checked {
-	checkedHumanReadPart = hrp,
-	checkedDataPart = dp } = hrp ++ "1" ++ ((dictChars !!) . fromIntegral <$> (dp ++ cs))
+	checkedDataPart = dp } = T.pack $ hrp ++ "1" ++ ((dictChars !!) . fromIntegral <$> (dp ++ cs))
 	where
 	cs = computeChecksum c
+
+computeChecksum :: B -> [Word5]
+computeChecksum B {
+	checkedHumanReadPart = hrp,
+	checkedDataPart = dp } = word30ToWord5List . polymodL $ hrpToW5s hrp ++ dp
