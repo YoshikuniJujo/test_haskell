@@ -13,6 +13,7 @@ import Data.Maybe
 import Data.List qualified as L
 import Data.Word
 import Data.Char
+import Data.ByteString qualified as BS
 import Data.Text qualified as T
 
 import MyWords
@@ -147,6 +148,9 @@ spanRR p (x : xs) = case (p x, spanRR p xs) of
 decode :: T.Text -> Either String B
 decode = Bech32.check <=< Bech32.sepHrpDt . T.unpack
 
+toByteString :: String -> B -> Either String BS.ByteString
+toByteString hrp0 = (BS.pack <$>) . Bech32.checkedToHdrDat hrp0
+
 check :: Separated -> Either String B
 check Separated { humanReadPart = hrp, dataPart = dp } =
 	case polymodNoTailL $ hrpToW5s hrp ++ dp' of
@@ -174,6 +178,9 @@ encode c@B {
 	checkedDataPart = dp } = T.pack $ hrp ++ "1" ++ ((dictChars !!) . fromIntegral <$> (dp ++ cs))
 	where
 	cs = computeChecksum c
+
+fromByteString :: String -> BS.ByteString -> B
+fromByteString hrp = Bech32.B hrp . word8sToWord5s . BS.unpack
 
 computeChecksum :: B -> [Word5]
 computeChecksum B {

@@ -29,6 +29,7 @@ library
       Example
       Lib
       MyWords
+      Ncryptsec
   other-modules:
       Paths_try_nip49
   autogen-modules:
