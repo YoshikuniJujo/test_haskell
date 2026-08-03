@@ -56,7 +56,7 @@ bech32 :: String -> BS.ByteString -> T.Text
 bech32 hrp dt = Bech32.encode . Bech32.B hrp . word8sToWord5s $ BS.unpack dt
 
 unbech32 :: String -> String -> Either String BS.ByteString
-unbech32 hrp0 = (BS.pack <$>) . (Bech32.checkedToHdrDat =<<) . (Bech32.check hrp0 =<<) . Bech32.sepHrpDt
+unbech32 hrp0 = (BS.pack <$>) . (Bech32.checkedToHdrDat hrp0 =<<) . (Bech32.check =<<) . Bech32.sepHrpDt
 
 encrypted :: String
 encrypted = "ncryptsec1qgg9947rlpvqu76pj5ecreduf9jxhselq2nae2kghhvd5g7dgjtcxfqtd67p9m0w57lspw8gsq6yphnm8623nsl8xn9j4jdzz84zm3frztj3z7s35vpzmqf6ksu8r89qk5z2zxfmu5gv8th8wclt0h4p"
@@ -65,10 +65,10 @@ checksum :: String
 checksum = drop (length encrypted - 6) encrypted
 
 checked :: Either String Bech32.B
-checked = Bech32.check ncryptsec =<< Bech32.sepHrpDt encrypted
+checked = Bech32.check =<< Bech32.sepHrpDt encrypted
 
 dat :: [Word8]
-dat = either error id $ Bech32.checkedToHdrDat =<< checked
+dat = either error id $ Bech32.checkedToHdrDat ncryptsec =<< checked
 
 vsn, lgN, salt, nonce, ksb, r0, r1, r2, r3, cipherText :: [Word8]
 (vsn, r0) = splitAt 1 dat

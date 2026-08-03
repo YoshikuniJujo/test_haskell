@@ -121,8 +121,10 @@ hrpDataToW5s hrpdt = do
 	Separated { humanReadPart = hrp, dataPart = dt } <- sepHrpDt hrpdt
 	pure $ hrpToW5s hrp ++ dataToW5 dt
 
-checkedToHdrDat :: B -> Either String [Word8]
-checkedToHdrDat (B hdr dt) = word5sToWord8s dt
+checkedToHdrDat :: String -> B -> Either String [Word8]
+checkedToHdrDat hrp0 (B hrp dt)
+	| hrp == hrp0 = word5sToWord8s dt
+	| otherwise = Left $ "HRP should be " ++ show hrp0
 
 hrpDataToHprBytes :: String -> Either String (String, [Word8])
 hrpDataToHprBytes hrpdt = do
@@ -141,13 +143,12 @@ spanRR p (x : xs) = case (p x, spanRR p xs) of
 	(False, Right d) -> Left ([x], d)
 	(True, Right d) -> Right $ x : d
 
-check :: String -> Separated -> Either String B
-check hrp0 Separated { humanReadPart = hrp, dataPart = dp } =
+check :: Separated -> Either String B
+check Separated { humanReadPart = hrp, dataPart = dp } =
 	case polymodNoTailL $ hrpToW5s hrp ++ dp' of
-		1	| hrp == hrp0 -> Right B {
-				checkedHumanReadPart = hrp,
-				checkedDataPart = take (length dp' - 6) dp' }
-			| otherwise -> Left $ "HRP should be " ++ show hrp0
+		1 -> Right B {
+			checkedHumanReadPart = hrp,
+			checkedDataPart = take (length dp' - 6) dp' }
 		_ -> Left "Bech32: Checksum should be 1"
 	where dp' = dataToW5 dp
 
