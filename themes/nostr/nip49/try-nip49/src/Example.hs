@@ -27,6 +27,7 @@ import Bech32 qualified
 import MyWords
 
 import Ncryptsec qualified
+import Scrypt qualified
 
 encrypted :: T.Text
 encrypted =
@@ -53,7 +54,7 @@ vsn, lgN, salt, nonce, ksb, r0, r1, r2, r3, cipherText :: [Word8]
 
 symmKey :: BS.ByteString
 symmKey = case lgN of
-	[lgn] -> Lib.scrypt lgn (BS.pack salt) "nostr"
+	[lgn] -> Scrypt.hash lgn (BS.pack salt) "nostr"
 	_ -> error "never occur"
 
 decrypted :: BS.ByteString

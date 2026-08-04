@@ -30,6 +30,8 @@ library
       Lib
       MyWords
       Ncryptsec
+      Scrypt
+      System.IO.Yj
   other-modules:
       Paths_try_nip49
   autogen-modules:

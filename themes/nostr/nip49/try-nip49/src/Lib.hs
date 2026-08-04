@@ -5,20 +5,14 @@
 
 module Lib (
 
-	scrypt, decrypt, encryptUnsafeUnsafeForDebug,
+	decrypt, encryptUnsafeUnsafeForDebug,
 
-	scryptIO,
-
-	encryptDraft, exampleKey, exampleNonce, examplePlain
+	encryptDraft
 
 	) where
 
 import Control.Monad
-import Data.Maybe
-import Data.Word
 import Data.ByteString qualified as BS
-import System.Entropy
-import Crypto.Scrypt qualified as Scrypt
 import Crypto.Error
 import Crypto.Cipher.ChaChaPoly1305 qualified as CC
 
@@ -53,26 +47,3 @@ encryptUnsafeUnsafeForDebug k n aad pln = let
 
 splitAtR :: Int -> BS.ByteString -> (BS.ByteString, BS.ByteString)
 splitAtR n bs = BS.splitAt (BS.length bs - n) bs
-
-exampleKey, exampleNonce, examplePlain :: BS.ByteString
-exampleKey = "1234567890abcdefghijklmnopqrstuv"
-exampleNonce = "1234567890abcdefghijklmn"
-examplePlain = "Hello, world!"
-
-params :: Word8 -> Maybe Scrypt.ScryptParams
-params logN = Scrypt.scryptParamsLen (fromIntegral logN) 8 1 32
-
-scryptIO :: Word8 -> BS.ByteString -> IO Scrypted
-scryptIO logN pss = do
-	slt <- getEntropy 16
-	pure Scrypted {
-		salt = slt,
-		pass = Scrypt.getHash $ Scrypt.scrypt
-			(fromJust $ params logN) (Scrypt.Salt slt) (Scrypt.Pass pss) }
-
-data Scrypted = Scrypted { salt :: BS.ByteString, pass :: BS.ByteString }
-	deriving Show
-
-scrypt :: Word8 -> BS.ByteString -> BS.ByteString -> BS.ByteString
-scrypt lgn slt pss = Scrypt.getHash $ Scrypt.scrypt
-	(fromJust $ params lgn) (Scrypt.Salt slt) (Scrypt.Pass pss)
