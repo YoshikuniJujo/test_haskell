@@ -21,7 +21,7 @@ import Data.ByteArray qualified as BA
 
 import Crypto.Error
 
-import Lib qualified
+import XChaCha qualified
 import Bech32 qualified
 
 import MyWords
@@ -58,11 +58,11 @@ symmKey = case lgN of
 	_ -> error "never occur"
 
 decrypted :: BS.ByteString
-decrypted = throwCryptoError $ Lib.decrypt symmKey (BS.pack nonce) (BS.pack ksb) (BS.pack cipherText)
+decrypted = throwCryptoError $ XChaCha.decrypt symmKey (BS.pack nonce) (BS.pack ksb) (BS.pack cipherText)
 
 encrypted' :: BS.ByteString
 st1234 :: BA.Bytes
-(encrypted', st1234) = Lib.encryptUnsafeUnsafeForDebug symmKey (BS.pack nonce) (BS.pack ksb) decrypted
+(encrypted', st1234) = XChaCha.encryptUnsafeUnsafeForDebug symmKey (BS.pack nonce) (BS.pack ksb) decrypted
 
 dt' :: [Word8]
 dt' = vsn <> lgN <> salt <> nonce <> ksb <> BS.unpack encrypted' <> BA.unpack st1234

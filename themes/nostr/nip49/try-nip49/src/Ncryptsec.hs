@@ -11,7 +11,7 @@ import Data.ByteString.Char8 qualified as BSC
 import Data.Text qualified as T
 import Crypto.Error
 
-import Lib qualified
+import XChaCha qualified
 import Scrypt qualified
 import Bech32 qualified
 
@@ -26,7 +26,7 @@ decrypt gp cs = gp >>= \(BSC.pack -> pss) -> do
 	[	[2], [lgn], BS.pack -> slt,
 		BS.pack -> nnc, BS.pack -> aad, BS.pack -> ct ] <- dec cs
 	either (fail . show) pure . eitherCryptoError
-		$ Lib.decrypt (Scrypt.hash lgn slt pss) nnc aad ct
+		$ XChaCha.decrypt (Scrypt.hash lgn slt pss) nnc aad ct
 	where
 	dec = pure . (`go` structure) . BS.unpack
 	structure = [1, 1, 16, 24, 1, 48]

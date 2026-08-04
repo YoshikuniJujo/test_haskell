@@ -27,11 +27,11 @@ library
   exposed-modules:
       Bech32
       Example
-      Lib
       MyWords
       Ncryptsec
       Scrypt
       System.IO.Yj
+      XChaCha
   other-modules:
       Paths_try_nip49
   autogen-modules:

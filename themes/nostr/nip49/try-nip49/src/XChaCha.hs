@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib (
+module XChaCha (
 
 	decrypt, encryptUnsafeUnsafeForDebug,
 
