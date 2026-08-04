@@ -27,8 +27,8 @@ decrypt :: MonadFail m => m String -> BS.ByteString -> m BS.ByteString
 decrypt gp cs = gp >>= \(BSC.pack -> pss) -> do
 	[	[2], [lgn], BS.pack -> slt,
 		BS.pack -> nnc, BS.pack -> aad, BS.pack -> ct ] <- dec cs
-	let	sk = Lib.scrypt lgn slt pss
-	either (fail . show) pure . eitherCryptoError $ Lib.decrypt sk nnc aad ct
+	either (fail . show) pure . eitherCryptoError
+		$ Lib.decrypt (Lib.scrypt lgn slt pss) nnc aad ct
 	where
 	dec = pure . (`go` structure) . BS.unpack
 	structure = [1, 1, 16, 24, 1, 48]
