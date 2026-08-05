@@ -19,7 +19,9 @@ nsec, ncryptsec :: String
 nsec = "nsec"; ncryptsec = "ncryptsec"
 
 toNsec :: MonadFail m => m String -> T.Text -> m T.Text
-toNsec gp = (bech32 nsec <$>) . either fail (decrypt gp) . unbech32 ncryptsec
+toNsec gp = (Bech32.encode . Bech32.fromByteString nsec <$>)
+	. either fail (decrypt gp)
+	. (Bech32.toByteString ncryptsec =<<) . Bech32.decode
 
 decrypt :: MonadFail m => m String -> BS.ByteString -> m BS.ByteString
 decrypt gp cs = gp >>= \(BSC.pack -> pss) -> do
@@ -33,9 +35,3 @@ decrypt gp cs = gp >>= \(BSC.pack -> pss) -> do
 	go xs = \case
 		[] -> []
 		n : ns -> uncurry (:) . ((`go` ns) `second`) $ splitAt n xs
-
-bech32 :: String -> BS.ByteString -> T.Text
-bech32 hrp = Bech32.encode . Bech32.fromByteString hrp
-
-unbech32 :: String -> T.Text -> Either String BS.ByteString
-unbech32 hrp0 = (Bech32.toByteString hrp0 =<<) .  Bech32.decode

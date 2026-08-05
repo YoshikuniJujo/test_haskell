@@ -19,11 +19,7 @@ import Data.Text qualified as T
 import MyWords
 
 gen :: [Word30]
-gen = [	0x3b6a57b2,
-	0x26508e6d,
-	0x1ea119fa,
-	0x3d4233dd,
-	0x2a1462b3 ]
+gen = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]
 
 applyGen :: Word5 -> Word30 -> Word30
 applyGen w5 w30 = let
