@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Bech32
+      Data.Hex
       Example
       MyWords
       Ncryptsec
