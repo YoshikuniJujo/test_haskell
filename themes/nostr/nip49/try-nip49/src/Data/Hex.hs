@@ -39,7 +39,7 @@ readHexWord (c0 : c1 : cs) = do
 readHexWord _ = error "bad"
 
 readFile :: FilePath -> IO Hex
-readFile = (fromString <$>) . P.readFile
+readFile = (fromString . concat . lines <$>) . P.readFile
 
 writeFile :: FilePath -> Hex -> IO ()
 writeFile fp = P.writeFile fp . (++ "\n") . toString
