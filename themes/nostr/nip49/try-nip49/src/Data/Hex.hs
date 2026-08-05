@@ -4,6 +4,9 @@
 
 module Data.Hex where
 
+import Prelude qualified as P
+import Prelude hiding (readFile, writeFile)
+
 import Data.Maybe
 import Data.List qualified as L
 import Data.Word
@@ -34,3 +37,9 @@ readHexWord (c0 : c1 : cs) = do
 	(w, "") <- readHex [c0, c1]
 	pure (w, cs)
 readHexWord _ = error "bad"
+
+readFile :: FilePath -> IO Hex
+readFile = (fromString <$>) . P.readFile
+
+writeFile :: FilePath -> Hex -> IO ()
+writeFile fp = P.writeFile fp . (++ "\n") . toString
