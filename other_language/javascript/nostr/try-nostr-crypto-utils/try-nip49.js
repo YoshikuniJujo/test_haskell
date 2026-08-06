@@ -21,3 +21,9 @@ console.log(words);
 console.log(encoded);
 console.log(decoded);
 console.log(bytes);
+
+const sample = 'ncryptsec1qgg9947rlpvqu76pj5ecreduf9jxhselq2nae2kghhvd5g7dgjtcxfqtd67p9m0w57lspw8gsq6yphnm8623nsl8xn9j4jdzz84zm3frztj3z7s35vpzmqf6ksu8r89qk5z2zxfmu5gv8th8wclt0h4p'
+
+const secretKey_ = nip49.decrypt(sample, 'nostr');
+
+console.log(secretKey_);
