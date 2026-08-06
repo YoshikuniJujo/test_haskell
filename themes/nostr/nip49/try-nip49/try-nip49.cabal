@@ -56,6 +56,26 @@ library
     , text
   default-language: Haskell2010
 
+executable encryptNsec
+  main-is: encryptNsec.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , base64
+    , bytestring
+    , crypton
+    , entropy
+    , filepath
+    , memory
+    , mtl
+    , random
+    , scrypt
+    , text
+    , try-nip49
+  default-language: Haskell2010
+
 executable makeHexSamples
   main-is: makeHexSamples.hs
   hs-source-dirs:

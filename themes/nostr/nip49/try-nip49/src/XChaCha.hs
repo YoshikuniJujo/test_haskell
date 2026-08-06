@@ -7,12 +7,17 @@ module XChaCha (
 
 	decrypt, encryptUnsafeUnsafeForDebug,
 
-	encryptDraft
+	encryptDraft,
+
+	encrypt
 
 	) where
 
+import Control.Arrow
 import Control.Monad
+import Data.ByteArray qualified as BA
 import Data.ByteString qualified as BS
+import System.Entropy
 import Crypto.Error
 import Crypto.Cipher.ChaChaPoly1305 qualified as CC
 
@@ -44,6 +49,16 @@ encryptUnsafeUnsafeForDebug k n aad pln = let
 	where
 	st = CC.finalizeAAD . CC.appendAAD aad <$> CC.initializeX k
 		(either (error . show) id . eitherCryptoError $ CC.nonce24 n)
+
+encrypt :: BS.ByteString ->
+	BS.ByteString -> BS.ByteString -> IO (BS.ByteString, BS.ByteString, BA.Bytes)
+encrypt ky aad pln = do
+	nnc_ <- getEntropy 24
+	nnc <- throwCryptoErrorIO $ CC.nonce24 nnc_
+	st <- throwCryptoErrorIO $ CC.initializeX ky nnc
+	let	st' = CC.finalizeAAD $ CC.appendAAD aad st
+		(cs, mac) = ((\(Mac.Auth s) -> s) . CC.finalize) `second` CC.encrypt pln st'
+	pure (nnc_, cs, mac)
 
 splitAtR :: Int -> BS.ByteString -> (BS.ByteString, BS.ByteString)
 splitAtR n bs = BS.splitAt (BS.length bs - n) bs

@@ -1,0 +1,15 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+
+module Main where
+
+import Data.Text.IO qualified as T
+import System.Environment
+
+import Ncryptsec qualified
+
+main :: IO ()
+main = do
+	[nsfp, pssfp, cnsfp] <- getArgs
+	ns <- T.readFile nsfp
+--	T.writeFile cnsfp =<< Ncryptsec.fromNSec 16 0 (withNoEcho getLine) ns
+	T.writeFile cnsfp =<< Ncryptsec.fromNSec 16 0 (readFile pssfp) ns

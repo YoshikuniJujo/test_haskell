@@ -86,6 +86,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-nip49
+  encryptNsec:
+    main:                encryptNsec.hs
+    other-modules:      []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-nip49
 
 tests:
   try-nip49-test:
