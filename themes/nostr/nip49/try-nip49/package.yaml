@@ -29,6 +29,8 @@ dependencies:
 - crypton
 - base64
 - entropy
+- random
+- filepath
 
 ghc-options:
 - -Wall
@@ -66,6 +68,16 @@ executables:
     - try-nip49
   makeHexSamples:
     main:                makeHexSamples.hs
+    other-modules:      []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-nip49
+  makeRandomPassword:
+    main:                makeRandomPassword.hs
     other-modules:      []
     source-dirs:         app
     ghc-options:

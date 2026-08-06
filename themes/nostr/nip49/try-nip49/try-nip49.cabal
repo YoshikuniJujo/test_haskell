@@ -32,6 +32,8 @@ library
       Ncryptsec
       Scrypt
       System.IO.Yj
+      Test
+      Tools
       XChaCha
   other-modules:
       Paths_try_nip49
@@ -46,8 +48,10 @@ library
     , bytestring
     , crypton
     , entropy
+    , filepath
     , memory
     , mtl
+    , random
     , scrypt
     , text
   default-language: Haskell2010
@@ -63,8 +67,30 @@ executable makeHexSamples
     , bytestring
     , crypton
     , entropy
+    , filepath
     , memory
     , mtl
+    , random
+    , scrypt
+    , text
+    , try-nip49
+  default-language: Haskell2010
+
+executable makeRandomPassword
+  main-is: makeRandomPassword.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , base64
+    , bytestring
+    , crypton
+    , entropy
+    , filepath
+    , memory
+    , mtl
+    , random
     , scrypt
     , text
     , try-nip49
@@ -81,8 +107,10 @@ executable makeSampleNsec
     , bytestring
     , crypton
     , entropy
+    , filepath
     , memory
     , mtl
+    , random
     , scrypt
     , text
     , try-nip49
@@ -103,8 +131,10 @@ executable try-nip49-exe
     , bytestring
     , crypton
     , entropy
+    , filepath
     , memory
     , mtl
+    , random
     , scrypt
     , text
     , try-nip49
@@ -126,8 +156,10 @@ test-suite try-nip49-test
     , bytestring
     , crypton
     , entropy
+    , filepath
     , memory
     , mtl
+    , random
     , scrypt
     , text
     , try-nip49
