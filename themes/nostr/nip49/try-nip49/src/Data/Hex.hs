@@ -13,14 +13,14 @@ import Data.Word
 import Data.ByteString qualified as BS
 import Numeric
 
-newtype Hex = Hex BS.ByteString
+newtype H = H { unH :: BS.ByteString }
 
-instance Show Hex where show = toString
+instance Show H where show = toString
 
-instance Read Hex where readsPrec _ = (: []) . (, "") . fromString
+instance Read H where readsPrec _ = (: []) . (, "") . fromString
 
-toString :: Hex -> String
-toString (Hex bs) = ($ "") . foldr (.) id . map wordToHexString $ BS.unpack bs
+toString :: H -> String
+toString (H bs) = ($ "") . foldr (.) id . map wordToHexString $ BS.unpack bs
 
 wordToHexString :: Word8 -> ShowS
 wordToHexString w = \s ->
@@ -28,8 +28,8 @@ wordToHexString w = \s ->
 		l = length s' in
 		replicate (2 - l) '0' ++ s' ++ s
 
-fromString :: String -> Hex
-fromString = Hex . BS.pack . L.unfoldr (listToMaybe . readHexWord)
+fromString :: String -> H
+fromString = H . BS.pack . L.unfoldr (listToMaybe . readHexWord)
 
 readHexWord :: String -> [(Word8, String)]
 readHexWord "" = []
@@ -38,8 +38,14 @@ readHexWord (c0 : c1 : cs) = do
 	pure (w, cs)
 readHexWord _ = error "bad"
 
-readFile :: FilePath -> IO Hex
-readFile = (fromString . concat . lines <$>) . P.readFile
+readFile :: FilePath -> IO H
+readFile = (fromString . head . lines <$>) . P.readFile
 
-writeFile :: FilePath -> Hex -> IO ()
+readFileList :: FilePath -> IO [H]
+readFileList = ((fromString <$>) . lines <$>) . P.readFile
+
+writeFile :: FilePath -> H -> IO ()
 writeFile fp = P.writeFile fp . (++ "\n") . toString
+
+writeFileList :: FilePath -> [H] -> IO ()
+writeFileList fp = P.writeFile fp . unlines . (toString <$>)

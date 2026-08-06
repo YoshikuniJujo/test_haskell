@@ -54,6 +54,26 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-nip49
+  makeSampleNsec:
+    main:                makeSampleNsec.hs
+    other-modules:      []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-nip49
+  makeHexSamples:
+    main:                makeHexSamples.hs
+    other-modules:      []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-nip49
 
 tests:
   try-nip49-test:
