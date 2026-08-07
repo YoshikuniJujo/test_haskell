@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Bech32 (B(..), encode, decode) where
+module Codec.Bech32 (B(..), encode, decode, switch) where
 
 import Control.Arrow
 import Control.Monad
@@ -50,3 +50,11 @@ dict = maybe (Left msg) (Right . fromIntegral) . (`L.elemIndex` dictChars)
 
 dictChars :: [Char]
 dictChars = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
+
+switch :: Monad m => [(String -> m Bool, BS.ByteString -> m a)] -> (BS.ByteString -> m a) -> B -> m a
+switch bs df B { humanReadPart = hp, dataPart = dp } = go bs
+	where
+	go [] = df dp
+	go ((p, f) : pfs) = do
+		b <- p hp
+		if b then f dp else go pfs
