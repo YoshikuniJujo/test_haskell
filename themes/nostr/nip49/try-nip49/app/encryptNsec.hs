@@ -12,5 +12,5 @@ main :: IO ()
 main = do
 	[nsfp, pssfp, cnsfp] <- getArgs
 	ns <- T.readFile nsfp
---	T.writeFile cnsfp =<< Ncryptsec.fromNSec 16 0 (withNoEcho getLine) ns
-	T.writeFile cnsfp =<< Ncryptsec.fromNSec 16 0 (readFile pssfp) ns
+--	T.writeFile cnsfp =<< Ncryptsec.fromNsec 16 0 (withNoEcho getLine) ns
+	T.writeFile cnsfp =<< Ncryptsec.fromNsec 16 0 (readFile pssfp) ns

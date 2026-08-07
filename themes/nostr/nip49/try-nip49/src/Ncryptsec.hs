@@ -40,8 +40,8 @@ decrypt gp cs = gp >>= \(BSC.pack -> pss) -> do
 		[] -> []
 		n : ns -> uncurry (:) . ((`go` ns) `second`) $ splitAt n xs
 
-fromNSec :: Word8 -> Word8 -> IO String -> T.Text -> IO T.Text
-fromNSec lgn ksb gp = (Bech32.encode . Bech32.BS.decode ncryptsec <$>)
+fromNsec :: Word8 -> Word8 -> IO String -> T.Text -> IO T.Text
+fromNsec lgn ksb gp = (Bech32.encode . Bech32.BS.decode ncryptsec <$>)
 	. either fail (encrypt lgn ksb gp)
 	. (Bech32.BS.encode nsec =<<) . Bech32.decode
 
