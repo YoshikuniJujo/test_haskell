@@ -17,15 +17,14 @@ import Crypto.Error
 import XChaCha qualified
 import Scrypt qualified
 import Codec.Bech32 qualified as Bech32
-import Codec.Bech32.ByteString qualified as Bech32.BS
 
 nsec, ncryptsec :: String
 nsec = "nsec"; ncryptsec = "ncryptsec"
 
 toNsec :: MonadFail m => m String -> T.Text -> m T.Text
-toNsec gp = (Bech32.encode . Bech32.BS.decode nsec <$>)
+toNsec gp = (Bech32.encode . Bech32.B nsec <$>)
 	. either fail (decrypt gp)
-	. (Bech32.BS.encode ncryptsec =<<) . Bech32.decode
+	. (Bech32.getData ncryptsec =<<) . Bech32.decode
 
 decrypt :: MonadFail m => m String -> BS.ByteString -> m BS.ByteString
 decrypt gp cs = gp >>= \(BSC.pack -> pss) -> do
@@ -41,9 +40,9 @@ decrypt gp cs = gp >>= \(BSC.pack -> pss) -> do
 		n : ns -> uncurry (:) . ((`go` ns) `second`) $ splitAt n xs
 
 fromNsec :: Word8 -> Word8 -> IO String -> T.Text -> IO T.Text
-fromNsec lgn ksb gp = (Bech32.encode . Bech32.BS.decode ncryptsec <$>)
+fromNsec lgn ksb gp = (Bech32.encode . Bech32.B ncryptsec <$>)
 	. either fail (encrypt lgn ksb gp)
-	. (Bech32.BS.encode nsec =<<) . Bech32.decode
+	. (Bech32.getData nsec =<<) . Bech32.decode
 
 encrypt :: Word8 -> Word8 -> IO String -> BS.ByteString -> IO BS.ByteString
 encrypt lgn ksb gp pln = gp >>= \(BSC.pack -> pss) -> do

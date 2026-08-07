@@ -3,7 +3,13 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Bech32 (B(..), encode, decode, switch, switchM) where
+module Codec.Bech32 (
+
+	B(..), encode, decode,
+
+	switch, switchM, getData
+
+	) where
 
 import Control.Arrow
 import Control.Monad
@@ -62,3 +68,7 @@ switchM bs df B { humanReadPart = hp, dataPart = dp } = go bs
 	go ((p, f) : pfs) = do
 		b <- p hp
 		if b then f dp else go pfs
+
+getData :: String -> B -> Either String BS.ByteString
+getData hrp0 = switch [((== hrp0), Right)] (const $ Left msg)
+	where msg = "HRP should be " ++ show hrp0
