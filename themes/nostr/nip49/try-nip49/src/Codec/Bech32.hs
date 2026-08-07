@@ -11,25 +11,29 @@ import Data.Bits
 import Data.List qualified as L
 import Data.List.NonEmpty qualified as NE
 import Data.Char
+import Data.ByteString qualified as BS
 import Data.Text qualified as T
 
 import Codec.Bech32.Polymod
 import Data.Word.Yj
 import Tools
 
-data B = B { humanReadPart :: String, dataPart :: [Word5] } deriving (Show, Eq)
+data B = B { humanReadPart :: String, dataPart :: BS.ByteString } deriving (Show, Eq)
 
 encode :: B -> T.Text
 encode B { humanReadPart = hrp, dataPart = dp } =
-	T.pack $ hrp ++ "1" ++ ((dictChars !!) . fromIntegral <$> (dp ++ cs))
-	where cs = word30ToWord5List . polymodL $ hrpToW5s hrp ++ dp
+	T.pack $ hrp ++ "1" ++ ((dictChars !!) . fromIntegral <$> (w5s <> cs))
+	where
+	cs = word30ToWord5List . polymodL $ hrpToW5s hrp ++ w5s
+	w5s = word8sToWord5s $ BS.unpack dp
 
 decode :: T.Text -> Either String B
 decode = check <=< sepHrpDp . T.unpack
 
 check :: (String, String) -> Either String B
 check (h, d) = dict `mapM` d >>= \d' -> case polymodL' $ hrpToW5s h ++ d' of
-	1 -> Right B { humanReadPart = h, dataPart = takeR 6 d' }
+	1 -> do dp <- word5sToWord8s $ takeR 6 d'
+		Right B { humanReadPart = h, dataPart = BS.pack dp }
 	_ -> Left "Bech32: Checksum should be 1"
 
 sepHrpDp :: String -> Either String (String, String)
