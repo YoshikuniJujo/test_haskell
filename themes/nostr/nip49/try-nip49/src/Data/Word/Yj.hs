@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MyWords where
+module Data.Word.Yj where
 
 import Control.Arrow
 import Data.Bits

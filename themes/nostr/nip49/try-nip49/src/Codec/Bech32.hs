@@ -1,141 +1,48 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Bech32 (
-	B(..), encode, decode
-	) where
+module Codec.Bech32 (B(..), encode, decode) where
 
 import Control.Arrow
 import Control.Monad
-import Control.Monad.Identity
-import Control.Monad.State
 import Data.Bits
-import Data.Maybe
 import Data.List qualified as L
+import Data.List.NonEmpty qualified as NE
 import Data.Char
 import Data.Text qualified as T
 
-import MyWords
+import Codec.Bech32.Polymod
+import Data.Word.Yj
+import Tools
 
-data B = B {
-	checkedHumanReadPart :: String,
-	checkedDataPart :: [Word5] }
-	deriving (Show, Eq)
+data B = B { humanReadPart :: String, dataPart :: [Word5] } deriving (Show, Eq)
 
-gen :: [Word30]
-gen = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]
+encode :: B -> T.Text
+encode B { humanReadPart = hrp, dataPart = dp } =
+	T.pack $ hrp ++ "1" ++ ((dictChars !!) . fromIntegral <$> (dp ++ cs))
+	where cs = word30ToWord5List . polymodL $ hrpToW5s hrp ++ dp
 
-applyGen :: Word5 -> Word30 -> Word30
-applyGen w5 w30 = let
-	gen' = zipWith (\i g -> if testBit w5 i then (`xor` g) else id) [0 .. 4] gen in
-	foldr ($) w30 gen'
+decode :: T.Text -> Either String B
+decode = check <=< sepHrpDp . T.unpack
 
-shift5M :: Monad m => m (Maybe Word5) -> Word30 -> m (Maybe (Word5, Word30))
-shift5M gt w30 = do
-	mdt <- gt
-	case mdt of
-		Nothing -> pure Nothing
-		Just dt -> let	bs = w30 `shiftR` 25
-				w30' = w30 `shiftL` 5 .|. fromIntegral dt in
-			pure $ Just (fromIntegral bs, w30')
+check :: (String, String) -> Either String B
+check (h, d) = dict `mapM` d >>= \d' -> case polymodL' $ hrpToW5s h ++ d' of
+	1 -> Right B { humanReadPart = h, dataPart = takeR 6 d' }
+	_ -> Left "Bech32: Checksum should be 1"
 
-class Pop5Bits a where pop5Bits :: a -> (Maybe Word5, a)
-
-stepM :: Monad m => m (Maybe Word5) -> Word30 -> m (Maybe Word30)
-stepM gt w30 = do
-	p <- shift5M gt w30
-	pure $ uncurry applyGen <$> p
-
-stepsM :: Monad m => m (Maybe Word5) -> Word30 -> m Word30
-stepsM gt w30 = stepM gt w30 >>= \case
-	Nothing -> pure w30
-	Just w30' -> stepsM gt w30'
-
-steps :: Pop5Bits a => Word30 -> a -> (Word30, a)
-steps w30 ws = stepsM gt w30 `runState` ws
-	where
-	gt = StateT $ Identity . pop5Bits
-
-newtype Word5List = Word5List [Word5] deriving Show
-
-instance Pop5Bits Word5List where
-	pop5Bits (Word5List []) = (Nothing, Word5List [])
-	pop5Bits (Word5List (w : ws)) = (Just w, Word5List ws)
-
-polymodM :: Monad m => m (Maybe Word5) -> m Word30
-polymodM gt = do
-	w30 <- stepsM gt 1
-	pure $ fst (steps w30 $ Word5List [0, 0, 0, 0, 0, 0]) `xor` 1
-
-polymod :: Pop5Bits a => a -> Word30
-polymod ws = fst $ polymodM gt `runState` ws
-	where
-	gt = StateT $ Identity . pop5Bits
-
-polymodL :: [Word5] -> Word30
-polymodL = polymod . Word5List
-
-polymodNoTailM :: Monad m => m (Maybe Word5) -> m Word30
-polymodNoTailM gt = stepsM gt 1
-
-polymodNoTail :: Pop5Bits a => a -> Word30
-polymodNoTail ws = fst $ polymodNoTailM (StateT $ Identity . pop5Bits) `runState` ws
-
-polymodNoTailL :: [Word5] -> Word30
-polymodNoTailL = polymodNoTail . Word5List
+sepHrpDp :: String -> Either String (String, String)
+sepHrpDp = (const msg +++ (NE.init `first`)) . spanR (/= '1')
+	where msg = "Bech32: no separator '1'"
 
 hrpToW5s :: String -> [Word5]
-hrpToW5s hrp =
-	(fromIntegral . (`shiftR` 5) . ord <$> hrp) ++ [0] ++
-	(fromIntegral . (.&. 0x1f) . ord <$> hrp)
+hrpToW5s ((ord <$>) -> hrp) =
+	fromIntegral <$> ((`shiftR` 5) <$> hrp) ++ 0 : ((.&. 0x1f) <$> hrp)
 
-dataToW5 :: String -> [Word5]
-dataToW5 = (dict <$>)
+dict :: Char -> Either String Word5
+dict = maybe (Left msg) (Right . fromIntegral) . (`L.elemIndex` dictChars)
+	where msg = "bad character"
 
 dictChars :: [Char]
 dictChars = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
-
-dict :: Char -> Word5
-dict = fromIntegral . fromJust . (`L.elemIndex` dictChars)
-
-sepHrpDt :: String -> Either String Separated
-sepHrpDt = (uncurry Separated <$>)
-	. either (Right . (init `first`))
-		(const $ Left "Bech32: no separator 1") . spanRR (/= '1')
-
-spanRR :: (a -> Bool) -> [a] -> Either ([a], [a]) [a]
-spanRR _ [] = Right []
-spanRR p (x : xs) = case (p x, spanRR p xs) of
-	(_, Left (t, d)) -> Left (x : t, d)
-	(False, Right d) -> Left ([x], d)
-	(True, Right d) -> Right $ x : d
-
-decode :: T.Text -> Either String B
-decode = check <=< sepHrpDt . T.unpack
-
-check :: Separated -> Either String B
-check Separated { humanReadPart = hrp, dataPart = dp } =
-	case polymodNoTailL $ hrpToW5s hrp ++ dp' of
-		1 -> Right B {
-			checkedHumanReadPart = hrp,
-			checkedDataPart = take (length dp' - 6) dp' }
-		_ -> Left "Bech32: Checksum should be 1"
-	where dp' = dataToW5 dp
-
-data Separated = Separated {
-	humanReadPart :: String,
-	dataPart :: String }
-	deriving Show
-
-encode :: B -> T.Text
-encode c@B {
-	checkedHumanReadPart = hrp,
-	checkedDataPart = dp } = T.pack $ hrp ++ "1" ++ ((dictChars !!) . fromIntegral <$> (dp ++ cs))
-	where
-	cs = computeChecksum c
-
-computeChecksum :: B -> [Word5]
-computeChecksum B {
-	checkedHumanReadPart = hrp,
-	checkedDataPart = dp } = word30ToWord5List . polymodL $ hrpToW5s hrp ++ dp

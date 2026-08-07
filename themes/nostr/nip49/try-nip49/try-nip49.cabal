@@ -27,9 +27,10 @@ library
   exposed-modules:
       Codec.Bech32
       Codec.Bech32.ByteString
+      Codec.Bech32.Polymod
       Data.Hex
+      Data.Word.Yj
       Example
-      MyWords
       Ncryptsec
       Scrypt
       System.IO.Yj

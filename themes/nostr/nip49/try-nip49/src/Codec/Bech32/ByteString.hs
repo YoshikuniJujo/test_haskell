@@ -2,14 +2,12 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Bech32.ByteString (
-	decode, encode
-	) where
+module Codec.Bech32.ByteString (encode, decode) where
 
 import Data.Word
 import Data.ByteString qualified as BS
 
-import MyWords
+import Data.Word.Yj
 
 import Codec.Bech32 qualified as Bech32
 
