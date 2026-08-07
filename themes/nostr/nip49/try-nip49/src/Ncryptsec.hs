@@ -16,7 +16,7 @@ import Crypto.Error
 
 import XChaCha qualified
 import Scrypt qualified
-import Bech32 qualified
+import Codec.Bech32 qualified as Bech32
 
 nsec, ncryptsec :: String
 nsec = "nsec"; ncryptsec = "ncryptsec"

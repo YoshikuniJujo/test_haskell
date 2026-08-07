@@ -22,7 +22,7 @@ import Data.ByteArray qualified as BA
 import Crypto.Error
 
 import XChaCha qualified
-import Bech32 qualified
+import Codec.Bech32 qualified as Bech32
 
 import MyWords
 

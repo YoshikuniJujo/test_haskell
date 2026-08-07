@@ -7,7 +7,7 @@ import Data.Text.IO qualified as T
 import Data.Hex qualified as Hex
 import System.Environment
 
-import Bech32 qualified
+import Codec.Bech32 qualified as Bech32
 import Tools
 
 main :: IO ()

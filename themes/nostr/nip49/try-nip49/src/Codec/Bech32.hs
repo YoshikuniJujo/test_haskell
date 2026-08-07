@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Bech32 where
+module Codec.Bech32 where
 
 import Control.Arrow
 import Control.Monad
@@ -17,6 +17,11 @@ import Data.ByteString qualified as BS
 import Data.Text qualified as T
 
 import MyWords
+
+data B = B {
+	checkedHumanReadPart :: String,
+	checkedDataPart :: [Word5] }
+	deriving (Show, Eq)
 
 gen :: [Word30]
 gen = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]
@@ -130,7 +135,7 @@ hrpDataToHprBytes hrpdt = do
 	(hrp ,) <$> word5sToWord8s (dataToW5DropTail dt)
 
 sepHrpDt :: String -> Either String Separated
-sepHrpDt = (tupleToSeparated <$>)
+sepHrpDt = (uncurry Separated <$>)
 	. either (Right . (init `first`))
 		(const $ Left "Bech32: no separator 1") . spanRR (/= '1')
 
@@ -142,10 +147,10 @@ spanRR p (x : xs) = case (p x, spanRR p xs) of
 	(True, Right d) -> Right $ x : d
 
 decode :: T.Text -> Either String B
-decode = Bech32.check <=< Bech32.sepHrpDt . T.unpack
+decode = check <=< sepHrpDt . T.unpack
 
 toByteString :: String -> B -> Either String BS.ByteString
-toByteString hrp0 = (BS.pack <$>) . Bech32.checkedToHdrDat hrp0
+toByteString hrp0 = (BS.pack <$>) . checkedToHdrDat hrp0
 
 check :: Separated -> Either String B
 check Separated { humanReadPart = hrp, dataPart = dp } =
@@ -156,17 +161,10 @@ check Separated { humanReadPart = hrp, dataPart = dp } =
 		_ -> Left "Bech32: Checksum should be 1"
 	where dp' = dataToW5 dp
 
-data B = B {
-	checkedHumanReadPart :: String,
-	checkedDataPart :: [Word5] }
-	deriving (Show, Eq)
-
 data Separated = Separated {
 	humanReadPart :: String,
 	dataPart :: String }
 	deriving Show
-
-tupleToSeparated = uncurry Separated
 
 encode :: B -> T.Text
 encode c@B {
@@ -176,7 +174,7 @@ encode c@B {
 	cs = computeChecksum c
 
 fromByteString :: String -> BS.ByteString -> B
-fromByteString hrp = Bech32.B hrp . word8sToWord5s . BS.unpack
+fromByteString hrp = B hrp . word8sToWord5s . BS.unpack
 
 computeChecksum :: B -> [Word5]
 computeChecksum B {
