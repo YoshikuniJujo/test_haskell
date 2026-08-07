@@ -8,6 +8,7 @@ import Data.Hex qualified as Hex
 import System.Environment
 
 import Codec.Bech32 qualified as Bech32
+import Codec.Bech32.ByteString qualified as Bech32.BS
 import Tools
 
 main :: IO ()
@@ -15,5 +16,5 @@ main = do
 	[fp, bn] <- getArgs
 	hs <- Hex.readFileList fp
 	let	bs = zip (fileNameN bn "nsec" <$> [0 ..])
-			$ Bech32.encode . Bech32.fromByteString "nsec" . Hex.unH <$> hs
+			$ Bech32.encode . Bech32.BS.decode "nsec" . Hex.unH <$> hs
 	uncurry T.writeFile `mapM_` bs

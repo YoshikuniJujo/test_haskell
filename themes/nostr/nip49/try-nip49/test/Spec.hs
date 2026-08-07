@@ -1,2 +1,9 @@
+import System.Exit
+
+import Ncryptsec
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = do
+	putStrLn "Only 1 test suite is implemented"
+	putStrLn "YET"
+	exitSuccess

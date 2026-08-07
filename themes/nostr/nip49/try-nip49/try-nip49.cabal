@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Codec.Bech32
+      Codec.Bech32.ByteString
       Data.Hex
       Example
       MyWords

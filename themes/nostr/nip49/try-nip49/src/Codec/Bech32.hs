@@ -2,7 +2,9 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Bech32 where
+module Codec.Bech32 (
+	B(..), encode, decode
+	) where
 
 import Control.Arrow
 import Control.Monad
@@ -11,9 +13,7 @@ import Control.Monad.State
 import Data.Bits
 import Data.Maybe
 import Data.List qualified as L
-import Data.Word
 import Data.Char
-import Data.ByteString qualified as BS
 import Data.Text qualified as T
 
 import MyWords
@@ -42,20 +42,10 @@ shift5M gt w30 = do
 
 class Pop5Bits a where pop5Bits :: a -> (Maybe Word5, a)
 
-shift5 :: Pop5Bits a => Word30 -> a -> (Maybe (Word5, Word30), a)
-shift5 w30 ws = shift5M gt w30 `runState` ws
-	where
-	gt = StateT $ Identity . pop5Bits
-
 stepM :: Monad m => m (Maybe Word5) -> Word30 -> m (Maybe Word30)
 stepM gt w30 = do
 	p <- shift5M gt w30
 	pure $ uncurry applyGen <$> p
-
-step :: Pop5Bits a => Word30 -> a -> (Maybe Word30, a)
-step w30 ws = stepM gt w30 `runState` ws
-	where
-	gt = StateT $ Identity . pop5Bits
 
 stepsM :: Monad m => m (Maybe Word5) -> Word30 -> m Word30
 stepsM gt w30 = stepM gt w30 >>= \case
@@ -100,39 +90,14 @@ hrpToW5s hrp =
 	(fromIntegral . (`shiftR` 5) . ord <$> hrp) ++ [0] ++
 	(fromIntegral . (.&. 0x1f) . ord <$> hrp)
 
-dataToW5, dataToW5DropTail :: String -> [Word5]
+dataToW5 :: String -> [Word5]
 dataToW5 = (dict <$>)
-dataToW5DropTail = (dict <$>) . dropRight 6
-
-dropRight :: Int -> [a] -> [a]
-dropRight n = reverse . drop n . reverse
 
 dictChars :: [Char]
 dictChars = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 
 dict :: Char -> Word5
 dict = fromIntegral . fromJust . (`L.elemIndex` dictChars)
-
-undict :: Word5 -> Char
-undict = (dictChars !!) . fromIntegral
-
-word30ToB :: Word30 -> String
-word30ToB = (undict <$>) . word30ToWord5List
-
-hrpDataToW5s :: String -> Either String [Word5]
-hrpDataToW5s hrpdt = do
-	Separated { humanReadPart = hrp, dataPart = dt } <- sepHrpDt hrpdt
-	pure $ hrpToW5s hrp ++ dataToW5 dt
-
-checkedToHdrDat :: String -> B -> Either String [Word8]
-checkedToHdrDat hrp0 (B hrp dt)
-	| hrp == hrp0 = word5sToWord8s dt
-	| otherwise = Left $ "HRP should be " ++ show hrp0
-
-hrpDataToHprBytes :: String -> Either String (String, [Word8])
-hrpDataToHprBytes hrpdt = do
-	Separated { humanReadPart = hrp, dataPart = dt } <- sepHrpDt hrpdt
-	(hrp ,) <$> word5sToWord8s (dataToW5DropTail dt)
 
 sepHrpDt :: String -> Either String Separated
 sepHrpDt = (uncurry Separated <$>)
@@ -148,9 +113,6 @@ spanRR p (x : xs) = case (p x, spanRR p xs) of
 
 decode :: T.Text -> Either String B
 decode = check <=< sepHrpDt . T.unpack
-
-toByteString :: String -> B -> Either String BS.ByteString
-toByteString hrp0 = (BS.pack <$>) . checkedToHdrDat hrp0
 
 check :: Separated -> Either String B
 check Separated { humanReadPart = hrp, dataPart = dp } =
@@ -172,9 +134,6 @@ encode c@B {
 	checkedDataPart = dp } = T.pack $ hrp ++ "1" ++ ((dictChars !!) . fromIntegral <$> (dp ++ cs))
 	where
 	cs = computeChecksum c
-
-fromByteString :: String -> BS.ByteString -> B
-fromByteString hrp = B hrp . word8sToWord5s . BS.unpack
 
 computeChecksum :: B -> [Word5]
 computeChecksum B {
