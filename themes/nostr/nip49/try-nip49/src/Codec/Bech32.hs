@@ -14,61 +14,58 @@ module Codec.Bech32 (
 import Control.Arrow
 import Control.Monad
 import Control.Monad.Identity
+import Control.Monad.Except
 import Data.Bits
 import Data.List qualified as L
 import Data.List.NonEmpty qualified as NE
+import Data.Bool
 import Data.Char
 import Data.ByteString qualified as BS
 import Data.Text qualified as T
 
-import Codec.Bech32.Polymod
+import Codec.Bech32.Polymod qualified as Polymod
 import Data.Word.Yj
 import Tools
 
-data B = B { humanReadPart :: String, dataPart :: BS.ByteString } deriving (Show, Eq)
+data B = B { humanReadPart :: String, dataPart :: BS.ByteString }
+	deriving (Show, Eq)
 
 encode :: B -> T.Text
 encode B { humanReadPart = hrp, dataPart = dp } =
-	T.pack $ hrp ++ "1" ++ ((dictChars !!) . fromIntegral <$> (w5s <> cs))
+	T.pack $ hrp ++ "1" ++ ((dict !!) . fromIntegral <$> w5s <> cs)
 	where
-	cs = word30ToWord5List . polymodL $ hrpToW5s hrp ++ w5s
+	cs = word30ToWord5List . Polymod.generate $ hrpToW5s hrp ++ w5s
 	w5s = word8sToWord5s $ BS.unpack dp
 
 decode :: T.Text -> Either String B
-decode = check <=< sepHrpDp . T.unpack
-
-check :: (String, String) -> Either String B
-check (h, d) = dict `mapM` d >>= \d' -> case polymodL' $ hrpToW5s h ++ d' of
-	1 -> do dp <- word5sToWord8s $ takeR 6 d'
-		Right B { humanReadPart = h, dataPart = BS.pack dp }
-	_ -> Left "Bech32: Checksum should be 1"
-
-sepHrpDp :: String -> Either String (String, String)
-sepHrpDp = (const msg +++ (NE.init `first`)) . spanR (/= '1')
-	where msg = "Bech32: no separator '1'"
+decode = check <=< sep . T.unpack
+	where
+	check (h, d) = idx `mapM` d >>= \d' ->
+		case Polymod.verify $ hrpToW5s h ++ d' of
+			1 -> B h . BS.pack <$> word5sToWord8s (takeR 6 d')
+			_ -> throwError "Bech32: Checksum should be 1"
+	idx = maybe (Left badc) (Right . fromIntegral) . (`L.elemIndex` dict)
+	sep = (const nosep +++ (NE.init `first`)) . spanR (/= '1')
+	badc = "bad character"; nosep = "Bech32: no separator '1'"
 
 hrpToW5s :: String -> [Word5]
 hrpToW5s ((ord <$>) -> hrp) =
 	fromIntegral <$> ((`shiftR` 5) <$> hrp) ++ 0 : ((.&. 0x1f) <$> hrp)
 
-dict :: Char -> Either String Word5
-dict = maybe (Left msg) (Right . fromIntegral) . (`L.elemIndex` dictChars)
-	where msg = "bad character"
+dict :: [Char]
+dict = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 
-dictChars :: [Char]
-dictChars = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
+switch :: [(String -> Bool, PrcDp a)] -> PrcDp a -> B -> a
+switch cs d = runIdentity . switchM (((pure .) *** (pure .)) <$> cs) (pure . d)
 
-switch :: [(String -> Bool, BS.ByteString -> a)] ->(BS.ByteString -> a) -> B -> a
-switch bs df = runIdentity . switchM (((pure .) *** (pure .)) <$> bs) (pure . df)
+type PrcDp a = BS.ByteString -> a
 
-switchM :: Monad m => [(String -> m Bool, BS.ByteString -> m a)] -> (BS.ByteString -> m a) -> B -> m a
-switchM bs df B { humanReadPart = hp, dataPart = dp } = go bs
-	where
-	go [] = df dp
-	go ((p, f) : pfs) = do
-		b <- p hp
-		if b then f dp else go pfs
+switchM :: Monad m => [(String -> m Bool, PrcDpM m a)] -> PrcDpM m a -> B -> m a
+switchM cs df B { humanReadPart = h, dataPart = d } = go cs
+	where go = \case [] -> df d; (p, f) : pfs -> bool (go pfs) (f d) =<< p h
+
+type PrcDpM m a = BS.ByteString -> m a
 
 getData :: String -> B -> Either String BS.ByteString
-getData hrp0 = switch [((== hrp0), Right)] (const $ Left msg)
-	where msg = "HRP should be " ++ show hrp0
+getData h0 = switch [((== h0), pure)] (const $ throwError msg)
+	where msg = "HRP should be " ++ show h0

@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Bech32.Polymod (polymodL, polymodL') where
+module Codec.Bech32.Polymod (generate, verify) where
 
 import Control.Monad.Identity
 import Control.Monad.State
@@ -60,8 +60,8 @@ polymod ws = fst $ polymodM gt `runState` ws
 	where
 	gt = StateT $ Identity . pop5Bits
 
-polymodL :: [Word5] -> Word30
-polymodL = polymod . Word5List
+generate :: [Word5] -> Word30
+generate = polymod . Word5List
 
 polymodNoTailM :: Monad m => m (Maybe Word5) -> m Word30
 polymodNoTailM gt = stepsM gt 1
@@ -69,5 +69,5 @@ polymodNoTailM gt = stepsM gt 1
 polymodNoTail :: Pop5Bits a => a -> Word30
 polymodNoTail ws = fst $ polymodNoTailM (StateT $ Identity . pop5Bits) `runState` ws
 
-polymodL' :: [Word5] -> Word30
-polymodL' = polymodNoTail . Word5List
+verify :: [Word5] -> Word30
+verify = polymodNoTail . Word5List
