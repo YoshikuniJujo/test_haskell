@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Bech32.Polymod (generate, verify) where
+module Codec.Bech32.Polymod (generate, generateM, verify, verifyM) where
 
 import Control.Monad.Identity
 import Control.Monad.State
