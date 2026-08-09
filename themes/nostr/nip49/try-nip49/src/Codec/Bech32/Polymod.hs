@@ -10,9 +10,6 @@ import Data.Bits
 import Data.Bool
 import Data.Word.Yj
 
-gen :: [Word30]
-gen = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]
-
 generate :: Pop5Bits a => a -> Word30
 generate = fst . runState (generateM . StateT $ Identity . pop5Bits)
 
@@ -43,6 +40,9 @@ shift5M gt w30 = (<$> gt) (
 applyGen :: Word5 -> Word30 -> Word30
 applyGen w5 w30 = foldr ($) w30
 	$ zipWith (\i g -> bool id (`xor` g) (testBit w5 i)) [0 .. 4] gen
+
+gen :: [Word30]
+gen = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]
 
 class Pop5Bits a where pop5Bits :: a -> (Maybe Word5, a)
 class Pop5BitsList a where pop5BitsList :: [a] -> (Maybe Word5, [a])
