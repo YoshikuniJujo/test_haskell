@@ -48,15 +48,6 @@ library:
   source-dirs: src
 
 executables:
-  try-nip49-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-nip49
   makeSampleNsec:
     main:                makeSampleNsec.hs
     other-modules:      []
