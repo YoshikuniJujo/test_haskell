@@ -25,7 +25,7 @@ import Data.Text qualified as T
 
 import Codec.Bech32.Polymod qualified as Polymod
 import Data.Word.Yj
-import Tools
+import Tools qualified as Tl
 
 data B = B { humanReadPart :: String, dataPart :: BS.ByteString }
 	deriving (Show, Eq)
@@ -42,10 +42,10 @@ decode = go <=< sep . T.unpack
 	where
 	go (h, d) = idx `mapM` d >>= \d' -> bool
 		(throwError "Bech32: checksum verification failed")
-		(B h . BS.pack <$> word5sToWord8s (takeR 6 d'))
+		(B h . BS.pack <$> word5sToWord8s (Tl.takeR 6 d'))
 		(Polymod.verify $ hrpToW5s h ++ d')
 	idx = maybe (throwError bc) (pure . fromIntegral) . (`L.elemIndex` dict)
-	sep = (const ns +++ (NE.init `first`)) . spanR (/= '1')
+	sep = (const ns +++ (NE.init `first`)) . Tl.spanR (/= '1')
 	bc = "bad character"; ns = "Bech32: no separator '1'"
 
 hrpToW5s :: String -> [Word5]
