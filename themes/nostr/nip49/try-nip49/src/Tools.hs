@@ -7,27 +7,17 @@ module Tools where
 import Control.Arrow
 import Control.Monad
 import Control.Monad.State
-import Data.List.NonEmpty qualified as NE
 import System.Random qualified as R
+import System.FilePath
 
 fileNameN :: String -> String -> Int -> FilePath
-fileNameN bs ex n = bs ++ showInt2 n ++ "." ++ ex
-
-showInt2 :: Int -> String
-showInt2 n = replicate (2 - length s) '0' ++ s where s = show n
+fileNameN b e n = b ++ replicate (2 - length s) '0' ++ s <.> e where s = show n
 
 password :: State R.StdGen String
-password = do
-	n <- randomR 5 30
-	replicateM n (select chars)
+password = (`replicateM` select chars) =<< state (R.randomR (5, 30))
+	where
+	select xs = state $ ((xs !!) `first`) . R.randomR (0, length xs - 1)
 
 chars :: [Char]
 chars = ['0' .. '9'] ++ ['A' .. 'Z'] ++ ['a' .. 'z'] ++
-	['!' .. '/'] ++ [':' .. '@'] ++ ['[' .. '`'] ++
-	['{' .. '~']
-
-randomR :: R.Random a => a -> a -> State R.StdGen a
-randomR = curry (state . R.randomR)
-
-select :: [a] -> State R.StdGen a
-select xs = state $ ((xs !!) `first`) . R.randomR (0, length xs - 1)
+	['!' .. '/'] ++ [':' .. '@'] ++ ['[' .. '`'] ++ ['{' .. '~']
