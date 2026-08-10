@@ -31,22 +31,22 @@ data B = B { humanReadPart :: String, dataPart :: BS.ByteString }
 	deriving (Show, Eq)
 
 encode :: B -> T.Text
-encode B { humanReadPart = hrp, dataPart = dp } =
-	T.pack $ hrp ++ "1" ++ ((dict !!) . fromIntegral <$> w5s <> cs)
+encode B { humanReadPart = hp, dataPart = dp } =
+	T.pack $ hp ++ "1" ++ ((dict !!) . fromIntegral <$> w5s <> cs)
 	where
-	cs = word30ToWord5List . Polymod.generate $ hrpToW5s hrp ++ w5s
+	cs = word30ToWord5List . Polymod.generate $ hrpToW5s hp ++ w5s
 	w5s = word8sToWord5s $ BS.unpack dp
 
 decode :: T.Text -> Either String B
-decode = check <=< sep . T.unpack
+decode = go <=< sep . T.unpack
 	where
-	check (h, d) = idx `mapM` d >>= \d' ->
-		case Polymod.verify $ hrpToW5s h ++ d' of
-			True -> B h . BS.pack <$> word5sToWord8s (takeR 6 d')
-			_ -> throwError "Bech32: Checksum should be 1"
-	idx = maybe (Left badc) (Right . fromIntegral) . (`L.elemIndex` dict)
-	sep = (const nosep +++ (NE.init `first`)) . spanR (/= '1')
-	badc = "bad character"; nosep = "Bech32: no separator '1'"
+	go (h, d) = idx `mapM` d >>= \d' -> bool
+		(throwError "Bech32: checksum verification failed")
+		(B h . BS.pack <$> word5sToWord8s (takeR 6 d'))
+		(Polymod.verify $ hrpToW5s h ++ d')
+	idx = maybe (throwError bc) (pure . fromIntegral) . (`L.elemIndex` dict)
+	sep = (const ns +++ (NE.init `first`)) . spanR (/= '1')
+	bc = "bad character"; ns = "Bech32: no separator '1'"
 
 hrpToW5s :: String -> [Word5]
 hrpToW5s ((ord <$>) -> hrp) =
