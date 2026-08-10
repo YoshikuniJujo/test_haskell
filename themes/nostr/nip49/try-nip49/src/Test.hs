@@ -1,4 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Test where
 
@@ -11,16 +13,14 @@ import Ncryptsec
 import Tools
 
 jsdir :: IO FilePath
-jsdir = do
-	h <- getEnv "PWD"
-	pure $ h </>
-		"../../../../other_language/javascript/nostr/try-nostr-crypto-utils/test-vectors"
+jsdir = (<$> getEnv "PWD") \h -> joinPath [
+	h, "..", "..", "..", "..", "other_language",
+	"javascript", "nostr", "try-nostr-crypto-utils", "test-vectors" ]
 
 test1 :: FilePath -> String -> Int -> IO ()
 test1 dr nm n = do
-	foo <- T.readFile $ dr </> fileNameN nm "ncryptsec" n
-	r <- toNsec (readFile $ dr </> fileNameN nm "password" n) foo
-	r0 <- T.readFile (dr </> fileNameN nm "nsec" n)
-	T.putStrLn r0
-	T.putStrLn r
-	when (r /= r0) $ error "BAD"
+	ns0 <- T.readFile (dr </> fileNameN nm "nsec" n)
+	ncs <- T.readFile $ dr </> fileNameN nm "ncryptsec" n
+	ns1 <- toNsec (readFile $ dr </> fileNameN nm "password" n) ncs
+	T.putStrLn ns0; T.putStrLn ns1
+	when (ns1 /= ns0) $ error "BAD"
