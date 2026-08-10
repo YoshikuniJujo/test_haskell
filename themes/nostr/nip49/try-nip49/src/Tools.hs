@@ -7,6 +7,7 @@ module Tools where
 import Control.Arrow
 import Control.Monad
 import Control.Monad.State
+import Data.ByteString qualified as BS
 import System.Random qualified as R
 import System.FilePath
 
@@ -21,3 +22,6 @@ password = (`replicateM` select chars) =<< state (R.randomR (5, 30))
 chars :: [Char]
 chars = ['0' .. '9'] ++ ['A' .. 'Z'] ++ ['a' .. 'z'] ++
 	['!' .. '/'] ++ [':' .. '@'] ++ ['[' .. '`'] ++ ['{' .. '~']
+
+splitAtR :: Int -> BS.ByteString -> (BS.ByteString, BS.ByteString)
+splitAtR n bs = BS.splitAt (BS.length bs - n) bs
