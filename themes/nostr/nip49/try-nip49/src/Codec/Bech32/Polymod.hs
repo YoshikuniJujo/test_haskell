@@ -10,7 +10,6 @@ module Codec.Bech32.Polymod (
 
 	) where
 
-import Control.Monad.Identity
 import Control.Monad.State
 import Data.Monoid
 import Data.Bits
@@ -18,35 +17,37 @@ import Data.Bool
 import Data.Word.Yj
 
 generate :: Pop5Bits a => a -> Word30
-generate = fst . runState (generateM . StateT $ Identity . pop5Bits)
+generate = fromM generateM
 
 generateM :: Monad m => m (Maybe Word5) -> m Word30
-generateM gt = (<$> stepsM gt 1)
-	$ (`xor` 1) . fst . (`steps` [0 :: Word5, 0, 0, 0, 0, 0])
+generateM = ((`xor` 1) . padding <$>) . (`polymod` 1)
 
-verify :: Pop5Bits a => a -> Word30
-verify = fst . runState (verifyM . StateT $ Identity . pop5Bits)
+padding :: Word30 -> Word30
+padding = fst . (`runState` pd) . polymod (state pop5Bits)
+	where pd = replicate 6 0 :: [Word5]
 
-verifyM :: Monad m => m (Maybe Word5) -> m Word30
-verifyM = (`stepsM` 1)
+verify :: Pop5Bits a => a -> Bool
+verify = fromM verifyM
 
-steps :: Pop5Bits a => Word30 -> a -> (Word30, a)
-steps = runState . stepsM (StateT $ Identity . pop5Bits)
+verifyM :: Monad m => m (Maybe Word5) -> m Bool
+verifyM = ((== 1) <$>) . (`polymod` 1)
 
-stepsM :: Monad m => m (Maybe Word5) -> Word30 -> m Word30
-stepsM gt w30 = maybe (pure w30) (stepsM gt) =<< stepM gt w30
+fromM :: Pop5Bits s => (State s (Maybe Word5) -> State s a) -> s -> a
+fromM = (fst .) . runState . ($ state pop5Bits)
 
-stepM :: Monad m => m (Maybe Word5) -> Word30 -> m (Maybe Word30)
-stepM gt = ((uncurry applyGen <$>) <$>) . shift5M gt
+polymod :: Monad m => m (Maybe Word5) -> Word30 -> m Word30
+polymod gw cs = maybe (pure cs) (polymod gw) =<< step gw cs
 
-shift5M :: Monad m => m (Maybe Word5) -> Word30 -> m (Maybe (Word5, Word30))
-shift5M gt w30 = (<$> gt) (
-	(fromIntegral $ w30 `shiftR` 25 ,)
-		. (w30 `shiftL` 5 .|.) . fromIntegral <$>)
+step :: Monad m => m (Maybe Word5) -> Word30 -> m (Maybe Word30)
+step gw = ((uncurry applyGen <$>) <$>) . shift5 gw
+
+shift5 :: Monad m => m (Maybe Word5) -> Word30 -> m (Maybe (Word5, Word30))
+shift5 gw cs = ((h5 ,) . (l25 .|.) . fromIntegral <$>) <$> gw
+	where h5 = fromIntegral $ cs `shiftR` 25; l25 = cs `shiftL` 5
 
 applyGen :: Word5 -> Word30 -> Word30
-applyGen w5 = appEndo . foldMap Endo
-	$ zipWith (\i g -> bool id (`xor` g) (testBit w5 i)) [0 .. 4] gen
+applyGen w = appEndo . foldMap Endo
+	$ zipWith (\i g -> bool id (`xor` g) (testBit w i)) [0 .. 4] gen
 
 gen :: [Word30]
 gen = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]

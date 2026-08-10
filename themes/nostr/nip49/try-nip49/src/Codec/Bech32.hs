@@ -42,7 +42,7 @@ decode = check <=< sep . T.unpack
 	where
 	check (h, d) = idx `mapM` d >>= \d' ->
 		case Polymod.verify $ hrpToW5s h ++ d' of
-			1 -> B h . BS.pack <$> word5sToWord8s (takeR 6 d')
+			True -> B h . BS.pack <$> word5sToWord8s (takeR 6 d')
 			_ -> throwError "Bech32: Checksum should be 1"
 	idx = maybe (Left badc) (Right . fromIntegral) . (`L.elemIndex` dict)
 	sep = (const nosep +++ (NE.init `first`)) . spanR (/= '1')
