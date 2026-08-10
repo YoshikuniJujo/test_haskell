@@ -4,6 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Example (encrypted) where
+
 import Data.Text qualified as T
 
 encrypted :: T.Text
