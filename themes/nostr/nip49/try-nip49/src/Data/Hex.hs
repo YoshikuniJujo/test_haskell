@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Hex where
@@ -16,27 +16,21 @@ import Numeric
 newtype H = H { unH :: BS.ByteString }
 
 instance Show H where show = toString
-
 instance Read H where readsPrec _ = (: []) . (, "") . fromString
-
-toString :: H -> String
-toString (H bs) = ($ "") . foldr (.) id . map wordToHexString $ BS.unpack bs
-
-wordToHexString :: Word8 -> ShowS
-wordToHexString w = \s ->
-	let	s' = showHex w ""
-		l = length s' in
-		replicate (2 - l) '0' ++ s' ++ s
 
 fromString :: String -> H
 fromString = H . BS.pack . L.unfoldr (listToMaybe . readHexWord)
 
 readHexWord :: String -> [(Word8, String)]
-readHexWord "" = []
-readHexWord (c0 : c1 : cs) = do
-	(w, "") <- readHex [c0, c1]
-	pure (w, cs)
-readHexWord _ = error "bad"
+readHexWord = \case
+	"" -> []
+	(c0 : c1 : cs) -> (, cs) . fst <$> readHex [c0, c1]
+	_ -> error "bad"
+
+toString :: H -> String
+toString (H bs) = ($ "") . foldr (.) id . map hex $ BS.unpack bs
+	where
+	hex w = let s = showHex w "" in ((replicate (2 - length s) '0' ++ s) ++)
 
 readFile :: FilePath -> IO H
 readFile = (fromString . head . lines <$>) . P.readFile
