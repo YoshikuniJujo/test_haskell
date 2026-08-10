@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -21,9 +22,20 @@ import Codec.Bech32 qualified as Bech32
 nsec, ncryptsec :: String
 nsec = "nsec"; ncryptsec = "ncryptsec"
 
+fromNsec :: Word8 -> Word8 -> IO String -> T.Text -> IO T.Text
+fromNsec lgn ksb gp = (Bech32.encode . Bech32.B ncryptsec <$>)
+	. either error (encrypt lgn ksb gp)
+	. (Bech32.getData nsec =<<) . Bech32.decode
+
+encrypt :: Word8 -> Word8 -> IO String -> BS.ByteString -> IO BS.ByteString
+encrypt lgn ((BS.pack . (: [])) -> aad) gp pln = gp >>= \(BSC.pack -> pss) -> do
+	(slt, ky) <- skey pss
+	(nnc, ct, BA.convert -> mac) <- XChaCha.encrypt ky aad pln
+	pure $ 2 `BS.cons` lgn `BS.cons` slt <> nnc <> aad <> ct <> mac
+	where skey pss = (id &&& \s -> Scrypt.hash lgn s pss) <$> getEntropy 16
+
 toNsec :: MonadFail m => m String -> T.Text -> m T.Text
-toNsec gp = (Bech32.encode . Bech32.B nsec <$>)
-	. either fail (decrypt gp)
+toNsec gp = (Bech32.encode . Bech32.B nsec <$>) . either fail (decrypt gp)
 	. (Bech32.getData ncryptsec =<<) . Bech32.decode
 
 decrypt :: MonadFail m => m String -> BS.ByteString -> m BS.ByteString
@@ -38,25 +50,3 @@ decrypt gp cs = gp >>= \(BSC.pack -> pss) -> do
 	go xs = \case
 		[] -> []
 		n : ns -> uncurry (:) . ((`go` ns) `second`) $ splitAt n xs
-
-fromNsec :: Word8 -> Word8 -> IO String -> T.Text -> IO T.Text
-fromNsec lgn ksb gp = (Bech32.encode . Bech32.B ncryptsec <$>)
-	. either fail (encrypt lgn ksb gp)
-	. (Bech32.getData nsec =<<) . Bech32.decode
-
-encrypt :: Word8 -> Word8 -> IO String -> BS.ByteString -> IO BS.ByteString
-encrypt lgn ksb gp pln = gp >>= \(BSC.pack -> pss) -> do
-	(slt, ky) <- symmKey lgn pss
-	let	aad = BS.pack [ksb]
-	(nnc, ct, mac) <- XChaCha.encrypt ky aad pln
-	pure $ build 2 lgn slt nnc aad ct (BA.convert mac)
-
-symmKey :: Word8 -> BS.ByteString -> IO (BS.ByteString, BS.ByteString)
-symmKey lgn pss = do
-	slt <- getEntropy 16
-	pure (slt, Scrypt.hash lgn slt pss)
-
-build :: Word8 -> Word8 ->
-	BS.ByteString -> BS.ByteString -> BS.ByteString ->
-	BS.ByteString -> BS.ByteString -> BS.ByteString
-build vn lgn slt nnc aad ct mac = vn `BS.cons` lgn `BS.cons` slt <> nnc <> aad <> ct <> mac
