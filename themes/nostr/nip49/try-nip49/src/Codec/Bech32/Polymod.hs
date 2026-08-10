@@ -2,10 +2,17 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Bech32.Polymod (generate, generateM, verify, verifyM) where
+module Codec.Bech32.Polymod (
+
+	generate, generateM, verify, verifyM,
+
+	Pop5Bits(..), Pop5BitsList(..)
+
+	) where
 
 import Control.Monad.Identity
 import Control.Monad.State
+import Data.Monoid
 import Data.Bits
 import Data.Bool
 import Data.Word.Yj
@@ -38,7 +45,7 @@ shift5M gt w30 = (<$> gt) (
 		. (w30 `shiftL` 5 .|.) . fromIntegral <$>)
 
 applyGen :: Word5 -> Word30 -> Word30
-applyGen w5 w30 = foldr ($) w30
+applyGen w5 = appEndo . foldMap Endo
 	$ zipWith (\i g -> bool id (`xor` g) (testBit w5 i)) [0 .. 4] gen
 
 gen :: [Word30]
