@@ -25,10 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Codec.Bech32
-      Codec.Bech32.Polymod
       Data.Hex
-      Data.Word.Yj
       Example
       Ncryptsec
       Scrypt
@@ -55,6 +52,7 @@ library
     , random
     , scrypt
     , text
+    , try-bech32
   default-language: Haskell2010
 
 executable encryptNsec
@@ -74,6 +72,7 @@ executable encryptNsec
     , random
     , scrypt
     , text
+    , try-bech32
     , try-nip49
   default-language: Haskell2010
 
@@ -94,6 +93,7 @@ executable makeHexSamples
     , random
     , scrypt
     , text
+    , try-bech32
     , try-nip49
   default-language: Haskell2010
 
@@ -114,6 +114,7 @@ executable makeRandomPassword
     , random
     , scrypt
     , text
+    , try-bech32
     , try-nip49
   default-language: Haskell2010
 
@@ -134,6 +135,7 @@ executable makeSampleNsec
     , random
     , scrypt
     , text
+    , try-bech32
     , try-nip49
   default-language: Haskell2010
 
@@ -158,6 +160,7 @@ executable try-nip49-exe
     , random
     , scrypt
     , text
+    , try-bech32
     , try-nip49
   default-language: Haskell2010
 
@@ -183,5 +186,6 @@ test-suite try-nip49-test
     , random
     , scrypt
     , text
+    , try-bech32
     , try-nip49
   default-language: Haskell2010

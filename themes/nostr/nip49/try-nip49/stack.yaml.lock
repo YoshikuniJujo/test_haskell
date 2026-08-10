@@ -3,7 +3,20 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/topics/lock_files
 
-packages: []
+packages:
+- completed:
+    commit: 5f39144d439a211ce5146b494ca77b22359d81bf
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-bech32
+    pantry-tree:
+      sha256: 5f5f0d79e6052cf74ca21f3aefe5bc382c61373be2287eec57e4675d5a2a52dc
+      size: 752
+    subdir: themes/nostr/bech32/try-bech32
+    version: 0.1.0.0
+  original:
+    commit: 5f39144d439a211ce5146b494ca77b22359d81bf
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/nostr/bech32/try-bech32
 snapshots:
 - completed:
     sha256: 74b41f766415e985473d1e27befeb0394ed62f95295da1ec630a48ba84751c1c

@@ -31,6 +31,7 @@ dependencies:
 - entropy
 - random
 - filepath
+- try-bech32
 
 ghc-options:
 - -Wall
