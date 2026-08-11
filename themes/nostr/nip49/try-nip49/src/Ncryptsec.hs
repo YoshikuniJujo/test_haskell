@@ -24,29 +24,74 @@ nsec = "nsec"; ncryptsec = "ncryptsec"
 
 fromNsec :: Word8 -> Word8 -> IO String -> T.Text -> IO T.Text
 fromNsec lgn ksb gp = (Bech32.encode . Bech32.B ncryptsec <$>)
-	. either error (encrypt lgn ksb gp)
+	. (uncurry encode <$>) . either error (encrypt lgn ksb gp)
 	. (Bech32.getData nsec =<<) . Bech32.decode
 
-encrypt :: Word8 -> Word8 -> IO String -> BS.ByteString -> IO BS.ByteString
-encrypt lgn ((BS.pack . (: [])) -> aad) gp pln = gp >>= \(BSC.pack -> pss) -> do
+encrypt :: Word8 -> Word8 -> IO String -> BS.ByteString ->
+	IO (SymKeyParams, Encrypted)
+encrypt lgn ksb@((BS.pack . (: [])) -> aad) gp pln = gp >>= \(BSC.pack -> pss) -> do
 	(slt, ky) <- skey pss
 	(nnc, ct, BA.convert -> mac) <- XChaCha.encrypt ky aad pln
-	pure $ 2 `BS.cons` lgn `BS.cons` slt <> nnc <> aad <> ct <> mac
+	pure (	SymKeyParams {
+			symKeyParamsLogN = lgn,
+			symKeyParamsSalt = slt },
+		Encrypted {
+			encryptedVersion = 2,
+			encryptedNonce = nnc,
+			encryptedKeySecurityByte = ksb,
+			encryptedCipherText = ct,
+			encryptedMac = mac } )
 	where skey pss = (id &&& \s -> Scrypt.hash lgn s pss) <$> getEntropy 16
 
 toNsec :: MonadFail m => m String -> T.Text -> m T.Text
-toNsec gp = (Bech32.encode . Bech32.B nsec <$>) . either fail (decrypt gp)
+toNsec gp = (Bech32.encode . Bech32.B nsec <$>) . either fail decrypt'
 	. (Bech32.getData ncryptsec =<<) . Bech32.decode
-
-decrypt :: MonadFail m => m String -> BS.ByteString -> m BS.ByteString
-decrypt gp cs = gp >>= \(BSC.pack -> pss) -> do
-	[	[2], [lgn], BS.pack -> slt,
-		BS.pack -> nnc, BS.pack -> aad, BS.pack -> ct ] <- dec cs
-	either (fail . show) pure . eitherCryptoError
-		$ XChaCha.decrypt (Scrypt.hash lgn slt pss) nnc aad ct
 	where
-	dec = pure . (`go` structure) . BS.unpack
-	structure = [1, 1, 16, 24, 1, 48]
+	decrypt' cs = do
+		(skp, ec) <- maybe (fail "bad") pure $ decode cs
+		decrypt gp skp ec
+
+decrypt :: MonadFail m => m String -> SymKeyParams -> Encrypted -> m BS.ByteString
+decrypt gp skp ec = gp >>= \(BSC.pack -> pss) -> do
+	2 <- pure $ encryptedVersion ec
+	let	lgn = symKeyParamsLogN skp
+		slt = symKeyParamsSalt skp
+		nnc = encryptedNonce ec
+		aad = BS.pack [encryptedKeySecurityByte ec]
+		ct = encryptedCipherText ec
+		mac = encryptedMac ec
+	either (fail . show) pure . eitherCryptoError
+		$ XChaCha.decrypt' (Scrypt.hash lgn slt pss) nnc aad ct mac
+
+data SymKeyParams = SymKeyParams {
+	symKeyParamsLogN :: Word8, symKeyParamsSalt :: BS.ByteString }
+	deriving Show
+
+data Encrypted = Encrypted {
+	encryptedVersion :: Word8, encryptedNonce :: BS.ByteString,
+	encryptedKeySecurityByte :: Word8, encryptedCipherText :: BS.ByteString,
+	encryptedMac :: BS.ByteString }
+	deriving Show
+
+encode :: SymKeyParams -> Encrypted -> BS.ByteString
+encode skp ec =
+	encryptedVersion ec `BS.cons` symKeyParamsLogN skp `BS.cons`
+	symKeyParamsSalt skp <> encryptedNonce ec <>
+	(encryptedKeySecurityByte ec `BS.cons` encryptedCipherText ec) <>
+	encryptedMac ec
+
+decode :: BS.ByteString -> Maybe (SymKeyParams, Encrypted)
+decode bs = do
+	[	[vsn], [lgn], BS.pack -> slt, BS.pack -> nnc,
+		[ksb], BS.pack -> ct, BS.pack -> mac ] <- pure $ dec bs
+	pure (	SymKeyParams { symKeyParamsLogN = lgn, symKeyParamsSalt = slt },
+		Encrypted {
+			encryptedVersion = vsn, encryptedNonce = nnc,
+			encryptedKeySecurityByte = ksb, encryptedCipherText = ct,
+			encryptedMac = mac } )
+	where
+	dec = (`go` structure') . BS.unpack
+	structure' = [1, 1, 16, 24, 1, 32, 16]
 	go xs = \case
 		[] -> []
 		n : ns -> uncurry (:) . ((`go` ns) `second`) $ splitAt n xs

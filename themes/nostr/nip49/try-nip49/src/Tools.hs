@@ -22,6 +22,3 @@ password = (`replicateM` select chars) =<< state (R.randomR (5, 30))
 chars :: [Char]
 chars = ['0' .. '9'] ++ ['A' .. 'Z'] ++ ['a' .. 'z'] ++
 	['!' .. '/'] ++ [':' .. '@'] ++ ['[' .. '`'] ++ ['{' .. '~']
-
-splitAtR :: Int -> BS.ByteString -> (BS.ByteString, BS.ByteString)
-splitAtR n bs = BS.splitAt (BS.length bs - n) bs
