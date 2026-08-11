@@ -2,6 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Ncryptsec where
@@ -48,7 +49,7 @@ toNsec gp = (Bech32.encode . Bech32.B nsec <$>) . either fail decrypt'
 	. (Bech32.getData ncryptsec =<<) . Bech32.decode
 	where
 	decrypt' cs = do
-		(skp, ec) <- maybe (fail "bad") pure $ decode cs
+		(skp, ec) <- either fail pure . unEitherFail $ decode cs -- maybe (fail "bad") pure $ decode cs
 		decrypt gp skp ec
 
 decrypt :: MonadFail m => m String -> SymKeyParams -> Encrypted -> m BS.ByteString
@@ -80,18 +81,21 @@ encode skp ec =
 	(encryptedKeySecurityByte ec `BS.cons` encryptedCipherText ec) <>
 	encryptedMac ec
 
-decode :: BS.ByteString -> Maybe (SymKeyParams, Encrypted)
+decode :: BS.ByteString -> EitherFail (SymKeyParams, Encrypted)
 decode bs = do
 	[	[vsn], [lgn], BS.pack -> slt, BS.pack -> nnc,
-		[ksb], BS.pack -> ct, BS.pack -> mac ] <- pure $ dec bs
+		[ksb], BS.pack -> ct, BS.pack -> mac ] <-
+		pure $ BS.unpack bs `sep` [1, 1, 16, 24, 1, 32, 16]
 	pure (	SymKeyParams { symKeyParamsLogN = lgn, symKeyParamsSalt = slt },
 		Encrypted {
 			encryptedVersion = vsn, encryptedNonce = nnc,
 			encryptedKeySecurityByte = ksb, encryptedCipherText = ct,
 			encryptedMac = mac } )
-	where
-	dec = (`go` structure') . BS.unpack
-	structure' = [1, 1, 16, 24, 1, 32, 16]
-	go xs = \case
+	where sep xs = \case
 		[] -> []
-		n : ns -> uncurry (:) . ((`go` ns) `second`) $ splitAt n xs
+		n : ns -> uncurry (:) . ((`sep` ns) `second`) $ splitAt n xs
+
+newtype EitherFail a = EitherFail { unEitherFail :: Either String a }
+	deriving (Functor, Applicative, Monad)
+
+instance MonadFail EitherFail where fail = EitherFail . Left
