@@ -5,7 +5,17 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Ncryptsec where
+module Ncryptsec (
+
+	-- * FROM/TO NSEC
+
+	fromNsec, toNsec, LogN, KeySecurityByte,
+
+	-- * CODEC
+
+	encrypt, decrypt, Ncryptsec, SymKeyPrms(..), Encrypted(..)
+
+	) where
 
 import Control.Arrow
 import Data.Word
@@ -23,9 +33,11 @@ import Codec.Bech32 qualified as Bech32
 nsec, ncsec :: String
 nsec = "nsec"; ncsec = "ncryptsec"
 
-fromNsec :: Word8 -> Word8 -> IO String -> T.Text -> IO T.Text
+fromNsec :: LogN -> KeySecurityByte -> IO String -> T.Text -> IO T.Text
 fromNsec lgn ks gp = (Bech32.encode . Bech32.B ncsec <$>) . (uncurry encode <$>)
 	. (encrypt lgn ks gp =<<) . (Bech32.getData nsec =<<) . Bech32.decode
+
+type LogN = Word8; type KeySecurityByte = Word8
 
 encrypt :: Word8 -> Word8 -> IO String -> BS.ByteString -> IO Ncryptsec
 encrypt lgn ks@(BS.singleton -> aad) gp pln = gp >>= \(BSC.pack -> pss) -> do
@@ -57,13 +69,13 @@ decrypt gp skp ec = gp >>= \(BSC.pack -> pss) -> do
 type Ncryptsec = (SymKeyPrms, Encrypted)
 
 data SymKeyPrms = SymKeyPrms {
-	symKeyPrmsLogN :: Word8, symKeyPrmsSalt :: BS.ByteString }
+	symKeyPrmsLogN :: LogN, symKeyPrmsSalt :: BS.ByteString }
 	deriving Show
 
 data Encrypted = Encrypted {
 	encryptedVersion :: Word8, encryptedNonce :: BS.ByteString,
-	encryptedKeySecurityByte :: Word8, encryptedCipherText :: BS.ByteString,
-	encryptedMac :: BS.ByteString }
+	encryptedKeySecurityByte :: KeySecurityByte,
+	encryptedCipherText :: BS.ByteString, encryptedMac :: BS.ByteString }
 	deriving Show
 
 encode :: SymKeyPrms -> Encrypted -> BS.ByteString
