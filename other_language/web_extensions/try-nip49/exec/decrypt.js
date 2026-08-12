@@ -60,6 +60,59 @@ function split(bs, ns) {
 	return [bs.slice(0, n), ...split(bs.slice(n), rest)];
 }
 
+function chunks(n, xs) {
+	const ln = xs.length;
+	if (ln < n) {
+		return { init: [], last: xs, lastN: ln };
+	}
+	const ys = chunks(n, xs.slice(n));
+	const init = ys.init;
+	const last = ys.last;
+	const lastN = ys.lastN;
+	return { init: [xs.slice(0, n), ...init], last, lastN };
+}
+
+const c8 = chunks(8, decoded.dataPart);
+
+console.log(c8);
+console.log(chunks(8, []));
+console.log(chunks(8, [0]));
+console.log(chunks(8, [0, 1]));
+console.log(chunks(8, [0, 1, 2, 3, 4, 5, 6]));
+console.log(chunks(8, [0, 1, 2, 3, 4, 5, 6, 7]));
+console.log(chunks(8, [0, 1, 2, 3, 4, 5, 6, 7, 8]));
+
+function word5sToWord40(ws) {
+	return ws.reduce(
+		(w, x) => (w << 5n) | BigInt(x),
+		0n
+	);
+}
+
+console.log(c8.init.map(word5sToWord40));
+console.log(word5sToWord40(c8.last) << 5n * (8n - BigInt(c8.lastN)));
+
+const c40 = {
+	init: c8.init.map(word5sToWord40),
+	last: word5sToWord40(c8.last) << 5n * (8n - BigInt(c8.lastN)),
+	lastN: c8.lastN * 5
+}
+
+console.log(c40);
+
+function word40ToWord8List(w) {
+	return [
+		Number((w >> 32n) & 0xffn),
+		Number((w >> 24n) & 0xffn),
+		Number((w >> 16n) & 0xffn),
+		Number((w >> 8n) & 0xffn),
+		Number(w & 0xffn)
+	];
+}
+
+console.log(c40.init.map(word40ToWord8List));
+
+/*
 const [vsn, lgn, slt, nnc, aad, ct, mac] = split(decoded.dataPart, [1, 1, 16, 24, 1, 32, 16]);
 
 console.log(vsn, lgn, slt, nnc, aad, ct, mac);
@@ -72,3 +125,4 @@ const encrypted = {
 	cipherText: ct, mac: mac }
 
 console.log(symKeyPrms, encrypted);
+*/
