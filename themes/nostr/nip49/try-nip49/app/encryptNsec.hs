@@ -13,6 +13,6 @@ main :: IO ()
 main = do
 	[nsfp, pssfp, cnsfp] <- getArgs
 	ns <- T.readFile nsfp
-	T.writeFile cnsfp =<< case pssfp of
-		"-" -> Ncryptsec.fromNsec 16 0 (withNoEcho getLine) ns
-		_ -> Ncryptsec.fromNsec 16 0 (readFile pssfp) ns
+	let	pss = case pssfp of
+			"-" -> withNoEcho getLine; _ -> readFile pssfp
+	T.writeFile cnsfp =<< Ncryptsec.fromNsec 16 0 pss ns
