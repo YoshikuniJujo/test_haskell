@@ -20,52 +20,44 @@ import XChaCha qualified
 import Scrypt qualified
 import Codec.Bech32 qualified as Bech32
 
-nsec, ncryptsec :: String
-nsec = "nsec"; ncryptsec = "ncryptsec"
+nsec, ncsec :: String
+nsec = "nsec"; ncsec = "ncryptsec"
 
 fromNsec :: Word8 -> Word8 -> IO String -> T.Text -> IO T.Text
-fromNsec lgn ksb gp = (Bech32.encode . Bech32.B ncryptsec <$>)
-	. (uncurry encode <$>) . either error (encrypt lgn ksb gp)
-	. (Bech32.getData nsec =<<) . Bech32.decode
+fromNsec lgn ks gp = (Bech32.encode . Bech32.B ncsec <$>) . (uncurry encode <$>)
+	. (encrypt lgn ks gp =<<) . (Bech32.getData nsec =<<) . Bech32.decode
 
-encrypt :: Word8 -> Word8 -> IO String -> BS.ByteString ->
-	IO (SymKeyParams, Encrypted)
-encrypt lgn ksb@((BS.pack . (: [])) -> aad) gp pln = gp >>= \(BSC.pack -> pss) -> do
+encrypt :: Word8 -> Word8 -> IO String -> BS.ByteString -> IO Ncryptsec
+encrypt lgn ks@(BS.singleton -> aad) gp pln = gp >>= \(BSC.pack -> pss) -> do
 	(slt, ky) <- skey pss
 	(nnc, ct, BA.convert -> mac) <- XChaCha.encrypt ky aad pln
-	pure (	SymKeyParams {
-			symKeyParamsLogN = lgn,
-			symKeyParamsSalt = slt },
+	pure (	SymKeyPrms { symKeyPrmsLogN = lgn, symKeyPrmsSalt = slt },
 		Encrypted {
-			encryptedVersion = 2,
-			encryptedNonce = nnc,
-			encryptedKeySecurityByte = ksb,
-			encryptedCipherText = ct,
-			encryptedMac = mac } )
+			encryptedVersion = 2, encryptedNonce = nnc,
+			encryptedKeySecurityByte = ks,
+			encryptedCipherText = ct, encryptedMac = mac } )
 	where skey pss = (id &&& \s -> Scrypt.hash lgn s pss) <$> getEntropy 16
 
 toNsec :: MonadFail m => m String -> T.Text -> m T.Text
-toNsec gp = (Bech32.encode . Bech32.B nsec <$>) . either fail decrypt'
-	. (Bech32.getData ncryptsec =<<) . Bech32.decode
-	where
-	decrypt' cs = do
-		(skp, ec) <- either fail pure . unEitherFail $ decode cs -- maybe (fail "bad") pure $ decode cs
-		decrypt gp skp ec
+toNsec gp = (Bech32.encode . Bech32.B nsec <$>) . (uncurry (decrypt gp) =<<)
+	. (decode =<<) . (Bech32.getData ncsec =<<) . Bech32.decode
 
-decrypt :: MonadFail m => m String -> SymKeyParams -> Encrypted -> m BS.ByteString
+decrypt :: MonadFail m => m String -> SymKeyPrms -> Encrypted -> m BS.ByteString
 decrypt gp skp ec = gp >>= \(BSC.pack -> pss) -> do
-	2 <- pure $ encryptedVersion ec
-	let	lgn = symKeyParamsLogN skp
-		slt = symKeyParamsSalt skp
-		nnc = encryptedNonce ec
-		aad = BS.pack [encryptedKeySecurityByte ec]
-		ct = encryptedCipherText ec
-		mac = encryptedMac ec
+	2 <- pure vsn
 	either (fail . show) pure . eitherCryptoError
-		$ XChaCha.decrypt' (Scrypt.hash lgn slt pss) nnc aad ct mac
+		$ XChaCha.decrypt (Scrypt.hash lgn slt pss) nnc aad ct mac
+	where
+	SymKeyPrms { symKeyPrmsLogN = lgn, symKeyPrmsSalt = slt } = skp
+	Encrypted {
+		encryptedVersion = vsn, encryptedNonce = nnc,
+		encryptedKeySecurityByte = (BS.pack . (: []) -> aad),
+		encryptedCipherText = ct, encryptedMac = mac } = ec
 
-data SymKeyParams = SymKeyParams {
-	symKeyParamsLogN :: Word8, symKeyParamsSalt :: BS.ByteString }
+type Ncryptsec = (SymKeyPrms, Encrypted)
+
+data SymKeyPrms = SymKeyPrms {
+	symKeyPrmsLogN :: Word8, symKeyPrmsSalt :: BS.ByteString }
 	deriving Show
 
 data Encrypted = Encrypted {
@@ -74,28 +66,23 @@ data Encrypted = Encrypted {
 	encryptedMac :: BS.ByteString }
 	deriving Show
 
-encode :: SymKeyParams -> Encrypted -> BS.ByteString
+encode :: SymKeyPrms -> Encrypted -> BS.ByteString
 encode skp ec =
-	encryptedVersion ec `BS.cons` symKeyParamsLogN skp `BS.cons`
-	symKeyParamsSalt skp <> encryptedNonce ec <>
+	encryptedVersion ec `BS.cons` symKeyPrmsLogN skp `BS.cons`
+	symKeyPrmsSalt skp <> encryptedNonce ec <>
 	(encryptedKeySecurityByte ec `BS.cons` encryptedCipherText ec) <>
 	encryptedMac ec
 
-decode :: BS.ByteString -> EitherFail (SymKeyParams, Encrypted)
+decode :: MonadFail m => BS.ByteString -> m (SymKeyPrms, Encrypted)
 decode bs = do
 	[	[vsn], [lgn], BS.pack -> slt, BS.pack -> nnc,
-		[ksb], BS.pack -> ct, BS.pack -> mac ] <-
+		[ks], BS.pack -> ct, BS.pack -> mac ] <-
 		pure $ BS.unpack bs `sep` [1, 1, 16, 24, 1, 32, 16]
-	pure (	SymKeyParams { symKeyParamsLogN = lgn, symKeyParamsSalt = slt },
+	pure (	SymKeyPrms { symKeyPrmsLogN = lgn, symKeyPrmsSalt = slt },
 		Encrypted {
 			encryptedVersion = vsn, encryptedNonce = nnc,
-			encryptedKeySecurityByte = ksb, encryptedCipherText = ct,
+			encryptedKeySecurityByte = ks, encryptedCipherText = ct,
 			encryptedMac = mac } )
 	where sep xs = \case
 		[] -> []
 		n : ns -> uncurry (:) . ((`sep` ns) `second`) $ splitAt n xs
-
-newtype EitherFail a = EitherFail { unEitherFail :: Either String a }
-	deriving (Functor, Applicative, Monad)
-
-instance MonadFail EitherFail where fail = EitherFail . Left

@@ -5,16 +5,16 @@
 
 packages:
 - completed:
-    commit: 5f39144d439a211ce5146b494ca77b22359d81bf
+    commit: 1a67085bb5c8e91351dc47d1ed55e0c0a3e5b8d6
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-bech32
     pantry-tree:
-      sha256: 5f5f0d79e6052cf74ca21f3aefe5bc382c61373be2287eec57e4675d5a2a52dc
+      sha256: f913b9e03a177750d2138ff9189a051eafbba92b1c0f7e3052bff0a5c9f08d69
       size: 752
     subdir: themes/nostr/bech32/try-bech32
     version: 0.1.0.0
   original:
-    commit: 5f39144d439a211ce5146b494ca77b22359d81bf
+    commit: 1a67085bb5c8e91351dc47d1ed55e0c0a3e5b8d6
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/nostr/bech32/try-bech32
 snapshots:

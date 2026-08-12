@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 5f39144d439a211ce5146b494ca77b22359d81bf
+  commit: 1a67085bb5c8e91351dc47d1ed55e0c0a3e5b8d6
   subdirs:
   - themes/nostr/bech32/try-bech32
 

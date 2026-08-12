@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module XChaCha (decrypt', encrypt) where
+module XChaCha (decrypt, encrypt) where
 
 import Control.Monad
 import Data.ByteArray qualified as BA
@@ -22,9 +22,9 @@ encrypt ky aad pln = do
 	let	(cs, CC.finalize -> Mac.Auth mac) = CC.encrypt pln st
 	pure (nnc_, cs, mac)
 
-decrypt' :: BS.ByteString -> BS.ByteString -> BS.ByteString ->
+decrypt :: BS.ByteString -> BS.ByteString -> BS.ByteString ->
 	BS.ByteString -> BS.ByteString -> CryptoFailable BS.ByteString
-decrypt' ky nnc aad cph etg = Mac.authTag etg >>= \etg' -> do
+decrypt ky nnc aad cph etg = Mac.authTag etg >>= \etg' -> do
 	st <- finAppendAAD aad <$> (CC.initializeX ky =<< CC.nonce24 nnc)
 	let	(pln, CC.finalize -> ctg) = CC.decrypt cph st
 	pln <$ when (ctg /= etg') (CryptoFailed CryptoError_MacKeyInvalid)
