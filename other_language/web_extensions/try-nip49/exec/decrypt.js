@@ -1,51 +1,74 @@
-import { scrypt } from '@noble/hashes/scrypt.js';
-import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
+import fs from 'node:fs/promises';
+import { generate, verify, word30ToWord5List } from '../src/polymod.js';
 
-function generate(ws) {
-	return (1 ^ polymod([...ws, 0, 0, 0, 0, 0, 0])) >>> 0;
-}
-
-function verify(ws) {
-	return polymod(ws) == 1;
-}
-
-const gen = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
-const mask = 0x3fffffff;
-
-function applyGen(w5, cs) {
-	for (let i = 0; i < 5; i++) {
-		if ((w5 & (1 << i)) !== 0)
-			cs ^= gen[i];
-	}
-	return (cs & mask);
-}
-
-function polymod(ws, cs = 1) {
-	for (const w5 of ws) {
-		const h5 = cs >>> 25;
-		cs = ((cs << 5) |w5) >>> 0;
-		cs = applyGen(h5, cs);
-	}
-	return (cs & mask) >>> 0;
-}
-
-function word30ToWord5List(w30) {
+function hrpExpand(hrp) {
+	const bs = hrp.map(c => c.charCodeAt(0));
 	return [
-		(w30 >>> 25) & 0x1f,
-		(w30 >>> 20) & 0x1f,
-		(w30 >>> 15) & 0x1f,
-		(w30 >>> 10) & 0x1f,
-		(w30 >>> 5) & 0x1f,
-		w30 & 0x1f
+		...bs.map(b => b >>> 5),
+		0,
+		...bs.map(b => b & 0x1f)
 	];
+}
+
+const charset = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+
+function dpToWord5s(dp) {
+	return dp.map(c => charset.indexOf(c));
 }
 
 const cs = generate([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 const ws2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...word30ToWord5List(cs)];
 
-console.log(polymod([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
 console.log(generate([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
 console.log((word30ToWord5List(1061443723)));
 console.log(cs)
 console.log(ws2)
 console.log(verify(ws2));
+
+const buffer = await fs.readFile('../../../themes/nostr/nip49/try-nip49/test_vectors/test00.ncryptsec');
+const text = new TextDecoder().decode(buffer);
+const chars = [...text];
+console.log(chars);
+
+const i = chars.lastIndexOf('1');
+const hrp = chars.slice(0, i);
+const dp = chars.slice(i + 1);
+
+console.log(hrp);
+console.log(dp);
+
+const hrp5 = hrpExpand(hrp);
+const dp5 = dpToWord5s(dp);
+
+console.log(hrp5);
+console.log(dp5);
+
+console.log(verify([...hrp5, ...dp5]))
+
+const decoded = {
+	humanReadablePart: hrp.join(''),
+	dataPart: dp5.slice(0, -6) }
+
+console.log(decoded);
+
+function split(bs, ns) {
+	if (ns.length === 0) {
+		return [];
+	}
+
+	const [n, ...rest] = ns;
+	return [bs.slice(0, n), ...split(bs.slice(n), rest)];
+}
+
+const [vsn, lgn, slt, nnc, aad, ct, mac] = split(decoded.dataPart, [1, 1, 16, 24, 1, 32, 16]);
+
+console.log(vsn, lgn, slt, nnc, aad, ct, mac);
+
+const symKeyPrms = { logN: lgn[0], salt: slt }
+
+
+const encrypted = {
+	version: vsn[0], nonce: nnc, keySecurityByte: aad[0],
+	cipherText: ct, mac: mac }
+
+console.log(symKeyPrms, encrypted);
