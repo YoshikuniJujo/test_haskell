@@ -15,6 +15,8 @@ const text = new TextDecoder().decode(buffer);
 
 const decoded = Bech32.decode(text);
 
+console.log('DECODED: ', decoded);
+
 const [vsn, lgn, slt, nnc, aad, ct, mac] =
 	split(decoded, [1, 1, 16, 24, 1, 32, 16]);
 
@@ -24,6 +26,8 @@ function split(bs, ns) {
 	return [bs.slice(0, n), ...split(bs.slice(n), rest)]; }
 
 console.log(vsn, lgn, slt, nnc, aad, ct, mac);
+
+console.log("NONCE: ", nnc);
 
 const symKeyPrms = { logN: lgn[0], salt: slt };
 const encrypted = {
