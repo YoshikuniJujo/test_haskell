@@ -183,3 +183,38 @@ const secretKeyW40s = {
 
 console.log(secretKeyW40s);
 console.log(Math.ceil(secretKeyW40s.lastN / 5));
+
+function word40ToWord5s(w) {
+	return [
+		Number((w >> 35n) &31n),
+		Number((w >> 30n) &31n),
+		Number((w >> 25n) &31n),
+		Number((w >> 20n) &31n),
+		Number((w >> 15n) &31n),
+		Number((w >> 10n) &31n),
+		Number((w >> 5n) &31n),
+		Number(w & 31n) ];
+}
+
+const secretKeyW5sInit = secretKeyW40s.init.map(word40ToWord5s);
+const secretKeyW5sLast = word40ToWord5s(secretKeyW40s.last).slice(0, Math.ceil(secretKeyW40s.lastN / 5));
+
+console.log(secretKeyW5sInit);
+console.log(word40ToWord5s(secretKeyW40s.last).slice(0, Math.ceil(secretKeyW40s.lastN / 5)));
+
+const secretKeyW5s = secretKeyW5sInit.flat().concat(secretKeyW5sLast);
+
+console.log(secretKeyW5s);
+console.log(hrpExpand([..."nsec"]));
+
+const secretKeyW5s2 = [...hrpExpand([..."nsec"]), ...secretKeyW5s];
+console.log(secretKeyW5s2);
+const checksum = word30ToWord5List(generate(secretKeyW5s2));
+console.log(checksum);
+
+const secretKeyW5s3 = [...secretKeyW5s, ...checksum];
+console.log(secretKeyW5s3.map(w => charset[w]));
+
+const nsec = 'nsec' + '1' + secretKeyW5s3.map(w => charset[w]).join('');
+
+console.log(nsec);
