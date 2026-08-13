@@ -1,220 +1,47 @@
 import fs from 'node:fs/promises';
-import { generate, verify, word30ToWord5List } from '../src/polymod.js';
 import { scrypt } from '@noble/hashes/scrypt.js';
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
+import * as Bech32 from '../src/bech32.js';
 
-function hrpExpand(hrp) {
-	const bs = hrp.map(c => c.charCodeAt(0));
-	return [
-		...bs.map(b => b >>> 5),
-		0,
-		...bs.map(b => b & 0x1f)
-	];
-}
+process.stdout.on('error', err => {
+	if (err.code === 'EPIPE') { process.exit(0); }
+	throw err; });
 
-const charset = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
-
-function dpToWord5s(dp) {
-	return dp.map(c => charset.indexOf(c));
-}
-
-const cs = generate([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-const ws2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...word30ToWord5List(cs)];
-
-console.log(generate([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
-console.log((word30ToWord5List(1061443723)));
-console.log(cs)
-console.log(ws2)
-console.log(verify(ws2));
-
-const buffer = await fs.readFile('../../../themes/nostr/nip49/try-nip49/test_vectors/test00.ncryptsec');
-const password = await fs.readFile('../../../themes/nostr/nip49/try-nip49/test_vectors/test00.password');
+const buffer = await fs.readFile(
+	'../../../themes/nostr/nip49/try-nip49/test_vectors/test00.ncryptsec' );
+const password = await fs.readFile(
+	'../../../themes/nostr/nip49/try-nip49/test_vectors/test00.password' );
 const text = new TextDecoder().decode(buffer);
-const chars = [...text];
-console.log(chars);
 
-const i = chars.lastIndexOf('1');
-const hrp = chars.slice(0, i);
-const dp = chars.slice(i + 1);
+const decoded = Bech32.bech32Decode(text);
 
-console.log(hrp);
-console.log(dp);
-
-const hrp5 = hrpExpand(hrp);
-const dp5 = dpToWord5s(dp);
-
-console.log(hrp5);
-console.log(dp5);
-
-console.log(verify([...hrp5, ...dp5]))
-
-const decoded = {
-	humanReadablePart: hrp.join(''),
-	dataPart: dp5.slice(0, -6) }
-
-console.log(decoded);
+const [vsn, lgn, slt, nnc, aad, ct, mac] =
+	split(decoded, [1, 1, 16, 24, 1, 32, 16]);
 
 function split(bs, ns) {
-	if (ns.length === 0) {
-		return [];
-	}
-
+	if (ns.length === 0) { return []; }
 	const [n, ...rest] = ns;
-	return [bs.slice(0, n), ...split(bs.slice(n), rest)];
-}
-
-function chunks(n, xs) {
-	const ln = xs.length;
-	if (ln < n) {
-		return { init: [], last: xs, lastN: ln };
-	}
-	const ys = chunks(n, xs.slice(n));
-	const init = ys.init;
-	const last = ys.last;
-	const lastN = ys.lastN;
-	return { init: [xs.slice(0, n), ...init], last, lastN };
-}
-
-const c8 = chunks(8, decoded.dataPart);
-
-console.log(c8);
-console.log(chunks(8, []));
-console.log(chunks(8, [0]));
-console.log(chunks(8, [0, 1]));
-console.log(chunks(8, [0, 1, 2, 3, 4, 5, 6]));
-console.log(chunks(8, [0, 1, 2, 3, 4, 5, 6, 7]));
-console.log(chunks(8, [0, 1, 2, 3, 4, 5, 6, 7, 8]));
-
-function word5sToWord40(ws) {
-	return ws.reduce(
-		(w, x) => (w << 5n) | BigInt(x),
-		0n
-	);
-}
-
-console.log(c8.init.map(word5sToWord40));
-console.log(word5sToWord40(c8.last) << 5n * (8n - BigInt(c8.lastN)));
-
-const c40 = {
-	init: c8.init.map(word5sToWord40),
-	last: word5sToWord40(c8.last) << 5n * (8n - BigInt(c8.lastN)),
-	lastN: c8.lastN * 5
-}
-
-console.log(c40);
-
-function word40ToWord8List(w) {
-	return [
-		Number((w >> 32n) & 0xffn),
-		Number((w >> 24n) & 0xffn),
-		Number((w >> 16n) & 0xffn),
-		Number((w >> 8n) & 0xffn),
-		Number(w & 0xffn)
-	];
-}
-
-const dataPartInit = c40.init.map(word40ToWord8List);
-const dataPartLast = word40ToWord8ListTail(c40.last, c40.lastN / 8);
-
-console.log(dataPartInit);
-console.log(dataPartLast);
-
-function word40ToWord8ListTail(w, n) {
-	return word40ToWord8List(w).slice(0, n);
-}
-
-const dataPart = new Uint8Array(dataPartInit.flat().concat(dataPartLast));
-
-console.log(dataPartInit.concat(dataPartLast));
-console.log(dataPart);
-
-const [vsn, lgn, slt, nnc, aad, ct, mac] = split(dataPart, [1, 1, 16, 24, 1, 32, 16]);
+	return [bs.slice(0, n), ...split(bs.slice(n), rest)]; }
 
 console.log(vsn, lgn, slt, nnc, aad, ct, mac);
 
 const symKeyPrms = { logN: lgn[0], salt: slt };
 const encrypted = {
-	version: vsn[0],
-	nonce: nnc,
-	keySecurityByte: aad[0],
-	cipherText: ct,
-	mac: mac };
+	version: vsn[0], nonce: nnc,
+	keySecurityByte: aad[0], cipherText: ct, mac: mac };
 
 console.log(symKeyPrms);
 console.log(encrypted);
 console.log(password);
 
-const key = scrypt(password, symKeyPrms.salt, {
-	N: 2 ** symKeyPrms.logN,
-	r: 8, p: 1, dkLen: 32 });
+const smkey = scrypt(password, symKeyPrms.salt,
+	{ N: 2 ** symKeyPrms.logN, r: 8, p: 1, dkLen: 32 });
 
-console.log(key);
+console.log(smkey);
 
 const ciphertext = new Uint8Array([...ct, ...mac]);
-
-const chacha = xchacha20poly1305(key, encrypted.nonce, aad);
-
+const chacha = xchacha20poly1305(smkey, encrypted.nonce, aad);
 const secretKey = chacha.decrypt(ciphertext);
 
 console.log(secretKey);
-
-const secretKeyC5 = chunks(5, Array.from(secretKey));
-
-console.log(secretKeyC5);
-
-function word8sToWord40(ws) {
-	let w = 0n;
-
-	for (const x of ws) {
-		w = (w << 8n) | BigInt(x);
-	}
-
-	return w;
-}
-
-const secretKeyW40sInit = secretKeyC5.init.map(word8sToWord40);
-const secretKeyW40Last = word8sToWord40(secretKeyC5.last) << 8n * (5n - BigInt(secretKeyC5.lastN))
-
-const secretKeyW40s = {
-	init: secretKeyW40sInit,
-	last: secretKeyW40Last,
-	lastN: secretKeyC5.lastN * 8
-}
-
-console.log(secretKeyW40s);
-console.log(Math.ceil(secretKeyW40s.lastN / 5));
-
-function word40ToWord5s(w) {
-	return [
-		Number((w >> 35n) &31n),
-		Number((w >> 30n) &31n),
-		Number((w >> 25n) &31n),
-		Number((w >> 20n) &31n),
-		Number((w >> 15n) &31n),
-		Number((w >> 10n) &31n),
-		Number((w >> 5n) &31n),
-		Number(w & 31n) ];
-}
-
-const secretKeyW5sInit = secretKeyW40s.init.map(word40ToWord5s);
-const secretKeyW5sLast = word40ToWord5s(secretKeyW40s.last).slice(0, Math.ceil(secretKeyW40s.lastN / 5));
-
-console.log(secretKeyW5sInit);
-console.log(word40ToWord5s(secretKeyW40s.last).slice(0, Math.ceil(secretKeyW40s.lastN / 5)));
-
-const secretKeyW5s = secretKeyW5sInit.flat().concat(secretKeyW5sLast);
-
-console.log(secretKeyW5s);
-console.log(hrpExpand([..."nsec"]));
-
-const secretKeyW5s2 = [...hrpExpand([..."nsec"]), ...secretKeyW5s];
-console.log(secretKeyW5s2);
-const checksum = word30ToWord5List(generate(secretKeyW5s2));
-console.log(checksum);
-
-const secretKeyW5s3 = [...secretKeyW5s, ...checksum];
-console.log(secretKeyW5s3.map(w => charset[w]));
-
-const nsec = 'nsec' + '1' + secretKeyW5s3.map(w => charset[w]).join('');
-
-console.log(nsec);
+console.log(Bech32.bech32Encode('nsec', secretKey));
