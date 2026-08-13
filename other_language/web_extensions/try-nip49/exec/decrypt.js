@@ -13,7 +13,7 @@ const password = await fs.readFile(
 	'../../../themes/nostr/nip49/try-nip49/test_vectors/test00.password' );
 const text = new TextDecoder().decode(buffer);
 
-const decoded = Bech32.bech32Decode(text);
+const decoded = Bech32.decode(text);
 
 const [vsn, lgn, slt, nnc, aad, ct, mac] =
 	split(decoded, [1, 1, 16, 24, 1, 32, 16]);
@@ -44,4 +44,4 @@ const chacha = xchacha20poly1305(smkey, encrypted.nonce, aad);
 const secretKey = chacha.decrypt(ciphertext);
 
 console.log(secretKey);
-console.log(Bech32.bech32Encode('nsec', secretKey));
+console.log(Bech32.encode('nsec', secretKey));

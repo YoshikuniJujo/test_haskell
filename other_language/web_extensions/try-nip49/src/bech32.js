@@ -57,7 +57,7 @@ function word40ToWord8ListTail(w, n) {
 	return word40ToWord8List(w).slice(0, n);
 }
 
-export function bech32Decode(txt) {
+export function decode(txt) {
 	const chars = [...txt];
 	const i = chars.lastIndexOf('1');
 	const hrp = chars.slice(0, i);
@@ -83,7 +83,7 @@ export function bech32Decode(txt) {
 	return dataPart;
 }
 
-export function bech32Encode(hrp, dp) {
+export function encode(hrp, dp) {
 
 	const secretKeyC5 = chunks(5, Array.from(dp));
 	const secretKeyW40sInit = secretKeyC5.init.map(word8sToWord40);
