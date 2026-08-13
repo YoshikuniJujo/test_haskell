@@ -7,7 +7,8 @@
   "scripts": {
     "build": "./node_modules/.bin/esbuild src/tryNip49.js --bundle --outfile=dist/tryNip49.js && npm run copyManifest",
     "run": "npm run build && web-ext run --source-dir dist",
-    "android": "npm run build && web-ext run --source-dir dist -t firefox-android --android-device=31091FDH2005N2 --firefox-apk=org.mozilla.fenix",
+    "find-android": "web-ext run --source-dir dist -t firefox-android",
+    "android": "npm run build && web-ext run --source-dir dist -t firefox-android --android-device=$npm_config_android_device --firefox-apk=org.mozilla.fenix",
     "package": "npm run build && web-ext build --source-dir dist",
     "copyManifest": "cp src/manifest.json dist/manifest.json"
   },
