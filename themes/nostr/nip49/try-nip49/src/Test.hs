@@ -17,6 +17,11 @@ jsdir = (<$> getEnv "PWD") \h -> joinPath [
 	h, "..", "..", "..", "..", "other_language",
 	"javascript", "nostr", "try-nostr-crypto-utils", "test-vectors" ]
 
+webextdir :: IO FilePath
+webextdir = (<$> getEnv "PWD") \h -> joinPath [
+	h, "..", "..", "..", "..", "other_language",
+	"web_extensions", "try-nip49", "test_vectors" ]
+
 test1 :: FilePath -> String -> Int -> IO ()
 test1 dr nm n = do
 	ns0 <- T.readFile (dr </> fileNameN nm "nsec" n)
