@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { generate, verify, word30ToWord5List } from '../src/polymod.js';
+import { scrypt } from '@noble/hashes/scrypt.js';
 
 function hrpExpand(hrp) {
 	const bs = hrp.map(c => c.charCodeAt(0));
@@ -26,6 +27,7 @@ console.log(ws2)
 console.log(verify(ws2));
 
 const buffer = await fs.readFile('../../../themes/nostr/nip49/try-nip49/test_vectors/test00.ncryptsec');
+const password = await fs.readFile('../../../themes/nostr/nip49/try-nip49/test_vectors/test00.password');
 const text = new TextDecoder().decode(buffer);
 const chars = [...text];
 console.log(chars);
@@ -110,7 +112,42 @@ function word40ToWord8List(w) {
 	];
 }
 
-console.log(c40.init.map(word40ToWord8List));
+const dataPartInit = c40.init.map(word40ToWord8List);
+const dataPartLast = word40ToWord8ListTail(c40.last, c40.lastN / 8);
+
+console.log(dataPartInit);
+console.log(dataPartLast);
+
+function word40ToWord8ListTail(w, n) {
+	return word40ToWord8List(w).slice(0, n);
+}
+
+const dataPart = new Uint8Array(dataPartInit.flat().concat(dataPartLast));
+
+console.log(dataPartInit.concat(dataPartLast));
+console.log(dataPart);
+
+const [vsn, lgn, slt, nnc, aad, ct, mac] = split(dataPart, [1, 1, 16, 24, 1, 32, 16]);
+
+console.log(vsn, lgn, slt, nnc, aad, ct, mac);
+
+const symKeyPrms = { logN: lgn[0], salt: slt };
+const encrypted = {
+	version: vsn[0],
+	nonce: nnc,
+	keySecurityByte: aad[0],
+	cipherText: ct,
+	mac: mac };
+
+console.log(symKeyPrms);
+console.log(encrypted);
+console.log(password);
+
+const key = scrypt(password, symKeyPrms.salt, {
+	N: 2 ** symKeyPrms.logN,
+	r: 8, p: 1, dkLen: 32 });
+
+console.log(key);
 
 /*
 const [vsn, lgn, slt, nnc, aad, ct, mac] = split(decoded.dataPart, [1, 1, 16, 24, 1, 32, 16]);
