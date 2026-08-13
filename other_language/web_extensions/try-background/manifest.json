@@ -1,0 +1,19 @@
+{
+	"manifest_version": 3,
+	"name": "Background Test",
+	"version": "0.1",
+	"background": {
+		"scripts": ["background.js"]
+	},
+
+	"permissions": [],
+
+	"content_scripts":[
+		{
+			"matches": ["<all_urls>"],
+			"js": ["content.js"],
+			"run_at": "document_end"
+
+		}
+	]
+}
