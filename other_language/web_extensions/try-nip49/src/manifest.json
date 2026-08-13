@@ -21,7 +21,8 @@
 	"content_scripts": [
 		{
 			"matches": ["<all_urls>"],
-			"js": ["tryNip49.js"]
+			"js": ["tryNip49.js"],
+			"run_at": "document_end"
 		}
 	]
 }
