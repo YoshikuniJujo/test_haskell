@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import { generate, verify, word30ToWord5List } from '../src/polymod.js';
 import { scrypt } from '@noble/hashes/scrypt.js';
+import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
 
 function hrpExpand(hrp) {
 	const bs = hrp.map(c => c.charCodeAt(0));
@@ -149,17 +150,10 @@ const key = scrypt(password, symKeyPrms.salt, {
 
 console.log(key);
 
-/*
-const [vsn, lgn, slt, nnc, aad, ct, mac] = split(decoded.dataPart, [1, 1, 16, 24, 1, 32, 16]);
+const ciphertext = new Uint8Array([...ct, ...mac]);
 
-console.log(vsn, lgn, slt, nnc, aad, ct, mac);
+const chacha = xchacha20poly1305(key, encrypted.nonce, aad);
 
-const symKeyPrms = { logN: lgn[0], salt: slt }
+const secretKey = chacha.decrypt(ciphertext);
 
-
-const encrypted = {
-	version: vsn[0], nonce: nnc, keySecurityByte: aad[0],
-	cipherText: ct, mac: mac }
-
-console.log(symKeyPrms, encrypted);
-*/
+console.log(secretKey);
