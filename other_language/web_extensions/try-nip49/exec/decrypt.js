@@ -157,3 +157,29 @@ const chacha = xchacha20poly1305(key, encrypted.nonce, aad);
 const secretKey = chacha.decrypt(ciphertext);
 
 console.log(secretKey);
+
+const secretKeyC5 = chunks(5, Array.from(secretKey));
+
+console.log(secretKeyC5);
+
+function word8sToWord40(ws) {
+	let w = 0n;
+
+	for (const x of ws) {
+		w = (w << 8n) | BigInt(x);
+	}
+
+	return w;
+}
+
+const secretKeyW40sInit = secretKeyC5.init.map(word8sToWord40);
+const secretKeyW40Last = word8sToWord40(secretKeyC5.last) << 8n * (5n - BigInt(secretKeyC5.lastN))
+
+const secretKeyW40s = {
+	init: secretKeyW40sInit,
+	last: secretKeyW40Last,
+	lastN: secretKeyC5.lastN * 8
+}
+
+console.log(secretKeyW40s);
+console.log(Math.ceil(secretKeyW40s.lastN / 5));
