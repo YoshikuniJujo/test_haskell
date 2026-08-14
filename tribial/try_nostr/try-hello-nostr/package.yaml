@@ -104,6 +104,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-hello-nostr
+  signEvent:
+    main:                signEvent.hs
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-hello-nostr
 
 tests:
   try-hello-nostr-test:
