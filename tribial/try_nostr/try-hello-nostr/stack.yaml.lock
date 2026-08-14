@@ -19,7 +19,7 @@ packages:
     subdir: themes/sns/nostr/try-nostr-event-ng
 snapshots:
 - completed:
-    sha256: 4b725ac72cddc2f4c726b7c348ea30343a459c3f22738923818c08f3e77e8fec
-    size: 733133
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2026/3/23.yaml
-  original: nightly-2026-03-23
+    sha256: f98e8d2cba89b7795d4107f0885b327ab09365f3a24539c850987a11b959dbc1
+    size: 771156
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2026/8/13.yaml
+  original: nightly-2026-08-13
