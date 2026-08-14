@@ -12,6 +12,7 @@ const buffer = await fs.readFile(
 const password = await fs.readFile(
 	'../../../themes/nostr/nip49/try-nip49/test_vectors/test00.password' );
 const text = new TextDecoder().decode(buffer);
+const password2 = new TextDecoder().decode(password);
 
 const decoded = Bech32.decode(text);
 
@@ -38,7 +39,7 @@ console.log(symKeyPrms);
 console.log(encrypted);
 console.log(password);
 
-const smkey = scrypt(password, symKeyPrms.salt,
+const smkey = scrypt(password2.normalize("NFKC"), symKeyPrms.salt,
 	{ N: 2 ** symKeyPrms.logN, r: 8, p: 1, dkLen: 32 });
 
 console.log(smkey);
