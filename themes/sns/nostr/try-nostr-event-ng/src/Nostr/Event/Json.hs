@@ -9,9 +9,13 @@ module Nostr.Event.Json (
 
 	encode, decode,
 
-	-- * CODEC BEGWEEN SIGNED EVENT AND JSON
+	-- * CODEC BETWEEN SIGNED EVENT AND JSON
 
 	encode', decode',
+
+	-- * CODEC BETWEEN NOPUB EVENT AND JSON
+
+	decodeNoPub,
 
 	-- * CODEC TAGS
 
@@ -35,6 +39,7 @@ import Crypto.Curve.Secp256k1
 import Numeric
 
 import Nostr.Event qualified as Event
+import Nostr.Event.NoPub qualified as NoPub
 import Nostr.Event.Signed qualified as Signed
 import Tools
 
@@ -43,13 +48,11 @@ decode = Signed.verify <=< decode'
 
 decode' :: A.Object -> Maybe Signed.E
 decode' obj = do
+	((crat, crat'), knd, (tgs, tgs'), cnt) <- basic obj
+
 	A.String idnt <- A.lookup "id" obj
-	A.String pk <- A.lookup "pubkey" obj
-	crat <- fromScientific <$> A.lookup "created_at" obj
-	knd <- fromScientific <$> A.lookup "kind" obj
-	tgs <- A.lookup "tags" obj
-	cnt <- getString <$> A.lookup "content" obj
 	A.String sig <- A.lookup "sig" obj
+	A.String pk <- A.lookup "pubkey" obj
 	pk' <- hexToPubkey pk
 	let	idnt' = BS.pack . (fst . head . readHex <$>)
 			. separate 2 $ T.unpack idnt
@@ -61,12 +64,33 @@ decode' obj = do
 	pure Signed.E {
 		Signed.idnt = idnt',
 		Signed.pubkey = pk',
-		Signed.created_at = intToUnixTime crat,
+		Signed.created_at = crat',
 		Signed.kind = knd,
-		Signed.tags = decodeTags tgs,
+		Signed.tags = tgs',
 		Signed.content = cnt,
 		Signed.sig = sig',
 		Signed.verified = True }
+
+decodeNoPub :: A.Object -> Maybe NoPub.E
+decodeNoPub obj = do
+	((_, crat'), knd, (_, tgs'), cnt) <- basic obj
+	pure NoPub.E {
+		NoPub.created_at = crat',
+		NoPub.kind = knd,
+		NoPub.tags = tgs',
+		NoPub.content = cnt }
+
+basic :: A.Object -> Maybe (
+	(Int, UnixTime), Int,
+	(A.Value, [(T.Text, (T.Text, [T.Text]))]), T.Text )
+basic obj = do
+	crat <- fromScientific <$> A.lookup "created_at" obj
+	let	crat' = intToUnixTime crat
+	knd <- fromScientific <$> A.lookup "kind" obj
+	tgs <- A.lookup "tags" obj
+	let	tgs' = decodeTags tgs
+	cnt <- getString <$> A.lookup "content" obj
+	pure ((crat, crat'), knd, (tgs, tgs'), cnt)
 
 fromScientific :: A.Value -> Int
 fromScientific (A.Number s) = round s
