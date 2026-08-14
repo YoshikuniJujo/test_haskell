@@ -18,6 +18,7 @@ import System.Environment
 import Network.WebSockets
 import Wuss
 import Nostr.Event qualified as Event
+import Nostr.Event.NoPub qualified as NoPub
 import Nostr.Event.Signed qualified as Signed
 import Nostr.Event.Json as EvJs
 
@@ -58,10 +59,13 @@ writeMessage ::
 	Connection -> Event.Secret -> Event.Pub -> T.Text -> IO BS.ByteString
 writeMessage cnn sk pk msg = do
 	ut <- getUnixTime
-	ev <- Signed.signature sk Event.E {
-		Event.pubkey = pk, Event.created_at = ut,
-		Event.kind = 1, Event.tags = [], Event.content = msg }
+	ev <- signature sk pk NoPub.E {
+		NoPub.created_at = ut, NoPub.kind = 1, NoPub.tags = [],
+		NoPub.content = msg }
 	Just jsn <- pure $ EvJs.encode' ev
 	sendTextData cnn . A.encode
 		. A.Array $ V.fromList [A.String "EVENT", A.Object jsn]
 	pure $ Signed.idnt ev
+
+signature :: Event.Secret -> Event.Pub -> NoPub.E -> IO Signed.E
+signature sk pk e = Signed.signature sk $ e `NoPub.addPubKey` pk
