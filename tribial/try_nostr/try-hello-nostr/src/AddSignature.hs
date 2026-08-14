@@ -9,3 +9,6 @@ import Nostr.Event.Signed qualified as Signed
 
 signature :: Event.Secret -> Event.Pub -> NoPub.E -> IO Signed.E
 signature sk pk e = Signed.signature sk $ e `NoPub.addPubKey` pk
+
+signature' :: Event.Secret -> Event.Pub -> NoPub.E -> Maybe Signed.E
+signature' sk pk e = Signed.signature' sk $ e `NoPub.addPubKey` pk

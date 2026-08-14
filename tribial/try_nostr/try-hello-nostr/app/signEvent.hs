@@ -19,3 +19,9 @@ main = do
 	Right pk <- Event.publicFromBech32 <$> T.readFile pkf
 	Just ev <-  (EvJs.decodeNoPub =<<) . A.decode <$> BSL.readFile evf
 	print . EvJs.encode' =<< signature sk pk ev
+	print . EvJs.encode' =<< maybeToIO (signature' sk pk ev)
+
+maybeToIO :: Maybe a -> IO a
+maybeToIO mx = do
+	Just x <- pure mx
+	pure x
