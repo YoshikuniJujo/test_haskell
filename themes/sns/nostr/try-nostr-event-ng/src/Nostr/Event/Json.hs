@@ -15,7 +15,7 @@ module Nostr.Event.Json (
 
 	-- * CODEC BETWEEN NOPUB EVENT AND JSON
 
-	decodeNoPub,
+	encodeNoPub, decodeNoPub,
 
 	-- * CODEC TAGS
 
@@ -130,6 +130,14 @@ encode' ev = do
 			. BSC.unpack . serialize_point $ Signed.pubkey ev),
 		("sig", A.String . T.pack . strToHexStr $ BSC.unpack sig),
 		("tags", encodeTags $ Signed.tags ev) ]
+
+encodeNoPub :: NoPub.E -> A.Object
+encodeNoPub ev = A.fromList [
+	("created_at", A.Number . fromIntegral . (\(CTime t) -> t)
+		. toEpochTime $ NoPub.created_at ev),
+	("kind", A.Number . fromIntegral $ NoPub.kind ev),
+	("tags", encodeTags $ NoPub.tags ev),
+	("content", A.String $ NoPub.content ev) ]
 
 encodeTags :: [(T.Text, (T.Text, [T.Text]))] -> A.Value
 encodeTags = A.Array . V.fromList .
