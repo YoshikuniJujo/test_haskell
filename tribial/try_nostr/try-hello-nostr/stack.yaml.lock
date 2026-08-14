@@ -5,16 +5,16 @@
 
 packages:
 - completed:
-    commit: 543898b5b3cff7c96d57a83510c4e54b9fff3d52
+    commit: 540d99adbd5b14ee81700ef81be76418e10b0da2
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-nostr-event-ng
     pantry-tree:
-      sha256: 51e6b9dbac4ed922ce4d7f82fb9bae495f9b2a335cad666877840a485178ea39
+      sha256: 6ed6755f536b909f589aa5d1f72ba56f9d9c53958432bafaad9ce58e56efde8a
       size: 1164
     subdir: themes/sns/nostr/try-nostr-event-ng
-    version: 0.1.0.1
+    version: 0.1.0.3
   original:
-    commit: 543898b5b3cff7c96d57a83510c4e54b9fff3d52
+    commit: 540d99adbd5b14ee81700ef81be76418e10b0da2
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/sns/nostr/try-nostr-event-ng
 snapshots:

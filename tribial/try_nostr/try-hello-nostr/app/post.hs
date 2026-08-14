@@ -24,6 +24,8 @@ import Nostr.Event.Json as EvJs
 
 import "try-hello-nostr" Tools
 
+import AddSignature
+
 main :: IO ()
 main = do
 	scr : adr : prt : pb : sc : msg : _ <- getArgs
@@ -66,6 +68,3 @@ writeMessage cnn sk pk msg = do
 	sendTextData cnn . A.encode
 		. A.Array $ V.fromList [A.String "EVENT", A.Object jsn]
 	pure $ Signed.idnt ev
-
-signature :: Event.Secret -> Event.Pub -> NoPub.E -> IO Signed.E
-signature sk pk e = Signed.signature sk $ e `NoPub.addPubKey` pk
