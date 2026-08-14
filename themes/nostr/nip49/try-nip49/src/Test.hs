@@ -29,3 +29,8 @@ test1 dr nm n = do
 	ns1 <- toNsec (readFile $ dr </> fileNameN nm "password" n) ncs
 	T.putStrLn ns0; T.putStrLn ns1
 	when (ns1 /= ns0) $ error "BAD"
+
+foo :: FilePath -> IO ()
+foo fp = do
+	ncs <- T.readFile fp
+	print =<< toNsec getLine ncs
