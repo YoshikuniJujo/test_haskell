@@ -11,7 +11,7 @@ module Nostr.Event (
 
 	-- * SIGNATURE AND VERIFY
 
-	signature, verify, hash, serialize,
+	signature, signature', verify, hash, serialize,
 
 	-- * KEYS
 
@@ -66,6 +66,9 @@ data E' = E' {
 
 signature :: Secret -> E -> IO (Maybe BS.ByteString)
 signature (Secret sec) ev = sign_schnorr sec (hash ev) <$> getEntropy 32
+
+signature' :: Secret -> E -> Maybe BS.ByteString
+signature' (Secret sec) ev = sign_schnorr sec (hash ev) (BS.replicate 32 0)
 
 secretFromBech32 :: T.Text -> Either String Secret
 secretFromBech32 sec = parseSecret =<< dataPart' "nsec" (chomp sec)

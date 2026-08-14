@@ -1,9 +1,10 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Nostr.Event.Signed (
 
-	E(..), signature, verify, verify'
+	E(..), signature, signature', verify, verify'
 
 	) where
 
@@ -31,6 +32,17 @@ signature sec e = do
 	Just sg <- Event.signature sec e
 	pure E {
 		idnt = Event.hash e,
+		pubkey = Event.pubkey e,
+		created_at = Event.created_at e,
+		kind = Event.kind e,
+		tags = Event.tags e,
+		content = Event.content e,
+		sig = sg,
+		verified = True }
+
+signature' :: Event.Secret -> Event.E -> Maybe E
+signature' sec e = (<$> Event.signature' sec e) \sg ->
+	E {	idnt = Event.hash e,
 		pubkey = Event.pubkey e,
 		created_at = Event.created_at e,
 		kind = Event.kind e,
