@@ -3,14 +3,7 @@ import { scrypt } from '@noble/hashes/scrypt.js';
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
 import * as Bech32 from './bech32.js';
 import * as Nip49 from './nip49.js';
-
-console.log("foobar");
-
-const npub = new TextDecoder().decode(await fs.readFile('/home/tatsuya/tmp/npub'));
-const ncryptsec = new TextDecoder().decode(await fs.readFile('/home/tatsuya/tmp/ncryptsec'));
-
-console.log(npub);
-console.log(ncryptsec);
+import { ncryptsec, password, npub } from '../generated/sampleKeyPair.js';
 
 const ncryptsec_unbech32 = Bech32.decode(ncryptsec);
 
@@ -27,7 +20,7 @@ const encrypted = {
 console.log(symKeyPrms);
 console.log(encrypted);
 
-const smkey = scrypt("nostr", symKeyPrms.salt,
+const smkey = scrypt(password, symKeyPrms.salt,
 	{ N: 2 ** symKeyPrms.logN, r: 8, p: 1, dkLen: 32 });
 
 console.log(smkey);
