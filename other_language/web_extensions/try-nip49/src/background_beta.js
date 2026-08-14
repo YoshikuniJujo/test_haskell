@@ -1,13 +1,13 @@
+import fs from 'node:fs/promises';
+import { scrypt } from '@noble/hashes/scrypt.js';
+import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
 import * as Bech32 from './bech32.js';
 import * as Nip49 from './nip49.js';
 
 console.log("foobar");
 
-const npub = "npub12jnjezcvghm52ydev403rd3ndmrqxdjvunufjrkn3j02qzg4g7rqqung7n"
-const ncryptsec =
-	"ncryptsec1qggyeq0yg9ehxnfkt6yf7h4nurta9qtjdwcx76a8m08p" +
-	"jqnxpd6cd67uqm5zsmk5420sq8at5luavqf88h98hvfzqegl3gaskj" +
-	"rjz3fmcawze63lfjl2u7t9reqaqwur8rmqvmuarhfy5yxugvyedeg9"
+const npub = new TextDecoder().decode(await fs.readFile('/home/tatsuya/tmp/npub'));
+const ncryptsec = new TextDecoder().decode(await fs.readFile('/home/tatsuya/tmp/ncryptsec'));
 
 console.log(npub);
 console.log(ncryptsec);
@@ -19,8 +19,6 @@ console.log(ncryptsec_unbech32);
 const [vsn, lgn, slt, nnc, aad, ct, mac] =
 	Nip49.split(ncryptsec_unbech32, [1, 1, 16, 24, 1, 32, 16]);
 
-console.log(vsn, lgn, slt, nnc, aad, ct, mac);
-
 const symKeyPrms = { logN: lgn[0], salt: slt };
 const encrypted = {
 	version: vsn[0], nonce: nnc,
@@ -28,3 +26,14 @@ const encrypted = {
 
 console.log(symKeyPrms);
 console.log(encrypted);
+
+const smkey = scrypt("nostr", symKeyPrms.salt,
+	{ N: 2 ** symKeyPrms.logN, r: 8, p: 1, dkLen: 32 });
+
+console.log(smkey);
+
+const ciphertext = new Uint8Array([...ct, ...mac]);
+const chacha = xchacha20poly1305(smkey, encrypted.nonce, aad);
+const secretKey = chacha.decrypt(ciphertext);
+
+console.log(Bech32.encode('nsec', secretKey));
