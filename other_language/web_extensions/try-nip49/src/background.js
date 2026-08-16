@@ -1,4 +1,5 @@
 import { npub } from "../generated/sampleKeyPair.js";
+import * as Bech32 from "./bech32.js";
 
 console.log("background started");
 
@@ -12,6 +13,8 @@ browser.runtime.onMessage.addListener((message, sender) => {
 	}
 
 	console.log("getPublicKey", sender.tab?.id, sender.tab?.url);
+	const hex = Bech32.decodeNpubToHex(npub);
+	console.log(hex);
 
-	return npub;
+	return Promise.resolve(hex);
 });

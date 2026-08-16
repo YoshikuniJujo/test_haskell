@@ -5,14 +5,16 @@ document.body.style.border = "5px solid red";
 const nostr = {
 
 	getPublicKey() {
-		return new window.Promise((resolve) => {
+		return new window.Promise(async (resolve) => {
 
-			browser.runtime.sendMessage({
+			const result = await browser.runtime.sendMessage({
 				method: "getPublicKey"
 			});
 
+			console.log(result);
+
 			resolve(
-				npub
+				result
 			);
 		});
 	},
