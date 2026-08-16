@@ -1,5 +1,10 @@
 import { generate, verify, word30ToWord5List } from '../src/polymod.js';
 
+export function decodeNpubToHex(np) {
+	const decoded = decode(np);
+	return Array.from(decoded, b => b.toString(16).padStart(2, "0")).join("");
+}
+
 function hrpExpand(hrp) {
 	const bs = hrp.map(c => c.charCodeAt(0));
 	return [

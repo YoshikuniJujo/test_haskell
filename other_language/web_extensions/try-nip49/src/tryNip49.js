@@ -6,6 +6,11 @@ const nostr = {
 
 	getPublicKey() {
 		return new window.Promise((resolve) => {
+
+			browser.runtime.sendMessage({
+				method: "getPublicKey"
+			});
+
 			resolve(
 				npub
 			);
