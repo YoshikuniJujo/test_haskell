@@ -7,4 +7,8 @@ browser.runtime.onMessage.addListener((msg) => {
 		});
 	}
 
+	if (msg.method == "input") {
+		console.log("input: ", msg.value);
+	}
+
 });
