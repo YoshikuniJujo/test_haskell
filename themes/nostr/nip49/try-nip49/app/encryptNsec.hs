@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -14,5 +15,9 @@ main = do
 	[nsfp, pssfp, cnsfp] <- getArgs
 	ns <- T.readFile nsfp
 	let	pss = case pssfp of
-			"-" -> withNoEcho getLine; _ -> readFile pssfp
+			"-" -> withNoEcho getLine; _ -> chomp <$> readFile pssfp
 	T.writeFile cnsfp =<< Ncryptsec.fromNsec 16 0 pss ns
+
+chomp :: String -> String
+chomp = reverse . go . reverse
+	where go = \case '\n' : '\r' : r -> r; '\n' : r -> r; r -> r
