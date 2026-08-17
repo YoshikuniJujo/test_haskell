@@ -1,5 +1,7 @@
 document.body.style.border = "3px solid green";
 
+const pendingRequests = new Map();
+
 const test = {
 
 	openInputTab() {
@@ -14,6 +16,19 @@ const test = {
 			resolve(r);
 		});
 
+	},
+
+	openInputTab2() {
+		return new window.Promise(async (resolve, reject) => {
+
+			console.log("here");
+
+			const requestId = crypto.randomUUID();
+
+			pendingRequests.set(requestId, { resolve, reject });
+
+			resolve("foobar");
+		});
 	}
 
 };
