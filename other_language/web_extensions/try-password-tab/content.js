@@ -2,13 +2,17 @@ document.body.style.border = "3px solid green";
 
 const test = {
 
-	async openInputTab() {
+	openInputTab() {
+		return new window.Promise(async (resolve) => {
 
-		const r = await browser.runtime.sendMessage({
-			method: "openInputTab"
+			const r = await browser.runtime.sendMessage({
+				method: "openInputTab"
+			});
+
+			console.log("content result: ", r);
+
+			resolve(r);
 		});
-
-		console.log(r);
 
 	}
 
