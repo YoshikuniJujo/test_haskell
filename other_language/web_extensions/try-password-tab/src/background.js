@@ -1,11 +1,4 @@
-console.log("background begin");
-
-let resolveInput = null;
-let inputTabId = null;
-let sourceTabId = null;
-
-async function sendInput(requestId, value)
-{
+const sendInput = async (requestId, value) => {
 	const { requests = {} } = await browser.storage.session.get("requests");
 	const request = requests[requestId];
 
@@ -17,8 +10,7 @@ async function sendInput(requestId, value)
 	await browser.tabs.update(request.sourceTabId, { active: true });
 	await browser.tabs.remove(request.inputTabId);
 	delete requests[requestId];
-	await browser.storage.session.set({ requests });
-}
+	await browser.storage.session.set({ requests }); }
 
 browser.runtime.onMessage.addListener((msg, sender) => {
 
@@ -29,7 +21,8 @@ browser.runtime.onMessage.addListener((msg, sender) => {
 
 			const tab = await browser.tabs.create({
 				url: browser.runtime.getURL(
-					`input.html?requestId=${encodeURIComponent(requestId)}`)
+					"input.html?requestId=" +
+					encodeURIComponent(requestId) )
 			});
 
 			const { requests = {} } =
@@ -42,19 +35,11 @@ browser.runtime.onMessage.addListener((msg, sender) => {
 			};
 
 			await browser.storage.session.set({ requests });
-
-			console.log(
-				await browser.storage.session.get("requests")
-			);
 		})();
 	}
 
 	if (msg.method == "sendInput") {
 		console.log("sendInput: ", msg.value);
-		return sendInput(
-			msg.requestId,
-			msg.value
-		);
-	}
+		return sendInput(msg.requestId, msg.value); }
 
 });
