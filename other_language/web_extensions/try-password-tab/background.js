@@ -6,21 +6,13 @@ let sourceTabId = null;
 
 async function sendInput(requestId, value)
 {
-	const { requests = {} } =
-		await browser.storage.session.get("requests");
+	const { requests = {} } = await browser.storage.session.get("requests");
 	const request = requests[requestId];
 
-	if (!request) {
-		throw new Error(`Unknown requestId: ${requestId}`);
-	}
+	if (!request) { throw new Error(`Unknown requestId: ${requestId}`); }
 
 	await browser.tabs.sendMessage(
-		request.sourceTabId,
-		{
-			method: "inputResult",
-			requestId,
-			value
-		}
+		request.sourceTabId, { method: "inputResult", requestId, value }
 	);
 	await browser.tabs.update(request.sourceTabId, { active: true });
 	await browser.tabs.remove(request.inputTabId);
@@ -29,20 +21,8 @@ async function sendInput(requestId, value)
 }
 
 browser.runtime.onMessage.addListener((msg, sender) => {
+
 	if (msg.method == "openInputTab") {
-		return new Promise(async (resolve) => {
-			resolveInput = resolve;
-			sourceTabId = sender.tab.id;
-
-			const tab = await browser.tabs.create({
-				url: browser.runtime.getURL("input.html")
-			});
-
-			inputTabId = tab.id;
-		});
-	}
-
-	if (msg.method == "openInputTab2") {
 		return (async () => {
 			const requestId = msg.requestId;
 			const sourceTabId = sender.tab.id;
@@ -67,22 +47,6 @@ browser.runtime.onMessage.addListener((msg, sender) => {
 				await browser.storage.session.get("requests")
 			);
 		})();
-	}
-
-	if (msg.method == "input") {
-		console.log("input: ", msg.value);
-		resolveInput?.(msg.value);
-		resolveInput = null;
-
-		if (inputTabId !== null) {
-			browser.tabs.remove(inputTabId);
-			inputTabId = null;
-		}
-
-		if (sourceTabId !== null) {
-			browser.tabs.update(sourceTabId, { active: true });
-			sourceTabId = null;
-		}
 	}
 
 	if (msg.method == "sendInput") {
