@@ -1,6 +1,3 @@
-import { scrypt } from '@noble/hashes/scrypt.js';
-import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
-
 export function generate(ws) {
 	return (1 ^ polymod([...ws, 0, 0, 0, 0, 0, 0])) >>> 0;
 }
