@@ -30,11 +30,25 @@ const test = {
 				requestId
 			});
 
-			resolve("foobar");
+//			resolve("foobar");
 		});
 	}
 
 };
+
+browser.runtime.onMessage.addListener((msg) => {
+	if (msg.method !== "inputResult") {
+		return;
+	}
+
+	console.log("input result: ", msg.value);
+
+	const resolve = pendingRequests.get(msg.requestId).resolve;
+	if (!resolve) { return; }
+
+	pendingRequests.delete(msg.requestId);
+	resolve(msg.value);
+});
 
 window.wrappedJSObject.test =
 	cloneInto(test, window, {
