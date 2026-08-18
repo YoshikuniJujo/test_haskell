@@ -1,45 +1,30 @@
-const sendInput = async (requestId, value) => {
-	const { requests = {} } = await browser.storage.session.get("requests");
-	const request = requests[requestId];
-
-	if (!request) { throw new Error(`Unknown requestId: ${requestId}`); }
-
-	await browser.tabs.sendMessage(
-		request.sourceTabId, { method: "inputResult", requestId, value }
-	);
-	await browser.tabs.update(request.sourceTabId, { active: true });
-	await browser.tabs.remove(request.inputTabId);
-	delete requests[requestId];
-	await browser.storage.session.set({ requests }); }
-
 browser.runtime.onMessage.addListener((msg, sender) => {
+	switch (msg.method) {
+		case "queryInput": return open(msg.request, sender.tab.id)
+		case "sendInput": return send(msg.request, msg.value); } });
 
-	if (msg.method == "openInputTab") {
-		return (async () => {
-			const requestId = msg.requestId;
-			const sourceTabId = sender.tab.id;
+async function
+open(rid, stid)
+{
+	const tb = await browser.tabs.create({
+		url: browser.runtime.getURL(
+			`input.html?request=${encodeURIComponent(rid)}` ) });
+	const { requests: rqs = {} } =
+		await browser.storage.session.get("requests");
+	rqs[rid] = { sourceTab: stid, inputTabId: tb.id, state: "pending" };
+	await browser.storage.session.set({ requests: rqs });
+}
 
-			const tab = await browser.tabs.create({
-				url: browser.runtime.getURL(
-					"input.html?requestId=" +
-					encodeURIComponent(requestId) )
-			});
-
-			const { requests = {} } =
-				await browser.storage.session.get("requests");
-
-			requests[requestId] = {
-				sourceTabId,
-				inputTabId: tab.id,
-				state: "pending"
-			};
-
-			await browser.storage.session.set({ requests });
-		})();
-	}
-
-	if (msg.method == "sendInput") {
-		console.log("sendInput: ", msg.value);
-		return sendInput(msg.requestId, msg.value); }
-
-});
+async function
+send(rid, v)
+{
+	const { requests: rqs = {} } =
+		await browser.storage.session.get("requests");
+	const rq = rqs[rid];
+	if (!rq) { throw new Error(`Unknown request: ${rid}`); }
+	await browser.tabs.sendMessage(
+		rq.sourceTab, { method: "sendInput", request: rid, value: v } );
+	await browser.tabs.update(rq.sourceTab, { active: true });
+	await browser.tabs.remove(rq.inputTabId);
+	delete rqs[rid]; await browser.storage.session.set({ requests: rqs });
+}

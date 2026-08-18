@@ -1,5 +1,4 @@
-const requestId =
-	new URLSearchParams(location.search).get("requestId");
+const requestId = new URLSearchParams(location.search).get("request");
 
 const input = document.querySelector("#input");
 
@@ -9,7 +8,7 @@ input.addEventListener("keydown", (event) => {
 	if (event.key === "Enter") {
 		event.preventDefault();
 		browser.runtime.sendMessage({
-			method: "sendInput", requestId, value: input.value
+			method: "sendInput", request: requestId, value: input.value
 		});
 	}
 });

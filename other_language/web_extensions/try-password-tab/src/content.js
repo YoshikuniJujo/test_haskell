@@ -7,13 +7,13 @@ const test = {
 	openInputTab() {
 		return new window.Promise(async (resolve, reject) => {
 
-			const requestId = crypto.randomUUID();
+			const rid = crypto.randomUUID();
 
-			pendingRequests.set(requestId, { resolve, reject });
+			pendingRequests.set(rid, { resolve, reject });
 
 			browser.runtime.sendMessage({
-				method: "openInputTab",
-				requestId
+				method: "queryInput",
+				request: rid
 			});
 		});
 	}
@@ -21,16 +21,14 @@ const test = {
 };
 
 browser.runtime.onMessage.addListener((msg) => {
-	if (msg.method !== "inputResult") {
-		return;
-	}
+	if (msg.method !== "sendInput") { return; }
 
 	console.log("input result: ", msg.value);
 
-	const resolve = pendingRequests.get(msg.requestId).resolve;
+	const resolve = pendingRequests.get(msg.request).resolve;
 	if (!resolve) { return; }
 
-	pendingRequests.delete(msg.requestId);
+	pendingRequests.delete(msg.request);
 	resolve(msg.value);
 });
 
