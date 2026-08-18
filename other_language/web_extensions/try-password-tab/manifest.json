@@ -1,5 +1,8 @@
 {
 	"manifest_version": 3,
+	"permissions": [
+		"storage"
+	],
 	"name": "Password Input Tab Experiment",
 	"version": "0.1.0.0",
 

@@ -18,6 +18,33 @@ browser.runtime.onMessage.addListener((msg, sender) => {
 		});
 	}
 
+	if (msg.method == "openInputTab2") {
+		return new Promise(async (resolve) => {
+			const requestId = msg.requestId;
+			const sourceTabId = sender.tab.id;
+
+			const tab = await browser.tabs.create({
+				url: browser.runtime.getURL(
+					`input.html?requestId=${encodeURIComponent(requestId)}`)
+			});
+
+			const { requests = {} } =
+				await browser.storage.session.get("requests");
+
+			requests[requestId] = {
+				sourceTabId,
+				inputTabId: tab.id,
+				state: "pending"
+			};
+
+			await browser.storage.session.set({ requests });
+
+			console.log(
+				await browser.storage.session.get("requests")
+			);
+		});
+	}
+
 	if (msg.method == "input") {
 		console.log("input: ", msg.value);
 		resolveInput?.(msg.value);

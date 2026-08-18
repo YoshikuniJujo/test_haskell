@@ -21,11 +21,14 @@ const test = {
 	openInputTab2() {
 		return new window.Promise(async (resolve, reject) => {
 
-			console.log("here");
-
 			const requestId = crypto.randomUUID();
 
 			pendingRequests.set(requestId, { resolve, reject });
+
+			browser.runtime.sendMessage({
+				method: "openInputTab2",
+				requestId
+			});
 
 			resolve("foobar");
 		});
