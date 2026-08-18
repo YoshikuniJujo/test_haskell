@@ -49,7 +49,7 @@ browser.runtime.onMessage.addListener((msg, sender) => {
 
 			const tab = await browser.tabs.create({
 				url: browser.runtime.getURL(
-					`input2.html?requestId=${encodeURIComponent(requestId)}`)
+					`input.html?requestId=${encodeURIComponent(requestId)}`)
 			});
 
 			const { requests = {} } =
