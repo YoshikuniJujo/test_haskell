@@ -1,0 +1,22 @@
+{
+  "name": "try-password-tab",
+  "version": "0.1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "web-ext": "^10.6.0"
+  },
+
+  "scripts": {
+	  "start": "web-ext run --url https://yoshikunijujo.github.io/others/try-password-tab --url about:debugging#/runtime/this-firefox",
+	  "find-android": "web-ext run -t firefox-android",
+	  "start-android": "web-ext run -t firefox-android --android-device=$npm_config_android_device --firefox-apk=org.mozilla.fenix"
+  }
+}
