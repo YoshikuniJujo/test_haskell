@@ -1,19 +1,14 @@
-{
-  "name": "try-password-tab",
-  "version": "0.1.0.0",
-  "description": "",
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
-  "type": "commonjs",
-  "devDependencies": {
-    "web-ext": "^10.6.0"
-  },
+{	"name": "try-password-tab",
+	"version": "0.1.0.0",
+	"description": "",
+	"keywords": [],
+	"author": "Yoshikuni Jujo",
+	"license": "MIT",
+	"type": "module",
+	"devDependencies": { "web-ext": "^10.6.0" },
 
-  "scripts": {
-	  "start": "./scripts/start.sh",
-	  "find-android": "web-ext run --source-dir src -t firefox-android",
-	  "start-android": "./scripts/start-android.sh",
-	  "package": "web-ext build --source-dir src"
-  }
-}
+	"scripts": {
+		"start": "./scripts/start.sh",
+		"find-android": "./scripts/find-android.sh",
+		"start-android": "./scripts/start-android.sh",
+		"package": "web-ext build --source-dir src" } }
