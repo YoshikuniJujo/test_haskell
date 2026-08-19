@@ -1,35 +1,30 @@
-document.body.style.border = "3px solid green";
-
 const pendingRequests = new Map();
 
-const test = {
+const tryPasswordTab = {
 
-	openInputTab() {
-		return new window.Promise(async (resolve, reject) => {
-
+	queryInput()
+	{
+		return new window.Promise(async (rs, rj) => {
 			const rid = crypto.randomUUID();
-
-			pendingRequests.set(rid, { resolve, reject });
-
-			browser.runtime.sendMessage({
-				method: "queryInput",
-				request: rid
-			});
-		});
+			pendingRequests.set(rid, { resolve: rs, reject: rj });
+			browser.runtime.sendMessage(
+				{ method: "queryInput", request: rid } ); });
 	}
 
 };
 
-browser.runtime.onMessage.addListener((msg) => {
-	if (msg.method !== "pushInput") { return; }
+browser.runtime.onMessage.addListener((m) => {
+	switch (m.method) {
+		case "pushInput":
+			const rs = pendingRequests.get(m.request).resolve;
+			if (!rs) {
+				console.error(
+					"invalid input request",
+					{ request: m.request } );
+				throw new Error("Invalid input request"); }
+			pendingRequests.delete(m.request);
+			rs(m.value);
+			break; } });
 
-	console.log("input result: ", msg.value);
-
-	const resolve = pendingRequests.get(msg.request).resolve;
-	if (!resolve) { return; }
-
-	pendingRequests.delete(msg.request);
-	resolve(msg.value);
-});
-
-window.wrappedJSObject.test = cloneInto(test, window, { cloneFunctions: true });
+window.wrappedJSObject.tryPasswordTab =
+	cloneInto(tryPasswordTab, window, { cloneFunctions: true });
