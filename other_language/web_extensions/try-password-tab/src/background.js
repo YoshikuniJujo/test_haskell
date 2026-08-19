@@ -50,11 +50,11 @@ browser.tabs.onRemoved.addListener(async (tid) => {
 	const { requests: rqs = {} } =
 		await browser.storage.session.get("requests");
 	let changed = false;
+	const tabs = [];
 	for (const[rid, rq] of Object.entries(rqs)) {
 		if (rq.sourceTab !== tid && rq.inputTab !== tid) continue;
-		if (rq.sourceTab === tid)
-			await browser.tabs.remove(rq.inputTab);
+		if (rq.sourceTab === tid) tabs.push(rq.inputTab);
 		delete rqs[rid];
 		changed = true; }
 	if (changed) await browser.storage.session.set({ requests: rqs });
-});
+	for (const tid of tabs) await browser.tabs.remove(tid); });
