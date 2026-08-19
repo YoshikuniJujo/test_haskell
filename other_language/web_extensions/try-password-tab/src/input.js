@@ -1,24 +1,18 @@
 const requestId = new URLSearchParams(location.search).get("request");
-
 const input = document.querySelector("#input");
-
 input.focus();
 
 input.addEventListener("keydown", (event) => {
 	if (event.key === "Enter") {
 		event.preventDefault();
-		browser.runtime.sendMessage({
-			method: "returnInput", request: requestId, value: input.value
-		});
-	}
-});
+		returnInput(requestId, input.value); } });
 
 document.querySelector("#send").addEventListener("click", () => {
-	console.log("send input");
+	returnInput(requestId, input.value); });
 
-	const value = input.value;
-
-	browser.runtime.sendMessage({
-		method: "returnInput", request: requestId, value
-	});
-});
+function
+returnInput(rid, v)
+{
+	browser.runtime.sendMessage(
+		{method: "returnInput", request: rid, value: v} );
+}
