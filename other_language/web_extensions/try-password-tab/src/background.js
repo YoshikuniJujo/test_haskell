@@ -45,3 +45,16 @@ chkInputTab(rid, tid0, tid)
 			"security violation: input was not returned " +
 			"by the input tab associated with this request" ); }
 }
+
+browser.tabs.onRemoved.addListener(async (tid) => {
+	const { requests: rqs = {} } =
+		await browser.storage.session.get("requests");
+	let changed = false;
+	for (const[rid, rq] of Object.entries(rqs)) {
+		if (rq.sourceTab !== tid && rq.inputTab !== tid) continue;
+		if (rq.sourceTab === tid)
+			await browser.tabs.remove(rq.inputTab);
+		delete rqs[rid];
+		changed = true; }
+	if (changed) await browser.storage.session.set({ requests: rqs });
+});
