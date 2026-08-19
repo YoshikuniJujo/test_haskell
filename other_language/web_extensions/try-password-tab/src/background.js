@@ -57,4 +57,4 @@ browser.tabs.onRemoved.addListener(async (tid) => {
 		delete rqs[rid];
 		changed = true; }
 	if (changed) await browser.storage.session.set({ requests: rqs });
-	for (const tid of tabs) await browser.tabs.remove(tid); });
+	for (const tb of tabs) await browser.tabs.remove(tb); });
