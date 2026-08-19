@@ -21,7 +21,7 @@ const test = {
 };
 
 browser.runtime.onMessage.addListener((msg) => {
-	if (msg.method !== "sendInput") { return; }
+	if (msg.method !== "pushInput") { return; }
 
 	console.log("input result: ", msg.value);
 

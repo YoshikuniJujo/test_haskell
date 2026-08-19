@@ -8,7 +8,7 @@ input.addEventListener("keydown", (event) => {
 	if (event.key === "Enter") {
 		event.preventDefault();
 		browser.runtime.sendMessage({
-			method: "sendInput", request: requestId, value: input.value
+			method: "returnInput", request: requestId, value: input.value
 		});
 	}
 });
@@ -19,6 +19,6 @@ document.querySelector("#send").addEventListener("click", () => {
 	const value = input.value;
 
 	browser.runtime.sendMessage({
-		method: "sendInput", request: requestId, value
+		method: "returnInput", request: requestId, value
 	});
 });

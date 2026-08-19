@@ -1,30 +1,47 @@
-browser.runtime.onMessage.addListener((msg, sender) => {
-	switch (msg.method) {
-		case "queryInput": return open(msg.request, sender.tab.id)
-		case "sendInput": return send(msg.request, msg.value); } });
+browser.runtime.onMessage.addListener((m, s) => {
+	switch (m.method) {
+		case "queryInput": return qryInput(m.request, s.tab.id);
+		case "returnInput":
+			return rtnInput(m.request, m.value, s.tab.id); } });
 
 async function
-open(rid, stid)
+qryInput(rid, stid)
 {
 	const tb = await browser.tabs.create({
 		url: browser.runtime.getURL(
 			`input.html?request=${encodeURIComponent(rid)}` ) });
 	const { requests: rqs = {} } =
 		await browser.storage.session.get("requests");
-	rqs[rid] = { sourceTab: stid, inputTabId: tb.id, state: "pending" };
+	rqs[rid] = { sourceTab: stid, inputTab: tb.id, state: "pending" };
 	await browser.storage.session.set({ requests: rqs });
 }
 
 async function
-send(rid, v)
+rtnInput(rid, v, tid)
 {
 	const { requests: rqs = {} } =
 		await browser.storage.session.get("requests");
 	const rq = rqs[rid];
 	if (!rq) { throw new Error(`Unknown request: ${rid}`); }
+	chkInputTab(rid, rq.inputTab, tid);
 	await browser.tabs.sendMessage(
-		rq.sourceTab, { method: "sendInput", request: rid, value: v } );
+		rq.sourceTab, { method: "pushInput", request: rid, value: v } );
 	await browser.tabs.update(rq.sourceTab, { active: true });
-	await browser.tabs.remove(rq.inputTabId);
+	await browser.tabs.remove(rq.inputTab);
 	delete rqs[rid]; await browser.storage.session.set({ requests: rqs });
+}
+
+function
+chkInputTab(rid, tid0, tid)
+{
+	if (tid !== tid0) {
+		console.error(
+			"possible attack: returnInput was received from " +
+			"a tab different from the input tab",
+			{	requestId: rid,
+				expectedInputTabId: tid0,
+				actualSenderTabId: tid } );
+		throw new Error(
+			"security violation: input was not returned " +
+			"by the input tab associated with this request" ); }
 }
