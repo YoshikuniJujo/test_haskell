@@ -19,6 +19,6 @@ document.querySelector("#send").addEventListener("click", () => {
 	const value = input.value;
 
 	browser.runtime.sendMessage({
-		method: "sendInput", requestId, value
+		method: "sendInput", request: requestId, value
 	});
 });
