@@ -1,3 +1,5 @@
+import { } from "./requests.js";
+
 browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
 		case "queryInput": return qryInput(m.request, s.tab.id);

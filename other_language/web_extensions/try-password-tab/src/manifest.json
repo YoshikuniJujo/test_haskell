@@ -3,6 +3,9 @@
 	"version": "0.1.0.0",
 	"permissions": ["storage"],
 
-	"background": { "scripts": ["background.js"] },
+	"background": {
+		"scripts": ["background.js"],
+		"type": "module"
+	},
 	"content_scripts": [
 		{ "matches": ["<all_urls>"], "js": ["content.js"] } ] }
