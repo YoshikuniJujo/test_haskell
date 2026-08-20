@@ -12,7 +12,9 @@ qryInput(rid, stid)
 	const tb = await browser.tabs.create({
 		url: browser.runtime.getURL(
 			`input.html?request=${encodeURIComponent(rid)}` ) });
-	await Request.create(rid, stid, tb.id);
+	try {	await Request.create(rid, stid, tb.id); }
+	catch (e) {
+		await browser.tabs.remove(tb.id); throw e; }
 }
 
 async function
