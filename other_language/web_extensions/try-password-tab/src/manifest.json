@@ -1,4 +1,5 @@
-{	"manifest_version": 3,
+{
+	"manifest_version": 3,
 	"name": "Password Input Tab Experiment",
 	"version": "0.1.0.0",
 	"permissions": ["storage"],
@@ -8,4 +9,13 @@
 		"type": "module"
 	},
 	"content_scripts": [
-		{ "matches": ["<all_urls>"], "js": ["content.js"] } ] }
+		{ "matches": ["<all_urls>"], "js": ["content.js"] } ],
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "try-password-tab@yoshikunijujo.github.io",
+			"data_collection_permissions": {
+				"required": ["none"]
+			}
+		}
+	}
+}
