@@ -46,30 +46,19 @@ chkInputTab(rid, tid0, tid)
 }
 
 export async function
-removeTab(tid)
+removeTab(t)
 {
 	await mutex.acquire();
 	try {	const { requests: rqs = {} } =
 			await browser.storage.session.get("requests");
-		const tabs = [];
-		const rmrqs = [];
-		let found = false;
-		let inputRemoved = false;
+		const tabs = []; const rmrqs = [];
 		for (const[rid, rq] of Object.entries(rqs)) {
-			if (rq.sourceTab !== tid && rq.inputTab !== tid)
-				continue;
-			found = true;
-			if (rq.sourceTab === tid) { tabs.push(rq.inputTab); }
-			else {	inputRemoved = true;
-				rmrqs.push({ request: rid, sourceTab: rq.sourceTab }); }
+			if (rq.sourceTab === t) tabs.push(rq.inputTab);
+			else if (rq.inputTab === t)
+				rmrqs.push({ request: rid, source: rq.sourceTab });
+			else continue;
 			delete rqs[rid]; }
 		await browser.storage.session.set({ requests: rqs });
-		if (inputRemoved) {
-			return { kind: "inputRemoved", requests: rmrqs };
-		} else if (found) {
-			return { kind: "sourceRemoved", toClose: tabs };
-		} else {
-			return { kind: "nothing" };
-		} }
+		return { toClose: tabs, requests: rmrqs }; }
 	finally { mutex.release(); }
 }

@@ -20,7 +20,7 @@ qryInput(rid, stid)
 async function
 rtnInput(rid, v, tid)
 {
-	if (v == "password") {
+	if (v === "password") {
 		const st = await Request.returned(rid, tid);
 		await browser.tabs.sendMessage(st,
 			{ method: "pushInput", request: rid, value: v });
@@ -32,17 +32,8 @@ rtnInput(rid, v, tid)
 
 browser.tabs.onRemoved.addListener(async (tid) => {
 	const rslt = await Request.removeTab(tid);
-	switch (rslt.kind) {
-		case "nothing": break;
-		case "sourceRemoved":
-			for (const tb of rslt.toClose) await browser.tabs.remove(tb);
-			break;
-		case "inputRemoved":
-			for (const rq of rslt.requests)
-				await browser.tabs.sendMessage(
-					rq.sourceTab,
-					{	method: "inputError",
-						request: rq.request });
-			break;
-	}
-});
+	for (const tb of rslt.toClose) await browser.tabs.remove(tb);
+	for (const rq of rslt.requests)
+		await browser.tabs.sendMessage(
+			rq.source,
+			{ method: "inputError", request: rq.request }); });
