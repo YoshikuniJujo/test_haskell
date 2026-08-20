@@ -1,17 +1,22 @@
-import { } from "./mutex.js"
+import { Mutex } from "./mutex.js"
+
+const mutex = new Mutex;
 
 export async function
 create(rid, stid, itid)
 {
+	await mutex.acquire();
 	const { requests: rqs = {} } =
 		await browser.storage.session.get("requests");
 	rqs[rid] = { sourceTab: stid, inputTab: itid, state: "pending" };
 	await browser.storage.session.set({ requests: rqs });
+	mutex.release();
 }
 
 export async function
 returned(rid, tid)
 {
+	await mutex.acquire();
 	const { requests: rqs = {} } =
 		await browser.storage.session.get("requests");
 	const rq = rqs[rid];
@@ -19,10 +24,12 @@ returned(rid, tid)
 	chkInputTab(rid, rq.inputTab, tid);
 	delete rqs[rid];
 	await browser.storage.session.set( { requests: rqs });
+	mutex.release();
 	return rq.sourceTab;
 }
 
-function chkInputTab(rid, tid0, tid)
+function
+chkInputTab(rid, tid0, tid)
 {
 	if (tid !== tid0) {
 		console.error(
@@ -39,6 +46,7 @@ function chkInputTab(rid, tid0, tid)
 export async function
 removeTab(tid)
 {
+	await mutex.acquire();
 	const { requests: rqs = {} } =
 		await browser.storage.session.get("requests");
 	const tabs = [];
@@ -47,5 +55,6 @@ removeTab(tid)
 		if (rq.sourceTab === tid) tabs.push(rq.inputTab);
 		delete rqs[rid]; }
 	browser.storage.session.set({ requests: rqs });
+	mutex.release();
 	return tabs;
 }
