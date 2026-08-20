@@ -28,5 +28,18 @@ rtnInput(rid, v, tid)
 }
 
 browser.tabs.onRemoved.addListener(async (tid) => {
-	const tbs = await Request.removeTab(tid);
-	for (const tb of tbs) await browser.tabs.remove(tb); });
+	const rslt = await Request.removeTab(tid);
+	switch (rslt.kind) {
+		case "nothing": break;
+		case "sourceRemoved":
+			for (const tb of rslt.toClose) await browser.tabs.remove(tb);
+			break;
+		case "inputRemoved":
+			for (const rq of rslt.requests)
+				await browser.tabs.sendMessage(
+					rq.sourceTab,
+					{	method: "inputError",
+						request: rq.request });
+			break;
+	}
+});

@@ -52,12 +52,24 @@ removeTab(tid)
 	try {	const { requests: rqs = {} } =
 			await browser.storage.session.get("requests");
 		const tabs = [];
+		const rmrqs = [];
+		let found = false;
+		let inputRemoved = false;
 		for (const[rid, rq] of Object.entries(rqs)) {
 			if (rq.sourceTab !== tid && rq.inputTab !== tid)
 				continue;
-			if (rq.sourceTab === tid) tabs.push(rq.inputTab);
+			found = true;
+			if (rq.sourceTab === tid) { tabs.push(rq.inputTab); }
+			else {	inputRemoved = true;
+				rmrqs.push({ request: rid, sourceTab: rq.sourceTab }); }
 			delete rqs[rid]; }
 		await browser.storage.session.set({ requests: rqs });
-		return tabs; }
+		if (inputRemoved) {
+			return { kind: "inputRemoved", requests: rmrqs };
+		} else if (found) {
+			return { kind: "sourceRemoved", toClose: tabs };
+		} else {
+			return { kind: "nothing" };
+		} }
 	finally { mutex.release(); }
 }

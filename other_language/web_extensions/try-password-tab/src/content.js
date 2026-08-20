@@ -24,7 +24,22 @@ browser.runtime.onMessage.addListener((m) => {
 				throw new Error("Invalid input request"); }
 			pendingRequests.delete(m.request);
 			rq.resolve(m.value);
-			break; } } });
+			break; }
+		case "inputError": {
+			const rq = pendingRequests.get(m.request);
+			if (!rq) {
+				console.error(
+					"invalid input request",
+					{ request: m.request } );
+				throw new Error("Invalid input request");
+			}
+			pendingRequests.delete(m.request);
+			rq.reject(
+				new Error(`Input tab was closed for request: ${m.request}`)
+				);
+			break; }
+		}
+	});
 
 window.wrappedJSObject.tryPasswordTab =
 	cloneInto(tryPasswordTab, window, { cloneFunctions: true });
