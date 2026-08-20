@@ -26,6 +26,8 @@ rtnInput(rid, v, tid)
 			{ method: "pushInput", request: rid, value: v });
 		await browser.tabs.update(st, { active: true });
 		await browser.tabs.remove(tid); }
+	else {	await browser.tabs.sendMessage(tid, {
+			method: "wrongPassword", request: rid }); }
 }
 
 browser.tabs.onRemoved.addListener(async (tid) => {
