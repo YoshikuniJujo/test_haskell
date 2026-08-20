@@ -15,7 +15,7 @@ const tryPasswordTab = {
 
 browser.runtime.onMessage.addListener((m) => {
 	switch (m.method) {
-		case "pushInput":
+		case "pushInput": {
 			const rq = pendingRequests.get(m.request);
 			if (!rq) {
 				console.error(
@@ -24,7 +24,7 @@ browser.runtime.onMessage.addListener((m) => {
 				throw new Error("Invalid input request"); }
 			pendingRequests.delete(m.request);
 			rq.resolve(m.value);
-			break; } });
+			break; } } });
 
 window.wrappedJSObject.tryPasswordTab =
 	cloneInto(tryPasswordTab, window, { cloneFunctions: true });
