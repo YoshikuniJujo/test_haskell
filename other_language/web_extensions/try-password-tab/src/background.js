@@ -20,11 +20,12 @@ qryInput(rid, stid)
 async function
 rtnInput(rid, v, tid)
 {
-	const st = await Request.returned(rid, tid);
-	await browser.tabs.sendMessage(st,
-		{ method: "pushInput", request: rid, value: v });
-	await browser.tabs.update(st, { active: true });
-	await browser.tabs.remove(tid);
+	if (v == "password") {
+		const st = await Request.returned(rid, tid);
+		await browser.tabs.sendMessage(st,
+			{ method: "pushInput", request: rid, value: v });
+		await browser.tabs.update(st, { active: true });
+		await browser.tabs.remove(tid); }
 }
 
 browser.tabs.onRemoved.addListener(async (tid) => {
