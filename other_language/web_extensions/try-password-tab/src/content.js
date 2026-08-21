@@ -21,10 +21,10 @@ browser.runtime.onMessage.addListener((m) => {
 			const rq = pendingRequests.get(m.answer);
 			if (!rq) {
 				console.error(
-					"invalid input answer",
-					{ request: m.request } );
+					"invalid input request",
+					{ request: m.answer } );
 				throw new Error("Invalid input request"); }
-			pendingRequests.delete(m.request);
+			pendingRequests.delete(m.answer);
 			rq.resolve(m.value);
 			break; }
 		case "passError": {
@@ -32,16 +32,13 @@ browser.runtime.onMessage.addListener((m) => {
 			if (!rq) {
 				console.error(
 					"invalid input request",
-					{ request: m.request } );
-				throw new Error("Invalid input request");
-			}
-			pendingRequests.delete(m.request);
+					{ request: m.answer } );
+				throw new Error("Invalid input request"); }
+			pendingRequests.delete(m.answer);
 			rq.reject(
-				new Error(`Input tab was closed for request: ${m.request}`)
-				);
-			break; }
-		}
-	});
+				new Error("Input tab was closed for answer: " +
+					m.answer) );
+			break; } } });
 
 window.wrappedJSObject.tryPasswordTab =
 	cloneInto(tryPasswordTab, window, { cloneFunctions: true });
