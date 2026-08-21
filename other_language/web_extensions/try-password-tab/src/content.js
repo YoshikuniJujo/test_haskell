@@ -10,14 +10,14 @@ const tryPasswordTab = {
 			const rid = crypto.randomUUID();
 			pendingRequests.set(rid, { resolve: rs, reject: rj });
 			browser.runtime.sendMessage(
-				{ method: "queryInput", answer: rid } ); });
+				{ method: "queryPass", answer: rid } ); });
 	}
 
 };
 
 browser.runtime.onMessage.addListener((m) => {
 	switch (m.method) {
-		case "pushInput": {
+		case "pushPass": {
 			const rq = pendingRequests.get(m.answer);
 			if (!rq) {
 				console.error(
@@ -27,7 +27,7 @@ browser.runtime.onMessage.addListener((m) => {
 			pendingRequests.delete(m.request);
 			rq.resolve(m.value);
 			break; }
-		case "inputError": {
+		case "passError": {
 			const rq = pendingRequests.get(m.answer);
 			if (!rq) {
 				console.error(

@@ -15,12 +15,12 @@ function
 returnInput(rid, v)
 {
 	browser.runtime.sendMessage(
-		{method: "returnInput", answer: rid, value: v} );
+		{method: "returnPass", answer: rid, value: v} );
 }
 
 browser.runtime.onMessage.addListener((m) => {
 	switch (m.method) {
-		case "wrongPassword":
+		case "wrongPass":
 			error.hidden = false; input.value = ""; break; } });
 
 input.addEventListener("input", () => { error.hidden = true; });

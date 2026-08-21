@@ -2,43 +2,39 @@ import * as Answer from "./answer.js";
 
 browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
-		case "queryInput": return qryInput(m.answer, s.tab.id);
-		case "returnInput":
-			return rtnInput(m.answer, m.value, s.tab.id);
-		case "contentStarted":
-			return pageVanished(s.tab.id); } });
+		case "queryPass": return qryPass(m.answer, s.tab.id);
+		case "returnPass": return rtnPass(m.answer, m.value, s.tab.id);
+		case "contentStarted": return pageVanished(s.tab.id); } });
 browser.tabs.onRemoved.addListener(pageVanished);
 
 async function
-qryInput(rid, stid)
+qryPass(a, st)
 {
-	const tb = await browser.tabs.create({
+	const it = await browser.tabs.create({
 		url: browser.runtime.getURL(
-			`input.html?answer=${encodeURIComponent(rid)}` ) });
-	try {	await Answer.create(rid, stid, tb.id); }
-	catch (e) {
-		await browser.tabs.remove(tb.id); throw e; }
+			`input.html?answer=${encodeURIComponent(a)}` ) });
+	try { await Answer.create(a, st, it.id); }
+	catch (e) { await browser.tabs.remove(it.id); throw e; }
 }
 
 async function
-rtnInput(rid, v, tid)
+rtnPass(a, v, it)
 {
 	if (v === "password") {
-		const st = await Answer.returned(rid, tid);
+		const st = await Answer.returned(a, it);
 		await browser.tabs.sendMessage(st,
-			{ method: "pushInput", answer: rid, value: v });
+			{ method: "pushPass", answer: a, value: v });
 		await browser.tabs.update(st, { active: true });
-		await browser.tabs.remove(tid); }
-	else {	await browser.tabs.sendMessage(
-			tid, { method: "wrongPassword" }); }
+		await browser.tabs.remove(it); }
+	else {	await browser.tabs.sendMessage( it, { method: "wrongPass" }); }
 }
 
 async function
-pageVanished(tid)
+pageVanished(vt)
 {
-	const rslt = await Answer.removeTab(tid);
-	for (const tb of rslt.toClose) await browser.tabs.remove(tb);
-	for (const rq of rslt.answers)
+	const r = await Answer.removeTab(vt);
+	for (const t of r.toClose) await browser.tabs.remove(t);
+	for (const a of r.answers)
 		await browser.tabs.sendMessage(
-			rq.source,
-			{ method: "inputError", answer: rq.answer }); }
+			a.source, { method: "passError", answer: a.answer });
+}
