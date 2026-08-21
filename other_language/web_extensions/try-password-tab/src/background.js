@@ -4,7 +4,10 @@ browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
 		case "queryInput": return qryInput(m.request, s.tab.id);
 		case "returnInput":
-			return rtnInput(m.request, m.value, s.tab.id); } });
+			return rtnInput(m.request, m.value, s.tab.id);
+		case "contentStarted":
+			return pageVanished(s.tab.id); } });
+browser.tabs.onRemoved.addListener(pageVanished);
 
 async function
 qryInput(rid, stid)
@@ -30,10 +33,12 @@ rtnInput(rid, v, tid)
 			method: "wrongPassword", request: rid }); }
 }
 
-browser.tabs.onRemoved.addListener(async (tid) => {
+async function
+pageVanished(tid)
+{
 	const rslt = await Request.removeTab(tid);
 	for (const tb of rslt.toClose) await browser.tabs.remove(tb);
 	for (const rq of rslt.requests)
 		await browser.tabs.sendMessage(
 			rq.source,
-			{ method: "inputError", request: rq.request }); });
+			{ method: "inputError", request: rq.request }); }

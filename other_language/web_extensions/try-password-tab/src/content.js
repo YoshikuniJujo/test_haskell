@@ -1,3 +1,5 @@
+browser.runtime.sendMessage({ method: "contentStarted" });
+
 const pendingRequests = new Map();
 
 const tryPasswordTab = {
