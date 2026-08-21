@@ -3,7 +3,7 @@ import * as Answer from "./answer.js";
 browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
 		case "queryPass": return qryPass(m.answer, s.tab.id);
-		case "returnPass": return rtnPass(m.answer, m.value, s.tab.id);
+		case "returnPass": return rtnPass(m.answer, m.val, s.tab.id);
 		case "contentStarted": return pageVanished(s.tab.id); } });
 browser.tabs.onRemoved.addListener(pageVanished);
 

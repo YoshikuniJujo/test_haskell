@@ -1,21 +1,19 @@
-const requestId = new URLSearchParams(location.search).get("answer");
+const answer = new URLSearchParams(location.search).get("answer");
 const input = document.querySelector("#input");
 const error = document.querySelector("#error");
 input.focus();
 
 input.addEventListener("keydown", (event) => {
 	if (event.key === "Enter") {
-		event.preventDefault();
-		returnInput(requestId, input.value); } });
+		event.preventDefault(); sndPass(answer, input.value); } });
 
 document.querySelector("#send").addEventListener("click", () => {
-	returnInput(requestId, input.value); });
+	sndPass(answer, input.value); });
 
 function
-returnInput(rid, v)
+sndPass(a, v)
 {
-	browser.runtime.sendMessage(
-		{method: "returnPass", answer: rid, value: v} );
+	browser.runtime.sendMessage({method: "returnPass", answer: a, val: v});
 }
 
 browser.runtime.onMessage.addListener((m) => {
