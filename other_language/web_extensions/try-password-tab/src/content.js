@@ -10,7 +10,7 @@ const tryPasswordTab = {
 			const rid = crypto.randomUUID();
 			pendingRequests.set(rid, { resolve: rs, reject: rj });
 			browser.runtime.sendMessage(
-				{ method: "queryInput", request: rid } ); });
+				{ method: "queryInput", answer: rid } ); });
 	}
 
 };
@@ -18,17 +18,17 @@ const tryPasswordTab = {
 browser.runtime.onMessage.addListener((m) => {
 	switch (m.method) {
 		case "pushInput": {
-			const rq = pendingRequests.get(m.request);
+			const rq = pendingRequests.get(m.answer);
 			if (!rq) {
 				console.error(
-					"invalid input request",
+					"invalid input answer",
 					{ request: m.request } );
 				throw new Error("Invalid input request"); }
 			pendingRequests.delete(m.request);
 			rq.resolve(m.value);
 			break; }
 		case "inputError": {
-			const rq = pendingRequests.get(m.request);
+			const rq = pendingRequests.get(m.answer);
 			if (!rq) {
 				console.error(
 					"invalid input request",

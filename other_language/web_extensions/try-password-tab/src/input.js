@@ -1,4 +1,4 @@
-const requestId = new URLSearchParams(location.search).get("request");
+const requestId = new URLSearchParams(location.search).get("answer");
 const input = document.querySelector("#input");
 const error = document.querySelector("#error");
 input.focus();
@@ -15,7 +15,7 @@ function
 returnInput(rid, v)
 {
 	browser.runtime.sendMessage(
-		{method: "returnInput", request: rid, value: v} );
+		{method: "returnInput", answer: rid, value: v} );
 }
 
 browser.runtime.onMessage.addListener((m) => {

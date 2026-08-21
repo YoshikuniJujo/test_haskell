@@ -55,10 +55,10 @@ removeTab(t)
 		for (const[rid, rq] of Object.entries(rqs)) {
 			if (rq.sourceTab === t) tabs.push(rq.inputTab);
 			else if (rq.inputTab === t)
-				rmrqs.push({ request: rid, source: rq.sourceTab });
+				rmrqs.push({ answer: rid, source: rq.sourceTab });
 			else continue;
 			delete rqs[rid]; }
 		await browser.storage.session.set({ requests: rqs });
-		return { toClose: tabs, requests: rmrqs }; }
+		return { toClose: tabs, answers: rmrqs }; }
 	finally { mutex.release(); }
 }
