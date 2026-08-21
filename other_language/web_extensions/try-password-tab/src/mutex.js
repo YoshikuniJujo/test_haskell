@@ -4,8 +4,7 @@ export class Mutex {
 
 	async acquire()
 	{
-		while (this.locked)
-			await new Promise(rv => this.queue.push(rv));
+		if (this.locked) await new Promise(rv => this.queue.push(rv));
 		this.locked = true;
 	}
 
