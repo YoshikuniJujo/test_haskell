@@ -9,7 +9,8 @@ create(a, st, it)
 	try {	const { answers: aws = {} } =
 			await browser.storage.session.get("answers");
 		aws[a] = { sourceTab: st, inputTab: it, state: "pending" };
-		await browser.storage.session.set({ answers: aws }); }
+		await browser.storage.session.set({ answers: aws });
+		return it; }
 	finally { mutex.release(); }
 }
 

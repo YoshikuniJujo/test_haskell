@@ -13,8 +13,9 @@ qryPass(a, st)
 	const it = await browser.tabs.create({
 		url: browser.runtime.getURL(
 			`input.html?answer=${encodeURIComponent(a)}` ) });
-	try { await Answer.create(a, st, it.id); }
-	catch (e) { await browser.tabs.remove(it.id); throw e; }
+	const use = await Answer.create(a, st, it.id);
+	if (use !== it.id) await browser.tabs.remove(it.id);
+	await browser.tabs.update(use, { active: true });
 }
 
 async function
