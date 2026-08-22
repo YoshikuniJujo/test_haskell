@@ -23,10 +23,11 @@ async function
 rtnPass(a, v, it)
 {
 	if (v === "password") {
-		const st = await Answer.returned(a, it);
-		await browser.tabs.sendMessage(st,
-			{ method: "pushPass", answer: a, value: v });
-		await browser.tabs.update(st, { active: true });
+		const sts = await Answer.returned(a, it);
+		for (const s of sts)
+			await browser.tabs.sendMessage(s,
+				{ method: "pushPass", answer: a, value: v });
+		await browser.tabs.update(sts[0], { active: true });
 		await browser.tabs.remove(it); }
 	else {	await browser.tabs.sendMessage( it, { method: "wrongPass" }); }
 }

@@ -25,7 +25,7 @@ returned(a, it)
 		chkInputTab(a, aw.inputTab, it);
 		delete aws[a];
 		await browser.storage.session.set( { answers: aws });
-		return aw.sourceTab; }
+		return [aw.sourceTab]; }
 	finally { mutex.release(); }
 
 }
