@@ -18,11 +18,20 @@ try {
 	console.log("extension: ", result);
 
 	await browser.navigateTo(
-//		"file:///home/tatsuya/project/test_haskell/other_language/browser/firefox-bidi-test/test.html"
 		"https://yoshikunijujo.github.io/others/try-password-tab/"
 	);
 
 	const before = await browser.browsingContextGetTree({});
+
+	const created = new Promise((resolve) => {
+		browser.on(
+			"browsingContext.contextCreated",
+			(event) => resolve(event));
+	});
+
+	await browser.sessionSubscribe({
+		events: ["browsingContext.contextCreated"]
+	});
 
 	const button = await browser.findElement(
 		"css selector",
@@ -35,11 +44,9 @@ try {
 
 	console.log("button clicked");
 
-	await new Promise(r => setTimeout(r, 500));
+	const event = await created;
 
-//	await browser.sessionSubscribe({
-//		events: ["browsingContext.contextCreated"]
-//	});
+	console.log("created: ", event);
 
 	const after = await browser.browsingContextGetTree({});
 
