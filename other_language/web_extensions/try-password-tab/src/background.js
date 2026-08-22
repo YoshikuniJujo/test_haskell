@@ -11,6 +11,7 @@ async function
 qryPass(a, st)
 {
 	const it = await browser.tabs.create({
+		active: false,
 		url: browser.runtime.getURL(
 			`input.html?answer=${encodeURIComponent(a)}` ) });
 	const use = await Answer.create(a, st, it.id);
