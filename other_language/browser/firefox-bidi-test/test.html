@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="ja">
+	<body>
+		<button id = "test">クリック</button>
+
+		<script>
+			document.querySelector("#test").addEventListener("click", () => {
+				document.body.dataset.clicked = "yes";
+				console.log("clicked");
+			});
+		</script>
+	</body>
+</html>
