@@ -8,13 +8,25 @@ const browser = await WebDriver.newSession({
 });
 
 try {
+	const result = await browser.webExtensionInstall({
+		extensionData: {
+			type: "path",
+			path: "/home/tatsuya/project/test_haskell/other_language/web_extensions/try-password-tab/src"
+		}
+	});
+
+	console.log("extension: ", result);
+
 	await browser.navigateTo(
-		"file:///home/tatsuya/project/test_haskell/other_language/browser/firefox-bidi-test/test.html"
+//		"file:///home/tatsuya/project/test_haskell/other_language/browser/firefox-bidi-test/test.html"
+		"https://yoshikunijujo.github.io/others/try-password-tab/"
 	);
+
+	const before = await browser.browsingContextGetTree({});
 
 	const button = await browser.findElement(
 		"css selector",
-		"#test"
+		"#open-input1"
 	);
 
 	await browser.elementClick(
@@ -22,6 +34,17 @@ try {
 	);
 
 	console.log("button clicked");
+
+	await new Promise(r => setTimeout(r, 500));
+
+//	await browser.sessionSubscribe({
+//		events: ["browsingContext.contextCreated"]
+//	});
+
+	const after = await browser.browsingContextGetTree({});
+
+	console.log("before", before);
+	console.log("after", after);
 }
 finally {
 	await browser.deleteSession();
