@@ -59,11 +59,15 @@ removeTab(t)
 			await browser.storage.session.get("answers");
 		const tbs = []; const rmaws = [];
 		for (const[a, aw] of Object.entries(aws)) {
-			if (aw.sourceTabs[0] === t) tbs.push(aw.inputTab);
-			else if (aw.inputTab === t)
+			const i = aw.sourceTabs.indexOf(t);
+			if (i != -1) {
+				aw.sourceTabs.splice(i, 1);
+				if (aw.sourceTabs.length === 0) {
+					tbs.push(aw.inputTab);
+					delete aws[a]; } }
+			else if (aw.inputTab === t) {
 				rmaws.push({ answer: a, sources: aw.sourceTabs });
-			else continue;
-			delete aws[a]; }
+				delete aws[a]; } }
 		await browser.storage.session.set({ answers: aws });
 		return { toClose: tbs, answers: rmaws }; }
 	finally { mutex.release(); }
