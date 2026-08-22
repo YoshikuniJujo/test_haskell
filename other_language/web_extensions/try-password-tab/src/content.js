@@ -33,7 +33,7 @@ browser.runtime.onMessage.addListener((m) => {
 				if (!rq) {
 					console.error(
 						"invalid input request",
-						{ request: m.answer } );
+						{ request: rid, answer: m.answer } );
 					throw new Error("Invalid input request"); }
 				rq.resolve(m.value);
 				pendingRequests.delete(rid);
@@ -41,16 +41,24 @@ browser.runtime.onMessage.addListener((m) => {
 			requestsByAnswer.delete(m.answer);
 			break; }
 		case "passError": {
-			const rq = pendingRequests.get(m.answer);
-			if (!rq) {
-				console.error(
-					"invalid input request",
-					{ request: m.answer } );
-				throw new Error("Invalid input request"); }
-			pendingRequests.delete(m.answer);
-			rq.reject(
-				new Error("Input tab was closed for answer: " +
-					m.answer) );
+			console.log(typeof m.answer, m.answer);
+			console.log(
+				[...requestsByAnswer.keys()].map(k => [typeof k, k]) );
+			console.log(requestsByAnswer);
+			const rids = requestsByAnswer.get(m.answer);
+			console.log(rids);
+			for (const rid of rids) {
+				const rq = pendingRequests.get(rid);
+				if (!rq) {
+					console.error(
+						"invalid input request",
+						{ request: rid, answer: m.answer } );
+					throw new Error("Invalid input request"); }
+				pendingRequests.delete(rid);
+				rq.reject(
+					new Error("Input tab was closed for answer: " +
+						m.answer) ); }
+			requestsByAnswer.delete(m.answer);
 			break; } } });
 
 window.wrappedJSObject.tryPasswordTab =
