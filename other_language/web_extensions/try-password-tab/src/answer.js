@@ -8,7 +8,7 @@ create(a, st, it)
 	await mutex.acquire();
 	try {	const { answers: aws = {} } =
 			await browser.storage.session.get("answers");
-		aws[a] = { sourceTab: st, inputTab: it, state: "pending" };
+		aws[a] = { sourceTabs: [st], inputTab: it, state: "pending" };
 		await browser.storage.session.set({ answers: aws });
 		return it; }
 	finally { mutex.release(); }
@@ -25,7 +25,7 @@ returned(a, it)
 		chkInputTab(a, aw.inputTab, it);
 		delete aws[a];
 		await browser.storage.session.set( { answers: aws });
-		return [aw.sourceTab]; }
+		return aw.sourceTabs; }
 	finally { mutex.release(); }
 
 }
@@ -53,9 +53,9 @@ removeTab(t)
 			await browser.storage.session.get("answers");
 		const tbs = []; const rmaws = [];
 		for (const[a, aw] of Object.entries(aws)) {
-			if (aw.sourceTab === t) tbs.push(aw.inputTab);
+			if (aw.sourceTabs[0] === t) tbs.push(aw.inputTab);
 			else if (aw.inputTab === t)
-				rmaws.push({ answer: a, sources: [aw.sourceTab] });
+				rmaws.push({ answer: a, sources: aw.sourceTabs });
 			else continue;
 			delete aws[a]; }
 		await browser.storage.session.set({ answers: aws });
