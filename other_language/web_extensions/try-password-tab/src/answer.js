@@ -6,11 +6,17 @@ export async function
 create(a, st, it)
 {
 	await mutex.acquire();
-	try {	const { answers: aws = {} } =
+	try {	let use;
+		const { answers: aws = {} } =
 			await browser.storage.session.get("answers");
-		aws[a] = { sourceTabs: [st], inputTab: it, state: "pending" };
+		const aw = aws[a];
+		if (aw) { aw.sourceTabs.push(st); use = aw.inputTab; }
+		else {	aws[a] = {
+				sourceTabs: [st], inputTab: it,
+				state: "pending" }
+			use = it; }
 		await browser.storage.session.set({ answers: aws });
-		return it; }
+		return use; }
 	finally { mutex.release(); }
 }
 
