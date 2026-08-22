@@ -37,6 +37,7 @@ pageVanished(vt)
 	const r = await Answer.removeTab(vt);
 	for (const t of r.toClose) await browser.tabs.remove(t);
 	for (const a of r.answers)
-		await browser.tabs.sendMessage(
-			a.source, { method: "passError", answer: a.answer });
+		for (const s of a.sources)
+			await browser.tabs.sendMessage(
+				s, { method: "passError", answer: a.answer });
 }

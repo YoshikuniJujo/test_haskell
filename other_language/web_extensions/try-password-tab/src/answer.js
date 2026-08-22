@@ -55,7 +55,7 @@ removeTab(t)
 		for (const[a, aw] of Object.entries(aws)) {
 			if (aw.sourceTab === t) tbs.push(aw.inputTab);
 			else if (aw.inputTab === t)
-				rmaws.push({ answer: a, source: aw.sourceTab });
+				rmaws.push({ answer: a, sources: [aw.sourceTab] });
 			else continue;
 			delete aws[a]; }
 		await browser.storage.session.set({ answers: aws });
