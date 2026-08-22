@@ -10,7 +10,10 @@ create(a, st, it)
 		const { answers: aws = {} } =
 			await browser.storage.session.get("answers");
 		const aw = aws[a];
-		if (aw) { aw.sourceTabs.push(st); use = aw.inputTab; }
+		if (aw) {
+			if (!aw.sourceTabs.includes(st))
+				aw.sourceTabs.push(st);
+			use = aw.inputTab; }
 		else {	aws[a] = {
 				sourceTabs: [st], inputTab: it,
 				state: "pending" }
