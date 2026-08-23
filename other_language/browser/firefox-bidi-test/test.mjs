@@ -53,6 +53,60 @@ try {
 			c => !beforeIds.includes(c.context)
 		);
 	console.log("after-before", newContexts);
+	console.log("after-before[0]", newContexts[0]);
+	const inputContext = newContexts[0];
+
+	await new Promise(resolve => setTimeout(resolve, 2000));
+
+	const result2 = await browser.browsingContextLocateNodes({
+		context: inputContext.context,
+		locator: {
+			type: "css",
+			value: "#send"
+		}
+	});
+
+	const send = result2.nodes[0];
+
+	console.log("HERE");
+	console.log(result2);
+	console.log(send);
+
+	await browser.inputPerformActions({
+		context: inputContext.context,
+		actions: [{
+			type: "pointer",
+			id: "mouse",
+			parameters: {
+				pointerType: "mouse"
+			},
+			actions: [
+				{
+					type: "pointerMove",
+					x: 0,
+					y: 0,
+					origin: {
+						type: "element",
+						element: send
+					}
+				},
+				{
+					type: "pointerDown",
+					button: 0
+				},
+				{
+					type: "pointerUp",
+					button: 0
+				}
+			]
+		}]
+	});
+
+	await browser.inputReleaseActions({
+		context: inputContext.context
+	});
+
+	await new Promise(resolve => setTimeout(resolve, 1000));
 }
 finally {
 	await browser.deleteSession();
