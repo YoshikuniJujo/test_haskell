@@ -23,12 +23,6 @@ try {
 
 	const before = await browser.browsingContextGetTree({});
 
-	const created = new Promise((resolve) => {
-		browser.on(
-			"browsingContext.contextCreated",
-			(event) => resolve(event));
-	});
-
 	await browser.sessionSubscribe({
 		events: ["browsingContext.contextCreated"]
 	});
@@ -44,14 +38,21 @@ try {
 
 	console.log("button clicked");
 
-	const event = await created;
+//	const event = await created;
 
-	console.log("created: ", event);
+//	console.log("created: ", event);
 
 	const after = await browser.browsingContextGetTree({});
 
 	console.log("before", before);
 	console.log("after", after);
+	const beforeIds = before.contexts.map(c => c.context);
+	console.log("beforeIds", beforeIds);
+	const newContexts =
+		after.contexts.filter(
+			c => !beforeIds.includes(c.context)
+		);
+	console.log("after-before", newContexts);
 }
 finally {
 	await browser.deleteSession();
