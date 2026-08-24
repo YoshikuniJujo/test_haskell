@@ -23,6 +23,15 @@ try {
 
 	const before = await browser.browsingContextGetTree({});
 
+	const mainContext =
+		before.contexts.find(
+			c => c.url ===
+				"https://yoshikunijujo.github.io/others/try-password-tab/"
+		);
+
+	console.log("SOURCE CONTEXT");
+	console.log(mainContext);
+
 	await browser.sessionSubscribe({
 		events: ["browsingContext.contextCreated"]
 	});
@@ -56,7 +65,7 @@ try {
 	console.log("after-before[0]", newContexts[0]);
 	const inputContext = newContexts[0];
 
-	await new Promise(resolve => setTimeout(resolve, 2000));
+	await new Promise(resolve => setTimeout(resolve, 1000));
 
 	const result2 = await browser.browsingContextLocateNodes({
 		context: inputContext.context,
@@ -71,6 +80,52 @@ try {
 	console.log("HERE");
 	console.log(result2);
 	console.log(send);
+
+	const result3 = await browser.browsingContextLocateNodes({
+		context: inputContext.context,
+		locator: {
+			type: "css",
+			value: "#input"
+		}
+	});
+
+	const input = result3.nodes[0];
+
+	console.log("HERE2");
+	console.log(result3);
+	console.log(input);
+
+	await browser.scriptCallFunction({
+		functionDeclaration:
+			"() => document.querySelector('#input').focus()",
+		awaitPromise: false,
+		target: {
+			type: "context",
+			context: inputContext.context
+		}
+	});
+
+	console.log(textToKeyActions("p"));
+
+	await browser.inputPerformActions({
+		context: inputContext.context,
+		actions: [
+			{
+				type: "key",
+				id: "keyboard",
+				actions: textToKeyActions("password") /* [
+					{
+						type: "keyDown",
+						value: "p"
+					},
+					{
+						type: "keyUp",
+						value: "p"
+					}
+				] */
+			}
+		]
+	});
 
 	await browser.inputPerformActions({
 		context: inputContext.context,
@@ -106,8 +161,36 @@ try {
 		context: inputContext.context
 	});
 
+	const result4 = await browser.scriptCallFunction({
+		functionDeclaration:
+			'() => document.querySelector("#result1").textContent',
+		awaitPromise: false,
+		target: {
+			type: "context",
+			context: mainContext.context
+		}
+	});
+
+	console.log("result: ", result4);
+
+	const actual = result4.result.value;
+
+	if (actual !== "結果: password")
+		throw new Error(
+			`結果が違います: expected="password", actual="${actual}"`
+		);
+
 	await new Promise(resolve => setTimeout(resolve, 1000));
 }
 finally {
 	await browser.deleteSession();
+}
+
+function
+textToKeyActions(text)
+{
+	return [...text].flatMap(c => [
+		{ type: "keyDown", value: c },
+		{ type: "keyUp", value: c }
+	]);
 }
