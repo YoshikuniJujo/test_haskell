@@ -32,24 +32,9 @@ try {
 	console.log("SOURCE CONTEXT");
 	console.log(mainContext);
 
-	await browser.sessionSubscribe({
-		events: ["browsingContext.contextCreated"]
-	});
-
-	const button = await browser.findElement(
-		"css selector",
-		"#open-input1"
-	);
-
-	await browser.elementClick(
-		button["element-6066-11e4-a52e-4f735466cecf"]
-	);
+	await click(browser, mainContext, "#open-input1");
 
 	console.log("button clicked");
-
-//	const event = await created;
-
-//	console.log("created: ", event);
 
 	const after = await browser.browsingContextGetTree({});
 
@@ -95,18 +80,6 @@ try {
 	console.log(result3);
 	console.log(input);
 
-	/*
-	await browser.scriptCallFunction({
-		functionDeclaration:
-			"() => document.querySelector('#input').focus()",
-		awaitPromise: false,
-		target: {
-			type: "context",
-			context: inputContext.context
-		}
-	});
-	*/
-
 	console.log(textToKeyActions("p"));
 
 	await browser.inputPerformActions({
@@ -115,16 +88,7 @@ try {
 			{
 				type: "key",
 				id: "keyboard",
-				actions: textToKeyActions("password") /* [
-					{
-						type: "keyDown",
-						value: "p"
-					},
-					{
-						type: "keyUp",
-						value: "p"
-					}
-				] */
+				actions: textToKeyActions("password")
 			}
 		]
 	});
@@ -195,4 +159,52 @@ textToKeyActions(text)
 		{ type: "keyDown", value: c },
 		{ type: "keyUp", value: c }
 	]);
+}
+
+async function
+click(browser, context, selector)
+{
+	const result = await browser.browsingContextLocateNodes({
+		context: context.context,
+		locator: {
+			type: "css",
+			value: selector
+		}
+	});
+
+	const element = result.nodes[0];
+
+	await browser.inputPerformActions({
+		context: context.context,
+		actions: [{
+			type: "pointer",
+			id: "mouse",
+			parameters: {
+				pointerType: "mouse"
+			},
+			actions: [
+				{
+					type: "pointerMove",
+					x: 0,
+					y: 0,
+					origin: {
+						type: "element",
+						element
+					}
+				},
+				{
+					type: "pointerDown",
+					button: 0
+				},
+				{
+					type: "pointerUp",
+					button: 0
+				}
+			]
+		}]
+	});
+
+	await browser.inputReleaseActions({
+		context: context.context
+	});
 }
