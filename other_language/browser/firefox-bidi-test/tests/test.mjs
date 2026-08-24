@@ -1,25 +1,19 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import WebDriver from "webdriver";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const extensionPath = path.resolve(
+	__dirname, "../../../web_extensions/try-password-tab/src" );
+const testPagePath = "https://yoshikunijujo.github.io/others/try-password-tab/"
+
 const browser = await WebDriver.newSession({
-	capabilities: {
-		browserName: "firefox",
-		webSocketUrl: true
-	}
-});
+	capabilities: { browserName: "firefox", webSocketUrl: true } });
 
 try {
-	const result = await browser.webExtensionInstall({
-		extensionData: {
-			type: "path",
-			path: "/home/tatsuya/project/test_haskell/other_language/web_extensions/try-password-tab/src"
-		}
-	});
-
-	console.log("extension: ", result);
-
-	await browser.navigateTo(
-		"https://yoshikunijujo.github.io/others/try-password-tab/"
-	);
+	await browser.webExtensionInstall({
+		extensionData: { type: "path", path: extensionPath } });
+	await browser.navigateTo(testPagePath);
 
 	const before = await browser.browsingContextGetTree({});
 
@@ -29,42 +23,17 @@ try {
 				"https://yoshikunijujo.github.io/others/try-password-tab/"
 		);
 
-	console.log("SOURCE CONTEXT");
-	console.log(mainContext);
-
 	await click(browser, mainContext, "#open-input1");
 
-	console.log("button clicked");
-
 	const after = await browser.browsingContextGetTree({});
-
-	console.log("before", before);
-	console.log("after", after);
 	const beforeIds = before.contexts.map(c => c.context);
-	console.log("beforeIds", beforeIds);
 	const newContexts =
 		after.contexts.filter(
 			c => !beforeIds.includes(c.context)
 		);
-	console.log("after-before", newContexts);
-	console.log("after-before[0]", newContexts[0]);
 	const inputContext = newContexts[0];
 
 	await new Promise(resolve => setTimeout(resolve, 1000));
-
-	const result2 = await browser.browsingContextLocateNodes({
-		context: inputContext.context,
-		locator: {
-			type: "css",
-			value: "#send"
-		}
-	});
-
-	const send = result2.nodes[0];
-
-	console.log("HERE");
-	console.log(result2);
-	console.log(send);
 
 	const result3 = await browser.browsingContextLocateNodes({
 		context: inputContext.context,
@@ -75,12 +44,6 @@ try {
 	});
 
 	const input = result3.nodes[0];
-
-	console.log("HERE2");
-	console.log(result3);
-	console.log(input);
-
-	console.log(textToKeyActions("p"));
 
 	await browser.inputPerformActions({
 		context: inputContext.context,
@@ -93,39 +56,7 @@ try {
 		]
 	});
 
-	await browser.inputPerformActions({
-		context: inputContext.context,
-		actions: [{
-			type: "pointer",
-			id: "mouse",
-			parameters: {
-				pointerType: "mouse"
-			},
-			actions: [
-				{
-					type: "pointerMove",
-					x: 0,
-					y: 0,
-					origin: {
-						type: "element",
-						element: send
-					}
-				},
-				{
-					type: "pointerDown",
-					button: 0
-				},
-				{
-					type: "pointerUp",
-					button: 0
-				}
-			]
-		}]
-	});
-
-	await browser.inputReleaseActions({
-		context: inputContext.context
-	});
+	await click(browser, inputContext, "#send");
 
 	const result4 = await browser.scriptCallFunction({
 		functionDeclaration:
@@ -136,8 +67,6 @@ try {
 			context: mainContext.context
 		}
 	});
-
-	console.log("result: ", result4);
 
 	const actual = result4.result.value;
 
@@ -179,35 +108,25 @@ click(browser, context, selector)
 
 	await browser.inputPerformActions({
 		context: context.context,
-		actions: [{
+		actions:
+
+		[{
 			type: "pointer",
 			id: "mouse",
 			parameters: {
 				pointerType: "mouse"
 			},
-			actions: [
-				{
-					type: "pointerMove",
-					x: 0,
-					y: 0,
-					origin: {
-						type: "element",
-						element
-					}
-				},
-				{
-					type: "pointerDown",
-					button: 0
-				},
-				{
-					type: "pointerUp",
-					button: 0
-				}
-			]
+			actions: clickAction(element)
 		}]
 	});
+}
 
-	await browser.inputReleaseActions({
-		context: context.context
-	});
+function
+clickAction(element)
+{
+	return [
+		{	type: "pointerMove", x: 0, y: 0,
+			origin: { type: "element", element } },
+		{ type: "pointerDown", button: 0 },
+		{ type: "pointerUp", button: 0 } ]
 }
