@@ -13,15 +13,12 @@ const browser = await WebDriver.newSession({
 try {
 	await browser.webExtensionInstall({
 		extensionData: { type: "path", path: extensionPath } });
-	await browser.navigateTo(testPagePath);
+	const mainContext =
+		(await browser.browsingContextGetTree({})).contexts[0];
+	await browser.browsingContextNavigate({
+		context: mainContext.context, url: testPagePath });
 
 	const before = await browser.browsingContextGetTree({});
-
-	const mainContext =
-		before.contexts.find(
-			c => c.url ===
-				"https://yoshikunijujo.github.io/others/try-password-tab/"
-		);
 
 	await click(browser, mainContext, "#open-input1");
 
