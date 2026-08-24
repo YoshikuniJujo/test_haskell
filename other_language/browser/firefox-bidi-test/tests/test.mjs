@@ -22,10 +22,10 @@ try {
 
 	await browser.inputPerformActions({
 		context: inputContext.context,
-		actions: [ {
-			type: "key", id: "keyboard",
-			actions: textToKeyActions("password") } ] });
-	await click(browser, inputContext, "#send");
+		actions: [textToKeyAction("password")] });
+	await browser.inputPerformActions({
+		context: inputContext.context,
+		actions: [await clickAction(browser, inputContext, "#send")] });
 
 	const result = await browser.scriptCallFunction({
 		functionDeclaration:
@@ -43,16 +43,40 @@ finally
 }
 
 function
+textToKeyAction(text)
+{
+	return {
+		type: "key", id: "keyboard",
+		actions: textToKeyActions("password") };
+}
+
+function
 textToKeyActions(text)
 {
 	return [...text].flatMap(c => [
-		{ type: "keyDown", value: c },
-		{ type: "keyUp", value: c }
-	]);
+		{ type: "keyDown", value: c }, { type: "keyUp", value: c } ]);
 }
 
 async function
 click(browser, context, selector)
+{
+	await browser.inputPerformActions({
+		context: context.context,
+		actions: [await clickAction(browser, context, selector)] });
+}
+
+async function
+clickAction(browser, context, selector)
+{
+	return {
+		type: "pointer",
+		id: "mouse",
+		parameters: { pointerType: "mouse" },
+		actions: await clickAction_(browser, context, selector) }
+}
+
+async function
+clickAction_(browser, context, selector)
 {
 	const result = await browser.browsingContextLocateNodes({
 		context: context.context,
@@ -66,25 +90,6 @@ click(browser, context, selector)
 		throw new Error(`Element not found: ${selector}`);
 
 	const element = result.nodes[0];
-
-	await browser.inputPerformActions({
-		context: context.context,
-		actions:
-
-		[{
-			type: "pointer",
-			id: "mouse",
-			parameters: {
-				pointerType: "mouse"
-			},
-			actions: clickAction(element)
-		}]
-	});
-}
-
-function
-clickAction(element)
-{
 	return [
 		{	type: "pointerMove", x: 0, y: 0,
 			origin: { type: "element", element } },
@@ -93,18 +98,13 @@ clickAction(element)
 }
 
 async function
-withNewContexts(act) {
+withNewContexts(act)
+{
 	const before = await browser.browsingContextGetTree({});
 	await act();
 	const after = await browser.browsingContextGetTree({});
 	const beforeIds = before.contexts.map(c => c.context);
 	const newContexts =
-		after.contexts.filter(
-			c => !beforeIds.includes(c.context)
-		);
-	console.log("NEW CONTEXT");
-	console.log(newContexts);
-	console.log(before);
-	console.log(after);
+		after.contexts.filter(c => !beforeIds.includes(c.context));
 	return newContexts;
 }
