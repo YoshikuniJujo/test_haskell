@@ -47,7 +47,7 @@ textToKeyAction(text)
 {
 	return {
 		type: "key", id: "keyboard",
-		actions: textToKeyActions("password") };
+		actions: textToKeyActions(text) };
 }
 
 function
