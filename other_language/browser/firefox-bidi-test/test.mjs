@@ -172,6 +172,9 @@ click(browser, context, selector)
 		}
 	});
 
+	if (result.nodes.length !== 1)
+		throw new Error(`Element not found: ${selector}`);
+
 	const element = result.nodes[0];
 
 	await browser.inputPerformActions({
