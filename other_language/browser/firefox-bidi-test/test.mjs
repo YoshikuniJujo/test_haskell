@@ -95,6 +95,7 @@ try {
 	console.log(result3);
 	console.log(input);
 
+	/*
 	await browser.scriptCallFunction({
 		functionDeclaration:
 			"() => document.querySelector('#input').focus()",
@@ -104,6 +105,7 @@ try {
 			context: inputContext.context
 		}
 	});
+	*/
 
 	console.log(textToKeyActions("p"));
 
