@@ -12,5 +12,8 @@
   "type": "commonjs",
   "dependencies": {
     "webdriver": "^9.31.2"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.0"
   }
 }
