@@ -1,12 +1,11 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import WebDriver from "webdriver";
+import { WebDriver } from "webdriver";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const extensionPath = path.resolve(
 	__dirname, "../../../web_extensions/try-password-tab/src" );
 const testPagePath = "https://yoshikunijujo.github.io/others/try-password-tab/"
-
 const browser = await WebDriver.newSession({
 	capabilities: { browserName: "firefox", webSocketUrl: true } });
 
@@ -17,64 +16,29 @@ try {
 		(await browser.browsingContextGetTree({})).contexts[0];
 	await browser.browsingContextNavigate({
 		context: mainContext.context, url: testPagePath });
-
-	const before = await browser.browsingContextGetTree({});
-
-	await click(browser, mainContext, "#open-input1");
-
-	const after = await browser.browsingContextGetTree({});
-	const beforeIds = before.contexts.map(c => c.context);
-	const newContexts =
-		after.contexts.filter(
-			c => !beforeIds.includes(c.context)
-		);
-	const inputContext = newContexts[0];
-
+	const inputContext = (await withNewContexts(() =>
+		click(browser, mainContext, "#open-input1")))[0];
 	await new Promise(resolve => setTimeout(resolve, 1000));
-
-	const result3 = await browser.browsingContextLocateNodes({
-		context: inputContext.context,
-		locator: {
-			type: "css",
-			value: "#input"
-		}
-	});
-
-	const input = result3.nodes[0];
 
 	await browser.inputPerformActions({
 		context: inputContext.context,
-		actions: [
-			{
-				type: "key",
-				id: "keyboard",
-				actions: textToKeyActions("password")
-			}
-		]
-	});
-
+		actions: [ {
+			type: "key", id: "keyboard",
+			actions: textToKeyActions("password") } ] });
 	await click(browser, inputContext, "#send");
 
-	const result4 = await browser.scriptCallFunction({
+	const result = await browser.scriptCallFunction({
 		functionDeclaration:
 			'() => document.querySelector("#result1").textContent',
 		awaitPromise: false,
-		target: {
-			type: "context",
-			context: mainContext.context
-		}
-	});
-
-	const actual = result4.result.value;
-
-	if (actual !== "結果: password")
-		throw new Error(
-			`結果が違います: expected="password", actual="${actual}"`
-		);
-
+		target: { type: "context", context: mainContext.context } });
+	const rslt1 = result.result.value;
+	if (result.result.value !== "結果: password")
+		throw new Error(`err: expected="password", actual="${rslt1}"`);
 	await new Promise(resolve => setTimeout(resolve, 1000));
 }
-finally {
+finally
+{
 	await browser.deleteSession();
 }
 
@@ -126,4 +90,21 @@ clickAction(element)
 			origin: { type: "element", element } },
 		{ type: "pointerDown", button: 0 },
 		{ type: "pointerUp", button: 0 } ]
+}
+
+async function
+withNewContexts(act) {
+	const before = await browser.browsingContextGetTree({});
+	await act();
+	const after = await browser.browsingContextGetTree({});
+	const beforeIds = before.contexts.map(c => c.context);
+	const newContexts =
+		after.contexts.filter(
+			c => !beforeIds.includes(c.context)
+		);
+	console.log("NEW CONTEXT");
+	console.log(newContexts);
+	console.log(before);
+	console.log(after);
+	return newContexts;
 }
