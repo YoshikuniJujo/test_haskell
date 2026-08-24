@@ -20,12 +20,8 @@ try {
 		click(browser, mainContext, "#open-input1")))[0];
 	await new Promise(resolve => setTimeout(resolve, 1000));
 
-	await browser.inputPerformActions({
-		context: inputContext.context,
-		actions: [textToKeyAction("password")] });
-	await browser.inputPerformActions({
-		context: inputContext.context,
-		actions: [await clickAction(browser, inputContext, "#send")] });
+	await inputText(inputContext, "password");
+	await click(browser, inputContext, "#send");
 
 	const result = await browser.scriptCallFunction({
 		functionDeclaration:
@@ -40,6 +36,13 @@ try {
 finally
 {
 	await browser.deleteSession();
+}
+
+async function
+inputText(context, text)
+{
+	await browser.inputPerformActions({
+		context: context.context, actions: [textToKeyAction(text)] });
 }
 
 function
