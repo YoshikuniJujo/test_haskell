@@ -32,10 +32,15 @@ rtnPass(asw, aid, v, it)
 		await browser.storage.session.set({ passwords });
 		console.log(await browser.storage.session.get("passwords"));
 
+		const { passwords: passwords2 = {} } =
+			await browser.storage.session.get("passwords");
+		console.log(passwords2);
+		const pss = passwords2[aid];
+
 		const sts = await asw.returned(aid, it);
 		for (const s of sts)
 			await browser.tabs.sendMessage(s,
-				{ method: "pushPass", answer: aid, value: v });
+				{ method: "pushPass", answer: aid, value: pss });
 		await browser.tabs.update(sts[0], { active: true });
 		await browser.tabs.remove(it); }
 	else {	await browser.tabs.sendMessage( it, { method: "wrongPass" }); }
