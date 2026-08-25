@@ -28,6 +28,9 @@ try {
 
 	await inputText(browser, inputContext, "password");
 	await click(browser, inputContext, "#send");
+
+	await new Promise(resolve => setTimeout(resolve, 1000));
+
 	const rslt = await browser.scriptCallFunction({
 		functionDeclaration:
 			'() => document.querySelector("#result1").textContent',
