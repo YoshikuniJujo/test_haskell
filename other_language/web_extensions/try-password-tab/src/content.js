@@ -56,7 +56,7 @@ browser.runtime.onMessage.addListener((m) => {
 					throw new Error("Invalid input request"); }
 				pendingRequests.delete(rid);
 				rq.reject(
-					new Error("Input tab was closed for answer: " +
+					new window.Error("Input tab was closed for answer: " +
 						m.answer) ); }
 			requestsByAnswer.delete(m.answer);
 			break; } } });
