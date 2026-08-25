@@ -25,6 +25,13 @@ async function
 rtnPass(asw, aid, v, it)
 {
 	if (v === "password") {
+
+		const { passwords = {} } =
+			await browser.storage.session.get("passwords");
+		passwords[aid] = v;
+		await browser.storage.session.set({ passwords });
+		console.log(await browser.storage.session.get("passwords"));
+
 		const sts = await asw.returned(aid, it);
 		for (const s of sts)
 			await browser.tabs.sendMessage(s,
