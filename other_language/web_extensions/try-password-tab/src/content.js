@@ -7,14 +7,16 @@ const tryPasswordTab = {
 
 	queryInput(answer)
 	{
-		return new window.Promise((rslv, rj) => {
+		return new window.Promise(async (rslv, rj) => {
 			const rid = crypto.randomUUID();
 			pendingRequests.set(rid, { resolve: rslv, reject: rj });
 			const rs = requestsByAnswer.get(answer) ?? [];
 			rs.push(rid);
 			requestsByAnswer.set(answer, rs);
 			browser.runtime.sendMessage(
-				{ method: "queryPass", answer: answer } ); });
+				{ method: "queryPass", answer: answer } );
+			await new Promise((rs) => rs());
+		});
 	}
 
 };
