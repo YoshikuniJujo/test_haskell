@@ -5,9 +5,15 @@ const answer = new Answer(browser.storage.session, "answers");
 browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
 		case "queryPass": return qryPass(answer, m.answer, s.tab.id);
-		case "returnPass": return rtnPass(answer, m.answer, m.val, s.tab.id);
+		case "returnPass": return rtnPass(answer, m.answer, m.val, s.tab.id, isSuccess);
 		case "contentStarted": return pageVanished(answer, s.tab.id); } });
 browser.tabs.onRemoved.addListener((tid) => pageVanished(answer, tid));
+
+function
+isSuccess(answer, password)
+{
+	return password === "password";
+}
 
 async function
 qryPass(asw, aid, st)
@@ -22,9 +28,9 @@ qryPass(asw, aid, st)
 }
 
 async function
-rtnPass(asw, aid, v, it)
+rtnPass(asw, aid, v, it, isSuccess)
 {
-	if (v === "password") {
+	if (isSuccess(aid, v)) {
 
 		const { passwords = {} } =
 			await browser.storage.session.get("passwords");
