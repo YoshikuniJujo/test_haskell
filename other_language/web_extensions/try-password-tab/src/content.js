@@ -45,6 +45,7 @@ browser.runtime.onMessage.addListener((m) => {
 				nrq();
 				rq.resolve(m.value);
 				pendingRequests.delete(rid);
+				newPendingRequests.delete(rid);
 			}
 			requestsByAnswer.delete(m.answer);
 			break; }
@@ -63,6 +64,7 @@ browser.runtime.onMessage.addListener((m) => {
 						{ request: rid, answer: m.answer } );
 					throw new Error("Invalid input request"); }
 				pendingRequests.delete(rid);
+				newPendingRequests.delete(rid);
 				rq.reject(
 					new window.Error("Input tab was closed for answer: " +
 						m.answer) ); }
