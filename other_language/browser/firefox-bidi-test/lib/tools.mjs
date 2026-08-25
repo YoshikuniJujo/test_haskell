@@ -1,7 +1,3 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { WebDriver } from "webdriver";
-
 export async function
 inputText(browser, context, text)
 {
