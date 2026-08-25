@@ -3,6 +3,8 @@ browser.runtime.sendMessage({ method: "contentStarted" });
 const pendingRequests = new Map();
 const requestsByAnswer = new Map();
 
+const newPendingRequests = new Map();
+
 const tryPasswordTab = {
 
 	queryInput(answer)
@@ -15,7 +17,9 @@ const tryPasswordTab = {
 			requestsByAnswer.set(answer, rs);
 			browser.runtime.sendMessage(
 				{ method: "queryPass", answer: answer } );
-			await new Promise((rs) => rs());
+			await new Promise((rs) => {
+				newPendingRequests.set(rid, rs);
+			});
 		});
 	}
 
@@ -32,11 +36,13 @@ browser.runtime.onMessage.addListener((m) => {
 			console.log(rids);
 			for (const rid of rids) {
 				const rq = pendingRequests.get(rid);
+				const nrq = newPendingRequests.get(rid);
 				if (!rq) {
 					console.error(
 						"invalid input request",
 						{ request: rid, answer: m.answer } );
 					throw new Error("Invalid input request"); }
+				nrq();
 				rq.resolve(m.value);
 				pendingRequests.delete(rid);
 			}
