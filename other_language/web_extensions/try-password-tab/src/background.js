@@ -1,4 +1,6 @@
-import * as Answer from "./answer.js";
+import { Answer } from "./answer.js";
+
+const answer = new Answer(browser.storage.session, "answers");
 
 browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
@@ -14,7 +16,7 @@ qryPass(a, st)
 		active: false,
 		url: browser.runtime.getURL(
 			`input.html?answer=${encodeURIComponent(a)}` ) });
-	const use = await Answer.create(a, st, it.id);
+	const use = await answer.create(a, st, it.id);
 	if (use !== it.id) await browser.tabs.remove(it.id);
 	await browser.tabs.update(use, { active: true });
 }
@@ -23,7 +25,7 @@ async function
 rtnPass(a, v, it)
 {
 	if (v === "password") {
-		const sts = await Answer.returned(a, it);
+		const sts = await answer.returned(a, it);
 		for (const s of sts)
 			await browser.tabs.sendMessage(s,
 				{ method: "pushPass", answer: a, value: v });
@@ -35,7 +37,7 @@ rtnPass(a, v, it)
 async function
 pageVanished(vt)
 {
-	const r = await Answer.removeTab(vt);
+	const r = await answer.removeTab(vt);
 	for (const t of r.toClose) await browser.tabs.remove(t);
 	for (const a of r.answers)
 		for (const s of a.sources)
