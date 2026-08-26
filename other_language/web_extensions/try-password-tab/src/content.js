@@ -9,17 +9,27 @@ const tryPasswordTab = {
 
 	queryInput(answer)
 	{
-		return new window.Promise(async (rslv, rj) => {
+		return new window.Promise(async (rslv, rjct) => {
+			try {
 			const rid = crypto.randomUUID();
-			pendingRequests.set(rid, { resolve: rslv, reject: rj });
+			pendingRequests.set(rid, { resolve: rslv, reject: rjct });
 			const rs = requestsByAnswer.get(answer) ?? [];
 			rs.push(rid);
 			requestsByAnswer.set(answer, rs);
 			browser.runtime.sendMessage(
 				{ method: "queryPass", answer: answer } );
-			await new Promise((rs) => {
-				newPendingRequests.set(rid, rs);
+			const pss = await new Promise((rs, rj) => {
+				newPendingRequests.set(rid,
+					{ resolve: rs, reject: rj });
 			});
+
+			console.log(pss);
+
+			rslv(pss);
+			}
+			catch(e) {
+				rjct(e);
+			}
 		});
 	}
 
@@ -37,13 +47,13 @@ browser.runtime.onMessage.addListener((m) => {
 			for (const rid of rids) {
 				const rq = pendingRequests.get(rid);
 				const nrq = newPendingRequests.get(rid);
-				if (!rq) {
+				if (!nrq) {
 					console.error(
 						"invalid input request",
 						{ request: rid, answer: m.answer } );
 					throw new Error("Invalid input request"); }
-				nrq();
-				rq.resolve(m.value);
+				nrq.resolve(m.value);
+//				rq.resolve(m.value);
 				pendingRequests.delete(rid);
 				newPendingRequests.delete(rid);
 			}
@@ -58,16 +68,20 @@ browser.runtime.onMessage.addListener((m) => {
 			console.log(rids);
 			for (const rid of rids) {
 				const rq = pendingRequests.get(rid);
-				if (!rq) {
+				const nrq = newPendingRequests.get(rid);
+				if (!nrq) {
 					console.error(
 						"invalid input request",
 						{ request: rid, answer: m.answer } );
 					throw new Error("Invalid input request"); }
 				pendingRequests.delete(rid);
 				newPendingRequests.delete(rid);
-				rq.reject(
+				nrq.reject(
 					new window.Error("Input tab was closed for answer: " +
 						m.answer) ); }
+//				rq.reject(
+//					new window.Error("Input tab was closed for answer: " +
+//						m.answer) ); }
 			requestsByAnswer.delete(m.answer);
 			break; } } });
 
