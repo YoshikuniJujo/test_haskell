@@ -10,21 +10,23 @@ const tryPasswordTab = {
 	{
 		return new window.Promise(async (rslv, rjct) => {
 			try {
-			const rid = crypto.randomUUID();
-			const rs = requestsByAnswer.get(answer) ?? [];
-			rs.push(rid);
-			requestsByAnswer.set(answer, rs);
-			browser.runtime.sendMessage(
-				{ method: "queryPass", answer: answer } );
-			const pss = await new Promise((rs, rj) => {
-				newPendingRequests.set(rid,
-					{ resolve: rs, reject: rj });
-			});
+				const rid = crypto.randomUUID();
+				const rs = requestsByAnswer.get(answer) ?? [];
+				rs.push(rid);
+				requestsByAnswer.set(answer, rs);
+				browser.runtime.sendMessage(
+					{ method: "queryPass", answer: answer } );
+				const pss = await new Promise((rs, rj) => {
+					newPendingRequests.set(rid,
+						{ resolve: rs, reject: rj });
+				});
 
-			console.log(pss);
+				browser.runtime.sendMessage(
+					{ method: "giveMePassword" } );
 
-			rslv(pss);
-			}
+				console.log(pss);
+
+				rslv(pss); }
 			catch(e) {
 				rjct(e);
 			}

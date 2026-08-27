@@ -5,6 +5,7 @@ const answer = new Answer(browser.storage.session, "answers");
 browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
 		case "queryPass": return qryPass(answer, m.answer, s.tab.id);
+		case "giveMePassword": console.log("I think you want to get password"); return;
 		case "returnPass": return rtnPass(answer, m.answer, m.val, s.tab.id, isSuccess);
 		case "contentStarted": return pageVanished(answer, s.tab.id); } });
 browser.tabs.onRemoved.addListener((tid) => pageVanished(answer, tid));
