@@ -52,7 +52,7 @@ browser.runtime.onMessage.addListener((m) => {
 			rslv(m.value);
 			break;
 		}
-		case "pushPass": {
+		case "passwordReady": {
 			console.log(typeof m.answer, m.answer);
 			console.log(
 				[...requestsByAnswer.keys()].map(k => [typeof k, k]) );

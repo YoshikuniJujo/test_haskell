@@ -39,6 +39,18 @@ isSuccess(answer, password)
 async function
 qryPass(asw, aid, st)
 {
+	console.log("qryPass");
+	const { passwords = {} } =
+		await browser.storage.session.get("passwords");
+	console.log(passwords);
+	console.log(passwords[aid]);
+
+	if (passwords[aid] !== undefined) {
+		await browser.tabs.sendMessage(st,
+			{ method: "passwordReady", answer: aid, value: passwords[aid] });
+		return;
+	}
+
 	const it = await browser.tabs.create({
 		active: false,
 		url: browser.runtime.getURL(
@@ -67,7 +79,7 @@ rtnPass(asw, aid, v, it, isSuccess)
 		const sts = await asw.returned(aid, it);
 		for (const s of sts)
 			await browser.tabs.sendMessage(s,
-				{ method: "pushPass", answer: aid, value: pss });
+				{ method: "passwordReady", answer: aid, value: pss });
 		await browser.tabs.update(sts[0], { active: true });
 		await browser.tabs.remove(it); }
 	else {	await browser.tabs.sendMessage( it, { method: "wrongPass" }); }
