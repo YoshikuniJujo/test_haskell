@@ -22,7 +22,7 @@ try {
 		click(browser, mainContext, "#open-input1")))[0];
 	await new Promise(resolve => setTimeout(resolve, 1000));
 
-	await inputText(browser, inputContext, "password");
+	await inputText(browser, inputContext, "password123");
 	await click(browser, inputContext, "#send");
 	await new Promise(resolve => setTimeout(resolve, 1000));
 	const rslt = await browser.scriptCallFunction({
@@ -31,8 +31,8 @@ try {
 		awaitPromise: false,
 		target: { type: "context", context: mainContext.context } });
 	const actual = rslt.result.value;
-	if (actual !== "結果: password")
-		throw new Error(`err: expected="password", actual="${actual}"`);
+	if (actual !== "結果: password123")
+		throw new Error(`err: expected="password123", actual="${actual}"`);
 	await new Promise(resolve => setTimeout(resolve, 1000));
 }
 finally

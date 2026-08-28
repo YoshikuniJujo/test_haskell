@@ -39,7 +39,7 @@ try {
 
 	await new Promise(resolve => setTimeout(resolve, 1000));
 
-	await inputText(browser, inputContext, "password");
+	await inputText(browser, inputContext, "password789");
 	await click(browser, inputContext, "#send");
 
 	await new Promise(resolve => setTimeout(resolve, 1000));
@@ -50,8 +50,8 @@ try {
 		awaitPromise: false,
 		target: { type: "context", context: mainContext2.context } });
 	const actual = rslt.result.value;
-	if (actual !== "結果: password")
-		throw new Error(`err: expected="password", actual="${actual}"`);
+	if (actual !== "結果: password789")
+		throw new Error(`err: expected="password789", actual="${actual}"`);
 
 	await new Promise(resolve => setTimeout(resolve, 2000));
 }
