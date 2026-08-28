@@ -2,6 +2,7 @@ browser.runtime.sendMessage({ method: "contentStarted" });
 
 const requestsByAnswer = new Map();
 
+const pendingPassword = new Map();
 const newPendingRequests = new Map();
 
 const tryPasswordTab = {
@@ -16,13 +17,14 @@ const tryPasswordTab = {
 				requestsByAnswer.set(answer, rs);
 				browser.runtime.sendMessage(
 					{ method: "queryPass", answer: answer } );
+				pendingPassword.set(rid, rslv);
 				const pss = await new Promise((rs, rj) => {
 					newPendingRequests.set(rid,
 						{ resolve: rs, reject: rj });
 				});
 
 				browser.runtime.sendMessage(
-					{ method: "giveMePassword" } );
+					{ method: "giveMePassword", answer: answer, request: rid } );
 
 				console.log(pss);
 
