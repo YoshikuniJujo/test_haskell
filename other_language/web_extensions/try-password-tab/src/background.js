@@ -5,7 +5,7 @@ const answer = new Answer(browser.storage.session, "answers");
 browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
 		case "queryPass": return qryPass(answer, m.answer, s.tab.id);
-		case "giveMePassword":
+		case "getSomething":
 			return giveMePassword(m.answer, m.request, s.tab.id);
 		case "returnPass": return rtnPass(answer, m.answer, m.val, s.tab.id, isSuccess);
 		case "contentStarted": return pageVanished(answer, s.tab.id); } });
@@ -24,7 +24,7 @@ giveMePassword(answer, request, tab)
 	const pss = passwords[answer];
 	console.log(`giveMePassword: pss = ${pss}`)
 	await browser.tabs.sendMessage(tab, {
-		method: "password",
+		method: "something",
 		request,
 		value: pss
 	});

@@ -24,7 +24,7 @@ const tryPasswordTab = {
 				});
 
 				browser.runtime.sendMessage(
-					{ method: "giveMePassword", answer: answer, request: rid } );
+					{ method: "getSomething", answer: answer, request: rid } );
 
 			}
 
@@ -39,7 +39,7 @@ const tryPasswordTab = {
 
 browser.runtime.onMessage.addListener((m) => {
 	switch (m.method) {
-		case "password": {
+		case "something": {
 			console.log(m.request);
 			console.log(m.value);
 			const rslv = pendingPassword.get(m.request);
