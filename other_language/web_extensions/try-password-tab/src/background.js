@@ -6,13 +6,24 @@ browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
 		case "queryPass": return qryPass(answer, m.answer, s.tab.id);
 		case "giveMePassword":
-			console.log("I think you want to get password:");
-			console.log(m.answer);
-			console.log(m.request);
-			return;
+			return giveMePassword(m.answer, m.request, s.tab.id);
 		case "returnPass": return rtnPass(answer, m.answer, m.val, s.tab.id, isSuccess);
 		case "contentStarted": return pageVanished(answer, s.tab.id); } });
 browser.tabs.onRemoved.addListener((tid) => pageVanished(answer, tid));
+
+async function
+giveMePassword(answer, request, tab)
+{
+	console.log("I think you want to get password:");
+	console.log(answer);
+	console.log(request);
+	const { passwords = {} } =
+		await browser.storage.session.get("passwords");
+	console.log("******* HEREHEREHERE *******");
+	console.log(passwords);
+	const pss = passwords[answer];
+	console.log(`giveMePassword: pss = ${pss}`)
+}
 
 function
 isSuccess(answer, password)
