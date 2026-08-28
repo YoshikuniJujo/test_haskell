@@ -24,7 +24,7 @@ giveMePassword(answer, request, tab)
 	const pss = passwords[answer];
 	console.log(`giveMePassword: pss = ${pss}`)
 	await browser.tabs.sendMessage(tab, {
-		method: "pushPassword",
+		method: "password",
 		request,
 		value: pss
 	});
@@ -69,12 +69,6 @@ rtnPass(asw, aid, v, it, isSuccess)
 			await browser.storage.session.get("passwords");
 		passwords[aid] = v;
 		await browser.storage.session.set({ passwords });
-		console.log(await browser.storage.session.get("passwords"));
-
-		const { passwords: passwords2 = {} } =
-			await browser.storage.session.get("passwords");
-		console.log(passwords2);
-		const pss = passwords2[aid];
 
 		const sts = await asw.returned(aid, it);
 		for (const s of sts)
