@@ -47,7 +47,7 @@ qryPass(asw, aid, st)
 
 	if (passwords[aid] !== undefined) {
 		await browser.tabs.sendMessage(st,
-			{ method: "passwordReady", answer: aid, value: passwords[aid] });
+			{ method: "passwordReady", answer: aid });
 		return;
 	}
 
@@ -79,7 +79,7 @@ rtnPass(asw, aid, v, it, isSuccess)
 		const sts = await asw.returned(aid, it);
 		for (const s of sts)
 			await browser.tabs.sendMessage(s,
-				{ method: "passwordReady", answer: aid, value: pss });
+				{ method: "passwordReady", answer: aid });
 		await browser.tabs.update(sts[0], { active: true });
 		await browser.tabs.remove(it); }
 	else {	await browser.tabs.sendMessage( it, { method: "wrongPass" }); }
