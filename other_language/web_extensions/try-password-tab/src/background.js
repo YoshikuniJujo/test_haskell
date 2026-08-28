@@ -23,6 +23,11 @@ giveMePassword(answer, request, tab)
 	console.log(passwords);
 	const pss = passwords[answer];
 	console.log(`giveMePassword: pss = ${pss}`)
+	await browser.tabs.sendMessage(tab, {
+		method: "pushPassword",
+		request,
+		value: pss
+	});
 }
 
 function

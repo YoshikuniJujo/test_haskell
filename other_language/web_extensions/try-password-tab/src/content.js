@@ -18,7 +18,7 @@ const tryPasswordTab = {
 				browser.runtime.sendMessage(
 					{ method: "queryPass", answer: answer } );
 				pendingPassword.set(rid, rslv);
-				const pss = await new Promise((rs, rj) => {
+				await new Promise((rs, rj) => {
 					newPendingRequests.set(rid,
 						{ resolve: rs, reject: rj });
 				});
@@ -26,9 +26,9 @@ const tryPasswordTab = {
 				browser.runtime.sendMessage(
 					{ method: "giveMePassword", answer: answer, request: rid } );
 
-				console.log(pss);
+			}
 
-				rslv(pss); }
+//				rslv(pss); }
 			catch(e) {
 				rjct(e);
 			}
@@ -39,6 +39,19 @@ const tryPasswordTab = {
 
 browser.runtime.onMessage.addListener((m) => {
 	switch (m.method) {
+		case "pushPassword": {
+			console.log(m.request);
+			console.log(m.value);
+			const rslv = pendingPassword.get(m.request);
+			pendingPassword.delete(m.request);
+			if (!rslv) {
+				console.error(
+					"invalid input request",
+					{ request: m.request } );
+				throw new Error("Invalid input request"); }
+			rslv(m.value);
+			break;
+		}
 		case "pushPass": {
 			console.log(typeof m.answer, m.answer);
 			console.log(
@@ -53,7 +66,7 @@ browser.runtime.onMessage.addListener((m) => {
 						"invalid input request",
 						{ request: rid, answer: m.answer } );
 					throw new Error("Invalid input request"); }
-				nrq.resolve(m.value);
+				nrq.resolve();
 				newPendingRequests.delete(rid);
 			}
 			requestsByAnswer.delete(m.answer);
