@@ -26,7 +26,7 @@ const tryPasswordTab = {
 				});
 
 				browser.runtime.sendMessage(
-					{ method: "getSomething", answer: answer, request: rid } );
+					{ method: "getSomething", answer: answer, request: rid, parameter } );
 
 			}
 
