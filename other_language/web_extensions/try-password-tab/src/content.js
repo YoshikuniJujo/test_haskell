@@ -1,6 +1,6 @@
 browser.runtime.sendMessage({ method: "contentStarted" });
 
-const newRequestsWaitingForAnswer = new Map();
+const requestsWaitingForAnswer = new Map();
 
 const pendingPassword = new Map();
 
@@ -15,9 +15,9 @@ const tryPasswordTab = {
 					{ method: "queryPass", answer: answer } );
 				pendingPassword.set(rid, rslv);
 				await new Promise((rs, rj) => {
-					const nrqs = newRequestsWaitingForAnswer.get(answer) ?? [];
+					const nrqs = requestsWaitingForAnswer.get(answer) ?? [];
 					nrqs.push({ resolve: rs, reject: rj });
-					newRequestsWaitingForAnswer.set(answer, nrqs);
+					requestsWaitingForAnswer.set(answer, nrqs);
 				});
 
 				browser.runtime.sendMessage(
@@ -47,7 +47,7 @@ browser.runtime.onMessage.addListener((m) => {
 			break;
 		}
 		case "passwordReady": {
-			const rids = newRequestsWaitingForAnswer.get(m.answer);
+			const rids = requestsWaitingForAnswer.get(m.answer);
 			for (const rid of rids) {
 				/*
 				const nrq = newPendingRequests.get(rid);
@@ -59,14 +59,14 @@ browser.runtime.onMessage.addListener((m) => {
 					*/
 				rid.resolve();
 			}
-			newRequestsWaitingForAnswer.delete(m.answer);
+			requestsWaitingForAnswer.delete(m.answer);
 			break; }
 		case "passError": {
 			console.log(typeof m.answer, m.answer);
 			console.log(
-				[...newRequestsWaitingForAnswer.keys()].map(k => [typeof k, k]) );
-			console.log(newRequestsWaitingForAnswer);
-			const rids = newRequestsWaitingForAnswer.get(m.answer);
+				[...requestsWaitingForAnswer.keys()].map(k => [typeof k, k]) );
+			console.log(requestsWaitingForAnswer);
+			const rids = requestsWaitingForAnswer.get(m.answer);
 			console.log(rids);
 			for (const rid of rids) {
 				/*
@@ -80,7 +80,7 @@ browser.runtime.onMessage.addListener((m) => {
 				rid.reject(
 					new window.Error("Input tab was closed for answer: " +
 						m.answer) ); }
-			newRequestsWaitingForAnswer.delete(m.answer);
+			requestsWaitingForAnswer.delete(m.answer);
 			break; } } });
 
 window.wrappedJSObject.tryPasswordTab =
