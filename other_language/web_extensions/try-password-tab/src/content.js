@@ -28,7 +28,6 @@ const tryPasswordTab = {
 
 			}
 
-//				rslv(pss); }
 			catch(e) {
 				rjct(e);
 			}
@@ -40,8 +39,6 @@ const tryPasswordTab = {
 browser.runtime.onMessage.addListener((m) => {
 	switch (m.method) {
 		case "something": {
-			console.log(m.request);
-			console.log(m.value);
 			const rslv = pendingPassword.get(m.request);
 			pendingPassword.delete(m.request);
 			if (!rslv) {
@@ -53,12 +50,7 @@ browser.runtime.onMessage.addListener((m) => {
 			break;
 		}
 		case "passwordReady": {
-			console.log(typeof m.answer, m.answer);
-			console.log(
-				[...requestsByAnswer.keys()].map(k => [typeof k, k]) );
-			console.log(requestsByAnswer);
 			const rids = requestsByAnswer.get(m.answer);
-			console.log(rids);
 			for (const rid of rids) {
 				const nrq = newPendingRequests.get(rid);
 				if (!nrq) {
