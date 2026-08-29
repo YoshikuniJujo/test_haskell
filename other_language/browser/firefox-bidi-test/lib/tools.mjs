@@ -65,6 +65,9 @@ withNewContexts(browser, act)
 {
 	const before = await browser.browsingContextGetTree({});
 	await act();
+
+	await new Promise(resolve => setTimeout(resolve, 100));
+
 	const after = await browser.browsingContextGetTree({});
 	const beforeIds = before.contexts.map(c => c.context);
 	const newContexts =
