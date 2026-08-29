@@ -1,6 +1,6 @@
 browser.runtime.sendMessage({ method: "contentStarted" });
 
-const requestsByAnswer = new Map();
+const requestsUsingAnswer = new Map();
 
 const pendingPassword = new Map();
 const newPendingRequests = new Map();
@@ -12,9 +12,9 @@ const tryPasswordTab = {
 		return new window.Promise(async (rslv, rjct) => {
 			try {
 				const rid = crypto.randomUUID();
-				const rs = requestsByAnswer.get(answer) ?? [];
+				const rs = requestsUsingAnswer.get(answer) ?? [];
 				rs.push(rid);
-				requestsByAnswer.set(answer, rs);
+				requestsUsingAnswer.set(answer, rs);
 				browser.runtime.sendMessage(
 					{ method: "queryPass", answer: answer } );
 				pendingPassword.set(rid, rslv);
@@ -50,7 +50,7 @@ browser.runtime.onMessage.addListener((m) => {
 			break;
 		}
 		case "passwordReady": {
-			const rids = requestsByAnswer.get(m.answer);
+			const rids = requestsUsingAnswer.get(m.answer);
 			for (const rid of rids) {
 				const nrq = newPendingRequests.get(rid);
 				if (!nrq) {
@@ -61,14 +61,14 @@ browser.runtime.onMessage.addListener((m) => {
 				nrq.resolve();
 				newPendingRequests.delete(rid);
 			}
-			requestsByAnswer.delete(m.answer);
+			requestsUsingAnswer.delete(m.answer);
 			break; }
 		case "passError": {
 			console.log(typeof m.answer, m.answer);
 			console.log(
-				[...requestsByAnswer.keys()].map(k => [typeof k, k]) );
-			console.log(requestsByAnswer);
-			const rids = requestsByAnswer.get(m.answer);
+				[...requestsUsingAnswer.keys()].map(k => [typeof k, k]) );
+			console.log(requestsUsingAnswer);
+			const rids = requestsUsingAnswer.get(m.answer);
 			console.log(rids);
 			for (const rid of rids) {
 				const nrq = newPendingRequests.get(rid);
@@ -81,7 +81,7 @@ browser.runtime.onMessage.addListener((m) => {
 				nrq.reject(
 					new window.Error("Input tab was closed for answer: " +
 						m.answer) ); }
-			requestsByAnswer.delete(m.answer);
+			requestsUsingAnswer.delete(m.answer);
 			break; } } });
 
 window.wrappedJSObject.tryPasswordTab =
