@@ -1,6 +1,6 @@
 browser.runtime.sendMessage({ method: "contentStarted" });
 
-const requestsUsingAnswer = new Map();
+const requestsWaitingForAnswer = new Map();
 
 const pendingPassword = new Map();
 const newPendingRequests = new Map();
@@ -12,9 +12,9 @@ const tryPasswordTab = {
 		return new window.Promise(async (rslv, rjct) => {
 			try {
 				const rid = crypto.randomUUID();
-				const rs = requestsUsingAnswer.get(answer) ?? [];
+				const rs = requestsWaitingForAnswer.get(answer) ?? [];
 				rs.push(rid);
-				requestsUsingAnswer.set(answer, rs);
+				requestsWaitingForAnswer.set(answer, rs);
 				browser.runtime.sendMessage(
 					{ method: "queryPass", answer: answer } );
 				pendingPassword.set(rid, rslv);
@@ -50,7 +50,7 @@ browser.runtime.onMessage.addListener((m) => {
 			break;
 		}
 		case "passwordReady": {
-			const rids = requestsUsingAnswer.get(m.answer);
+			const rids = requestsWaitingForAnswer.get(m.answer);
 			for (const rid of rids) {
 				const nrq = newPendingRequests.get(rid);
 				if (!nrq) {
@@ -61,14 +61,14 @@ browser.runtime.onMessage.addListener((m) => {
 				nrq.resolve();
 				newPendingRequests.delete(rid);
 			}
-			requestsUsingAnswer.delete(m.answer);
+			requestsWaitingForAnswer.delete(m.answer);
 			break; }
 		case "passError": {
 			console.log(typeof m.answer, m.answer);
 			console.log(
-				[...requestsUsingAnswer.keys()].map(k => [typeof k, k]) );
-			console.log(requestsUsingAnswer);
-			const rids = requestsUsingAnswer.get(m.answer);
+				[...requestsWaitingForAnswer.keys()].map(k => [typeof k, k]) );
+			console.log(requestsWaitingForAnswer);
+			const rids = requestsWaitingForAnswer.get(m.answer);
 			console.log(rids);
 			for (const rid of rids) {
 				const nrq = newPendingRequests.get(rid);
@@ -81,7 +81,7 @@ browser.runtime.onMessage.addListener((m) => {
 				nrq.reject(
 					new window.Error("Input tab was closed for answer: " +
 						m.answer) ); }
-			requestsUsingAnswer.delete(m.answer);
+			requestsWaitingForAnswer.delete(m.answer);
 			break; } } });
 
 window.wrappedJSObject.tryPasswordTab =
