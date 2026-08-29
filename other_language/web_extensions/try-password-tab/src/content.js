@@ -7,10 +7,8 @@ const newPendingRequests = new Map();
 
 const tryPasswordTab = {
 
-	queryInput(answer, parameter)
+	getSomething(answer, parameter)
 	{
-		console.log(`window.tryPasswordTab.queryInput: ${parameter}`);
-
 		return new window.Promise(async (rslv, rjct) => {
 			try {
 				const rid = crypto.randomUUID();
