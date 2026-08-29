@@ -20,6 +20,7 @@
     それぞれのrequestに送りとどけるために使われる
 * 意味合い的には「この公開鍵を使っているもの」的な名前かさそう
 * 名前はrequetsUsingAnswerあたりに変更しようかと
+    + あるいはrequestsWaitingForAnswerはありかもしれない
 
 ### pendingPassword
 
