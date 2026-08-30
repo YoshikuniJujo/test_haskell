@@ -5,27 +5,20 @@ const somethingResolvers = new Map();
 
 const tryPasswordTab = {
 
-	getSomething(aid, parameter)
+	getSomething(aid, prm)
 	{
+		const rid = crypto.randomUUID();
 		return new window.Promise(async (rslv, rjct) => {
-			try {
-				browser.runtime.sendMessage({
+			try {	browser.runtime.sendMessage({
 					method: "queryPass", answer: aid });
-				await new Promise((rs, rj) => {
-					addToArrayMap(requestsWaitingForAnswer, aid, { resolve: rs, reject: rj });
-				});
-
-				const rid = crypto.randomUUID();
+				await new Promise((rs, rj) => { addToArrayMap(
+					requestsWaitingForAnswer, aid,
+					{ resolve: rs, reject: rj } ); });
 				somethingResolvers.set(rid, rslv);
-				browser.runtime.sendMessage(
-					{ method: "getSomething", answer: aid, request: rid, parameter } );
-
-			}
-
-			catch(e) {
-				rjct(e);
-			}
-		});
+				browser.runtime.sendMessage( {
+					method: "getSomething", answer: aid,
+					request: rid, parameter: prm } ); }
+			catch(e) { rjct(e); } });
 	}
 
 };
