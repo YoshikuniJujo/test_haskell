@@ -4,7 +4,7 @@
 
 * 値の追加や削除、読み出しを関数化することを検討する
 
-### requestsByAnser
+### requestsWaitingForAnswer
 
 * answerから複数のresolve, rejectへの辞書
 * answerは本番環境ではpublic key
@@ -19,6 +19,6 @@
     それぞれのrequestに送りとどけるために使われる
 * 意味合い的には「この公開鍵を使っているもの」的な名前かさそう
 * 名前はrequetsUsingAnswerあたりに変更しようかと
-    + あるいはrequestsWaitingForAnswerはありかもしれない
+* 名前はrequestsWaitingForAnswerとした
 
 ### pendingPassword

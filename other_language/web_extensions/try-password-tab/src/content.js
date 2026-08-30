@@ -1,27 +1,24 @@
 browser.runtime.sendMessage({ method: "contentStarted" });
 
 const requestsWaitingForAnswer = new Map();
-
 const pendingPassword = new Map();
 
 const tryPasswordTab = {
 
-	getSomething(answer, parameter)
+	getSomething(aid, parameter)
 	{
 		return new window.Promise(async (rslv, rjct) => {
 			try {
-				const rid = crypto.randomUUID();
-				browser.runtime.sendMessage(
-					{ method: "queryPass", answer: answer } );
-				pendingPassword.set(rid, rslv);
+				browser.runtime.sendMessage( {
+					method: "queryPass", answer: aid } );
 				await new Promise((rs, rj) => {
-					const nrqs = requestsWaitingForAnswer.get(answer) ?? [];
-					nrqs.push({ resolve: rs, reject: rj });
-					requestsWaitingForAnswer.set(answer, nrqs);
+					addToArrayMap(requestsWaitingForAnswer, aid, { resolve: rs, reject: rj });
 				});
 
+				const rid = crypto.randomUUID();
+				pendingPassword.set(rid, rslv);
 				browser.runtime.sendMessage(
-					{ method: "getSomething", answer: answer, request: rid, parameter } );
+					{ method: "getSomething", answer: aid, request: rid, parameter } );
 
 			}
 
@@ -82,6 +79,15 @@ browser.runtime.onMessage.addListener((m) => {
 						m.answer) ); }
 			requestsWaitingForAnswer.delete(m.answer);
 			break; } } });
+
+function
+addToArrayMap(map, key, value)
+{
+	console.log("addToArrayMap");
+	const values = map.get(key);
+	if (values) values.push(value); else map.set(key, [value]);
+	console.log(map);
+}
 
 window.wrappedJSObject.tryPasswordTab =
 	cloneInto(tryPasswordTab, window, { cloneFunctions: true });
