@@ -22,3 +22,14 @@
 * 名前はrequestsWaitingForAnswerとした
 
 ### pendingPassword
+
+* 名前はlegacy
+* 本番では署名であるような何かを要求し、backgroundがそれをメッセージで返す
+* 返されたメッセージかな値を取り出し、大元のPromiseの返り値にする
+* そのためにユニークなidとresolveとの対応を保持する
+* 名前を変える必要がある
+* 「何か」への要求と、それを受け取る「場所」を関連づけるもの
+* 本番なら署名を受け取る場所みたいな感じ
+* ここでは「何か」を受け取る場所のような感じ
+    + たとえばsomethingResolverのような感じか
+    + 本番だとsignResolverのような感じかな

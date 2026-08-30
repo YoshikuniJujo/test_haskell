@@ -1,7 +1,7 @@
 browser.runtime.sendMessage({ method: "contentStarted" });
 
 const requestsWaitingForAnswer = new Map();
-const pendingPassword = new Map();
+const somethingResolvers = new Map();
 
 const tryPasswordTab = {
 
@@ -9,14 +9,14 @@ const tryPasswordTab = {
 	{
 		return new window.Promise(async (rslv, rjct) => {
 			try {
-				browser.runtime.sendMessage( {
-					method: "queryPass", answer: aid } );
+				browser.runtime.sendMessage({
+					method: "queryPass", answer: aid });
 				await new Promise((rs, rj) => {
 					addToArrayMap(requestsWaitingForAnswer, aid, { resolve: rs, reject: rj });
 				});
 
 				const rid = crypto.randomUUID();
-				pendingPassword.set(rid, rslv);
+				somethingResolvers.set(rid, rslv);
 				browser.runtime.sendMessage(
 					{ method: "getSomething", answer: aid, request: rid, parameter } );
 
@@ -33,8 +33,8 @@ const tryPasswordTab = {
 browser.runtime.onMessage.addListener((m) => {
 	switch (m.method) {
 		case "something": {
-			const rslv = pendingPassword.get(m.request);
-			pendingPassword.delete(m.request);
+			const rslv = somethingResolvers.get(m.request);
+			somethingResolvers.delete(m.request);
 			if (!rslv) {
 				console.error(
 					"invalid input request",
