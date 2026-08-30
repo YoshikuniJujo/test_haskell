@@ -23,64 +23,36 @@ const tryPasswordTab = {
 
 };
 
-browser.runtime.onMessage.addListener((m) => {
-	switch (m.method) {
-		case "something": {
-			const rslv = somethingResolvers.get(m.request);
-			somethingResolvers.delete(m.request);
-			if (!rslv) {
-				console.error(
-					"invalid input request",
-					{ request: m.request } );
-				throw new Error("Invalid input request"); }
-			rslv(m.value);
-			break;
-		}
-		case "passwordReady": {
-			const rids = requestsWaitingForAnswer.get(m.answer);
-			for (const rid of rids) {
-				/*
-				const nrq = newPendingRequests.get(rid);
-				if (!nrq) {
-					console.error(
-						"invalid input request",
-						{ request: rid, answer: m.answer } );
-					throw new Error("Invalid input request"); }
-					*/
-				rid.resolve();
-			}
-			requestsWaitingForAnswer.delete(m.answer);
-			break; }
-		case "passError": {
-			console.log(typeof m.answer, m.answer);
-			console.log(
-				[...requestsWaitingForAnswer.keys()].map(k => [typeof k, k]) );
-			console.log(requestsWaitingForAnswer);
-			const rids = requestsWaitingForAnswer.get(m.answer);
-			console.log(rids);
-			for (const rid of rids) {
-				/*
-				const nrq = newPendingRequests.get(rid);
-				if (!nrq) {
-					console.error(
-						"invalid input request",
-						{ request: rid, answer: m.answer } );
-					throw new Error("Invalid input request"); }
-					*/
-				rid.reject(
-					new window.Error("Input tab was closed for answer: " +
-						m.answer) ); }
-			requestsWaitingForAnswer.delete(m.answer);
-			break; } } });
-
-function
-addToArrayMap(map, key, value)
-{
-	console.log("addToArrayMap");
-	const values = map.get(key);
-	if (values) values.push(value); else map.set(key, [value]);
-	console.log(map);
-}
+browser.runtime.onMessage.addListener((m) => { switch (m.method) {
+	case "passwordReady":
+		forEachValues(requestsWaitingForAnswer,
+			m.answer, (wtr) => wtr.resolve()); break;
+	case "passError":
+		forEachValues(requestsWaitingForAnswer,
+			m.answer, (wtr) => wtr.reject(new window.Error(
+				"Input tab was closed for answer: " +
+				m.answer ))); break;
+	case "something": {
+		const rs = somethingResolvers.get(m.request);
+		somethingResolvers.delete(m.request);
+		if (!rs) {
+			console.error(
+				"invalid input request",
+				{ request: m.request } );
+			throw new Error("Invalid input request"); }
+		rs(m.value); break; } } });
 
 window.wrappedJSObject.tryPasswordTab =
 	cloneInto(tryPasswordTab, window, { cloneFunctions: true });
+
+function
+addToArrayMap(map, k, v)
+{
+	const vs = map.get(k); if (vs) vs.push(v); else map.set(k, [v]);
+}
+
+function
+forEachValues(map, k, f)
+{
+	const vs = map.get(k); map.delete(k); for (const v of vs) f(v);
+}
