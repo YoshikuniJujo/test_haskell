@@ -6,10 +6,10 @@ export class Answer {
 	#storageName;
 	#mutex;
 
-	constructor(str, strNm)
+	constructor(str = browser.storage.session)
 	{
 		this.#storage = str;
-		this.#storageName = strNm;
+		this.#storageName = crypto.randomUUID();
 		this.#mutex = new Mutex;
 	}
 

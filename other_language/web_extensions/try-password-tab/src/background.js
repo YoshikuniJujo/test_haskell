@@ -1,6 +1,6 @@
 import { Answer } from "./answer.js";
 
-const answer = new Answer(browser.storage.session, "answers");
+const answer = new Answer();
 
 browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
