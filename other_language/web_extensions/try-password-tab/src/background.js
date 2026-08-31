@@ -88,5 +88,5 @@ pageVanished(asw, vt)
 	for (const a of r.cancelled)
 		for (const s of a.sources)
 			await browser.tabs.sendMessage(
-				s, { method: "passError", answer: a.answer });
+				s, { method: "passError", answer: a.publicKey });
 }
