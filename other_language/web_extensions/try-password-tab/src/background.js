@@ -1,15 +1,15 @@
 import { InputTabs } from "./inputTabs.js";
 
-const answer = new InputTabs();
+const inputTab = new InputTabs();
 
 browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
-		case "queryPass": return qryPass(answer, m.answer, s.tab.id);
+		case "queryPass": return qryPass(inputTab, m.publicKey, s.tab.id);
 		case "getSomething":
-			return giveMePassword(m.answer, m.request, m.parameter, s.tab.id);
-		case "returnPass": return rtnPass(answer, m.answer, m.val, s.tab.id, isSuccess);
-		case "contentStarted": return pageVanished(answer, s.tab.id); } });
-browser.tabs.onRemoved.addListener((tid) => pageVanished(answer, tid));
+			return giveMePassword(m.publicKey, m.request, m.parameter, s.tab.id);
+		case "returnPass": return rtnPass(inputTab, m.answer, m.val, s.tab.id, isSuccess);
+		case "contentStarted": return pageVanished(inputTab, s.tab.id); } });
+browser.tabs.onRemoved.addListener((tid) => pageVanished(inputTab, tid));
 
 async function
 giveMePassword(answer, request, parameter, tab)

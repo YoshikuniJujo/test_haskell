@@ -10,13 +10,13 @@ const tryPasswordTab = {
 		const rid = crypto.randomUUID();
 		return new window.Promise(async (rslv, rjct) => {
 			try {	browser.runtime.sendMessage({
-					method: "queryPass", answer: pk });
+					method: "queryPass", publicKey: pk });
 				await new Promise((rs, rj) => { addToArrayMap(
 					requestsWaitingForPassword, pk,
 					{ resolve: rs, reject: rj } ); });
 				somethingResolvers.set(rid, rslv);
 				browser.runtime.sendMessage( {
-					method: "getSomething", answer: pk,
+					method: "getSomething", publicKey: pk,
 					request: rid, parameter: prm } ); }
 			catch(e) { rjct(e); } });
 	}
