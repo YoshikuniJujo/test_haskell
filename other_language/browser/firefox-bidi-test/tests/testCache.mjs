@@ -18,8 +18,9 @@ try {
 		(await browser.browsingContextGetTree({})).contexts[0];
 	await browser.browsingContextNavigate({
 		context: mainContext.context, url: testPagePath });
-	const inputContext = (await withNewContexts(browser, () =>
-		click(browser, mainContext, "#open-input1")))[0];
+	const inputContext = (await withNewContexts(browser, async () => {
+		await new Promise(resolve => setTimeout(resolve, 100));
+		await click(browser, mainContext, "#open-input1"); }))[0];
 	await new Promise(resolve => setTimeout(resolve, 1000));
 
 	await inputText(browser, inputContext, "password123");

@@ -19,6 +19,7 @@ try {
 	await browser.browsingContextNavigate({
 		context: mainContext.context, url: testPagePath });
 	const inputContext = (await withNewContexts(browser, async () => {
+		await new Promise(resolve => setTimeout(resolve, 100));
 		await click(browser, mainContext, "#open-input1");
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		await click(browser, mainContext, "#open-input1");
