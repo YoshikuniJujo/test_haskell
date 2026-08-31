@@ -11,7 +11,7 @@ export class Answer {
 		this.#storage = str; this.#mutex = new Mutex;
 	}
 
-	async asignInputTab(a, st, it)
+	async assignInputTab(a, st, it)
 	{
 		await this.#mutex.acquire();
 		try {	let use;

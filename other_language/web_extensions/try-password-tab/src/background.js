@@ -56,7 +56,7 @@ qryPass(asw, aid, st)
 		active: false,
 		url: browser.runtime.getURL(
 			`input.html?answer=${encodeURIComponent(aid)}` ) });
-	const use = await asw.asignInputTab(aid, st, it.id);
+	const use = await asw.assignInputTab(aid, st, it.id);
 	if (use !== it.id) await browser.tabs.remove(it.id);
 	await browser.tabs.update(use, { active: true });
 }
