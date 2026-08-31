@@ -48,7 +48,7 @@ qryPass(asw, aid, st)
 
 	if (passwords[aid] !== undefined) {
 		await browser.tabs.sendMessage(st,
-			{ method: "passwordReady", answer: aid });
+			{ method: "passwordReady", publicKey: aid });
 		return;
 	}
 
@@ -74,7 +74,7 @@ rtnPass(asw, aid, v, it, isSuccess)
 		const sts = await asw.complete(aid, it);
 		for (const s of sts)
 			await browser.tabs.sendMessage(s,
-				{ method: "passwordReady", answer: aid });
+				{ method: "passwordReady", publicKey: aid });
 		await browser.tabs.update(sts[0], { active: true });
 		await browser.tabs.remove(it); }
 	else {	await browser.tabs.sendMessage( it, { method: "wrongPass" }); }
@@ -88,5 +88,5 @@ pageVanished(asw, vt)
 	for (const a of r.cancelled)
 		for (const s of a.sources)
 			await browser.tabs.sendMessage(
-				s, { method: "passError", answer: a.publicKey });
+				s, { method: "inputTabClosed", publicKey: a.publicKey });
 }

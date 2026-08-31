@@ -1,22 +1,22 @@
 browser.runtime.sendMessage({ method: "contentStarted" });
 
-const requestsWaitingForAnswer = new Map();
+const requestsWaitingForPassword = new Map();
 const somethingResolvers = new Map();
 
 const tryPasswordTab = {
 
-	getSomething(aid, prm)
+	getSomething(pk, prm)
 	{
 		const rid = crypto.randomUUID();
 		return new window.Promise(async (rslv, rjct) => {
 			try {	browser.runtime.sendMessage({
-					method: "queryPass", answer: aid });
+					method: "queryPass", answer: pk });
 				await new Promise((rs, rj) => { addToArrayMap(
-					requestsWaitingForAnswer, aid,
+					requestsWaitingForPassword, pk,
 					{ resolve: rs, reject: rj } ); });
 				somethingResolvers.set(rid, rslv);
 				browser.runtime.sendMessage( {
-					method: "getSomething", answer: aid,
+					method: "getSomething", answer: pk,
 					request: rid, parameter: prm } ); }
 			catch(e) { rjct(e); } });
 	}
@@ -25,13 +25,13 @@ const tryPasswordTab = {
 
 browser.runtime.onMessage.addListener((m) => { switch (m.method) {
 	case "passwordReady":
-		forEachValues(requestsWaitingForAnswer,
-			m.answer, (wtr) => wtr.resolve()); break;
-	case "passError":
-		forEachValues(requestsWaitingForAnswer,
-			m.answer, (wtr) => wtr.reject(new window.Error(
-				"Input tab was closed for answer: " +
-				m.answer ))); break;
+		forEachValues(requestsWaitingForPassword,
+			m.publicKey, (wtr) => wtr.resolve()); break;
+	case "inputTabClosed":
+		forEachValues(requestsWaitingForPassword,
+			m.publicKey, (wtr) => wtr.reject(new window.Error(
+				"Input tab was closed for public key: " +
+				m.publicKey ))); break;
 	case "something": {
 		const rs = somethingResolvers.get(m.request);
 		somethingResolvers.delete(m.request);
