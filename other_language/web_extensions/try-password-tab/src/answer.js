@@ -4,80 +4,73 @@ const STORAGE_KEY = "857e7986-2f57-4f41-b91f-3d4392a52fcf";
 
 export class Answer {
 
-	#storage;
-	#mutex;
+	#storage; #mutex;
 
 	constructor(str = browser.storage.session)
 	{
-		this.#storage = str;
-		this.#mutex = new Mutex;
+		this.#storage = str; this.#mutex = new Mutex;
 	}
 
-	async create(a, st, it)
+	async asignInputTab(a, st, it)
 	{
 		await this.#mutex.acquire();
 		try {	let use;
 			const aws = await this.#getAnswers();
 			const aw = aws[a];
 			if (aw) {
-				if (!aw.sourceTabs.includes(st))
-					aw.sourceTabs.push(st);
+				addUnique(aw.sourceTabs, st);
 				use = aw.inputTab; }
-			else {	aws[a] = {
-					sourceTabs: [st], inputTab: it,
-					state: "pending" }
+			else {	aws[a] = { sourceTabs: [st], inputTab: it }
 				use = it; }
-			await this.#setAnswers(aws);
-			return use; }
+			await this.#setAnswers(aws); return use; }
 		finally { this.#mutex.release(); }
 	}
 	
-	async returned(a, it)
+	async complete(a, actit)
 	{
 		await this.#mutex.acquire();
-		try {	
-			const aws = await this.#getAnswers();
+		try {	const aws = await this.#getAnswers();
 			const aw = aws[a];
 			if (!aw) { throw new Error(`Unknown answer: ${a}`); }
-			this.#chkInputTab(a, aw.inputTab, it);
+			this.#verifyInputTab(a, aw.inputTab, actit);
 			delete aws[a];
 			await this.#setAnswers(aws);
 			return aw.sourceTabs; }
 		finally { this.#mutex.release(); }
 	}
 
-	async removeTab(t)
+	async tabRemoved(t)
 	{
 		await this.#mutex.acquire();
 		try {	
 			const aws = await this.#getAnswers();
-			const tbs = []; const rmaws = [];
-			for (const[a, aw] of Object.entries(aws)) {
-				const i = aw.sourceTabs.indexOf(t);
+			const cls = []; const rmaws = [];
+			for (const[a, tbs] of Object.entries(aws)) {
+				const i = tbs.sourceTabs.indexOf(t);
 				if (i != -1) {
-					aw.sourceTabs.splice(i, 1);
-					if (aw.sourceTabs.length === 0) {
-						tbs.push(aw.inputTab);
+					tbs.sourceTabs.splice(i, 1);
+					if (tbs.sourceTabs.length === 0) {
+						cls.push(tbs.inputTab);
 						delete aws[a]; } }
-				else if (aw.inputTab === t) {
+				else if (tbs.inputTab === t) {
 					rmaws.push({
 						answer: a,
-						sources: aw.sourceTabs });
+						sources: tbs.sourceTabs });
 					delete aws[a]; } }
 			await this.#setAnswers(aws);
-			return { toClose: tbs, answers: rmaws }; }
+			return { toClose: cls, cancelled: rmaws }; }
 		finally { this.#mutex.release(); }
 	}
 	
-	#chkInputTab(a, it0, it)
+	#verifyInputTab(a, ex, act)
 	{
-		if (it !== it0) {
+		if (act !== ex) {
 			console.error(
 				"possible attack: returnPass was received " +
 				"from a tab different from the input tab",
 				{	answer: a,
-					expectedInputTabId: it0,
-					actualSenderTabId: it } );
+					expectedInputTabId: ex,
+					actualSenderTabId: act } );
 			throw new Error(
 				"security violation: " +
 				"input was not returned by the input tab " +
@@ -95,4 +88,10 @@ export class Answer {
 		await this.#storage.set({ [STORAGE_KEY]: aws });
 	}
 
+}
+
+function
+addUnique(a, v)
+{
+	if (!a.includes(v)) a.push(v);
 }

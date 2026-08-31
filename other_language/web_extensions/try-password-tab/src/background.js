@@ -56,7 +56,7 @@ qryPass(asw, aid, st)
 		active: false,
 		url: browser.runtime.getURL(
 			`input.html?answer=${encodeURIComponent(aid)}` ) });
-	const use = await asw.create(aid, st, it.id);
+	const use = await asw.asignInputTab(aid, st, it.id);
 	if (use !== it.id) await browser.tabs.remove(it.id);
 	await browser.tabs.update(use, { active: true });
 }
@@ -71,7 +71,7 @@ rtnPass(asw, aid, v, it, isSuccess)
 		passwords[aid] = v;
 		await browser.storage.session.set({ passwords });
 
-		const sts = await asw.returned(aid, it);
+		const sts = await asw.complete(aid, it);
 		for (const s of sts)
 			await browser.tabs.sendMessage(s,
 				{ method: "passwordReady", answer: aid });
@@ -83,9 +83,9 @@ rtnPass(asw, aid, v, it, isSuccess)
 async function
 pageVanished(asw, vt)
 {
-	const r = await asw.removeTab(vt);
+	const r = await asw.tabRemoved(vt);
 	for (const t of r.toClose) await browser.tabs.remove(t);
-	for (const a of r.answers)
+	for (const a of r.cancelled)
 		for (const s of a.sources)
 			await browser.tabs.sendMessage(
 				s, { method: "passError", answer: a.answer });
