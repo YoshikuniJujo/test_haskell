@@ -1,6 +1,6 @@
-import { Answer } from "./answer.js";
+import { InputTabs } from "./inputTabs.js";
 
-const answer = new Answer();
+const answer = new InputTabs();
 
 browser.runtime.onMessage.addListener((m, s) => {
 	switch (m.method) {
@@ -56,7 +56,7 @@ qryPass(asw, aid, st)
 		active: false,
 		url: browser.runtime.getURL(
 			`input.html?answer=${encodeURIComponent(aid)}` ) });
-	const use = await asw.assignInputTab(aid, st, it.id);
+	const use = await asw.assign(aid, st, it.id);
 	if (use !== it.id) await browser.tabs.remove(it.id);
 	await browser.tabs.update(use, { active: true });
 }
@@ -83,7 +83,7 @@ rtnPass(asw, aid, v, it, isSuccess)
 async function
 pageVanished(asw, vt)
 {
-	const r = await asw.tabRemoved(vt);
+	const r = await asw.tabClosed(vt);
 	for (const t of r.toClose) await browser.tabs.remove(t);
 	for (const a of r.cancelled)
 		for (const s of a.sources)

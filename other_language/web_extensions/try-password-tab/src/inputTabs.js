@@ -2,7 +2,7 @@ import { Mutex } from "./mutex.js"
 
 const STORAGE_KEY = "857e7986-2f57-4f41-b91f-3d4392a52fcf";
 
-export class Answer {
+export class InputTabs {
 
 	#storage; #mutex;
 
@@ -11,7 +11,7 @@ export class Answer {
 		this.#storage = str; this.#mutex = new Mutex;
 	}
 
-	async assignInputTab(a, st, it)
+	async assign(a, st, it)
 	{
 		await this.#mutex.acquire();
 		try {	let use;
@@ -39,7 +39,7 @@ export class Answer {
 		finally { this.#mutex.release(); }
 	}
 
-	async tabRemoved(t)
+	async tabClosed(t)
 	{
 		await this.#mutex.acquire();
 		try {	
