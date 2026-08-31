@@ -43,7 +43,7 @@ try {
 		awaitPromise: false,
 		target: { type: "context", context: mainContext.context } });
 	const actual = rslt.result.value;
-	if (actual !== "エラー: Error: Input tab was closed for answer: 456")
+	if (actual !== "エラー: Error: Input tab was closed for public key: 456")
 		throw new Error(`err: expected="Error ...", actual="${actual}"`);
 	await new Promise(resolve => setTimeout(resolve, 2000));
 
