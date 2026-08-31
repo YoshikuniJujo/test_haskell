@@ -1,15 +1,15 @@
 import { Mutex } from "./mutex.js"
 
+const STORAGE_KEY = "857e7986-2f57-4f41-b91f-3d4392a52fcf";
+
 export class Answer {
 
 	#storage;
-	#storageName;
 	#mutex;
 
 	constructor(str = browser.storage.session)
 	{
 		this.#storage = str;
-		this.#storageName = crypto.randomUUID();
 		this.#mutex = new Mutex;
 	}
 
@@ -17,8 +17,7 @@ export class Answer {
 	{
 		await this.#mutex.acquire();
 		try {	let use;
-			const { [this.#storageName]: aws = {} } =
-				await this.#storage.get(this.#storageName);
+			const aws = await this.#getAnswers();
 			const aw = aws[a];
 			if (aw) {
 				if (!aw.sourceTabs.includes(st))
@@ -28,7 +27,7 @@ export class Answer {
 					sourceTabs: [st], inputTab: it,
 					state: "pending" }
 				use = it; }
-			await this.#storage.set({ [this.#storageName]: aws });
+			await this.#setAnswers(aws);
 			return use; }
 		finally { this.#mutex.release(); }
 	}
@@ -36,14 +35,37 @@ export class Answer {
 	async returned(a, it)
 	{
 		await this.#mutex.acquire();
-		try {	const { [this.#storageName]: aws = {} } =
-				await this.#storage.get(this.#storageName);
+		try {	
+			const aws = await this.#getAnswers();
 			const aw = aws[a];
 			if (!aw) { throw new Error(`Unknown answer: ${a}`); }
 			this.#chkInputTab(a, aw.inputTab, it);
 			delete aws[a];
-			await this.#storage.set( { [this.#storageName]: aws });
+			await this.#setAnswers(aws);
 			return aw.sourceTabs; }
+		finally { this.#mutex.release(); }
+	}
+
+	async removeTab(t)
+	{
+		await this.#mutex.acquire();
+		try {	
+			const aws = await this.#getAnswers();
+			const tbs = []; const rmaws = [];
+			for (const[a, aw] of Object.entries(aws)) {
+				const i = aw.sourceTabs.indexOf(t);
+				if (i != -1) {
+					aw.sourceTabs.splice(i, 1);
+					if (aw.sourceTabs.length === 0) {
+						tbs.push(aw.inputTab);
+						delete aws[a]; } }
+				else if (aw.inputTab === t) {
+					rmaws.push({
+						answer: a,
+						sources: aw.sourceTabs });
+					delete aws[a]; } }
+			await this.#setAnswers(aws);
+			return { toClose: tbs, answers: rmaws }; }
 		finally { this.#mutex.release(); }
 	}
 	
@@ -62,27 +84,15 @@ export class Answer {
 				"associated with this answer" ); }
 	}
 
-	async removeTab(t)
+	async #getAnswers()
 	{
-		await this.#mutex.acquire();
-		try {	const { [this.#storageName]: aws = {} } =
-				await this.#storage.get(this.#storageName);
-			const tbs = []; const rmaws = [];
-			for (const[a, aw] of Object.entries(aws)) {
-				const i = aw.sourceTabs.indexOf(t);
-				if (i != -1) {
-					aw.sourceTabs.splice(i, 1);
-					if (aw.sourceTabs.length === 0) {
-						tbs.push(aw.inputTab);
-						delete aws[a]; } }
-				else if (aw.inputTab === t) {
-					rmaws.push({
-						answer: a,
-						sources: aw.sourceTabs });
-					delete aws[a]; } }
-			await this.#storage.set({ [this.#storageName]: aws });
-			return { toClose: tbs, answers: rmaws }; }
-		finally { this.#mutex.release(); }
+		const { [STORAGE_KEY]: aws = {} } =
+			await this.#storage.get(STORAGE_KEY); return aws;
+	}
+
+	async #setAnswers(aws)
+	{
+		await this.#storage.set({ [STORAGE_KEY]: aws });
 	}
 
 }
