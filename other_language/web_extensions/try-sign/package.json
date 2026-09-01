@@ -16,5 +16,8 @@
   "devDependencies": {
     "esbuild": "^0.28.2",
     "web-ext": "^10.6.0"
+  },
+  "dependencies": {
+    "@noble/secp256k1": "^3.2.0"
   }
 }
