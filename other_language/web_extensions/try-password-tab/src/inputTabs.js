@@ -54,7 +54,7 @@ export class InputTabs {
 						delete assns[pk]; } }
 				else if (tbs.inputTab === t) {
 					cclls.push({
-						publicKey: pk,
+						pubKey: pk,
 						sources: tbs.sourceTabs });
 					delete assns[pk]; } }
 			await this.#setAssignments(assns);
@@ -68,7 +68,7 @@ export class InputTabs {
 			console.error(
 				"possible attack: returnPass was received " +
 				"from a tab different from the input tab",
-				{	publicKey: pk,
+				{	pubKey: pk,
 					expectedInputTabId: ex,
 					actualSenderTabId: act } );
 			throw new Error(

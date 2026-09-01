@@ -1,92 +1,69 @@
 import { InputTabs } from "./inputTabs.js";
 
-const inputTab = new InputTabs();
+const itbs = new InputTabs();
 
-browser.runtime.onMessage.addListener((m, s) => {
-	switch (m.method) {
-		case "queryPass": return qryPass(inputTab, m.publicKey, s.tab.id);
-		case "getSomething":
-			return giveMePassword(m.publicKey, m.request, m.parameter, s.tab.id);
-		case "returnPass": return rtnPass(inputTab, m.answer, m.val, s.tab.id, isSuccess);
-		case "contentStarted": return pageVanished(inputTab, s.tab.id); } });
-browser.tabs.onRemoved.addListener((tid) => pageVanished(inputTab, tid));
-
-async function
-giveMePassword(answer, request, parameter, tab)
-{
-	console.log("I think you want to get password:");
-	console.log(answer);
-	console.log(request);
-	const { passwords = {} } =
-		await browser.storage.session.get("passwords");
-	console.log("******* HEREHEREHERE *******");
-	console.log(passwords);
-	const pss = passwords[answer];
-	console.log(`giveMePassword: pss = ${pss}`)
-	const rt = parameter ? pss + "_" + parameter : pss
-	await browser.tabs.sendMessage(tab, {
-		method: "something",
-		request,
-		value: rt
-	});
-}
-
-function
-isSuccess(answer, password)
-{
-	return password === "password" + answer;
-}
+browser.runtime.onMessage.addListener((m, s) => { switch (m.method) {
+	case "queryPswd": return qPswd(m.pubKey, s.tab.id);
+	case "getSomething":
+		return gSomething(m.pubKey, m.request, m.parameter, s.tab.id);
+	case "returnPswd": return rPswd(m.pubKey, m.pswd, s.tab.id, cPswd);
+	case "contentStarted": return pgVanished(s.tab.id); } });
+browser.tabs.onRemoved.addListener((t) => pgVanished(t));
 
 async function
-qryPass(asw, aid, st)
+qPswd(pk, st)
 {
-	console.log("qryPass");
-	const { passwords = {} } =
-		await browser.storage.session.get("passwords");
-	console.log(passwords);
-	console.log(passwords[aid]);
-
-	if (passwords[aid] !== undefined) {
-		await browser.tabs.sendMessage(st,
-			{ method: "passwordReady", publicKey: aid });
-		return;
-	}
-
+	const { pswds = {} } = await browser.storage.session.get("pswds");
+	if (pswds[pk] !== undefined) {
+		await browser.tabs.sendMessage(
+			st, { method: "pswdReady", pubKey: pk } ); return; }
 	const it = await browser.tabs.create({
 		active: false,
 		url: browser.runtime.getURL(
-			`input.html?answer=${encodeURIComponent(aid)}` ) });
-	const use = await asw.assign(aid, st, it.id);
+			`input.html?publicKey=${encodeURIComponent(pk)}` ) });
+	const use = await itbs.assign(pk, st, it.id);
 	if (use !== it.id) await browser.tabs.remove(it.id);
 	await browser.tabs.update(use, { active: true });
 }
 
 async function
-rtnPass(asw, aid, v, it, isSuccess)
+gSomething(pk, rid, prm, st)
 {
-	if (isSuccess(aid, v)) {
-
-		const { passwords = {} } =
-			await browser.storage.session.get("passwords");
-		passwords[aid] = v;
-		await browser.storage.session.set({ passwords });
-
-		const sts = await asw.complete(aid, it);
-		for (const s of sts)
-			await browser.tabs.sendMessage(s,
-				{ method: "passwordReady", publicKey: aid });
-		await browser.tabs.update(sts[0], { active: true });
-		await browser.tabs.remove(it); }
-	else {	await browser.tabs.sendMessage( it, { method: "wrongPass" }); }
+	const { pswds = {} } = await browser.storage.session.get("pswds");
+	const pswd = pswds[pk];
+	const rt = prm ? pswd + "_" + prm : pswd
+	await browser.tabs.sendMessage(
+		st, { method: "something", request: rid, value: rt } );
 }
 
 async function
-pageVanished(asw, vt)
+rPswd(pk, pswd, it, chk)
 {
-	const r = await asw.tabClosed(vt);
-	for (const t of r.toClose) await browser.tabs.remove(t);
-	for (const a of r.cancelled)
-		for (const s of a.sources)
-			await browser.tabs.sendMessage(
-				s, { method: "inputTabClosed", publicKey: a.publicKey });
+	if (chk(pk, pswd)) {
+		const { pswds = {} } =
+			await browser.storage.session.get("pswds");
+		pswds[pk] = pswd;
+		await browser.storage.session.set({ pswds });
+		const sts = await itbs.complete(pk, it);
+		for (const s of sts) await browser.tabs.sendMessage(
+			s, { method: "pswdReady", pubKey: pk } );
+		await browser.tabs.update(sts[0], { active: true });
+		await browser.tabs.remove(it); }
+	else {	await browser.tabs.sendMessage(it, { method: "wrongPswd" }); }
+}
+
+function
+cPswd(pk, pswd)
+{
+	return pswd === "password" + pk;
+}
+
+async function
+pgVanished(vt)
+{
+	const r = await itbs.tabClosed(vt);
+	for (const c of r.toClose) await browser.tabs.remove(c);
+	for (const c of r.cancelled) for (const s of c.sources)
+		await browser.tabs.sendMessage(
+			s, { method: "inputTabClosed", pubKey: c.pubKey });
 }

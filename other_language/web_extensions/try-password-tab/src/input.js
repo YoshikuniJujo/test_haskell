@@ -1,4 +1,4 @@
-const answer = new URLSearchParams(location.search).get("answer");
+const answer = new URLSearchParams(location.search).get("publicKey");
 const input = document.querySelector("#input");
 const error = document.querySelector("#error");
 input.focus();
@@ -13,12 +13,12 @@ document.querySelector("#send").addEventListener("click", () => {
 function
 sndPass(a, v)
 {
-	browser.runtime.sendMessage({method: "returnPass", answer: a, val: v});
+	browser.runtime.sendMessage({method: "returnPswd", pubKey: a, pswd: v});
 }
 
 browser.runtime.onMessage.addListener((m) => {
 	switch (m.method) {
-		case "wrongPass":
+		case "wrongPswd":
 			error.hidden = false; input.value = ""; break; } });
 
 input.addEventListener("input", () => { error.hidden = true; });

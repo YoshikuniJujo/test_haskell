@@ -10,13 +10,13 @@ const tryPasswordTab = {
 		const rid = crypto.randomUUID();
 		return new window.Promise(async (rslv, rjct) => {
 			try {	browser.runtime.sendMessage({
-					method: "queryPass", publicKey: pk });
+					method: "queryPswd", pubKey: pk });
 				await new Promise((rs, rj) => { addToArrayMap(
 					requestsWaitingForPassword, pk,
 					{ resolve: rs, reject: rj } ); });
 				somethingResolvers.set(rid, rslv);
 				browser.runtime.sendMessage( {
-					method: "getSomething", publicKey: pk,
+					method: "getSomething", pubKey: pk,
 					request: rid, parameter: prm } ); }
 			catch(e) { rjct(e); } });
 	}
@@ -24,14 +24,14 @@ const tryPasswordTab = {
 };
 
 browser.runtime.onMessage.addListener((m) => { switch (m.method) {
-	case "passwordReady":
+	case "pswdReady":
 		forEachValues(requestsWaitingForPassword,
-			m.publicKey, (wtr) => wtr.resolve()); break;
+			m.pubKey, (wtr) => wtr.resolve()); break;
 	case "inputTabClosed":
 		forEachValues(requestsWaitingForPassword,
-			m.publicKey, (wtr) => wtr.reject(new window.Error(
+			m.pubKey, (wtr) => wtr.reject(new window.Error(
 				"Input tab was closed for public key: " +
-				m.publicKey ))); break;
+				m.pubKey ))); break;
 	case "something": {
 		const rs = somethingResolvers.get(m.request);
 		somethingResolvers.delete(m.request);
