@@ -1,4 +1,2 @@
 /web-ext-artifacts/
 /node_modules/
-/generated/*
-!/generated/.gitkeep
