@@ -4,15 +4,15 @@ TODO
 TODO
 ----
 
-* [ ] リファクタリング
+* [x] リファクタリング
 	+ [x] content.js
 	+ [x] background.js
-	+ [ ] input.js
-* [ ] 確認
-	+ [ ] input.html
-	+ [ ] mutex.js
-	+ [ ] inputTab.js
-	+ [ ] manifest.json
+	+ [x] input.js
+	+ [x] input.html
+* [x] 確認
+	+ [x] mutex.js
+	+ [x] inputTab.js
+	+ [x] manifest.json
 
 DIRECTORY
 ---------
