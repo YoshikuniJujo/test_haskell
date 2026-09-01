@@ -1,4 +1,4 @@
-import { generate, verify, word30ToWord5List } from '../src/polymod.js';
+import { generate, verify, word30ToWord5List } from './polymod.js';
 
 export function decodeNpubToHex(np) {
 	const decoded = decode(np);
