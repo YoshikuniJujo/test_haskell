@@ -1,33 +1,34 @@
 import { generate, verify } from './polymod.js';
 import * as Word from './word.js';
 
-export function encode(hrp, dp) {
+const charset = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
 
+export function
+encode(hrp, dp)
+{
 	const c5 = chunks(5, Array.from(dp));
-	const w40sInit = c5.init.map(Word.pack8sTo40);
-	const w40Last = Word.pack8sTo40(c5.last) << 8n * (5n - BigInt(c5.lastN))
-	const w40s = {
-		init: w40sInit,
-		last: w40Last,
-		lastN: c5.lastN * 8 }
-	const w5sInit = w40s.init.map(Word.unpack40To5s);
-	const w5sLast = Word.unpack40To5s(w40s.last).slice(0, Math.ceil(w40s.lastN / 5));
-	const w5s = w5sInit.flat().concat(w5sLast);
-	const w5s2 = [...hrpExpand([...hrp]), ...w5s];
-	const checksum = Word.unpack30To5s(generate(w5s2));
-	const w5s3 = [...w5s, ...checksum];
 
-	return hrp + '1' + w5s3.map(w => charset[w]).join('');
+	const w40sInit = c5.init.map(Word.pack8sTo40);
+	const w5sInit = w40sInit.map(Word.unpack40To5s);
+
+	const w40Last = Word.pack8sTo40(c5.last) << 8n * (5n - BigInt(c5.lastN))
+	const w5sLast = Word.unpack40To5s(w40Last).slice(0, Math.ceil(c5.lastN * 8 / 5));
+
+	const w5s = w5sInit.flat().concat(w5sLast);
+
+	const chksm = Word.unpack30To5s(generate([...hrpEx([...hrp]), ...w5s]));
+	return hrp + '1' + [...w5s, ...chksm].map(w => charset[w]).join('');
 }
 
-export function decode(txt) {
+export function
+decode(txt)
+{
 	const chars = [...txt];
 	const i = chars.lastIndexOf('1');
 	const hrp = chars.slice(0, i);
 	const dp = chars.slice(i + 1);
-	const hrp5 = hrpExpand(hrp);
-	const dp5 = dpToWord5s(dp);
-
+	const hrp5 = hrpEx(hrp);
+	const dp5 = dp.map(c => charset.indexOf(c));
 	if (!verify([...hrp5, ...dp5])) {
 		throw new Error('invalid checksum');
 	}
@@ -43,7 +44,9 @@ export function decode(txt) {
 	return { humanReadable: hrp.join(''), data: dataPart }
 }
 
-function hrpExpand(hrp) {
+function
+hrpEx(hrp)
+{
 	const bs = hrp.map(c => c.charCodeAt(0));
 	return [
 		...bs.map(b => b >>> 5),
@@ -52,20 +55,16 @@ function hrpExpand(hrp) {
 	];
 }
 
-function chunks(n, xs) {
+function
+chunks(sz, xs)
+{
 	const ln = xs.length;
-	if (ln < n) {
+	if (ln < sz) {
 		return { init: [], last: xs, lastN: ln };
 	}
-	const ys = chunks(n, xs.slice(n));
+	const ys = chunks(sz, xs.slice(sz));
 	const init = ys.init;
 	const last = ys.last;
 	const lastN = ys.lastN;
-	return { init: [xs.slice(0, n), ...init], last, lastN };
-}
-
-const charset = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
-
-function dpToWord5s(dp) {
-	return dp.map(c => charset.indexOf(c));
+	return { init: [xs.slice(0, sz), ...init], last, lastN };
 }
