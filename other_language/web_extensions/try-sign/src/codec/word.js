@@ -11,27 +11,40 @@ pack8sTo40(ws)
 }
 
 export function
-unpack30To5s(w30)
+unpack30To5s(w)
 {
 	return [
-		(w30 >>> 25) & 0x1f, (w30 >>> 20) & 0x1f, (w30 >>> 15) & 0x1f,
-		(w30 >>> 10) & 0x1f, (w30 >>> 5) & 0x1f, w30 & 0x1f ];
+		extract(w, 25, 0x1f), extract(w, 20, 0x1f),
+		extract(w, 15, 0x1f), extract(w, 10, 0x1f),
+		extract(w, 5, 0x1f), extract(w, 0, 0x1f) ];
+}
+
+function
+extract(w, s, m)
+{
+	return (w >>> s) & m;
 }
 
 export function
 unpack40To5s(w)
 {
 	return [
-		Number((w >> 35n) & 31n), Number((w >> 30n) & 31n),
-		Number((w >> 25n) & 31n), Number((w >> 20n) & 31n),
-		Number((w >> 15n) & 31n), Number((w >> 10n) & 31n),
-		Number((w >> 5n) & 31n), Number(w & 31n) ];
+		extractn(w, 35n, 0x1fn), extractn(w, 30n, 0x1fn),
+		extractn(w, 25n, 0x1fn), extractn(w, 20n, 0x1fn),
+		extractn(w, 15n, 0x1fn), extractn(w, 10n, 0x1fn),
+		extractn(w, 5n, 0x1fn), extractn(w, 0n, 0x1fn) ];
 }
 
 export function unpack40To8s(w)
 {
 	return [
-		Number((w >> 32n) & 0xffn), Number((w >> 24n) & 0xffn),
-		Number((w >> 16n) & 0xffn), Number((w >> 8n) & 0xffn),
-		Number(w & 0xffn) ];
+		extractn(w, 32n, 0xffn), extractn(w, 24n, 0xffn),
+		extractn(w, 16n, 0xffn), extractn(w, 8n, 0xffn),
+		extractn(w, 0n, 0xffn) ];
+}
+
+function
+extractn(w, s, m)
+{
+	return Number((w >> s) & m);
 }

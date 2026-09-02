@@ -5,7 +5,7 @@ refactoring
 -----------
 
 * [x] codec/polymod.js
-* [ ] codec/words.js
+* [x] codec/words.js
 * [ ] codec/bech32.js
 * [ ] crypto/schnorr.js
 * [ ] content.js
