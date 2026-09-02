@@ -2,8 +2,8 @@ import * as Bech32 from "./codec/bech32.js";
 import * as KeyPair from "../generated/keyPair.js";
 import * as Schnorr from "./crypto/schnorr.js";
 
-const { data: nsec } = Bech32.decode(KeyPair.nsec);
-const { data: npub } = Bech32.decode(KeyPair.npub);
+const { dp: nsec } = Bech32.decode(KeyPair.nsec);
+const { dp: npub } = Bech32.decode(KeyPair.npub);
 
 document.documentElement.style.border = "5px solid green";
 

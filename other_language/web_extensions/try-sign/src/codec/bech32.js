@@ -19,25 +19,17 @@ export function
 decode(txt)
 {
 	const chars = [...txt];
-	const i = chars.lastIndexOf('1');
-	const hrp = chars.slice(0, i);
-	const dp = chars.slice(i + 1);
-	const hrp5 = hrpEx(hrp);
-	const dp5 = dp.map(c => charset.indexOf(c));
-	if (!verify([...hrp5, ...dp5])) {
-		throw new Error('invalid checksum');
-	}
-	const c8 = chunks(8, dp5.slice(0, -6));
-	const c40 = {
-		init: c8.init.map(W.pack5sTo40),
-		last: W.pack5sTo40(c8.last) << 5n * (8n - BigInt(c8.lastN)),
-		lastN: c8.lastN * 5 }
-	const dataPartInit = c40.init.map(W.unpack40To8s);
-	const dataPartLast = W.unpack40To8s(c40.last).slice(0, c40.lastN / 8);
-		// W.word40ToWord8ListTail(c40.last, c40.lastN / 8);
-	const dataPart = new Uint8Array(dataPartInit.flat().concat(dataPartLast));
-	return { humanReadable: hrp.join(''), data: dataPart }
+	const i = chars.lastIndexOf('1'); const hrp = chars.slice(0, i);
+	const dp = chars.slice(i + 1).map(c => charset.indexOf(c));
+	if (!verify([...hrpEx(hrp), ...dp])) throw new Error(chksmErr);
+	const { init: ci, last: cl, lastN: cn } = chunks(8, dp.slice(0, -6));
+	const w8i = ci.map(W.pack5sTo40).map(W.unpack40To8s);
+	const w8l = W.unpack40To8s(W.pack5sTo40(cl) << 5n * (8n - BigInt(cn)))
+		.slice(0, cn * 5 / 8);
+	return { hrp: hrp.join(''), dp: new Uint8Array(w8i.flat().concat(w8l)) }
 }
+
+const chksmErr = "invalid checksum";
 
 function
 hrpEx(hrp)
