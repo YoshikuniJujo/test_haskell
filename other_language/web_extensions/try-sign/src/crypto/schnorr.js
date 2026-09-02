@@ -1,9 +1,9 @@
 import { sha256 } from '@noble/hashes/sha2.js';
 import { schnorr } from '@noble/secp256k1';
 
-const FIXED_AUX_RAND = true;
-// const FIXED_AUX_RAND = false;
-// auxRand is fixed for reproducible signatures.
+// const FIXED_AUX_RAND = true;
+const FIXED_AUX_RAND = false;
+// auxRand is fixed for reproducible signatures when FIXED_AUX_RAND = true.
 
 export async function
 signEvent(ev, sk, pk)
