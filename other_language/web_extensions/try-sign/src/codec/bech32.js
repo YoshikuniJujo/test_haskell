@@ -59,11 +59,7 @@ export function decode(txt) {
 	if (!verify([...hrp5, ...dp5])) {
 		throw new Error('invalid checksum');
 	}
-
-	const decoded = {
-		humanReadablePart: hrp.join(''),
-		dataPart: dp5.slice(0, -6) }
-	const c8 = chunks(8, decoded.dataPart);
+	const c8 = chunks(8, dp5.slice(0, -6));
 	const c40 = {
 		init: c8.init.map(word5sToWord40),
 		last: word5sToWord40(c8.last) << 5n * (8n - BigInt(c8.lastN)),
@@ -71,28 +67,26 @@ export function decode(txt) {
 	const dataPartInit = c40.init.map(word40ToWord8List);
 	const dataPartLast = word40ToWord8ListTail(c40.last, c40.lastN / 8);
 	const dataPart = new Uint8Array(dataPartInit.flat().concat(dataPartLast));
-	return { humanReadable: decoded.humanReadablePart, data: dataPart }
+	return { humanReadable: hrp.join(''), data: dataPart }
 }
 
 export function encode(hrp, dp) {
 
-	const secretKeyC5 = chunks(5, Array.from(dp));
-	const secretKeyW40sInit = secretKeyC5.init.map(word8sToWord40);
-	const secretKeyW40Last = word8sToWord40(secretKeyC5.last) << 8n * (5n - BigInt(secretKeyC5.lastN))
-	const secretKeyW40s = {
-		init: secretKeyW40sInit,
-		last: secretKeyW40Last,
-		lastN: secretKeyC5.lastN * 8 }
-	const secretKeyW5sInit = secretKeyW40s.init.map(word40ToWord5s);
-	const secretKeyW5sLast = word40ToWord5s(secretKeyW40s.last).slice(0, Math.ceil(secretKeyW40s.lastN / 5));
-	const secretKeyW5s = secretKeyW5sInit.flat().concat(secretKeyW5sLast);
-	const secretKeyW5s2 = [...hrpExpand([...hrp]), ...secretKeyW5s];
-	const checksum = word30ToWord5List(generate(secretKeyW5s2));
-	const secretKeyW5s3 = [...secretKeyW5s, ...checksum];
-	const nsec = hrp + '1' + secretKeyW5s3.map(w => charset[w]).join('');
+	const c5 = chunks(5, Array.from(dp));
+	const w40sInit = c5.init.map(word8sToWord40);
+	const w40Last = word8sToWord40(c5.last) << 8n * (5n - BigInt(c5.lastN))
+	const w40s = {
+		init: w40sInit,
+		last: w40Last,
+		lastN: c5.lastN * 8 }
+	const w5sInit = w40s.init.map(word40ToWord5s);
+	const w5sLast = word40ToWord5s(w40s.last).slice(0, Math.ceil(w40s.lastN / 5));
+	const w5s = w5sInit.flat().concat(w5sLast);
+	const w5s2 = [...hrpExpand([...hrp]), ...w5s];
+	const checksum = word30ToWord5List(generate(w5s2));
+	const w5s3 = [...w5s, ...checksum];
 
-	return nsec;
-
+	return hrp + '1' + w5s3.map(w => charset[w]).join('');
 }
 
 function word8sToWord40(ws) {
