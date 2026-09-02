@@ -3,6 +3,10 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { schnorr } from '@noble/secp256k1';
 import * as Bech32 from '../src/codec/bech32.js';
 
+const FIXED_AUX_RAND = true;
+// const FIXED_AUX_RAND = false;
+// auxRand is fixed for reproducible signatures.
+
 const [skf, pkf, evf] = process.argv.slice(2);
 
 const sk = Bech32.decode(await fs.readFile(skf, 'utf8'));
@@ -17,9 +21,8 @@ const serialized = JSON.stringify([
 	0, evpk.pubkey, evpk.created_at, evpk.kind, evpk.tags, evpk.content ]);
 
 const idBytes = sha256(new TextEncoder().encode(serialized));
-const auxRand = new Uint8Array(32);
+const auxRand = FIXED_AUX_RAND ? new Uint8Array(32) : undefined;
 const sig = await schnorr.signAsync(idBytes, sk, auxRand);
-// auxRand is fixed for debugging. Remove this in production.
 
 console.log(Buffer.from(sig).toString('hex'));
 
