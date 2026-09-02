@@ -1,23 +1,20 @@
 import { generate, verify } from './polymod.js';
-import {
-	word5sToWord40, word40ToWord8List, word40ToWord8ListTail,
-	word8sToWord40, word40ToWord5s, word30ToWord5List
-	} from './words.js';
+import * as Word from './word.js';
 
 export function encode(hrp, dp) {
 
 	const c5 = chunks(5, Array.from(dp));
-	const w40sInit = c5.init.map(word8sToWord40);
-	const w40Last = word8sToWord40(c5.last) << 8n * (5n - BigInt(c5.lastN))
+	const w40sInit = c5.init.map(Word.word8sToWord40);
+	const w40Last = Word.word8sToWord40(c5.last) << 8n * (5n - BigInt(c5.lastN))
 	const w40s = {
 		init: w40sInit,
 		last: w40Last,
 		lastN: c5.lastN * 8 }
-	const w5sInit = w40s.init.map(word40ToWord5s);
-	const w5sLast = word40ToWord5s(w40s.last).slice(0, Math.ceil(w40s.lastN / 5));
+	const w5sInit = w40s.init.map(Word.word40ToWord5s);
+	const w5sLast = Word.word40ToWord5s(w40s.last).slice(0, Math.ceil(w40s.lastN / 5));
 	const w5s = w5sInit.flat().concat(w5sLast);
 	const w5s2 = [...hrpExpand([...hrp]), ...w5s];
-	const checksum = word30ToWord5List(generate(w5s2));
+	const checksum = Word.word30ToWord5List(generate(w5s2));
 	const w5s3 = [...w5s, ...checksum];
 
 	return hrp + '1' + w5s3.map(w => charset[w]).join('');
@@ -36,11 +33,11 @@ export function decode(txt) {
 	}
 	const c8 = chunks(8, dp5.slice(0, -6));
 	const c40 = {
-		init: c8.init.map(word5sToWord40),
-		last: word5sToWord40(c8.last) << 5n * (8n - BigInt(c8.lastN)),
+		init: c8.init.map(Word.word5sToWord40),
+		last: Word.word5sToWord40(c8.last) << 5n * (8n - BigInt(c8.lastN)),
 		lastN: c8.lastN * 5 }
-	const dataPartInit = c40.init.map(word40ToWord8List);
-	const dataPartLast = word40ToWord8ListTail(c40.last, c40.lastN / 8);
+	const dataPartInit = c40.init.map(Word.word40ToWord8List);
+	const dataPartLast = Word.word40ToWord8ListTail(c40.last, c40.lastN / 8);
 	const dataPart = new Uint8Array(dataPartInit.flat().concat(dataPartLast));
 	return { humanReadable: hrp.join(''), data: dataPart }
 }
