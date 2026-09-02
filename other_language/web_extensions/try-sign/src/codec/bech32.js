@@ -9,15 +9,6 @@ function hrpExpand(hrp) {
 	];
 }
 
-function split(bs, ns) {
-	if (ns.length === 0) {
-		return [];
-	}
-
-	const [n, ...rest] = ns;
-	return [bs.slice(0, n), ...split(bs.slice(n), rest)];
-}
-
 function chunks(n, xs) {
 	const ln = xs.length;
 	if (ln < n) {
@@ -80,7 +71,7 @@ export function decode(txt) {
 	const dataPartInit = c40.init.map(word40ToWord8List);
 	const dataPartLast = word40ToWord8ListTail(c40.last, c40.lastN / 8);
 	const dataPart = new Uint8Array(dataPartInit.flat().concat(dataPartLast));
-	return dataPart;
+	return { humanReadable: decoded.humanReadablePart, data: dataPart }
 }
 
 export function encode(hrp, dp) {

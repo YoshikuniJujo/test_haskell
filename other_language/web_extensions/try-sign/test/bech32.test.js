@@ -6,5 +6,6 @@ import { decode, encode } from "../src/codec/bech32.js";
 test("npub round trip", () => {
 	const npub = "npub1" +
 		"9f0v4facurakqmz4yl3crnyc8rfmgufpn8qqa2t0dk3hxs4c7f0qyrj4ej";
-	assert.equal(npub, encode("npub", decode(npub)));
+	const { humanReadable: hrp, data: dt } = decode(npub);
+	assert.equal(npub, encode(hrp, dt));
 });
