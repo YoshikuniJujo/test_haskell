@@ -4,7 +4,7 @@ const p = spawn(
 	"npx",
 	[
 		"web-ext", "run", "--source-dir", "dist",
-		"--url", "https://yoshikunijujo.github.io/"
+		"--url", "https://yoshikunijujo.github.io/others/try-sign"
 	],
 	{ stdio: "inherit" }
 );
