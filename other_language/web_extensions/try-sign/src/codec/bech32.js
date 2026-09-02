@@ -1,4 +1,4 @@
-import { generate, verify, word30ToWord5List } from './polymod.js';
+import { generate, verify } from './polymod.js';
 
 function hrpExpand(hrp) {
 	const bs = hrp.map(c => c.charCodeAt(0));
@@ -124,4 +124,17 @@ function word40ToWord5s(w) {
 		Number((w >> 10n) &31n),
 		Number((w >> 5n) &31n),
 		Number(w & 31n) ];
+}
+
+function
+word30ToWord5List(w30)
+{
+	return [
+		(w30 >>> 25) & 0x1f,
+		(w30 >>> 20) & 0x1f,
+		(w30 >>> 15) & 0x1f,
+		(w30 >>> 10) & 0x1f,
+		(w30 >>> 5) & 0x1f,
+		w30 & 0x1f
+	];
 }
