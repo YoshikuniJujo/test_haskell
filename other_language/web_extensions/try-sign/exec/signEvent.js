@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import * as Bech32 from '../src/codec/bech32.js';
-import { signEvent } from '../src/crypto/shnorr.js';
+import { signEvent } from '../src/crypto/schnorr.js';
 
 const [skf, pkf, evf] = process.argv.slice(2);
 
