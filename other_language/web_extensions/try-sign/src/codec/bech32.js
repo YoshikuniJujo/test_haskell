@@ -1,4 +1,49 @@
 import { generate, verify } from './polymod.js';
+import {
+	word5sToWord40, word40ToWord8List, word40ToWord8ListTail,
+	word8sToWord40, word40ToWord5s, word30ToWord5List
+	} from './words.js';
+
+export function encode(hrp, dp) {
+
+	const c5 = chunks(5, Array.from(dp));
+	const w40sInit = c5.init.map(word8sToWord40);
+	const w40Last = word8sToWord40(c5.last) << 8n * (5n - BigInt(c5.lastN))
+	const w40s = {
+		init: w40sInit,
+		last: w40Last,
+		lastN: c5.lastN * 8 }
+	const w5sInit = w40s.init.map(word40ToWord5s);
+	const w5sLast = word40ToWord5s(w40s.last).slice(0, Math.ceil(w40s.lastN / 5));
+	const w5s = w5sInit.flat().concat(w5sLast);
+	const w5s2 = [...hrpExpand([...hrp]), ...w5s];
+	const checksum = word30ToWord5List(generate(w5s2));
+	const w5s3 = [...w5s, ...checksum];
+
+	return hrp + '1' + w5s3.map(w => charset[w]).join('');
+}
+
+export function decode(txt) {
+	const chars = [...txt];
+	const i = chars.lastIndexOf('1');
+	const hrp = chars.slice(0, i);
+	const dp = chars.slice(i + 1);
+	const hrp5 = hrpExpand(hrp);
+	const dp5 = dpToWord5s(dp);
+
+	if (!verify([...hrp5, ...dp5])) {
+		throw new Error('invalid checksum');
+	}
+	const c8 = chunks(8, dp5.slice(0, -6));
+	const c40 = {
+		init: c8.init.map(word5sToWord40),
+		last: word5sToWord40(c8.last) << 5n * (8n - BigInt(c8.lastN)),
+		lastN: c8.lastN * 5 }
+	const dataPartInit = c40.init.map(word40ToWord8List);
+	const dataPartLast = word40ToWord8ListTail(c40.last, c40.lastN / 8);
+	const dataPart = new Uint8Array(dataPartInit.flat().concat(dataPartLast));
+	return { humanReadable: hrp.join(''), data: dataPart }
+}
 
 function hrpExpand(hrp) {
 	const bs = hrp.map(c => c.charCodeAt(0));
@@ -25,101 +70,4 @@ const charset = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
 
 function dpToWord5s(dp) {
 	return dp.map(c => charset.indexOf(c));
-}
-
-function word5sToWord40(ws) {
-	return ws.reduce(
-		(w, x) => (w << 5n) | BigInt(x),
-		0n
-	);
-}
-
-function word40ToWord8List(w) {
-	return [
-		Number((w >> 32n) & 0xffn),
-		Number((w >> 24n) & 0xffn),
-		Number((w >> 16n) & 0xffn),
-		Number((w >> 8n) & 0xffn),
-		Number(w & 0xffn)
-	];
-}
-
-function word40ToWord8ListTail(w, n) {
-	return word40ToWord8List(w).slice(0, n);
-}
-
-export function decode(txt) {
-	const chars = [...txt];
-	const i = chars.lastIndexOf('1');
-	const hrp = chars.slice(0, i);
-	const dp = chars.slice(i + 1);
-	const hrp5 = hrpExpand(hrp);
-	const dp5 = dpToWord5s(dp);
-
-	if (!verify([...hrp5, ...dp5])) {
-		throw new Error('invalid checksum');
-	}
-	const c8 = chunks(8, dp5.slice(0, -6));
-	const c40 = {
-		init: c8.init.map(word5sToWord40),
-		last: word5sToWord40(c8.last) << 5n * (8n - BigInt(c8.lastN)),
-		lastN: c8.lastN * 5 }
-	const dataPartInit = c40.init.map(word40ToWord8List);
-	const dataPartLast = word40ToWord8ListTail(c40.last, c40.lastN / 8);
-	const dataPart = new Uint8Array(dataPartInit.flat().concat(dataPartLast));
-	return { humanReadable: hrp.join(''), data: dataPart }
-}
-
-export function encode(hrp, dp) {
-
-	const c5 = chunks(5, Array.from(dp));
-	const w40sInit = c5.init.map(word8sToWord40);
-	const w40Last = word8sToWord40(c5.last) << 8n * (5n - BigInt(c5.lastN))
-	const w40s = {
-		init: w40sInit,
-		last: w40Last,
-		lastN: c5.lastN * 8 }
-	const w5sInit = w40s.init.map(word40ToWord5s);
-	const w5sLast = word40ToWord5s(w40s.last).slice(0, Math.ceil(w40s.lastN / 5));
-	const w5s = w5sInit.flat().concat(w5sLast);
-	const w5s2 = [...hrpExpand([...hrp]), ...w5s];
-	const checksum = word30ToWord5List(generate(w5s2));
-	const w5s3 = [...w5s, ...checksum];
-
-	return hrp + '1' + w5s3.map(w => charset[w]).join('');
-}
-
-function word8sToWord40(ws) {
-	let w = 0n;
-
-	for (const x of ws) {
-		w = (w << 8n) | BigInt(x);
-	}
-
-	return w;
-}
-
-function word40ToWord5s(w) {
-	return [
-		Number((w >> 35n) &31n),
-		Number((w >> 30n) &31n),
-		Number((w >> 25n) &31n),
-		Number((w >> 20n) &31n),
-		Number((w >> 15n) &31n),
-		Number((w >> 10n) &31n),
-		Number((w >> 5n) &31n),
-		Number(w & 31n) ];
-}
-
-function
-word30ToWord5List(w30)
-{
-	return [
-		(w30 >>> 25) & 0x1f,
-		(w30 >>> 20) & 0x1f,
-		(w30 >>> 15) & 0x1f,
-		(w30 >>> 10) & 0x1f,
-		(w30 >>> 5) & 0x1f,
-		w30 & 0x1f
-	];
 }
