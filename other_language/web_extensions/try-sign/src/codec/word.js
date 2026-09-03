@@ -1,13 +1,15 @@
 export function
 pack5sTo40(ws)
 {
-	return ws.reduce((w, x) => (w << 5n) | BigInt(x), 0n);
+	return ws.reduce(
+		(w, x, i) => w | BigInt(x) << (35n - 5n * BigInt(i)), 0n);
 }
 
 export function
 pack8sTo40(ws)
 {
-	return ws.reduce((w, x) => (w << 8n) | BigInt(x), 0n);
+	return ws.reduce(
+		(w, x, i) => w | BigInt(x) << (32n - 8n * BigInt(i)), 0n);
 }
 
 export function
