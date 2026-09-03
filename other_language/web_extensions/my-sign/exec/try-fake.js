@@ -48,6 +48,44 @@ txDone(tx)
 	});
 }
 
+export async function
+login(idb, userId, password)
+{
+	const db = await openDB(idb);
+
+	try {
+		const tx = db.transaction("users", "readonly");
+		const req = tx.objectStore("users").get(userId);
+		const user = await new Promise((rslv, rjct) => {
+			req.onsuccess = () => rslv(req.result);
+			req.onerror = () => rjct(req.error);
+		});
+		await txDone(tx);
+
+		if (!user) return false;
+
+		const hash = await scrypt(
+			new TextEncoder().encode(password),
+			user.salt,
+			{ N: 2 ** 16, r: 8, p: 1, dkLen: 32 }
+		);
+
+		return equal(hash, user.hash);
+	}
+	finally {
+		db.close();
+	}
+}
+
+function
+equal(a, b)
+{
+	if (a.length !== b.length) return false;
+	let diff = 0;
+	for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+	return diff === 0;
+}
+
 await addUser(indexedDB, "tarou", "foobar");
 
 const db = await openDB(indexedDB);
@@ -56,3 +94,6 @@ const req = tx.objectStore("users").get("tarou");
 req.onsuccess = () => console.log(req.result);
 await txDone(tx);
 db.close()
+
+console.log(await login(indexedDB, "tarou", "foobar"));
+console.log(await login(indexedDB, "tarou", "foobarbaz"));
