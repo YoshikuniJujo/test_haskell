@@ -7,6 +7,6 @@ refactoring
 * [x] codec/polymod.js
 * [x] codec/words.js
 * [x] codec/bech32.js
-* [ ] crypto/schnorr.js
+* [x] crypto/schnorr.js
 * [ ] content.js
 * [ ] manifest.json
