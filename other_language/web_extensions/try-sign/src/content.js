@@ -1,27 +1,25 @@
+import * as S from "./crypto/schnorr.js";
 import * as Bech32 from "./codec/bech32.js";
 import * as KeyPair from "../generated/keyPair.js";
-import * as Schnorr from "./crypto/schnorr.js";
 
-const { dp: nsec } = Bech32.decode(KeyPair.nsec);
-const { dp: npub } = Bech32.decode(KeyPair.npub);
-
-document.documentElement.style.border = "5px solid green";
+const { dp: sk } = Bech32.decode(KeyPair.nsec);
+const { dp: pk } = Bech32.decode(KeyPair.npub);
 
 const nostr = {
 
-	getPublicKey() {
-		return new window.Promise(async (resolve) => {
-			const result = Array.from(npub, b => b.toString(16).padStart(2, "0")).join("");
-			resolve(result);
-		});
+	getPublicKey()
+	{
+		return new window.Promise(rs =>
+			rs(Array.from(pk, b =>
+				b.toString(16).padStart(2, "0")).join("")));
 	},
 
-	signEvent(event) {
-		return new window.Promise(async (resolve) => {
-			const rtn = await Schnorr.signEvent(event, nsec, npub);
-			resolve(cloneInto(rtn, window));
-		});
+	signEvent(ev)
+	{
+		return new window.Promise(async rs =>
+			rs(cloneInto(await S.signEvent(ev, sk, pk), window)));
 	}
+
 }
 
 window.wrappedJSObject.nostr =
