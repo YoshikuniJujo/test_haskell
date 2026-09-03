@@ -15,6 +15,10 @@
   "type": "module",
   "devDependencies": {
     "esbuild": "^0.28.2",
+    "fake-indexeddb": "^6.2.5",
     "web-ext": "^10.6.0"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.4.0"
   }
 }
