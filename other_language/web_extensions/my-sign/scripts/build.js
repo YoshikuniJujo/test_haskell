@@ -10,4 +10,10 @@ await esbuild.build({
 	outfile: "dist/content.js"
 });
 
+await esbuild.build({
+	entryPoints: ["src/background.js"],
+	bundle: true,
+	outfile: "dist/background.js"
+});
+
 await copyFile("src/manifest.json", "dist/manifest.json");

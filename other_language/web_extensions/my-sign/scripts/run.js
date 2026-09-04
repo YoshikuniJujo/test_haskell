@@ -4,7 +4,8 @@ const p = spawn(
 	"npx",
 	[
 		"web-ext", "run", "--source-dir", "dist",
-		"--url", "https://yoshikunijujo.github.io/others/try-indexeddb-login"
+		"--url", "https://yoshikunijujo.github.io/others/try-indexeddb-login",
+		"--url", "about:debugging#/runtime/this-firefox"
 	],
 	{ stdio: "inherit" }
 );
