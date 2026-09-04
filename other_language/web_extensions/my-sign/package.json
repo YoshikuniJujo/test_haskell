@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node scripts/build.js",
     "prerun": "npm run build",
-    "run": "node scripts/run.js"
+    "run": "node scripts/run.js",
+    "find-android": "node scripts/find-android.js",
+    "start-android": "node scripts/start-android.js"
   },
   "keywords": [],
   "author": "",
