@@ -6,11 +6,8 @@ browser.runtime.onMessage.addListener( async m => {
 	console.log("message received", m);
 	switch (m.type) {
 		case "addUser":
-			await addUser(indexedDB, m.userId, m.password);
-			break;
+			return addUser(indexedDB, m.userId, m.password);
 		case "login":
-			const rslt = await login(indexedDB, m.userId, m.password);
-			console.log(rslt);
-			break;
+			return login(indexedDB, m.userId, m.password);
 	}
 });
