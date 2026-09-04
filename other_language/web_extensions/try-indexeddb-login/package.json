@@ -14,8 +14,10 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@hono/node-server": "^2.1.1",
     "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.5",
+    "hono": "^4.13.5",
     "web-ext": "^10.6.0"
   },
   "dependencies": {
