@@ -5,17 +5,10 @@ const pswd = await readPassword();
 
 const response = await fetch(
 	`http://localhost:3000/${cmd}`,
-	{
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify({ uid, pswd })
-	}
-);
-
-const rslt = await response.json();
-console.log(rslt);
+	{	method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ uid, pswd }) } );
+console.log(await response.json());
 
 async function
 readPassword(prompt = "Password: ")
@@ -30,26 +23,16 @@ readPassword(prompt = "Password: ")
 			switch (ky) {
 				case "\r":
 				case "\n":
-					stdin.setRawMode(false);
-					stdin.pause();
+					stdin.setRawMode(false); stdin.pause();
 					stdin.off("data", onData);
-					stdout.write("\n");
-					rslv(pswd);
-					break;
+					stdout.write("\n"); rslv(pswd); break;
 				case "\u0003":
-					stdin.setRawMode(false);
-					stdin.pause();
+					stdin.setRawMode(false); stdin.pause();
 					stdin.off("data", onData);
-					process.exit();
-					break;
+					process.exit(); break;
 				case "\u007f":
 				case "\b":
-					pswd = pswd.slice(0, -1);
-					break;
+					pswd = pswd.slice(0, -1); break;
 				default:
-					pswd += ky;
-					break;
-			}
-		});
-	});
+					pswd += ky; break; } }); });
 }
