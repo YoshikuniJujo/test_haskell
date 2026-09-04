@@ -1,23 +1,21 @@
 browser.runtime.sendMessage({ method: "contentStarted" });
 
 const requestsWaitingForPassword = new Map();
-const somethingResolvers = new Map();
 
 const tryPasswordTab = {
 
 	getSomething(pk, prm)
 	{
-		const rid = crypto.randomUUID();
 		return new window.Promise(async (rslv, rjct) => {
 			try {	browser.runtime.sendMessage({
 					method: "queryPswd", pubKey: pk });
 				await new Promise((rs, rj) => { addToArrayMap(
 					requestsWaitingForPassword, pk,
 					{ resolve: rs, reject: rj } ); });
-				somethingResolvers.set(rid, rslv);
-				browser.runtime.sendMessage( {
+				rslv(await browser.runtime.sendMessage({
 					method: "getSomething", pubKey: pk,
-					request: rid, parameter: prm } ); }
+					parameter: prm }));
+			}
 			catch(e) { rjct(e); } });
 	}
 
@@ -32,15 +30,7 @@ browser.runtime.onMessage.addListener((m) => { switch (m.method) {
 			m.pubKey, (wtr) => wtr.reject(new window.Error(
 				"Input tab was closed for public key: " +
 				m.pubKey ))); break;
-	case "something": {
-		const rs = somethingResolvers.get(m.request);
-		somethingResolvers.delete(m.request);
-		if (!rs) {
-			console.error(
-				"invalid input request",
-				{ request: m.request } );
-			throw new Error("Invalid input request"); }
-		rs(m.value); break; } } });
+} });
 
 window.wrappedJSObject.tryPasswordTab =
 	cloneInto(tryPasswordTab, window, { cloneFunctions: true });

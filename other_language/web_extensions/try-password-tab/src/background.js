@@ -5,7 +5,7 @@ const itbs = new InputTabs();
 browser.runtime.onMessage.addListener((m, s) => { switch (m.method) {
 	case "queryPswd": return qPswd(m.pubKey, s.tab.id);
 	case "getSomething":
-		return gSomething(m.pubKey, m.request, m.parameter, s.tab.id);
+		return gSomething(m.pubKey, m.parameter);
 	case "returnPswd": return rPswd(m.pubKey, m.pswd, s.tab.id, cPswd);
 	case "contentStarted": return pgVanished(s.tab.id); } });
 browser.tabs.onRemoved.addListener((t) => pgVanished(t));
@@ -27,13 +27,11 @@ qPswd(pk, st)
 }
 
 async function
-gSomething(pk, rid, prm, st)
+gSomething(pk, prm)
 {
 	const { pswds = {} } = await browser.storage.session.get("pswds");
 	const pswd = pswds[pk];
-	const rt = prm ? pswd + "_" + prm : pswd
-	await browser.tabs.sendMessage(
-		st, { method: "something", request: rid, value: rt } );
+	return prm ? pswd + "_" + prm : pswd;
 }
 
 async function
