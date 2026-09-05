@@ -28,8 +28,18 @@ const smkey = scrypt(pswd, salt, { N: 2 ** 16, r: 8, p: 1, dkLen: 32 });
 const chacha = xchacha20poly1305(smkey, nonce, new Uint8Array([0]));
 const encrypted = chacha.encrypt(secKey);
 
+const foo = {
+	version: 2,
+	logN: 16,
+	salt: salt,
+	nonce: nonce,
+	keySecurityByte: 0,
+	cipherText: encrypted }
+
 const ncryptsec = Bech32.encode('ncryptsec',
-	new Uint8Array([2, 16, ...salt, ...nonce, 0, ...encrypted]));
+	new Uint8Array([
+		foo.version, foo.logN, ...foo.salt, ...foo.nonce,
+		foo.keySecurityByte, ...foo.cipherText ]));
 
 console.log(ncryptsec);
 console.log(ncsfp);
