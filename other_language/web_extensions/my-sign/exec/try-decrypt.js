@@ -40,7 +40,7 @@ if (lgn[0] < 16 || 22 < lgn[0]) throw new Error(
 	`Unsupported scrypt log_n: expected 16..22, actual ${lgn[0]}` );
 
 const encrypted = {
-	version: vsn[0], nonce: nnc,
+	version: vsn[0], logN: lgn[0], salt: slt, nonce: nnc,
 	keySecurityByte: aad[0], cipherText: ct };
 
 // const pswd = new TextEncoder().encode(await readPassword());
@@ -49,11 +49,8 @@ const pswd = await readPassword();
 console.log(encrypted);
 console.log(pswd);
 
-const symKeyPrms = { logN: lgn[0], salt: slt };
-console.log(symKeyPrms);
-
-const smkey = scrypt(pswd.normalize("NFKC"), symKeyPrms.salt,
-	{ N: 2 ** symKeyPrms.logN, r: 8, p: 1, dkLen: 32 });
+const smkey = scrypt(pswd.normalize("NFKC"), encrypted.salt,
+	{ N: 2 ** encrypted.logN, r: 8, p: 1, dkLen: 32 });
 
 console.log(smkey);
 
