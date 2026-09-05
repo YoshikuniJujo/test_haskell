@@ -22,8 +22,8 @@ split(bs, ns)
 	const [n, ...rest] = ns;
 	return [bs.slice(0, n), ...split(bs.slice(n), rest)]; }
 
-const [vsn, lgn, slt, nnc, aad, ct, mac] =
-	split(decoded, [1, 1, 16, 24, 1, 32, 16]);
+const [vsn, lgn, slt, nnc, aad, ct] =
+	split(decoded, [1, 1, 16, 24, 1, 48]);
 
 console.log(vsn);
 console.log(lgn);
@@ -31,7 +31,6 @@ console.log(slt);
 console.log(nnc);
 console.log(aad);
 console.log(ct);
-console.log(mac);
 
 if (vsn[0] !== 2) throw new Error(
 	`Invalid ncryptsec version: expected 2, actual ${vsn[0]}` );
@@ -42,7 +41,7 @@ if (lgn[0] < 16 || 22 < lgn[0]) throw new Error(
 
 const encrypted = {
 	version: vsn[0], nonce: nnc,
-	keySecurityByte: aad[0], cipherText: ct, mac: mac };
+	keySecurityByte: aad[0], cipherText: ct };
 
 // const pswd = new TextEncoder().encode(await readPassword());
 const pswd = await readPassword();
@@ -58,7 +57,7 @@ const smkey = scrypt(pswd.normalize("NFKC"), symKeyPrms.salt,
 
 console.log(smkey);
 
-const ciphertext = new Uint8Array([...ct, ...mac]);
+const ciphertext = new Uint8Array(ct);
 const chacha = xchacha20poly1305(smkey, encrypted.nonce, aad);
 const secretKey = chacha.decrypt(ciphertext);
 
