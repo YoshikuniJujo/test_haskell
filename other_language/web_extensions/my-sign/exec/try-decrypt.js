@@ -10,6 +10,9 @@ const text = (await readFile(filePath, "utf8")).trim();
 
 const { dp: decoded } = Bech32.decode(text);
 
+if (decoded.length !== 91) throw new Error(
+	`Invalid ncryptsec length: expected 91, actual ${decoded.length}` );
+
 console.log(decoded);
 
 function
@@ -29,6 +32,13 @@ console.log(nnc);
 console.log(aad);
 console.log(ct);
 console.log(mac);
+
+if (vsn[0] !== 2) throw new Error(
+	`Invalid ncryptsec version: expected 2, actual ${vsn[0]}` );
+if (aad[0] > 2) throw new Error(
+	`Invalid key security byte: expected 0, 1, or 2, actual ${aad[0]}` );
+if (lgn[0] < 16 || 22 < lgn[0]) throw new Error(
+	`Unsupported scrypt log_n: expected 16..22, actual ${lgn[0]}` );
 
 const encrypted = {
 	version: vsn[0], nonce: nnc,
