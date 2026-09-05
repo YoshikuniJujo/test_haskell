@@ -41,7 +41,7 @@ if (lgn[0] < 16 || 22 < lgn[0]) throw new Error(
 
 const encrypted = {
 	version: vsn[0], logN: lgn[0], salt: slt, nonce: nnc,
-	keySecurityByte: aad[0], cipherText: ct };
+	keySecurityByte: aad[0], ciphertext: ct };
 
 // const pswd = new TextEncoder().encode(await readPassword());
 const pswd = await readPassword();
