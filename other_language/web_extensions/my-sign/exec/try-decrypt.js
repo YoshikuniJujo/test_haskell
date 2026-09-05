@@ -51,3 +51,5 @@ console.log(smkey);
 const ciphertext = new Uint8Array([...ct, ...mac]);
 const chacha = xchacha20poly1305(smkey, encrypted.nonce, aad);
 const secretKey = chacha.decrypt(ciphertext);
+
+console.log(Bech32.encode('nsec', secretKey));
