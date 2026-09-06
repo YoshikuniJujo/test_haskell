@@ -58,3 +58,32 @@ decrypt(encrypted, pswd)
 		new Uint8Array([encrypted.keySecurityByte]));
 	return chacha.decrypt(encrypted.ciphertext);
 }
+
+export function
+decode(text)
+{
+
+const text2 = text.trim();
+
+const { dp: decoded } = Bech32.decode(text2);
+
+if (decoded.length !== 91) throw new Error(
+	`Invalid ncryptsec length: expected 91, actual ${decoded.length}` );
+
+const [vsn, lgn, slt, nnc, aad, ct] =
+	split(decoded, [1, 1, 16, 24, 1, 48]);
+
+const encrypted = {
+	version: vsn[0], logN: lgn[0], salt: slt, nonce: nnc,
+	keySecurityByte: aad[0], ciphertext: ct };
+
+return encrypted;
+
+}
+
+function
+split(bs, ns)
+{
+	if (ns.length === 0) { return []; }
+	const [n, ...rest] = ns;
+	return [bs.slice(0, n), ...split(bs.slice(n), rest)]; }
