@@ -1,6 +1,7 @@
 import { webcrypto } from 'node:crypto';
 import { scrypt } from '@noble/hashes/scrypt.js';
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js'
+import * as Bech32 from "../codec/bech32.js";
 
 export async function
 encrypt(secKey, { password: pswd, logN: lgn, keySecurityByte: ksb })
@@ -26,4 +27,14 @@ encrypt(secKey, { password: pswd, logN: lgn, keySecurityByte: ksb })
 		keySecurityByte: ksb,
 		ciphertext: chacha.encrypt(secKey) }
 
+}
+
+export function
+encode(foo)
+{
+
+	return Bech32.encode('ncryptsec',
+		new Uint8Array([
+			foo.version, foo.logN, ...foo.salt, ...foo.nonce,
+			foo.keySecurityByte, ...foo.ciphertext ]));
 }

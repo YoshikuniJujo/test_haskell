@@ -18,10 +18,7 @@ const pswd = await readPassword();
 const foo = await Ncryptsec.encrypt(
 	secKey, { password: pswd, logN: 16, keySecurityByte: 0 } );
 
-const ncryptsec = Bech32.encode('ncryptsec',
-	new Uint8Array([
-		foo.version, foo.logN, ...foo.salt, ...foo.nonce,
-		foo.keySecurityByte, ...foo.ciphertext ]));
+const ncryptsec = Ncryptsec.encode(foo);
 
 console.log(ncryptsec);
 
