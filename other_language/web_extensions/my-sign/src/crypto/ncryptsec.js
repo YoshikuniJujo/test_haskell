@@ -38,3 +38,23 @@ encode(foo)
 			foo.version, foo.logN, ...foo.salt, ...foo.nonce,
 			foo.keySecurityByte, ...foo.ciphertext ]));
 }
+
+export async function
+decrypt(encrypted, pswd)
+{
+
+	if (encrypted.version !== 2) throw new Error(
+		`Invalid ncryptsec version: expected 2, actual ${encrypted.version}` );
+	if (encrypted.keySecurityByte > 2) throw new Error(
+		`Invalid key security byte: expected 0, 1, or 2, actual ${encrypted.keySecurityByte}` );
+	if (encrypted.logN < 16 || 22 < encrypted.logN) throw new Error(
+		`Unsupported scrypt log_n: expected 16..22, actual ${encrypted.logN}` );
+
+	const smkey = scrypt(new TextEncoder().encode(pswd.normalize("NFKC")), encrypted.salt,
+		{ N: 2 ** encrypted.logN, r: 8, p: 1, dkLen: 32 });
+
+	const chacha = xchacha20poly1305(smkey,
+		encrypted.nonce,
+		new Uint8Array([encrypted.keySecurityByte]));
+	return chacha.decrypt(encrypted.ciphertext);
+}
