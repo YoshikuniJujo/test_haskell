@@ -33,14 +33,14 @@ EncryptedSecretKey
 	static async generate(pswd)
 	{
 		const sfcp = new Uint8Array(16);
-		webcrypto.getRandomValue(sfcp);
+		webcrypto.getRandomValues(sfcp);
 		const hfcp = scrypt(
 			new TextEncoder().encode(pswd.normalize("NFKC")),
 			sfcp, { N: 2 ** 16, r: 8, p: 1, dkLen: 32 } );
-		const { secretKey: sk, publicKey: pk } = shnorr.keygen();
+		const { secretKey: sk, publicKey: pk } = schnorr.keygen();
 		const foo = await encrypt(
 			sk, { password: pswd, logN: 16, keySecurityByte: 1 } );
-		constructor(
+		return new EncryptedSecretKey(
 			pk, foo.logN, foo.salt, foo.nonce,
 			foo.keySecurityByte, foo.ciphertext, sfcp, hfcp );
 
