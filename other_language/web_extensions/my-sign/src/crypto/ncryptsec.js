@@ -1,7 +1,51 @@
 import { webcrypto } from 'node:crypto';
 import { scrypt } from '@noble/hashes/scrypt.js';
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js'
+import { schnorr } from "@noble/secp256k1";
 import * as Bech32 from "../codec/bech32.js";
+
+export class
+EncryptedSecretKey
+{
+	#publicKey;
+
+	#logN;
+	#salt;
+	#nonce;
+	#keySecurityByte;
+	#ciphertext;
+
+	#saltForCheckPassword;
+	#hashForCheckPassword;
+
+	constructor(pk, ln, slt, nnc, ksb, ct, sfcp, hfcp)
+	{
+		this.#publicKey = pk;
+		this.#logN = ln;
+		this.#salt = slt;
+		this.#nonce = nnc;
+		this.#keySecurityByte = ksb;
+		this.#ciphertext = ct;
+		this.#saltForCheckPassword = sfcp;
+		this.#hashForCheckPassword = hfcp;
+	}
+
+	static async generate(pswd)
+	{
+		const sfcp = new Uint8Array(16);
+		webcrypto.getRandomValue(sfcp);
+		const hfcp = scrypt(
+			new TextEncoder().encode(pswd.normalize("NFKC")),
+			sfcp, { N: 2 ** 16, r: 8, p: 1, dkLen: 32 } );
+		const { secretKey: sk, publicKey: pk } = shnorr.keygen();
+		const foo = await encrypt(
+			sk, { password: pswd, logN: 16, keySecurityByte: 1 } );
+		constructor(
+			pk, foo.logN, foo.salt, foo.nonce,
+			foo.keySecurityByte, foo.ciphertext, sfcp, hfcp );
+
+	}
+}
 
 export async function
 encrypt(secKey, { password: pswd, logN: lgn, keySecurityByte: ksb })
