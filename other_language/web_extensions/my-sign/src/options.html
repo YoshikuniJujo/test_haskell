@@ -3,13 +3,28 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport"
-		      content="width=device.width, initial-scale=1">
+		      content="width=device-width, initial-scale=1">
 		<title>My Sign</title>
 		<link rel="stylesheet" href="options.css">
 	</head>
 	<body>
-		<button id="generate">Generate</button>
-		<div id="pbulic-keys"></div>
+		<form id="generate-form">
+			<label>
+				Password
+				<input id="password" type="password" required>
+			</label>
+			<label>
+				Confirm password
+				<input id="password-confirm" type="password" required>
+			</label>
+			<label>
+				<input id="show-password" type="checkbox">
+				Show password
+			</label>
+			<div id="password-error"></div>
+			<button id="generate" type="submit">Generate</button>
+		</form>
+		<div id="public-keys"></div>
 
 		<script type="module" src="options.js"></script>
 	</body>

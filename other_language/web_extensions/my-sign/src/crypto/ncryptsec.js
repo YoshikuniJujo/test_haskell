@@ -1,5 +1,5 @@
-import { webcrypto } from 'node:crypto';
 import { scryptAsync } from '@noble/hashes/scrypt.js';
+import { randomBytes } from "@noble/hashes/utils.js";
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js'
 import { schnorr } from "@noble/secp256k1";
 import * as Bech32 from "../codec/bech32.js";
@@ -40,8 +40,9 @@ EncryptedSecretKey
 	static async generate(pswd)
 	{
 		const lgn = 16
-		const sfcp = new Uint8Array(16);
-		webcrypto.getRandomValues(sfcp);
+		const sfcp = randomBytes(16);
+//		const sfcp = new Uint8Array(16);
+//		webcrypto.getRandomValues(sfcp);
 		const hfcp = scryptAsync(
 			new TextEncoder().encode(pswd.normalize("NFKC")),
 			sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
@@ -88,8 +89,9 @@ EncryptedSecretKey
 		try { pk = schnorr.getPublicKey(sk); }
 		finally { sk.fill(0); }
 
-		const sfcp = new Uint8Array(16);
-		webcrypto.getRandomValues(sfcp);
+		const sfcp = randomBytes(16);
+//		const sfcp = new Uint8Array(16);
+//		webcrypto.getRandomValues(sfcp);
 		const hfcp = await scryptAsync(
 			new TextEncoder().encode(pswd.normalize("NFKC")),
 			sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
@@ -180,11 +182,16 @@ async function
 encrypt(secKey, { password: pswd, logN: lgn, keySecurityByte: ksb })
 {
 
+	const salt = randomBytes(16);
+	const nonce = randomBytes(24);
+
+	/*
 	const salt = new Uint8Array(16);
 	const nonce = new Uint8Array(24);
 
 	webcrypto.getRandomValues(salt);
 	webcrypto.getRandomValues(nonce);
+	*/
 
 	const smkey = await scryptAsync(
 		new TextEncoder().encode(pswd.normalize("NFKC")),

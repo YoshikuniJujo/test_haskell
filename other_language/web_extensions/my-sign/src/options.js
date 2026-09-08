@@ -1,0 +1,60 @@
+import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
+import { encode } from "./codec/bech32.js";
+
+console.log("barbaz");
+
+const form = document.querySelector("#generate-form");
+const password = document.querySelector("#password");
+const confirm = document.querySelector("#password-confirm");
+const generate = document.querySelector("#generate");
+const publicKeys = document.querySelector("#public-keys");
+
+const passwordError = document.querySelector("#password-error");
+
+const showPassword = document.querySelector("#show-password");
+
+console.log("foobar");
+
+confirm.addEventListener("input", () => {
+	confirm.setCustomValidity(
+		password.value === confirm.value
+			? ""
+			: "Passwords do not match." );
+	if (password.value !== confirm.value)
+		passwordError.textContent = "Passwords do not match.";
+	else
+		passwordError.textContent = "";
+});
+
+form.addEventListener("submit", async event => {
+	console.log("submit");
+	event.preventDefault();
+
+	if (password.value !== confirm.value) {
+		console.log(confirm.validity.valid);
+		confirm.setCustomValidity("Password do not match.");
+		console.log(confirm.validity.valid);
+		confirm.reportValidity();
+		passwordError.textContent = "Passwords do not match.";
+		return;
+	}
+
+	console.log("here");
+
+	confirm.setCustomValidity("");
+
+	const esk = await EncryptedSecretKey.generate(password.value);
+	password.value = "";
+	confirm.value = "";
+	const npub = encode("npub", esk.publicKey);
+
+	const div = document.createElement("div");
+	div.textContent = npub;
+	publicKeys.append(div);
+});
+
+showPassword.addEventListener("change", () => {
+	const type = showPassword.checked ? "text" : "password";
+	password.type = type;
+	confirm.type = type;
+});
