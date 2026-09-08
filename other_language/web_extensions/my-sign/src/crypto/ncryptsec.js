@@ -4,6 +4,8 @@ import { xchacha20poly1305 } from '@noble/ciphers/chacha.js'
 import { schnorr } from "@noble/secp256k1";
 import * as Bech32 from "../codec/bech32.js";
 
+import * as Schnorr from "../sign/schnorr.js"
+
 export class
 EncryptedSecretKey
 {
@@ -108,6 +110,65 @@ EncryptedSecretKey
 			saltForCheckPassword: this.#saltForCheckPassword,
 			hashForCheckPassword: this.#hashForCheckPassword }
 	}
+
+	async checkPassword(pswd)
+	{
+		const hfcp = await scryptAsync(
+			new TextEncoder().encode(pswd.normalize("NFKC")),
+			this.#saltForCheckPassword,
+			{ N: 2 ** this.#logN, r: 8, p: 1, dkLen: 32 } );
+		return equalBytes(hfcp, this.#hashForCheckPassword);
+	}
+
+	async getSymmetricKey(pswd)
+	{
+		return scryptAsync(
+			new TextEncoder().encode(pswd.normalize("NFKC")),
+			this.#salt,
+			{ N: 2 ** this.#logN, r: 8, p: 1, dkLen: 32 } );
+	}
+
+	async signEvent(ev, smky)
+	{
+		const cc = xchacha20poly1305(smky, this.#nonce, new Uint8Array([this.#keySecurityByte]));
+		const sk = cc.decrypt(this.#ciphertext);
+		try {
+			return await Schnorr.signEvent(ev, sk, this.#publicKey);
+		}
+		finally { sk.fill(0); }
+	}
+}
+
+export function
+encode(foo)
+{
+
+	return Bech32.encode('ncryptsec',
+		new Uint8Array([
+			foo.version, foo.logN, ...foo.salt, ...foo.nonce,
+			foo.keySecurityByte, ...foo.ciphertext ]));
+}
+
+export function
+decode(text)
+{
+
+const text2 = text.trim();
+
+const { dp: decoded } = Bech32.decode(text2);
+
+if (decoded.length !== 91) throw new Error(
+	`Invalid ncryptsec length: expected 91, actual ${decoded.length}` );
+
+const [vsn, lgn, slt, nnc, aad, ct] =
+	split(decoded, [1, 1, 16, 24, 1, 48]);
+
+const encrypted = {
+	version: vsn[0], logN: lgn[0], salt: slt, nonce: nnc,
+	keySecurityByte: aad[0], ciphertext: ct };
+
+return encrypted;
+
 }
 
 async function
@@ -136,17 +197,7 @@ encrypt(secKey, { password: pswd, logN: lgn, keySecurityByte: ksb })
 
 }
 
-export function
-encode(foo)
-{
-
-	return Bech32.encode('ncryptsec',
-		new Uint8Array([
-			foo.version, foo.logN, ...foo.salt, ...foo.nonce,
-			foo.keySecurityByte, ...foo.ciphertext ]));
-}
-
-export async function
+async function
 decrypt(encrypted, pswd)
 {
 
@@ -166,31 +217,21 @@ decrypt(encrypted, pswd)
 	return chacha.decrypt(encrypted.ciphertext);
 }
 
-export function
-decode(text)
-{
-
-const text2 = text.trim();
-
-const { dp: decoded } = Bech32.decode(text2);
-
-if (decoded.length !== 91) throw new Error(
-	`Invalid ncryptsec length: expected 91, actual ${decoded.length}` );
-
-const [vsn, lgn, slt, nnc, aad, ct] =
-	split(decoded, [1, 1, 16, 24, 1, 48]);
-
-const encrypted = {
-	version: vsn[0], logN: lgn[0], salt: slt, nonce: nnc,
-	keySecurityByte: aad[0], ciphertext: ct };
-
-return encrypted;
-
-}
-
 function
 split(bs, ns)
 {
 	if (ns.length === 0) { return []; }
 	const [n, ...rest] = ns;
 	return [bs.slice(0, n), ...split(bs.slice(n), rest)]; }
+
+function
+equalBytes(a, b)
+{
+	if (a.length !== b.length) return false;
+
+	let d = 0;
+	for (let i = 0; i < a.length; ++ i)
+		d |= a[i] ^ b[i];
+
+	return d === 0;
+}
