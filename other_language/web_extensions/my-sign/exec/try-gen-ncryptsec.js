@@ -8,7 +8,7 @@ const pswd = await readPassword();
 
 const esk = await Ncryptsec.EncryptedSecretKey.generate(pswd);
 const obj = esk.toObject_563e7e39d4();
-const np = encode("npub", obj.publicKey);
+const np = encode("npub", esk.publicKey);
 const nm = np.slice(5, 15);
 const ncs = Ncryptsec.encode(obj);
 
