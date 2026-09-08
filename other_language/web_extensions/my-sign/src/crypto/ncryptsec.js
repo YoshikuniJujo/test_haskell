@@ -37,14 +37,17 @@ EncryptedSecretKey
 
 	static async generate(pswd)
 	{
+		const lgn = 16
 		const sfcp = new Uint8Array(16);
 		webcrypto.getRandomValues(sfcp);
 		const hfcp = scrypt(
 			new TextEncoder().encode(pswd.normalize("NFKC")),
-			sfcp, { N: 2 ** 16, r: 8, p: 1, dkLen: 32 } );
+			sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 		const { secretKey: sk, publicKey: pk } = schnorr.keygen();
-		const foo = await encrypt(
-			sk, { password: pswd, logN: 16, keySecurityByte: 1 } );
+		let foo;
+		try { foo = await encrypt(
+				sk, { password: pswd, logN: lgn, keySecurityByte: 1 } ); }
+		finally { sk.fill(0); }
 		return new EncryptedSecretKey(
 			pk, foo.logN, foo.salt, foo.nonce,
 			foo.keySecurityByte, foo.ciphertext, sfcp, hfcp );
