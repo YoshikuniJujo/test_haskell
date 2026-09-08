@@ -1,6 +1,8 @@
 const DB_NAME = "my-sign";
 const DB_VERSION = 1;
-const STORE_NAME = "secret-keys";
+
+const SECRET_KEYS = "secret-keys";
+const CLIENTS = "clients";
 
 let dbPromise;
 
@@ -14,9 +16,13 @@ open()
 		req.onupgradeneeded = () => {
 			const db = req.result;
 
-			if (!db.objectStoreNames.contains(STORE_NAME))
+			if (!db.objectStoreNames.contains(SECRET_KEYS))
 				db.createObjectStore(
-					STORE_NAME, { keyPath: "publicKey" });
+					SECRET_KEYS, { keyPath: "publicKey" } );
+
+			if (!db.objectStoreNames.contains(CLIENTS))
+				db.createObjectStore(
+					CLIENTS, { keyPath: "uuid" } );
 		};
 
 		req.onsuccess = () => rs(req.result);
@@ -27,13 +33,13 @@ open()
 }
 
 export async function
-add(key)
+addKeyPair(key)
 {
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(STORE_NAME, "readwrite");
-		const store = tx.objectStore(STORE_NAME);
+		const tx = db.transaction(SECRET_KEYS, "readwrite");
+		const store = tx.objectStore(SECRET_KEYS);
 		store.add(key);
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
@@ -46,9 +52,37 @@ getPublicKeys()
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(STORE_NAME, "readonly");
-		const store = tx.objectStore(STORE_NAME);
+		const tx = db.transaction(SECRET_KEYS, "readonly");
+		const store = tx.objectStore(SECRET_KEYS);
 		const req = store.getAllKeys();
+
+		req.onsuccess = () => rs(req.result);
+		req.onerror = () => rj(req.error);
+	});
+}
+
+export async function
+putClient(client)
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(CLIENTS, "readwrite");
+		tx.objectStore(CLIENTS).put(client);
+
+		ts.oncomplete = rs;
+		tx.onerror = () => rj(tx.error);
+	});
+}
+
+export async function
+getClients()
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(CLIENTS, "readonly");
+		const req = tx.objectStore(CLIENTS).getAll();
 
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);

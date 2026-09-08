@@ -57,7 +57,7 @@ form.addEventListener("submit", async event => {
 	publicKeys.append(div);
 	*/
 
-	await DB.add(esk.toObject_563e7e39d4());
+	await DB.addKeyPair(esk.toObject_563e7e39d4());
 	publicKeys.replaceChildren();
 	currentKey.replaceChildren();
 	const keys = await DB.getPublicKeys();
