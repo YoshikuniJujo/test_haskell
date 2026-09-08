@@ -20,6 +20,11 @@ EncryptedSecretKey
 
 	constructor(pk, ln, slt, nnc, ksb, ct, sfcp, hfcp)
 	{
+		if (ksb > 2) throw new Error(
+			`Invalid key security byte: expected 0, 1, or 2, actual ${ksb}` );
+		if (ln < 16 || 22 < ln) throw new Error(
+			`Unsupported scrypt log_n: expected 16..22, actual ${ln}` );
+
 		this.#publicKey = pk;
 		this.#logN = ln;
 		this.#salt = slt;
@@ -45,9 +50,23 @@ EncryptedSecretKey
 			foo.keySecurityByte, foo.ciphertext, sfcp, hfcp );
 
 	}
+
+	toObject_563e7e39d4()
+	{
+		return {
+			publicKey: this.#publicKey,
+			version: 2,
+			logN: this.#logN,
+			salt: this.#salt,
+			nonce: this.#nonce,
+			keySecurityByte: this.#keySecurityByte,
+			ciphertext: this.#ciphertext,
+			saltForCheckPassword: this.#saltForCheckPassword,
+			hashForCheckPassword: this.#hashForCheckPassword }
+	}
 }
 
-export async function
+async function
 encrypt(secKey, { password: pswd, logN: lgn, keySecurityByte: ksb })
 {
 
