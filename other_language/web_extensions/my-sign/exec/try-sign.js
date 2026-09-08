@@ -15,7 +15,9 @@ const { dp: pk } = Bech32.decode((await readFile(pkf, "utf8")).trim());
 
 const pswd = await readPassword();
 
-const esk = Ncryptsec.EncryptedSecretKey.fromEncrypted(encrypted, pswd);
+const esk = await Ncryptsec.EncryptedSecretKey.fromEncrypted(encrypted, pswd);
+
+console.log(esk);
 
 const secretKey = await Ncryptsec.decrypt(encrypted, pswd);
 

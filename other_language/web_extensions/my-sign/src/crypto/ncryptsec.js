@@ -1,5 +1,5 @@
 import { webcrypto } from 'node:crypto';
-import { scrypt } from '@noble/hashes/scrypt.js';
+import { scryptAsync } from '@noble/hashes/scrypt.js';
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js'
 import { schnorr } from "@noble/secp256k1";
 import * as Bech32 from "../codec/bech32.js";
@@ -40,7 +40,7 @@ EncryptedSecretKey
 		const lgn = 16
 		const sfcp = new Uint8Array(16);
 		webcrypto.getRandomValues(sfcp);
-		const hfcp = scrypt(
+		const hfcp = scryptAsync(
 			new TextEncoder().encode(pswd.normalize("NFKC")),
 			sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 		const { secretKey: sk, publicKey: pk } = schnorr.keygen();
@@ -50,7 +50,7 @@ EncryptedSecretKey
 		finally { sk.fill(0); }
 		return new EncryptedSecretKey(
 			pk, foo.logN, foo.salt, foo.nonce,
-			foo.keySecurityByte, foo.ciphertext, sfcp, hfcp );
+			foo.keySecurityByte, foo.ciphertext, sfcp, await hfcp );
 
 	}
 
@@ -67,32 +67,32 @@ EncryptedSecretKey
 			pswd );
 	}
 
-	static #fromEncrypted(lgn, slt, nnc, ksb, ct, pswd)
+	static async #fromEncrypted(lgn, slt, nnc, ksb, ct, pswd)
 	{
 		if (ksb > 2) throw new Error(
 			"Invalid key security byte: expected 0, 1, or 2, " +
-			"actual " + encrypted.keySecurityByte );
+			"actual " + ksb );
 		if (lgn < 16 || 22 < lgn) throw new Error(
 			"Unsupported scrypt log_n: expected 16..22, " +
-			"actual " + encrypted.logN );
+			"actual " + lgn );
 
-		console.log("#fromEncrypted");
-		console.log(lgn);
-		console.log(slt);
-		console.log(nnc);
-		console.log(ksb);
-		console.log(ct);
-		console.log(pswd);
-
-		const smkey = scrypt(
+		const smkey = scryptAsync(
 			new TextEncoder().encode(pswd.normalize("NFKC")), slt,
 			{ N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 
-		const cc = xchacha20poly1305(smkey, nnc, new Uint8Array([ksb]));
+		const cc = xchacha20poly1305(await smkey, nnc, new Uint8Array([ksb]));
 		const sk = cc.decrypt(ct);
-		const pk = schnorr.getPublicKey(sk);
-		sk.fill(0);
-		console.log(Bech32.encode("npub", pk));
+		let pk;
+		try { pk = schnorr.getPublicKey(sk); }
+		finally { sk.fill(0); }
+
+		const sfcp = new Uint8Array(16);
+		webcrypto.getRandomValues(sfcp);
+		const hfcp = await scryptAsync(
+			new TextEncoder().encode(pswd.normalize("NFKC")),
+			sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
+		return new EncryptedSecretKey(
+			pk, lgn, slt, nnc, ksb, ct, sfcp, hfcp );
 	}
 
 	toObject_563e7e39d4()
@@ -120,7 +120,7 @@ encrypt(secKey, { password: pswd, logN: lgn, keySecurityByte: ksb })
 	webcrypto.getRandomValues(salt);
 	webcrypto.getRandomValues(nonce);
 
-	const smkey = scrypt(
+	const smkey = await scryptAsync(
 		new TextEncoder().encode(pswd.normalize("NFKC")),
 		salt, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 
@@ -157,7 +157,7 @@ decrypt(encrypted, pswd)
 	if (encrypted.logN < 16 || 22 < encrypted.logN) throw new Error(
 		`Unsupported scrypt log_n: expected 16..22, actual ${encrypted.logN}` );
 
-	const smkey = scrypt(new TextEncoder().encode(pswd.normalize("NFKC")), encrypted.salt,
+	const smkey = await scryptAsync(new TextEncoder().encode(pswd.normalize("NFKC")), encrypted.salt,
 		{ N: 2 ** encrypted.logN, r: 8, p: 1, dkLen: 32 });
 
 	const chacha = xchacha20poly1305(smkey,
