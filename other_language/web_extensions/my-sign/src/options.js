@@ -14,6 +14,8 @@ const passwordError = document.querySelector("#password-error");
 
 const showPassword = document.querySelector("#show-password");
 
+const currentKey = document.querySelector("#current-key");
+
 console.log("foobar");
 
 confirm.addEventListener("input", () => {
@@ -57,13 +59,21 @@ form.addEventListener("submit", async event => {
 
 	await DB.add(esk.toObject_563e7e39d4());
 	publicKeys.replaceChildren();
+	currentKey.replaceChildren();
 	const keys = await DB.getPublicKeys();
 	for (const pk of keys) {
 		console.log(pk);
 		const npub = encode("npub", new Uint8Array(pk));
 		const div = document.createElement("div");
 		div.textContent = npub;
-		publicKeys.append(div); }
+		publicKeys.append(div);
+
+		const option = document.createElement("option");
+		option.value = npub;
+		option.textContent = npub;
+
+		currentKey.append(option);
+	}
 });
 
 showPassword.addEventListener("change", () => {
