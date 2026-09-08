@@ -54,6 +54,30 @@ EncryptedSecretKey
 
 	}
 
+	static fromEncrypted(encrypted, pswd)
+	{
+		if (encrypted.version !== 2) throw new Error(
+			`Invalid ncryptsec version: expected 2, actual ${encrypted.version}` );
+		return this.#fromEncrypted(
+			encrypted.logN,
+			encrypted.salt,
+			encrypted.nonce,
+			encrypted.keySecurityByte,
+			encrypted.ciphertext,
+			pswd );
+	}
+
+	static #fromEncrypted(ln, slt, nnc, ksb, ct, pswd)
+	{
+		console.log("#fromEncrypted");
+		console.log(ln);
+		console.log(slt);
+		console.log(nnc);
+		console.log(ksb);
+		console.log(ct);
+		console.log(pswd);
+	}
+
 	toObject_563e7e39d4()
 	{
 		return {
