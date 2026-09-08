@@ -2,14 +2,14 @@ const DB_NAME = "my-sign";
 const DB_VERSION = 1;
 const STORE_NAME = "secret-keys";
 
-let dpPromise;
+let dbPromise;
 
 function
 open()
 {
 	if (dbPromise) return dbPromise;
 
-	dpPromise = new Promise((rs, rj) => {
+	dbPromise = new Promise((rs, rj) => {
 		const req = indexedDB.open(DB_NAME, DB_VERSION);
 		req.onupgradeneeded = () => {
 			const db = req.result;
@@ -45,7 +45,7 @@ getPublicKeys()
 {
 	const db = await open();
 
-	return new Priomise((rs, rj) => {
+	return new Promise((rs, rj) => {
 		const tx = db.transaction(STORE_NAME, "readonly");
 		const store = tx.objectStore(STORE_NAME);
 		const req = store.getAllKeys();

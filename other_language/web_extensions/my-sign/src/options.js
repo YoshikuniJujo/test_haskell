@@ -1,5 +1,6 @@
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import { encode } from "./codec/bech32.js";
+import * as DB from "./db.js"
 
 console.log("barbaz");
 
@@ -48,9 +49,21 @@ form.addEventListener("submit", async event => {
 	confirm.value = "";
 	const npub = encode("npub", esk.publicKey);
 
+	/*
 	const div = document.createElement("div");
 	div.textContent = npub;
 	publicKeys.append(div);
+	*/
+
+	await DB.add(esk.toObject_563e7e39d4());
+	publicKeys.replaceChildren();
+	const keys = await DB.getPublicKeys();
+	for (const pk of keys) {
+		console.log(pk);
+		const npub = encode("npub", new Uint8Array(pk));
+		const div = document.createElement("div");
+		div.textContent = npub;
+		publicKeys.append(div); }
 });
 
 showPassword.addEventListener("change", () => {
