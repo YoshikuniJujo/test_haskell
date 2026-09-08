@@ -81,3 +81,8 @@ showPassword.addEventListener("change", () => {
 	password.type = type;
 	confirm.type = type;
 });
+
+currentKey.addEventListener("change", () => {
+	const npub = currentKey.value;
+	console.log(npub);
+});
