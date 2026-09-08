@@ -5,7 +5,8 @@ const p = spawn(
 	[
 		"web-ext", "run", "--source-dir", "dist",
 		"--url", "https://yoshikunijujo.github.io/others/try-indexeddb-login",
-		"--url", "about:debugging#/runtime/this-firefox"
+		"--url", "about:debugging#/runtime/this-firefox",
+		"--url", "about:addons"
 	],
 	{ stdio: "inherit" }
 );

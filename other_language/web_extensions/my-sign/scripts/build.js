@@ -16,4 +16,12 @@ await esbuild.build({
 	outfile: "dist/background.js"
 });
 
+await esbuild.build({
+	entryPoints: ["src/options.js"],
+	bundle: true,
+	outfile: "dist/options.js"
+});
+
 await copyFile("src/manifest.json", "dist/manifest.json");
+await copyFile("src/options.html", "dist/options.html");
+await copyFile("src/options.css", "dist/options.css");

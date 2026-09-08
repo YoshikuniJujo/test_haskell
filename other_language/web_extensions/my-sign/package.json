@@ -9,6 +9,7 @@
     "prerun": "npm run build",
     "run": "node scripts/run.js",
     "find-android": "node scripts/find-android.js",
+    "prestart-android": "npm run build",
     "start-android": "node scripts/start-android.js"
   },
   "keywords": [],
