@@ -67,15 +67,32 @@ EncryptedSecretKey
 			pswd );
 	}
 
-	static #fromEncrypted(ln, slt, nnc, ksb, ct, pswd)
+	static #fromEncrypted(lgn, slt, nnc, ksb, ct, pswd)
 	{
+		if (ksb > 2) throw new Error(
+			"Invalid key security byte: expected 0, 1, or 2, " +
+			"actual " + encrypted.keySecurityByte );
+		if (lgn < 16 || 22 < lgn) throw new Error(
+			"Unsupported scrypt log_n: expected 16..22, " +
+			"actual " + encrypted.logN );
+
 		console.log("#fromEncrypted");
-		console.log(ln);
+		console.log(lgn);
 		console.log(slt);
 		console.log(nnc);
 		console.log(ksb);
 		console.log(ct);
 		console.log(pswd);
+
+		const smkey = scrypt(
+			new TextEncoder().encode(pswd.normalize("NFKC")), slt,
+			{ N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
+
+		const cc = xchacha20poly1305(smkey, nnc, new Uint8Array([ksb]));
+		const sk = cc.decrypt(ct);
+		const pk = schnorr.getPublicKey(sk);
+		sk.fill(0);
+		console.log(Bech32.encode("npub", pk));
 	}
 
 	toObject_563e7e39d4()
