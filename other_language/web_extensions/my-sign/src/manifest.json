@@ -2,6 +2,7 @@
 	"manifest_version": 3,
 	"name": "My Sign",
 	"version": "0.1.0.0",
+	"permissions": ["storage"],
 	"content_scripts": [
 		{
 			"matches": ["<all_urls>"],

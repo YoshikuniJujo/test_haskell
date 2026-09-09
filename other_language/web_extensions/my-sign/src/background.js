@@ -1,3 +1,4 @@
+import { InputTabs } from "./inputTabs.js";
 import * as DB from "./db.js"
 
 console.log("background.js");
@@ -11,10 +12,7 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 		case "get-public-key":
 			return hex(await getPublicKey(s));
 		case "queryPswd":
-			console.log("background: queryPswd");
-			await browser.tabs.sendMessage(
-				s.tab.id, { method: "pswdReady", pubKey: m.pubKey });
-			return;
+			return qPswd(m.pubKey, s.tab.id);
 		case "contentStarted":
 			console.log("background: contentStarted");
 			return ;
@@ -29,6 +27,13 @@ getPublicKey(s)
 		const pattern = new URLPattern(c.urlPattern);
 		if (pattern.test(s.url)) return c.publicKey; }
 	throw new Error("No client matches sender URL: " + s.url);
+}
+
+async function
+qPswd(pk, st)
+{
+	const { pswds = {} } = await browser.storage.session.get("pswds");
+	await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: pk });
 }
 
 function
