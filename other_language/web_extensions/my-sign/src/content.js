@@ -52,8 +52,15 @@ const nostr = {
 
 	getPublicKey()
 	{
-		return new window.Promise(rs =>
-			rs("foobar"));
+		return new window.Promise(async (rs, rj) => {
+			try {
+				const v = await browser.runtime.sendMessage({
+					type: "get-public-key"
+				});
+				rs(v);
+			}
+			catch (e) { rj(e); }
+		});
 	},
 
 	signEvent(ev)
