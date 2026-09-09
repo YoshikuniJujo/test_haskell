@@ -10,7 +10,12 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			return "dummy account";
 		case "get-public-key":
 			return hex(await getPublicKey(s));
-		case "contentStareted":
+		case "queryPswd":
+			console.log("background: queryPswd");
+			await browser.tabs.sendMessage(
+				s.tab.id, { method: "pswdReady", pubKey: m.pubKey });
+			return;
+		case "contentStarted":
 			console.log("background: contentStarted");
 			return ;
 	}

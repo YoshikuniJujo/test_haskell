@@ -42,6 +42,17 @@ const nostr = {
 	{
 		return new window.Promise(async (rs, rj) => {
 			try {
+				const pbk = await browser.runtime.sendMessage({
+					method: "get-public-key"
+				});
+				await new Promise((rs, rj) => {
+					addToArrayMap(
+						requestsWaitingForPassword, pbk,
+						{ resolve: rs, reject: rj } );
+					console.log("signEvent: ", requestsWaitingForPassword);
+					browser.runtime.sendMessage({
+						method: "queryPswd", pubKey: pbk });
+				});
 				rs(ev);
 			}
 			catch (e) { rj(cloneInto(e, window)); }
@@ -51,6 +62,9 @@ const nostr = {
 
 browser.runtime.onMessage.addListener((m) => { switch (m.method) {
 	case "pswdReady":
+		console.log("content: pswdReady");
+		console.log(m.pubKey);
+		console.log(requestsWaitingForPassword);
 		forEachValues(requestsWaitingForPassword,
 			m.pubKey, wtr => wtr.resolve()); break;
 } });
