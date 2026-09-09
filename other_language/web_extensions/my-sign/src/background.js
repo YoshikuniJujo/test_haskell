@@ -9,19 +9,22 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			console.log(s.url);
 			return "dummy account";
 		case "get-public-key":
-			console.log("background: get-public-key");
-
-			console.log(typeof s.url, s.url);
-			const url = String(s.url);
-			const clients = await DB.getClients();
-			for (const client of clients) {
-				const pattern = new URLPattern(client.urlPattern);
-				if (pattern.test(url)) return hex(client.publicKey);
-			}
-
-			return "background: " + s.url;
+			return hex(await getPublicKey(s));
+		case "contentStareted":
+			console.log("background: contentStarted");
+			return ;
 	}
 });
+
+async function
+getPublicKey(s)
+{
+	const cs = await DB.getClients();
+	for (const c of cs) {
+		const pattern = new URLPattern(c.urlPattern);
+		if (pattern.test(s.url)) return c.publicKey; }
+	throw new Error("No client matches sender URL: " + s.url);
+}
 
 function
 hex(bs)

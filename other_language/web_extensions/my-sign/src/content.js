@@ -1,5 +1,7 @@
 document.documentElement.style.border = "5px solid green";
 
+browser.runtime.sendMessage({ method: "contentStarted" });
+
 const div = document.createElement("div");
 Object.assign(div.style, {
 	position: "fixed",
@@ -35,8 +37,12 @@ const nostr = {
 
 	signEvent(ev)
 	{
-		return new window.Promise(rs =>
-			rs(ev));
+		return new window.Promise(async (rs, rj) => {
+			try {
+				rs(ev);
+			}
+			catch (e) { rj(cloneInto(e, window)); }
+		});
 	}
 }
 
