@@ -14,6 +14,6 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			return "dummy account";
 		case "get-public-key":
 			console.log("background: get-public-key");
-			return "foobar from background";
+			return "background: " + s.url;
 	}
 });
