@@ -13,7 +13,7 @@ Object.assign(div.style, {
 });
 
 (async () => {
-	const client = await browser.runtime.sendMessage({ type: "get-client" });
+	const client = await browser.runtime.sendMessage({ type: "get-account" });
 	div.textContent = client;
 })();
 
