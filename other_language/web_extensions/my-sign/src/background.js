@@ -33,6 +33,9 @@ async function
 qPswd(pk, st)
 {
 	const { pswds = {} } = await browser.storage.session.get("pswds");
+	if (pswds[pk] !== undefined) {
+		await browser.tabs.sendMessage(
+			st, { method: "pswdReady", pubKey: pk }); return; }
 	await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: pk });
 }
 
