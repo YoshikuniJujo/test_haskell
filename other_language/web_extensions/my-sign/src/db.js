@@ -76,6 +76,23 @@ putClient(client)
 }
 
 export async function
+getPublicKeysWithNames()
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(SECRET_KEYS, "readonly");
+		const store = tx.objectStore(SECRET_KEYS);
+		const req = store.getAll();
+
+		req.onsuccess = () => rs(req.result.map(key => ({
+			publicKey: key.publicKey,
+			name: key.name })));
+		req.onerror = () => rj(req.error);
+	});
+}
+
+export async function
 getClients()
 {
 	const db = await open();

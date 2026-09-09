@@ -12,6 +12,7 @@ EncryptedSecretKey
 	#publicKey;
 
 	#logN;
+	#name;
 	#salt;
 	#nonce;
 	#keySecurityByte;
@@ -20,7 +21,7 @@ EncryptedSecretKey
 	#saltForCheckPassword;
 	#hashForCheckPassword;
 
-	constructor(pk, ln, slt, nnc, ksb, ct, sfcp, hfcp)
+	constructor(pk, name, ln, slt, nnc, ksb, ct, sfcp, hfcp)
 	{
 		if (ksb > 2) throw new Error(
 			`Invalid key security byte: expected 0, 1, or 2, actual ${ksb}` );
@@ -28,6 +29,7 @@ EncryptedSecretKey
 			`Unsupported scrypt log_n: expected 16..22, actual ${ln}` );
 
 		this.#publicKey = pk;
+		this.#name = name;
 		this.#logN = ln;
 		this.#salt = slt;
 		this.#nonce = nnc;
@@ -37,7 +39,7 @@ EncryptedSecretKey
 		this.#hashForCheckPassword = hfcp;
 	}
 
-	static async generate(pswd)
+	static async generate(nm, pswd)
 	{
 		const lgn = 16
 		const sfcp = randomBytes(16);
@@ -52,16 +54,17 @@ EncryptedSecretKey
 				sk, { password: pswd, logN: lgn, keySecurityByte: 1 } ); }
 		finally { sk.fill(0); }
 		return new EncryptedSecretKey(
-			pk, foo.logN, foo.salt, foo.nonce,
+			pk, nm, foo.logN, foo.salt, foo.nonce,
 			foo.keySecurityByte, foo.ciphertext, sfcp, await hfcp );
 
 	}
 
-	static fromEncrypted(encrypted, pswd)
+	static fromEncrypted(nm, encrypted, pswd)
 	{
 		if (encrypted.version !== 2) throw new Error(
 			`Invalid ncryptsec version: expected 2, actual ${encrypted.version}` );
 		return this.#fromEncrypted(
+			nm,
 			encrypted.logN,
 			encrypted.salt,
 			encrypted.nonce,
@@ -70,7 +73,7 @@ EncryptedSecretKey
 			pswd );
 	}
 
-	static async #fromEncrypted(lgn, slt, nnc, ksb, ct, pswd)
+	static async #fromEncrypted(nm, lgn, slt, nnc, ksb, ct, pswd)
 	{
 		if (ksb > 2) throw new Error(
 			"Invalid key security byte: expected 0, 1, or 2, " +
@@ -96,7 +99,7 @@ EncryptedSecretKey
 			new TextEncoder().encode(pswd.normalize("NFKC")),
 			sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 		return new EncryptedSecretKey(
-			pk, lgn, slt, nnc, ksb, ct, sfcp, hfcp );
+			pk, nm, lgn, slt, nnc, ksb, ct, sfcp, hfcp );
 	}
 
 	get publicKey()
@@ -108,6 +111,7 @@ EncryptedSecretKey
 	{
 		return {
 			publicKey: this.#publicKey,
+			name: this.#name,
 			version: 2,
 			logN: this.#logN,
 			salt: this.#salt,

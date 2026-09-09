@@ -6,7 +6,7 @@ import * as Ncryptsec from "../src/crypto/ncryptsec.js";
 await mkdir("key-pairs", { recursive: true });
 const pswd = await readPassword();
 
-const esk = await Ncryptsec.EncryptedSecretKey.generate(pswd);
+const esk = await Ncryptsec.EncryptedSecretKey.generate("foobar", pswd);
 const obj = esk.toObject_563e7e39d4();
 const np = encode("npub", esk.publicKey);
 const nm = np.slice(5, 15);

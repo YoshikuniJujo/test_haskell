@@ -6,6 +6,7 @@ import * as Bech32 from "./codec/bech32.js";
 console.log("barbaz");
 
 const form = document.querySelector("#generate-form");
+const accName = document.querySelector("#account-name");
 const password = document.querySelector("#password");
 const confirm = document.querySelector("#password-confirm");
 const generate = document.querySelector("#generate");
@@ -47,31 +48,24 @@ form.addEventListener("submit", async event => {
 
 	confirm.setCustomValidity("");
 
-	const esk = await EncryptedSecretKey.generate(password.value);
+	const esk = await EncryptedSecretKey.generate(accName.value, password.value);
 	password.value = "";
 	confirm.value = "";
-	const npub = encode("npub", esk.publicKey);
-
-	/*
-	const div = document.createElement("div");
-	div.textContent = npub;
-	publicKeys.append(div);
-	*/
 
 	await DB.addKeyPair(esk.toObject_563e7e39d4());
 	publicKeys.replaceChildren();
 	currentKey.replaceChildren();
-	const keys = await DB.getPublicKeys();
+	const keys = await DB.getPublicKeysWithNames();
 	for (const pk of keys) {
 		console.log(pk);
-		const npub = encode("npub", new Uint8Array(pk));
+		const npub = encode("npub", new Uint8Array(pk.publicKey));
 		const div = document.createElement("div");
 		div.textContent = npub;
 		publicKeys.append(div);
 
 		const option = document.createElement("option");
 		option.value = npub;
-		option.textContent = npub.slice(0, 21) + "...";
+		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
 
 		currentKey.append(option);
 	}
