@@ -20,6 +20,8 @@ const currentKey = document.querySelector("#current-key");
 
 console.log("foobar");
 
+loadPublicKeys();
+
 confirm.addEventListener("input", () => {
 	confirm.setCustomValidity(
 		password.value === confirm.value
@@ -62,14 +64,24 @@ form.addEventListener("submit", async event => {
 		const div = document.createElement("div");
 		div.textContent = npub;
 		publicKeys.append(div);
+	}
 
+	await loadPublicKeys();
+});
+
+async function
+loadPublicKeys()
+{
+	const keys = await DB.getPublicKeysWithNames();
+	for (const pk of keys) {
 		const option = document.createElement("option");
+		const npub = encode("npub", new Uint8Array(pk.publicKey));
 		option.value = npub;
 		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
 
 		currentKey.append(option);
 	}
-});
+}
 
 showPassword.addEventListener("change", () => {
 	const type = showPassword.checked ? "text" : "password";
