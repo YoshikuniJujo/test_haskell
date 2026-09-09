@@ -6,11 +6,13 @@
 	</head>
 	<body>
 		<h1>Password</h1>
-		<input id="input" type="password">
-		<label>
-			<input type="checkbox" id="show-password">
-			Show password</label>
-		<button id="send">Submit</button>
+		<form id="password-form">
+			<input id="input" type="password" required>
+			<label>
+				<input type="checkbox" id="show-password">
+				Show password</label>
+			<button id="send">Submit</button>
+		</form>
 		<p id="error" hidden>Incorrect password.</p>
 		<script src="./input.js"></script>
 	</body>

@@ -15,6 +15,9 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			return hex(await getPublicKey(s));
 		case "queryPswd":
 			return qPswd(m.pubKey, s.tab.id);
+		case "returnPswd":
+			console.log("background: returnPswd")
+			return;
 		case "contentStarted":
 			console.log("background: contentStarted");
 			return ;

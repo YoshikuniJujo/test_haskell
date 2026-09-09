@@ -7,14 +7,18 @@ const onMessage = browser.runtime.onMessage;
 
 input.focus();
 
-input.addEventListener("keydown", (event) => { if (event.key === "Enter") {
-	event.preventDefault(); sendPswd(input.value); } });
-send.addEventListener("click", () => { sendPswd(input.value); });
 input.addEventListener("input", () => { error.hidden = true; });
 show.addEventListener("change", () => {
 	input.type = show.checked ? "text" : "password"; });
 onMessage.addListener((m) => { switch (m.method) {
 	case "wrongPswd": error.hidden = false; input.value = ""; break; } });
+
+const form = document.querySelector("#password-form");
+
+form.addEventListener("submit", (event) => {
+	event.preventDefault();
+	sendPswd(input.value);
+});
 
 function
 sendPswd(p)
