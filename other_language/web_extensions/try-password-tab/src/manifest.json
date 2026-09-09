@@ -8,8 +8,10 @@
 		"scripts": ["background.js"],
 		"type": "module"
 	},
-	"content_scripts": [
-		{ "matches": ["<all_urls>"], "js": ["content.js"] } ],
+	"content_scripts": [{
+		"matches": ["<all_urls>"],
+		"js": ["mapArray.js", "content.js"],
+		"run_at": "document_end" }],
 	"browser_specific_settings": {
 		"gecko": {
 			"id": "try-password-tab@yoshikunijujo.github.io",
