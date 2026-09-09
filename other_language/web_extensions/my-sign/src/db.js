@@ -70,7 +70,7 @@ putClient(client)
 		const tx = db.transaction(CLIENTS, "readwrite");
 		tx.objectStore(CLIENTS).put(client);
 
-		ts.oncomplete = rs;
+		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
 	});
 }

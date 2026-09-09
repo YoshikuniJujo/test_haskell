@@ -1,6 +1,7 @@
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import { encode } from "./codec/bech32.js";
 import * as DB from "./db.js"
+import * as Bech32 from "./codec/bech32.js";
 
 console.log("barbaz");
 
@@ -70,7 +71,7 @@ form.addEventListener("submit", async event => {
 
 		const option = document.createElement("option");
 		option.value = npub;
-		option.textContent = npub;
+		option.textContent = npub.slice(0, 21) + "...";
 
 		currentKey.append(option);
 	}
@@ -85,4 +86,33 @@ showPassword.addEventListener("change", () => {
 currentKey.addEventListener("change", () => {
 	const npub = currentKey.value;
 	console.log(npub);
+});
+
+const urlPattern = document.querySelector("#url-pattern");
+// const publicKey = document.querySelector("#public-key");
+const addClient = document.querySelector("#add-client");
+
+const forDebug = document.querySelector("#for-debug");
+
+addClient.addEventListener("click", async () => {
+	console.log(currentKey.value);
+	const client = {
+		uuid: crypto.randomUUID(),
+		urlPattern: urlPattern.value,
+		publicKey: new Uint8Array(Bech32.decode(currentKey.value).dp),
+		priority: 100
+	};
+
+	await DB.putClient(client);
+	console.log("addClient end: ", ...await DB.getClients());
+
+	const clients = await DB.getClients();
+	forDebug.textContent = clients.map(client =>
+		JSON.stringify({
+			uuid: client.uuid,
+			urlPattern: client.urlPattern,
+			publicKey: Bech32.encode("npub", client.publicKey).slice(0, 37) + "...",
+			priority: client.priority
+		}, null, 2)
+	).join("\n\n");
 });

@@ -24,8 +24,19 @@
 			<div id="password-error"></div>
 			<button id="generate" type="submit">Generate</button>
 		</form>
-		<select id="current-key" size="8"></select>
+		<hr>
+		<label>
+			Client URL Pattern
+			<input id="url-pattern" type="text">
+		</label>
+		<label>
+			Public key
+			<select id="current-key" size="8"></select>
+		</label>
+		<button id="add-client">Add client</button>
+
 		<div id="public-keys"></div>
+		<pre id="for-debug"></pre>
 
 		<script type="module" src="options.js"></script>
 	</body>
