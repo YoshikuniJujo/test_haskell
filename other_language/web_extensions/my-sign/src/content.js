@@ -51,7 +51,7 @@ const nostr = {
 
 browser.runtime.onMessage.addListener((m) => { switch (m.method) {
 	case "pswdReady":
-		foreachValues(requestsWaitingForPassword,
+		forEachValues(requestsWaitingForPassword,
 			m.pubkey, wtr => wtr.resolve()); break;
 } });
 
