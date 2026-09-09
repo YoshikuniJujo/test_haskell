@@ -59,7 +59,7 @@ const nostr = {
 				});
 				rs(v);
 			}
-			catch (e) { rj(e); }
+			catch (e) { rj(cloneInto(e, window)); }
 		});
 	},
 
