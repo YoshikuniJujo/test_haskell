@@ -17,6 +17,12 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			return qPswd(m.pubKey, s.tab.id);
 		case "returnPswd":
 			console.log("background: returnPswd")
+			console.log(m.pubKey);
+			const sts = await itbs.complete(m.pubKey, s.tab.id);
+			for (const st of sts)
+				await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: m.pubKey });
+			await browser.tabs.update(sts[0], { active: true });
+			await browser.tabs.remove(s.tab.id);
 			return;
 		case "contentStarted":
 			console.log("background: contentStarted");
@@ -48,7 +54,6 @@ qPswd(pk, st)
 	const use = await itbs.assign(pk, st, it.id);
 	if (use != it.id) await browser.tabs.remove(it.id);
 	await browser.tabs.update(use, { active: true });
-	await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: pk });
 }
 
 function
