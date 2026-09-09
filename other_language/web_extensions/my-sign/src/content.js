@@ -1,8 +1,9 @@
 import { addToArrayMap, forEachValues } from "./mapArray.js"
 
 document.documentElement.style.border = "5px solid green";
-
 browser.runtime.sendMessage({ method: "contentStarted" });
+
+const requestsWaitingForPassword = new Map();
 
 const div = document.createElement("div");
 Object.assign(div.style, {
@@ -47,6 +48,12 @@ const nostr = {
 		});
 	}
 }
+
+browser.runtime.onMessage.addListener((m) => { switch (m.method) {
+	case "pswdReady":
+		foreachValues(requestsWaitingForPassword,
+			m.pubkey, wtr => wtr.resolve()); break;
+} });
 
 window.wrappedJSObject.nostr =
 	cloneInto(nostr, window, { cloneFunctions: true });
