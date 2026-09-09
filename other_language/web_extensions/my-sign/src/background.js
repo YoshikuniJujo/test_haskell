@@ -3,6 +3,8 @@ import * as DB from "./db.js"
 
 console.log("background.js");
 
+const itbs = new InputTabs();
+
 browser.runtime.onMessage.addListener( async (m, s) => {
 	console.log("message received", m);
 	switch (m.method) {
@@ -39,8 +41,10 @@ qPswd(pk, st)
 	const it = await browser.tabs.create({
 		active: false,
 		url: browser.runtime.getURL(
-			`input.html?publicKey=${encodeURIComponent(pk)}` )
-	});
+			`input.html?publicKey=${encodeURIComponent(pk)}` ) });
+	const use = await itbs.assign(pk, st, it.id);
+	if (use != it.id) await browser.tabs.remove(it.id);
+	await browser.tabs.update(use, { active: true });
 	await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: pk });
 }
 
