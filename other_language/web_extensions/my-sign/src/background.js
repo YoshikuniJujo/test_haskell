@@ -9,5 +9,7 @@ browser.runtime.onMessage.addListener( async m => {
 			return addUser(indexedDB, m.userId, m.password);
 		case "login":
 			return login(indexedDB, m.userId, m.password);
+		case "get-client":
+			return Promise.resolve("dummy client");
 	}
 });

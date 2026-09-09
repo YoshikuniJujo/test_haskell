@@ -1,5 +1,24 @@
 document.documentElement.style.border = "5px solid green";
 
+const div = document.createElement("div");
+div.textContent = "my-sign";
+Object.assign(div.style, {
+	position: "fixed",
+	top: "10px",
+	right: "10px",
+	padding: "8px 12px",
+	background: "rgba(0, 128, 0, 0.5)",
+	color: "white",
+	zIndex: "2147483647"
+});
+
+(async () => {
+	const client = await browser.runtime.sendMessage({ type: "get-client" });
+	div.textContent = client;
+})();
+
+document.body.append(div);
+
 mySign = {
 
 	addUser(uid, pswd)
