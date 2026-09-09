@@ -52,7 +52,7 @@ const nostr = {
 browser.runtime.onMessage.addListener((m) => { switch (m.method) {
 	case "pswdReady":
 		forEachValues(requestsWaitingForPassword,
-			m.pubkey, wtr => wtr.resolve()); break;
+			m.pubKey, wtr => wtr.resolve()); break;
 } });
 
 window.wrappedJSObject.nostr =
