@@ -7,11 +7,14 @@ const tryPasswordTab = {
 	getSomething(pk, prm)
 	{
 		return new window.Promise(async (rslv, rjct) => {
-			try {	browser.runtime.sendMessage({
-					method: "queryPswd", pubKey: pk });
-				await new Promise((rs, rj) => { addToArrayMap(
-					requestsWaitingForPassword, pk,
-					{ resolve: rs, reject: rj } ); });
+			try {
+				await new Promise((rs, rj) => {
+					addToArrayMap(
+						requestsWaitingForPassword, pk,
+						{ resolve: rs, reject: rj } );
+					browser.runtime.sendMessage({
+						method: "queryPswd", pubKey: pk });
+				});
 				rslv(await browser.runtime.sendMessage({
 					method: "getSomething", pubKey: pk,
 					parameter: prm }));
