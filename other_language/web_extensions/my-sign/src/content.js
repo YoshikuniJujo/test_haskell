@@ -1,3 +1,5 @@
+import { addToArrayMap, forEachValues } from "./mapArray.js"
+
 document.documentElement.style.border = "5px solid green";
 
 browser.runtime.sendMessage({ method: "contentStarted" });
