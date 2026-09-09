@@ -1,3 +1,5 @@
 /node_modules/
 /dist/
 /key-pairs/
+/web-ext-profile/*
+!/web-ext-profile/.gitkeep
