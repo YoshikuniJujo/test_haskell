@@ -36,6 +36,11 @@ qPswd(pk, st)
 	if (pswds[pk] !== undefined) {
 		await browser.tabs.sendMessage(
 			st, { method: "pswdReady", pubKey: pk }); return; }
+	const it = await browser.tabs.create({
+		active: false,
+		url: browser.runtime.getURL(
+			`input.html?publicKey=${encodeURIComponent(pk)}` )
+	});
 	await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: pk });
 }
 

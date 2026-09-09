@@ -22,6 +22,13 @@ await esbuild.build({
 	outfile: "dist/options.js"
 });
 
+await esbuild.build({
+	entryPoints: ["src/input.js"],
+	bundle: true,
+	outfile: "dist/input.js"
+});
+
 await copyFile("src/manifest.json", "dist/manifest.json");
 await copyFile("src/options.html", "dist/options.html");
 await copyFile("src/options.css", "dist/options.css");
+await copyFile("src/input.html", "dist/input.html");
