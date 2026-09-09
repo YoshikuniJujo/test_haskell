@@ -47,3 +47,21 @@ mySign = {
 
 window.wrappedJSObject.mySign =
 	cloneInto(mySign, window, { cloneFunctions: true });
+
+const nostr = {
+
+	getPublicKey()
+	{
+		return new window.Promise(rs =>
+			rs("foobar"));
+	},
+
+	signEvent(ev)
+	{
+		return new window.Promise(rs =>
+			rs(ev));
+	}
+}
+
+window.wrappedJSObject.nostr =
+	cloneInto(nostr, window, { cloneFunctions: true });
