@@ -122,3 +122,10 @@ addClient.addEventListener("click", async () => {
 		}, null, 2)
 	).join("\n\n");
 });
+
+const useHash = document.querySelector("#use-hash");
+const hash = document.querySelector("#hash");
+
+useHash.addEventListener("change", () => {
+	hash.disabled = !useHash.checked;
+});
