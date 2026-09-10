@@ -3,17 +3,18 @@
 module Lib where
 
 import Control.Exception
+import Control.Concurrent
 import Control.Concurrent.MVar
 
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
 newPromise :: Exception e =>
-	((a -> IO ()) -> (e -> IO ()) -> IO ()) -> IO a
+	((a -> IO ()) -> (e -> IO ()) -> IO ()) -> IO (IO a)
 newPromise executor = do
 	v <- newEmptyMVar
-	executor (putMVar v) throw
-	readMVar v
+	forkIO $ executor (putMVar v) throw
+	pure $ readMVar v
 
 withResolvers :: Exception e => IO (IO a, a -> IO (), e -> IO b)
 withResolvers = do
