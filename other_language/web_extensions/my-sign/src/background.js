@@ -1,4 +1,5 @@
 import { InputTabs } from "./inputTabs.js";
+import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js"
 
 console.log("background.js");
@@ -18,6 +19,37 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 		case "returnPswd":
 			console.log("background: returnPswd")
 			console.log(m.pubKey);
+			console.log(unhex(m.pubKey));
+			const acc = await DB.getAccount(unhex(m.pubKey));
+
+			// DEBUG ONLY. DELETE IT.
+			console.log(acc);
+			console.log(
+				acc.publicKey,
+				acc.name,
+				acc.version,
+				acc.logN,
+				acc.salt,
+				acc.nonce,
+				acc.keySecurityByte,
+				acc.ciphertext,
+				acc.saltForCheckPassword,
+				acc.hashForCheckPassword )
+
+			const acc2 = new EncryptedSecretKey(
+				acc.publicKey,
+				acc.name,
+				acc.logN,
+				acc.salt,
+				acc.nonce,
+				acc.keySecurityByte,
+				acc.ciphertext,
+				acc.saltForCheckPassword,
+				acc.hashForCheckPassword )
+
+			console.log(acc2);
+			console.log(await acc2.checkPassword(m.pswd));
+
 			const sts = await itbs.complete(m.pubKey, s.tab.id);
 			for (const st of sts)
 				await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: m.pubKey });
@@ -61,4 +93,13 @@ hex(bs)
 {
 	return [...bs]
 		.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+function
+unhex(s)
+{
+	const bs = new Uint8Array(s.length / 2);
+	for (let i = 0; i < bs.length; ++i)
+		bs[i] = parseInt(s.slice(i * 2, i * 2 + 2), 16);
+	return bs;
 }

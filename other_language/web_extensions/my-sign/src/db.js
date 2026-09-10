@@ -105,3 +105,17 @@ getClients()
 		req.onerror = () => rj(req.error);
 	});
 }
+
+export async function
+getAccount(pk)
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(SECRET_KEYS, "readonly");
+		const store = tx.objectStore(SECRET_KEYS);
+		const req = store.get(pk);
+		req.onsuccess = () => rs(req.result);
+		req.onerror = () => rj(req.error);
+	});
+}
