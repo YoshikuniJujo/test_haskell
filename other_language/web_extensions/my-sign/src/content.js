@@ -53,7 +53,12 @@ const nostr = {
 					browser.runtime.sendMessage({
 						method: "queryPswd", pubKey: pbk });
 				});
-				rs(ev);
+				const sig = await browser.runtime.sendMessage({
+					method: "sign-event",
+					pubKey: pbk,
+					event: ev
+				});
+				rs(cloneInto(sig, window));
 			}
 			catch (e) { rj(cloneInto(e, window)); }
 		});

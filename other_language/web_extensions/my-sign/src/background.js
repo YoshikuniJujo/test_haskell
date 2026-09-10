@@ -20,33 +20,7 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			console.log("background: returnPswd")
 			console.log(m.pubKey);
 			console.log(unhex(m.pubKey));
-			const acc = await DB.getAccount(unhex(m.pubKey));
-
-			// DEBUG ONLY. DELETE IT.
-			console.log(acc);
-			console.log(
-				acc.publicKey,
-				acc.name,
-				acc.version,
-				acc.logN,
-				acc.salt,
-				acc.nonce,
-				acc.keySecurityByte,
-				acc.ciphertext,
-				acc.saltForCheckPassword,
-				acc.hashForCheckPassword )
-
-			const acc2 = new EncryptedSecretKey(
-				acc.publicKey,
-				acc.name,
-				acc.logN,
-				acc.salt,
-				acc.nonce,
-				acc.keySecurityByte,
-				acc.ciphertext,
-				acc.saltForCheckPassword,
-				acc.hashForCheckPassword )
-
+			const acc2 = await getAccount(m.pubKey);
 			console.log(acc2);
 			if (await acc2.checkPassword(m.pswd)) {
 				const { pswds = {} } =
@@ -64,6 +38,12 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 		case "contentStarted":
 			console.log("background: contentStarted");
 			return ;
+		case "sign-event":
+			console.log("background: sign-event");
+			const acc = await getAccount(m.pubKey);
+			const { pswds = {} } = await browser.storage.session.get("pswds");
+			const smk = pswds[m.pubKey];
+			return acc.signEvent(m.event, smk);
 	}
 });
 
@@ -107,4 +87,35 @@ unhex(s)
 	for (let i = 0; i < bs.length; ++i)
 		bs[i] = parseInt(s.slice(i * 2, i * 2 + 2), 16);
 	return bs;
+}
+
+async function
+getAccount(pbk)
+{
+			const acc = await DB.getAccount(unhex(pbk));
+
+			// DEBUG ONLY. DELETE IT.
+			console.log(acc);
+			console.log(
+				acc.publicKey,
+				acc.name,
+				acc.version,
+				acc.logN,
+				acc.salt,
+				acc.nonce,
+				acc.keySecurityByte,
+				acc.ciphertext,
+				acc.saltForCheckPassword,
+				acc.hashForCheckPassword )
+
+			return new EncryptedSecretKey(
+				acc.publicKey,
+				acc.name,
+				acc.logN,
+				acc.salt,
+				acc.nonce,
+				acc.keySecurityByte,
+				acc.ciphertext,
+				acc.saltForCheckPassword,
+				acc.hashForCheckPassword )
 }
