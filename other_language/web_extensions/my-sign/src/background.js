@@ -51,7 +51,7 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			if (await acc2.checkPassword(m.pswd)) {
 				const { pswds = {} } =
 					await browser.storage.session.get("pswds");
-				pswds[m.pubKey] = m.pswd;
+				pswds[m.pubKey] = await acc2.getSymmetricKey(m.pswd);
 				await browser.storage.session.set({ pswds });
 
 				const sts = await itbs.complete(m.pubKey, s.tab.id);
