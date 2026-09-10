@@ -48,13 +48,14 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 				acc.hashForCheckPassword )
 
 			console.log(acc2);
-			console.log(await acc2.checkPassword(m.pswd));
+			if (await acc2.checkPassword(m.pswd)) {
 
-			const sts = await itbs.complete(m.pubKey, s.tab.id);
-			for (const st of sts)
-				await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: m.pubKey });
-			await browser.tabs.update(sts[0], { active: true });
-			await browser.tabs.remove(s.tab.id);
+				const sts = await itbs.complete(m.pubKey, s.tab.id);
+				for (const st of sts)
+					await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: m.pubKey });
+				await browser.tabs.update(sts[0], { active: true });
+				await browser.tabs.remove(s.tab.id); }
+			else {	await browser.tabs.sendMessage(s.tab.id, { method: "wrongPswd" }); }
 			return;
 		case "contentStarted":
 			console.log("background: contentStarted");
