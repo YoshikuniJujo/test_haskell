@@ -9,8 +9,11 @@ someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
 newPromise :: Exception e =>
-	(forall b . (a -> IO b) -> (e -> IO b) -> IO b) -> IO a
-newPromise executor = executor pure throw
+	((a -> IO ()) -> (e -> IO ()) -> IO ()) -> IO a
+newPromise executor = do
+	v <- newEmptyMVar
+	executor (putMVar v) throw
+	readMVar v
 
 withResolvers :: Exception e => IO (IO a, a -> IO (), e -> IO b)
 withResolvers = do
