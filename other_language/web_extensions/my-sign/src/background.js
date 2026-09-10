@@ -50,10 +50,13 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 async function
 getPublicKey(s)
 {
+	console.log("getPublicKey begin");
 	const cs = await DB.getClients();
 	for (const c of cs) {
 		const pattern = new URLPattern(c.urlPattern);
 		if (pattern.test(s.url)) return c.publicKey; }
+	console.log("getPublicKey before throw error");
+	browser.runtime.openOptionsPage();
 	throw new Error("No client matches sender URL: " + s.url);
 }
 
