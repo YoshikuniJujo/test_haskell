@@ -1,9 +1,6 @@
 import { addToArrayMap, forEachValues } from "./mapArray.js"
 
 document.documentElement.style.border = "5px solid green";
-browser.runtime.sendMessage({ method: "contentStarted" });
-
-const requestsWaitingForPassword = new Map();
 
 const div = document.createElement("div");
 Object.assign(div.style, {
@@ -17,11 +14,14 @@ Object.assign(div.style, {
 });
 
 (async () => {
+	await browser.runtime.sendMessage({ method: "contentStarted" });
 	const client = await browser.runtime.sendMessage({ method: "get-account" });
 	div.textContent = client;
 })();
 
 document.body.append(div);
+
+const requestsWaitingForPassword = new Map();
 
 const nostr = {
 
