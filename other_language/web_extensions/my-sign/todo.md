@@ -17,6 +17,7 @@ TODO
 	+ [x] 新規作成の場合にはhiddenにする
 * [x] 実機でテスト
 * [x] scriptsにrun-keep.jsを追加
+* [x] URLフラグメントhiddenにする
 * [ ] クライアントのマッチの優先順位
     + [ ] 編集でpriorityをいじれるようにする
     + [ ] マッチのところを修正

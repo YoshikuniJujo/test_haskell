@@ -93,9 +93,11 @@ showPassword.addEventListener("change", () => {
 // const forDebug = document.querySelector("#for-debug");
 
 const useHashD = document.querySelector("#use-hash-d");
+const fragmentLabel = document.querySelector("#fragment-label");
 const hashD = document.querySelector("#hash-d");
 
 useHashD.addEventListener("change", () => {
+	fragmentLabel.hidden = !useHashD.checked;
 	hashD.disabled = !useHashD.checked;
 });
 
