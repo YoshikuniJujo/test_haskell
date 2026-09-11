@@ -94,6 +94,7 @@ currentKey.addEventListener("change", () => {
 	console.log(npub);
 });
 
+const clientName = document.querySelector("#client-name");
 const urlPattern = document.querySelector("#url-pattern");
 // const publicKey = document.querySelector("#public-key");
 const addClient = document.querySelector("#add-client");
@@ -104,6 +105,7 @@ addClient.addEventListener("click", async () => {
 	console.log(currentKey.value);
 	const client = {
 		uuid: crypto.randomUUID(),
+		name: clientName.value,
 		urlPattern: urlPattern.value,
 		publicKey: new Uint8Array(Bech32.decode(currentKey.value).dp),
 		priority: 100
@@ -116,6 +118,7 @@ addClient.addEventListener("click", async () => {
 	forDebug.textContent = clients.map(client =>
 		JSON.stringify({
 			uuid: client.uuid,
+			name: client.name,
 			urlPattern: client.urlPattern,
 			publicKey: Bech32.encode("npub", client.publicKey).slice(0, 37) + "...",
 			priority: client.priority
