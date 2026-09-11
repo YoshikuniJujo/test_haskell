@@ -25,3 +25,7 @@ label {
 	max-height: 300px;
 	overflow-y: auto;
 }
+
+.edit-client-buttons {
+	text-align: right;
+}

@@ -168,3 +168,8 @@ clientFormD.addEventListener("submit", async event => {
 	document.querySelector("#client-detail").hidden = true;
 	document.querySelector("#clients").hidden = false;
 });
+
+document.querySelector("#cancel-edit-client").addEventListener("click", () => {
+	document.querySelector("#client-detail").hidden = true;
+	document.querySelector("#clients").hidden = false;
+});
