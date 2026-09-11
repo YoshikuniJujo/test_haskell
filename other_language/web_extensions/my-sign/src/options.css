@@ -20,3 +20,8 @@ label {
 #current-key {
 	width: 100%;
 }
+
+#clients {
+	max-height: 300px;
+	overflow-y: auto;
+}

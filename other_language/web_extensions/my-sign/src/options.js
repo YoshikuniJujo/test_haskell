@@ -21,6 +21,7 @@ const currentKey = document.querySelector("#current-key");
 console.log("foobar");
 
 loadPublicKeys();
+loadClients();
 
 confirm.addEventListener("input", () => {
 	confirm.setCustomValidity(
@@ -115,6 +116,7 @@ clientForm.addEventListener("submit", async event => {
 	};
 
 	await DB.putClient(client);
+	await loadClients();
 	console.log("addClient end: ", ...await DB.getClients());
 
 	const clients = await DB.getClients();
@@ -135,3 +137,18 @@ const hash = document.querySelector("#hash");
 useHash.addEventListener("change", () => {
 	hash.disabled = !useHash.checked;
 });
+
+async function
+loadClients()
+{
+	const clients = await DB.getClients();
+	const list = document.querySelector("#clients");
+
+	list.replaceChildren();
+
+	for (const client of clients) {
+		const row = document.createElement("div");
+		row.textContent = client.name + " " + client.urlPattern;
+		list.append(row);
+	}
+}
