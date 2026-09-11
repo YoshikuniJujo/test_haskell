@@ -16,7 +16,7 @@ TODO
 	+ [x] 中身を書く
 	+ [x] 新規作成の場合にはhiddenにする
 * [x] 実機でテスト
-* [ ] scriptsにrun-keep.jsを追加
+* [x] scriptsにrun-keep.jsを追加
 * [ ] クライアントのマッチの優先順位
     + [ ] 編集でpriorityをいじれるようにする
     + [ ] マッチのところを修正
