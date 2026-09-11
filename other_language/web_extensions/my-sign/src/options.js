@@ -162,11 +162,36 @@ loadClients()
 
 			document.querySelector("#client-name-d").value = client.name ?? "";
 			document.querySelector("#url-pattern-d").value = client.urlPattern;
-			currentKeyD.value = Bech32.encode("npub", client.publicKey);
+			currentKeyD.value = client.publicKey
+				? Bech32.encode("npub", client.publicKey)
+				: "";
 		});
 		list.append(row);
 	}
 }
+
+const newClient = document.querySelector("#new-client");
+
+newClient.addEventListener("click", () => {
+	editingClient = {
+		uuid: crypto.randomUUID(),
+		name: "",
+		urlPattern: "",
+		publicKey: undefined,
+		priority: 100
+	};
+
+	const client = editingClient;
+
+	document.querySelector("#client-name-d").value = client.name ?? "";
+	document.querySelector("#url-pattern-d").value = client.urlPattern;
+	currentKeyD.value = client.publicKey
+		? Bech32.encode("npub", client.publicKey)
+		: "";
+
+	document.querySelector("#clients").hidden = true;
+	document.querySelector("#client-detail").hidden = false;
+});
 
 const clientFormD = document.querySelector("#client-form-d");
 const clientNameD = document.querySelector("#client-name-d");
