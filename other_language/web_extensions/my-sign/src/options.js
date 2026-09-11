@@ -160,7 +160,7 @@ loadClients()
 			document.querySelector("#clients").hidden = true;
 			document.querySelector("#client-detail").hidden = false;
 
-			document.querySelector("#client-name-d").value = client.name;
+			document.querySelector("#client-name-d").value = client.name ?? "";
 			document.querySelector("#url-pattern-d").value = client.urlPattern;
 			currentKeyD.value = Bech32.encode("npub", client.publicKey);
 		});
