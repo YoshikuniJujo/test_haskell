@@ -33,6 +33,8 @@ TODO
 * [ ] ncryptsecのエクスポート
 * [ ] ncryptsecのインポート
 * [ ] nsecのインポート
+* [ ] editingClientではなくeditingClientUuidとする
+    + 編集のときクライアント全体ではなく、そのUUIDだけモジュールスコープの変数に保持すればいい
 * [ ] フォームの内容をデータベースに書き込む時の検証について考える
     + とくにBech32.decode()のところ
     + 今のところHTML側でvalidateしてJS側では例外を発生させるので良いと考えている
