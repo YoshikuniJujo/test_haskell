@@ -1,10 +1,12 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE RankNTypes, TypeApplications #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Lib where
 
+import Control.Monad
 import Control.Exception
 import Control.Concurrent
-import Control.Concurrent.MVar
 
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
@@ -13,19 +15,21 @@ newPromise :: Exception e =>
 	((a -> IO ()) -> (e -> IO ()) -> IO ()) -> IO (IO a)
 newPromise executor = do
 	v <- newEmptyMVar
-	forkIO $ executor (putMVar v) throw
+	_ <- forkIO $ executor (putMVar v) throw
 	pure $ readMVar v
 
-withResolvers :: Exception e => IO (IO a, a -> IO (), e -> IO b)
+withResolvers :: Exception e => IO (IO (IO a), a -> IO (), e -> IO ())
 withResolvers = do
 	v <- newEmptyMVar
-	pure (readMVar v, putMVar v, throw)
+	pure (	pure $ either throw pure =<< readMVar v,
+		putMVar v . Right, putMVar v . Left)
 
-baz :: (forall b . (a -> IO b) -> IO b) -> IO a
-baz f = f pure
+foo :: IO Int
+foo = do
+	join $ newPromise @SomeException \rs _rj -> rs (123 :: Int)
 
-foo :: ((a -> IO a) -> IO a) -> IO a
-foo executor = executor pure
-
-bar :: (Int -> IO b) -> IO b
-bar f = f 8
+bar :: IO Int
+bar = do
+	(pr, rs, _rj) <- withResolvers @SomeException
+	_ <- forkIO $ threadDelay 1000000 >> rs 123
+	join pr
