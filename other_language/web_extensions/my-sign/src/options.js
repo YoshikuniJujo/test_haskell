@@ -17,6 +17,7 @@ const passwordError = document.querySelector("#password-error");
 const showPassword = document.querySelector("#show-password");
 
 const currentKey = document.querySelector("#current-key");
+const currentKeyD = document.querySelector("#current-key-d");
 
 console.log("foobar");
 
@@ -58,6 +59,7 @@ form.addEventListener("submit", async event => {
 	await DB.addKeyPair(esk.toObject_563e7e39d4());
 	publicKeys.replaceChildren();
 	currentKey.replaceChildren();
+	currentKeyD.replaceChildren();
 	const keys = await DB.getPublicKeysWithNames();
 	for (const pk of keys) {
 		console.log(pk);
@@ -81,7 +83,7 @@ loadPublicKeys()
 		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
 
 		currentKey.append(option);
-		document.querySelector("#current-key-d").append(option);
+		currentKeyD.append(option.cloneNode(true));
 	}
 }
 
@@ -160,7 +162,7 @@ loadClients()
 
 			document.querySelector("#client-name-d").value = client.name;
 			document.querySelector("#url-pattern-d").value = client.urlPattern;
-			document.querySelector("#current-key-d").value = Bech32.encode("npub", client.publicKey);
+			currentKeyD.value = Bech32.encode("npub", client.publicKey);
 		});
 		list.append(row);
 	}
