@@ -15,8 +15,8 @@ newPromise :: Exception e =>
 	((a -> IO ()) -> (e -> IO ()) -> IO ()) -> IO (IO a)
 newPromise executor = do
 	v <- newEmptyMVar
-	_ <- forkIO $ executor (putMVar v) throw
-	pure $ readMVar v
+	executor (putMVar v . Right) (putMVar v . Left)
+	pure $ either throw pure =<< readMVar v
 
 withResolvers :: Exception e => IO (IO (IO a), a -> IO (), e -> IO ())
 withResolvers = do
