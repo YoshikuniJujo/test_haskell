@@ -55,6 +55,33 @@
 
 		<div id="clients"></div>
 
+		<div id="client-detail" hidden>
+			CLIENT DETAIL
+		<form id="client-form-d">
+		<label>
+			Client name
+			<input id="client-name-d" type="text" required>
+		</label>
+		<label>
+			Client URL Pattern
+			<input id="url-pattern-d" type="text" required>
+		</label>
+		<label>
+			<input id="use-hash-d" type="checkbox">
+			Use fragment for Client selection
+		</label>
+		<label>
+			Fragment
+			<input id="hash-d" type="text" disabled required>
+		</label>
+		<label>
+			Public key
+			<select id="current-key-d" size="8"></select>
+		</label>
+		<button id="add-client-d">Apply</button>
+		</form>
+		</div>
+
 		<div id="public-keys"></div>
 		<pre id="for-debug"></pre>
 

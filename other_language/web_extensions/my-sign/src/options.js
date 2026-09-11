@@ -81,6 +81,7 @@ loadPublicKeys()
 		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
 
 		currentKey.append(option);
+		document.querySelector("#current-key-d").append(option);
 	}
 }
 
@@ -138,6 +139,8 @@ useHash.addEventListener("change", () => {
 	hash.disabled = !useHash.checked;
 });
 
+let editingClient;
+
 async function
 loadClients()
 {
@@ -149,6 +152,16 @@ loadClients()
 	for (const client of clients) {
 		const row = document.createElement("div");
 		row.textContent = client.name + " " + client.urlPattern;
+		row.addEventListener("click", () => {
+			editingClient = client;
+			console.log(editingClient.uuid);
+			document.querySelector("#clients").hidden = true;
+			document.querySelector("#client-detail").hidden = false;
+
+			document.querySelector("#client-name-d").value = client.name;
+			document.querySelector("#url-pattern-d").value = client.urlPattern;
+			document.querySelector("#current-key-d").value = Bech32.encode("npub", client.publicKey);
+		});
 		list.append(row);
 	}
 }
