@@ -143,6 +143,10 @@ loadClientToForm(client)
 	currentKeyD.value = client.publicKey
 		? Bech32.encode("npub", client.publicKey)
 		: "";
+
+	usePriority.checked = client.priority !== null;
+	priority.value = client.priority ?? 100;
+	priorityLabel.hidden = client.priority === null;
 }
 
 const newClient = document.querySelector("#new-client");
@@ -176,6 +180,7 @@ clientFormD.addEventListener("submit", async event => {
 	editingClient.urlPattern = urlPatternD.value;
 	editingClient.publicKey =
 		new Uint8Array(Bech32.decode(currentKeyD.value).dp);
+	editingClient.priority = usePriority.checked ? Number(priority.value) : null;
 	await DB.putClient(editingClient);
 	await loadClients();
 
