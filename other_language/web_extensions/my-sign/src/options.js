@@ -99,9 +99,12 @@ const urlPattern = document.querySelector("#url-pattern");
 // const publicKey = document.querySelector("#public-key");
 const addClient = document.querySelector("#add-client");
 
+const clientForm = document.querySelector("#client-form");
+
 const forDebug = document.querySelector("#for-debug");
 
-addClient.addEventListener("click", async () => {
+clientForm.addEventListener("submit", async event => {
+	event.preventDefault();
 	console.log(currentKey.value);
 	const client = {
 		uuid: crypto.randomUUID(),
