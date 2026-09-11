@@ -167,3 +167,21 @@ loadClients()
 		list.append(row);
 	}
 }
+
+const clientFormD = document.querySelector("#client-form-d");
+const clientNameD = document.querySelector("#client-name-d");
+const urlPatternD = document.querySelector("#url-pattern-d");
+
+clientFormD.addEventListener("submit", async event => {
+	event.preventDefault();
+
+	editingClient.name = clientNameD.value;
+	editingClient.urlPattern = urlPatternD.value;
+	editingClient.publicKey =
+		new Uint8Array(Bech32.decode(currentKeyD.value).dp);
+	await DB.putClient(editingClient);
+	await loadClients();
+
+	document.querySelector("#client-detail").hidden = true;
+	document.querySelector("#clients").hidden = false;
+});
