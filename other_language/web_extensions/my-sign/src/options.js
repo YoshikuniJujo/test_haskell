@@ -9,14 +9,13 @@ const form = document.querySelector("#generate-form");
 const accName = document.querySelector("#account-name");
 const password = document.querySelector("#password");
 const confirm = document.querySelector("#password-confirm");
-const generate = document.querySelector("#generate");
+// const generate = document.querySelector("#generate");
 const publicKeys = document.querySelector("#public-keys");
 
 const passwordError = document.querySelector("#password-error");
 
 const showPassword = document.querySelector("#show-password");
 
-const currentKey = document.querySelector("#current-key");
 const currentKeyD = document.querySelector("#current-key-d");
 
 console.log("foobar");
@@ -58,7 +57,6 @@ form.addEventListener("submit", async event => {
 
 	await DB.addKeyPair(esk.toObject_563e7e39d4());
 	publicKeys.replaceChildren();
-	currentKey.replaceChildren();
 	currentKeyD.replaceChildren();
 	const keys = await DB.getPublicKeysWithNames();
 	for (const pk of keys) {
@@ -82,7 +80,6 @@ loadPublicKeys()
 		option.value = npub;
 		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
 
-		currentKey.append(option);
 		currentKeyD.append(option.cloneNode(true));
 	}
 }
@@ -93,52 +90,13 @@ showPassword.addEventListener("change", () => {
 	confirm.type = type;
 });
 
-currentKey.addEventListener("change", () => {
-	const npub = currentKey.value;
-	console.log(npub);
-});
+// const forDebug = document.querySelector("#for-debug");
 
-const clientName = document.querySelector("#client-name");
-const urlPattern = document.querySelector("#url-pattern");
-// const publicKey = document.querySelector("#public-key");
-const addClient = document.querySelector("#add-client");
+const useHashD = document.querySelector("#use-hash-d");
+const hashD = document.querySelector("#hash-d");
 
-const clientForm = document.querySelector("#client-form");
-
-const forDebug = document.querySelector("#for-debug");
-
-clientForm.addEventListener("submit", async event => {
-	event.preventDefault();
-	console.log(currentKey.value);
-	const client = {
-		uuid: crypto.randomUUID(),
-		name: clientName.value,
-		urlPattern: urlPattern.value,
-		publicKey: new Uint8Array(Bech32.decode(currentKey.value).dp),
-		priority: 100
-	};
-
-	await DB.putClient(client);
-	await loadClients();
-	console.log("addClient end: ", ...await DB.getClients());
-
-	const clients = await DB.getClients();
-	forDebug.textContent = clients.map(client =>
-		JSON.stringify({
-			uuid: client.uuid,
-			name: client.name,
-			urlPattern: client.urlPattern,
-			publicKey: Bech32.encode("npub", client.publicKey).slice(0, 37) + "...",
-			priority: client.priority
-		}, null, 2)
-	).join("\n\n");
-});
-
-const useHash = document.querySelector("#use-hash");
-const hash = document.querySelector("#hash");
-
-useHash.addEventListener("change", () => {
-	hash.disabled = !useHash.checked;
+useHashD.addEventListener("change", () => {
+	hashD.disabled = !useHashD.checked;
 });
 
 let editingClient;

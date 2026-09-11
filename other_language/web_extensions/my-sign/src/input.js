@@ -1,7 +1,7 @@
 const pubKey = new URLSearchParams(location.search).get("publicKey");
 const input = document.querySelector("#input");
 const show = document.querySelector("#show-password");
-const send = document.querySelector("#send");
+// const send = document.querySelector("#send");
 const error = document.querySelector("#error");
 const onMessage = browser.runtime.onMessage;
 
