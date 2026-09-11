@@ -129,14 +129,20 @@ loadClients()
 			document.querySelector("#client-detail").hidden = false;
 			document.querySelector("#delete-client").hidden = false;
 
-			document.querySelector("#client-name-d").value = client.name ?? "";
-			document.querySelector("#url-pattern-d").value = client.urlPattern;
-			currentKeyD.value = client.publicKey
-				? Bech32.encode("npub", client.publicKey)
-				: "";
+			loadClientToForm(client);
 		});
 		list.append(row);
 	}
+}
+
+function
+loadClientToForm(client)
+{
+	document.querySelector("#client-name-d").value = client.name ?? "";
+	document.querySelector("#url-pattern-d").value = client.urlPattern;
+	currentKeyD.value = client.publicKey
+		? Bech32.encode("npub", client.publicKey)
+		: "";
 }
 
 const newClient = document.querySelector("#new-client");
@@ -152,11 +158,7 @@ newClient.addEventListener("click", () => {
 
 	const client = editingClient;
 
-	document.querySelector("#client-name-d").value = client.name ?? "";
-	document.querySelector("#url-pattern-d").value = client.urlPattern;
-	currentKeyD.value = client.publicKey
-		? Bech32.encode("npub", client.publicKey)
-		: "";
+	loadClientToForm(client);
 
 	document.querySelector("#delete-client").hidden = true;
 	document.querySelector("#clients").hidden = true;
