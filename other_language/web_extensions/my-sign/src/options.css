@@ -6,13 +6,6 @@ button {
 	padding: 4px 8px;
 }
 
-@media (max-width: 600px) {
-	button {
-		font-size: 32;
-		padding: 6px 10px;
-	}
-}
-
 label {
 	display: block;
 }
@@ -27,5 +20,12 @@ label {
 }
 
 .edit-client-buttons {
-	text-align: right;
+	width: 100%;
+	display: flex;
+}
+
+.right-buttons {
+	margin-left: auto;
+	display: flex;
+	gap: 0.5em;
 }

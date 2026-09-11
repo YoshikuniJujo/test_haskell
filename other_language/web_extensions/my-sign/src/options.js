@@ -117,6 +117,7 @@ loadClients()
 			console.log(editingClient.uuid);
 			document.querySelector("#clients").hidden = true;
 			document.querySelector("#client-detail").hidden = false;
+			document.querySelector("#delete-client").hidden = false;
 
 			document.querySelector("#client-name-d").value = client.name ?? "";
 			document.querySelector("#url-pattern-d").value = client.urlPattern;
@@ -147,6 +148,7 @@ newClient.addEventListener("click", () => {
 		? Bech32.encode("npub", client.publicKey)
 		: "";
 
+	document.querySelector("#delete-client").hidden = true;
 	document.querySelector("#clients").hidden = true;
 	document.querySelector("#client-detail").hidden = false;
 });
@@ -170,6 +172,13 @@ clientFormD.addEventListener("submit", async event => {
 });
 
 document.querySelector("#cancel-edit-client").addEventListener("click", () => {
+	document.querySelector("#client-detail").hidden = true;
+	document.querySelector("#clients").hidden = false;
+});
+
+document.querySelector("#delete-client").addEventListener("click", async () => {
+	await DB.deleteClient(editingClient.uuid);
+	await loadClients();
 	document.querySelector("#client-detail").hidden = true;
 	document.querySelector("#clients").hidden = false;
 });

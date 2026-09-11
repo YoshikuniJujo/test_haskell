@@ -76,6 +76,19 @@ putClient(client)
 }
 
 export async function
+deleteClient(uuid)
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(CLIENTS, "readwrite");
+		tx.objectStore(CLIENTS).delete(uuid);
+		tx.oncomplete = rs;
+		tx.onerror = () => rj(tx.error);
+	});
+}
+
+export async function
 getPublicKeysWithNames()
 {
 	const db = await open();
