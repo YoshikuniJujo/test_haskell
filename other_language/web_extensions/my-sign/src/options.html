@@ -35,35 +35,43 @@
 
 		<div id="client-detail" hidden>
 			CLIENT DETAIL
-		<form id="client-form-d">
-		<label>
-			Client name
-			<input id="client-name-d" type="text" required>
-		</label>
-		<label>
-			Client URL Pattern
-			<input id="url-pattern-d" type="text" required>
-		</label>
-		<label>
-			<input id="use-hash-d" type="checkbox">
-			Use fragment for Client selection
-		</label>
-		<label id="fragment-label" hidden>
-			Fragment
-			<input id="hash-d" type="text" disabled required>
-		</label>
-		<label>
-			Public key
-			<select id="current-key-d" size="8"></select>
-		</label>
-		<div class="edit-client-buttons">
-			<button type="button" id="delete-client">Delete</button>
-			<div class="right-buttons">
-			<button type="button" id="cancel-edit-client">Cancel</button>
-			<button type="submit" id="add-client-d">OK</button>
-			</div>
-		</div>
-		</form>
+			<form id="client-form-d">
+				<label>
+					Client name
+					<input id="client-name-d" type="text" required>
+				</label>
+				<label>
+					Client URL Pattern
+					<input id="url-pattern-d" type="text" required>
+				</label>
+				<label>
+					<input id="use-hash-d" type="checkbox">
+					Use fragment for Client selection
+				</label>
+				<label id="fragment-label" hidden>
+					Fragment
+					<input id="hash-d" type="text" disabled required>
+				</label>
+				<label>
+					<input id="use-priority" type="checkbox">
+					Use priority for Client selection
+				</label>
+				<label id="priority-label" hidden>
+					Priority
+					<input id="priority" type="number" min="0" step="1" value="100">
+					<small>Default: 100</small>
+				</label>
+				<label>
+					Public key
+					<select id="current-key-d" size="8"></select>
+				</label>
+				<div class="edit-client-buttons">
+					<button type="button" id="delete-client">Delete</button>
+					<div class="right-buttons">
+					<button type="button" id="cancel-edit-client">Cancel</button>
+					<button type="submit" id="add-client-d">OK</button>
+				</div>
+			</form>
 		</div>
 
 		<div id="public-keys"></div>

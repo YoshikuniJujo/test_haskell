@@ -101,6 +101,14 @@ useHashD.addEventListener("change", () => {
 	hashD.disabled = !useHashD.checked;
 });
 
+const usePriority = document.querySelector("#use-priority");
+const priorityLabel = document.querySelector("#priority-label");
+const priority = document.querySelector("#priority");
+
+usePriority.addEventListener("change", () => {
+	priorityLabel.hidden = !usePriority.checked;
+});
+
 let editingClient;
 
 async function
@@ -139,7 +147,7 @@ newClient.addEventListener("click", () => {
 		name: "",
 		urlPattern: "",
 		publicKey: undefined,
-		priority: 100
+		priority: null
 	};
 
 	const client = editingClient;
