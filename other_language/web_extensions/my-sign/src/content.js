@@ -2,24 +2,25 @@ import { addToArrayMap, forEachValues } from "./mapArray.js"
 
 document.documentElement.style.border = "5px solid green";
 
-const div = document.createElement("div");
-Object.assign(div.style, {
-	position: "fixed",
-	top: "10px",
-	right: "10px",
-	padding: "8px 12px",
-	background: "rgba(0, 128, 0, 0.5)",
-	color: "white",
-	zIndex: "2147483647"
-});
-
 (async () => {
 	await browser.runtime.sendMessage({ method: "contentStarted" });
-	const client = await browser.runtime.sendMessage({ method: "get-account" });
-	div.textContent = client;
+
+	const account = await browser.runtime.sendMessage({ method: "get-account" });
+
+	const div = document.createElement("div");
+	Object.assign(div.style, {
+		position: "fixed",
+		top: "10px",
+		right: "10px",
+		padding: "8px 12px",
+		background: "rgba(0, 128, 0, 0.5)",
+		color: "white",
+		zIndex: "2147483647"
+	});
+	div.textContent = account;
+	document.body.append(div);
 })();
 
-document.body.append(div);
 
 const requestsWaitingForPassword = new Map();
 
