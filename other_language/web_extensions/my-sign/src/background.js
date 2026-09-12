@@ -52,6 +52,8 @@ getPublicKey(s)
 {
 	console.log("getPublicKey begin");
 	const cs = await DB.getClients();
+	cs.sort((a, b) =>
+		(b.priority ?? 100) - (a.priority ?? 100));
 	for (const c of cs) {
 		const pattern = new URLPattern(c.urlPattern);
 		if (pattern.test(s.url)) return c.publicKey; }
