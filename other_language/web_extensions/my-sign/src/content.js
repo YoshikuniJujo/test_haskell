@@ -25,6 +25,13 @@ let acount = null;
 		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
 
 		setAccountPosition(account);
+		console.log(account.backgroundColor);
+		const [r, g, b] = [
+			account.backgroundColor.red,
+			account.backgroundColor.green,
+			account.backgroundColor.blue ]
+		div.style.background = `rgb(${r} ${g} ${b} / ${account.backgroundOpacity})`;
+		console.log(account.backgroundOpacity);
 	} else {
 		div.hidden = true; }
 	document.body.append(div);
@@ -93,6 +100,13 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
 
 		setAccountPosition(account);
+		console.log(account.backgroundColor);
+		const [r, g, b] = [
+			account.backgroundColor.red,
+			account.backgroundColor.green,
+			account.backgroundColor.blue ]
+		div.style.background = `rgb(${r} ${g} ${b} / ${account.backgroundOpacity})`;
+		console.log(account.backgroundOpacity);
 
 		break;
 } });

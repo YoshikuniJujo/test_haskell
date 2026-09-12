@@ -22,7 +22,9 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 				name: acc.name,
 				publicKey: Bech32.encode("npub", acc.publicKey),
 				positionX: c.positionX ?? 100,
-				positionY: c.positionY ?? 0
+				positionY: c.positionY ?? 0,
+				backgroundColor: hexToRgb(c.backgroundColor ?? "#008000"),
+				backgroundOpacity: c.backgroundOpacity
 			}; }
 		case "get-public-key":
 			return hex(await getPublicKey(s));
@@ -151,4 +153,15 @@ broadcast(m)
 		}
 		catch (e) { console.log("broadcast", e) }
 	}
+}
+
+function
+hexToRgb(hex)
+{
+	console.log("hexToRgb", hex);
+	return {
+		red: parseInt(hex.slice(1, 3), 16),
+		green: parseInt(hex.slice(3, 5), 16),
+		blue: parseInt(hex.slice(5, 7), 16)
+	};
 }

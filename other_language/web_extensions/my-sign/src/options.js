@@ -110,6 +110,8 @@ const accountDisplaySettings =
 	document.querySelector("#account-display-settings");
 const positionX = document.querySelector("#position-x");
 const positionY = document.querySelector("#position-y");
+const backgroundColor = document.querySelector("#background-color");
+const backgroundOpacity = document.querySelector("#background-opacity");
 
 usePriority.addEventListener("change", () => {
 	priorityLabel.hidden = !usePriority.checked;
@@ -163,6 +165,9 @@ loadClientToForm(client)
 
 	positionX.value = client.positionX ?? 100;
 	positionY.value = client.positionY ?? 0;
+
+	backgroundColor.value = client.backgroundColor ?? "#008000";
+	backgroundOpacity.value = client.backgroundOpacity ?? 0.5;
 }
 
 const newClient = document.querySelector("#new-client");
@@ -201,6 +206,9 @@ clientFormD.addEventListener("submit", async event => {
 	editingClient.displayAccount = displayAccount.checked;
 	editingClient.positionX = Number(positionX.value);
 	editingClient.positionY = Number(positionY.value);
+
+	editingClient.backgroundColor = backgroundColor.value;
+	editingClient.backgroundOpacity = backgroundOpacity.value;
 
 	await DB.putClient(editingClient);
 	await loadClients();
