@@ -168,6 +168,10 @@ loadClientToForm(client)
 
 	backgroundColor.value = client.backgroundColor ?? "#008000";
 	backgroundOpacity.value = client.backgroundOpacity ?? 0.5;
+
+	useHashD.checked = client.useFragment ?? false;
+	fragmentLabel.hidden = !useHashD.checked;
+	hashD.value = client.fragment ?? "";
 }
 
 const newClient = document.querySelector("#new-client");
@@ -209,6 +213,9 @@ clientFormD.addEventListener("submit", async event => {
 
 	editingClient.backgroundColor = backgroundColor.value;
 	editingClient.backgroundOpacity = backgroundOpacity.value;
+
+	editingClient.useFragment = useHashD.checked;
+	editingClient.fragment = hashD.value;
 
 	await DB.putClient(editingClient);
 	await loadClients();

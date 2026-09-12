@@ -24,7 +24,7 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 				positionX: c.positionX ?? 100,
 				positionY: c.positionY ?? 0,
 				backgroundColor: hexToRgb(c.backgroundColor ?? "#008000"),
-				backgroundOpacity: c.backgroundOpacity
+				backgroundOpacity: c.backgroundOpacity ?? 0.5
 			}; }
 		case "get-public-key":
 			return hex(await getPublicKey(s));
@@ -68,15 +68,15 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 async function
 getPublicKey(s)
 {
-	const pbk = await getAccountPublicKey(s.url);
+	const pbk = await getAccountPublicKey();
 	if (pbk !== null) return pbk;
 	browser.runtime.openOptionsPage();
 	throw new Error("No client matches sender URL: " + s.url);
 
 	async function
-	getAccountPublicKey(url)
+	getAccountPublicKey()
 	{
-		const c = await getClient(url);
+		const c = await getClient(s.url);
 		if (c === null) return null;
 		else return c.publicKey;
 	}
@@ -85,7 +85,7 @@ getPublicKey(s)
 async function
 getClient(url)
 {
-	console.log("getClient begin");
+	console.log("getClient begin", url);
 	const cs = await DB.getClients();
 	cs.sort((a, b) => (b.priority ?? 100) - (a.priority ?? 100));
 	for (const c of cs) {
