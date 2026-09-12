@@ -1,5 +1,4 @@
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
-import { encode } from "./codec/bech32.js";
 import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
 
@@ -61,7 +60,7 @@ form.addEventListener("submit", async event => {
 	const keys = await DB.getPublicKeysWithNames();
 	for (const pk of keys) {
 		console.log(pk);
-		const npub = encode("npub", new Uint8Array(pk.publicKey));
+		const npub = Bech32.encode("npub", new Uint8Array(pk.publicKey));
 		const div = document.createElement("div");
 		div.textContent = npub;
 		publicKeys.append(div);
@@ -76,7 +75,7 @@ loadPublicKeys()
 	const keys = await DB.getPublicKeysWithNames();
 	for (const pk of keys) {
 		const option = document.createElement("option");
-		const npub = encode("npub", new Uint8Array(pk.publicKey));
+		const npub = Bech32.encode("npub", new Uint8Array(pk.publicKey));
 		option.value = npub;
 		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
 
@@ -91,15 +90,6 @@ showPassword.addEventListener("change", () => {
 });
 
 // const forDebug = document.querySelector("#for-debug");
-
-const useHashD = document.querySelector("#use-hash-d");
-const fragmentLabel = document.querySelector("#fragment-label");
-const hashD = document.querySelector("#hash-d");
-
-useHashD.addEventListener("change", () => {
-	fragmentLabel.hidden = !useHashD.checked;
-	hashD.disabled = !useHashD.checked;
-});
 
 const usePriority = document.querySelector("#use-priority");
 const priorityLabel = document.querySelector("#priority-label");
@@ -168,10 +158,6 @@ loadClientToForm(client)
 
 	backgroundColor.value = client.backgroundColor ?? "#008000";
 	backgroundOpacity.value = client.backgroundOpacity ?? 0.5;
-
-	useHashD.checked = client.useFragment ?? false;
-	fragmentLabel.hidden = !useHashD.checked;
-	hashD.value = client.fragment ?? "";
 }
 
 const newClient = document.querySelector("#new-client");
@@ -213,9 +199,6 @@ clientFormD.addEventListener("submit", async event => {
 
 	editingClient.backgroundColor = backgroundColor.value;
 	editingClient.backgroundOpacity = backgroundOpacity.value;
-
-	editingClient.useFragment = useHashD.checked;
-	editingClient.fragment = hashD.value;
 
 	await DB.putClient(editingClient);
 	await loadClients();

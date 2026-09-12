@@ -92,13 +92,13 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 	case "clientChanged":
 		console.log("content: clientChanged");
 		account = await browser.runtime.sendMessage({ method: "get-account" });
-		console.log(account.positionX, account.positionY);
 		if (account === null) {
 			div.hidden = true;
 			break; }
 		div.hidden = false;
 		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
 
+		console.log("clientChanged", account);
 		setAccountPosition(account);
 		console.log(account.backgroundColor);
 		const [r, g, b] = [
