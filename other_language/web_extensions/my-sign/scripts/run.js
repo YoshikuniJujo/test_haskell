@@ -5,7 +5,8 @@ const p = spawn(
 	[
 		"web-ext", "run", "--source-dir", "dist",
 		"--firefox-profile=./web-ext-profile",
-		"--url", "https://yoshikunijujo.github.io/others/try-sign",
+		"--url", "https://yoshikunijujo.github.io/others/try-sign#account=alice",
+		"--url", "https://yoshikunijujo.github.io/others/try-sign#account=bob",
 		"--url", "about:debugging#/runtime/this-firefox",
 		"--url", "about:addons"
 	],
