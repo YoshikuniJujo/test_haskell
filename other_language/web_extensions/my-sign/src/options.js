@@ -188,7 +188,15 @@ clientFormD.addEventListener("submit", async event => {
 	event.preventDefault();
 
 	editingClient.name = clientNameD.value;
-	editingClient.urlPattern = urlPatternD.value;
+	try {
+		editingClient.urlPattern = urlPatternD.value;
+		new URLPattern(urlPatternD.value);
+		document.querySelector("#detail-error").textContent = "";
+	}
+	catch (e) {
+		document.querySelector("#detail-error").textContent = e.message;
+		return;
+	}
 	editingClient.publicKey =
 		new Uint8Array(Bech32.decode(currentKeyD.value).dp);
 	editingClient.priority = usePriority.checked ? Number(priority.value) : null;
