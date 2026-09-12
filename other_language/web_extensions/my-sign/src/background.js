@@ -13,8 +13,9 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 	switch (m.method) {
 		case "get-account": {
 			console.log(s.url);
-			const pbk = await getAccountPublicKey(s.url);
-			if (pbk === null) return null;
+			const c = await getClient(s.url);
+			if (c === null || c.displayAccount === false) return null;
+			const pbk = c.publicKey;
 
 			const acc = await getAccount(pbk);
 			return {
@@ -67,17 +68,25 @@ getPublicKey(s)
 	if (pbk !== null) return pbk;
 	browser.runtime.openOptionsPage();
 	throw new Error("No client matches sender URL: " + s.url);
+
+	async function
+	getAccountPublicKey(url)
+	{
+		const c = await getClient(url);
+		if (c === null) return null;
+		else return c.publicKey;
+	}
 }
 
 async function
-getAccountPublicKey(url)
+getClient(url)
 {
-	console.log("getAccountPublicKey begin");
+	console.log("getClient begin");
 	const cs = await DB.getClients();
 	cs.sort((a, b) => (b.priority ?? 100) - (a.priority ?? 100));
 	for (const c of cs) {
 		const pattern = new URLPattern(c.urlPattern);
-		if (pattern.test(url)) return c.publicKey; }
+		if (pattern.test(url)) return c; }
 	return null;
 }
 
