@@ -4,21 +4,27 @@ document.documentElement.style.border = "5px solid green";
 
 const div = document.createElement("div");
 
+let acount = null;
+
 (async () => {
 	await browser.runtime.sendMessage({ method: "contentStarted" });
 
 	Object.assign(div.style, {
 		position: "fixed",
-		top: "10px",
-		right: "10px",
 		padding: "8px 12px",
 		background: "rgba(0, 128, 0, 0.5)",
 		color: "white",
+		whiteSpace: "nowrap",
 		zIndex: "2147483647"
 	});
-	const account = await browser.runtime.sendMessage({ method: "get-account" });
+
+	document.body.append(div);
+	account = await browser.runtime.sendMessage({ method: "get-account" });
+
 	if (account !== null) {
 		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
+
+		setAccountPosition(account);
 	} else {
 		div.hidden = true; }
 	document.body.append(div);
@@ -78,14 +84,34 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 			m.pubKey, wtr => wtr.resolve()); break;
 	case "clientChanged":
 		console.log("content: clientChanged");
-		const account = await browser.runtime.sendMessage({ method: "get-account" });
+		account = await browser.runtime.sendMessage({ method: "get-account" });
+		console.log(account.positionX, account.positionY);
 		if (account === null) {
 			div.hidden = true;
 			break; }
-		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
 		div.hidden = false;
+		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
+
+		setAccountPosition(account);
+
 		break;
 } });
 
 window.wrappedJSObject.nostr =
 	cloneInto(nostr, window, { cloneFunctions: true });
+
+function
+setAccountPosition(account)
+{
+		const rect = div.getBoundingClientRect();
+		const left =
+			(innerWidth - rect.width) * account.positionX / 100;
+		const top =
+			(innerHeight - rect.height) * account.positionY /100;
+		div.style.left = `${left}px`
+		div.style.top = `${top}px`
+}
+
+window.addEventListener("resize", () => {
+	if (!div.hidden) setAccountPosition(account);
+});

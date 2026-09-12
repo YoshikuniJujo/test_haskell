@@ -20,7 +20,9 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			const acc = await getAccount(pbk);
 			return {
 				name: acc.name,
-				publicKey: Bech32.encode("npub", acc.publicKey)
+				publicKey: Bech32.encode("npub", acc.publicKey),
+				positionX: c.positionX ?? 100,
+				positionY: c.positionY ?? 0
 			}; }
 		case "get-public-key":
 			return hex(await getPublicKey(s));

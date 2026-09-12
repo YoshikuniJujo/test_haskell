@@ -108,6 +108,8 @@ const priority = document.querySelector("#priority");
 const displayAccount = document.querySelector("#display-account");
 const accountDisplaySettings =
 	document.querySelector("#account-display-settings");
+const positionX = document.querySelector("#position-x");
+const positionY = document.querySelector("#position-y");
 
 usePriority.addEventListener("change", () => {
 	priorityLabel.hidden = !usePriority.checked;
@@ -158,6 +160,9 @@ loadClientToForm(client)
 
 	displayAccount.checked = client.displayAccount !== false;
 	accountDisplaySettings.hidden = !displayAccount.checked;
+
+	positionX.value = client.positionX ?? 100;
+	positionY.value = client.positionY ?? 0;
 }
 
 const newClient = document.querySelector("#new-client");
@@ -192,7 +197,11 @@ clientFormD.addEventListener("submit", async event => {
 	editingClient.publicKey =
 		new Uint8Array(Bech32.decode(currentKeyD.value).dp);
 	editingClient.priority = usePriority.checked ? Number(priority.value) : null;
+
 	editingClient.displayAccount = displayAccount.checked;
+	editingClient.positionX = Number(positionX.value);
+	editingClient.positionY = Number(positionY.value);
+
 	await DB.putClient(editingClient);
 	await loadClients();
 
