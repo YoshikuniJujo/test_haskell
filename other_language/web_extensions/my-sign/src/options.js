@@ -106,9 +106,15 @@ const priorityLabel = document.querySelector("#priority-label");
 const priority = document.querySelector("#priority");
 
 const displayAccount = document.querySelector("#display-account");
+const accountDisplaySettings =
+	document.querySelector("#account-display-settings");
 
 usePriority.addEventListener("change", () => {
 	priorityLabel.hidden = !usePriority.checked;
+});
+
+displayAccount.addEventListener("change", () => {
+	accountDisplaySettings.hidden = !displayAccount.checked;
 });
 
 let editingClient;
@@ -151,6 +157,7 @@ loadClientToForm(client)
 	priorityLabel.hidden = client.priority === null;
 
 	displayAccount.checked = client.displayAccount !== false;
+	accountDisplaySettings.hidden = !displayAccount.checked;
 }
 
 const newClient = document.querySelector("#new-client");
