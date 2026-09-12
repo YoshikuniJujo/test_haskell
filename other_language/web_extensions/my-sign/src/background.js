@@ -2,6 +2,8 @@ import { InputTabs } from "./inputTabs.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js"
 
+import * as Bech32 from "./codec/bech32.js"
+
 console.log("background.js");
 
 const itbs = new InputTabs();
@@ -9,9 +11,16 @@ const itbs = new InputTabs();
 browser.runtime.onMessage.addListener( async (m, s) => {
 	console.log("message received", m);
 	switch (m.method) {
-		case "get-account":
+		case "get-account": {
 			console.log(s.url);
-			return "dummy account";
+			const pbk = await getAccountPublicKey(s.url);
+			if (pbk === null) return null;
+
+			const acc = await getAccount(pbk);
+			return {
+				name: acc.name,
+				publicKey: Bech32.encode("npub", acc.publicKey)
+			}; }
 		case "get-public-key":
 			return hex(await getPublicKey(s));
 		case "queryPswd":
@@ -20,7 +29,7 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			console.log("background: returnPswd")
 			console.log(m.pubKey);
 			console.log(unhex(m.pubKey));
-			const acc2 = await getAccount(m.pubKey);
+			const acc2 = await getAccount(unhex(m.pubKey));
 			console.log(acc2);
 			if (await acc2.checkPassword(m.pswd)) {
 				const { pswds = {} } =
@@ -40,7 +49,7 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			return ;
 		case "sign-event":
 			console.log("background: sign-event");
-			const acc = await getAccount(m.pubKey);
+			const acc = await getAccount(unhex(m.pubKey));
 			const { pswds = {} } = await browser.storage.session.get("pswds");
 			const smk = pswds[m.pubKey];
 			return acc.signEvent(m.event, smk);
@@ -103,22 +112,7 @@ unhex(s)
 async function
 getAccount(pbk)
 {
-			const acc = await DB.getAccount(unhex(pbk));
-
-			// DEBUG ONLY. DELETE IT.
-			console.log(acc);
-			console.log(
-				acc.publicKey,
-				acc.name,
-				acc.version,
-				acc.logN,
-				acc.salt,
-				acc.nonce,
-				acc.keySecurityByte,
-				acc.ciphertext,
-				acc.saltForCheckPassword,
-				acc.hashForCheckPassword )
-
+			const acc = await DB.getAccount(pbk);
 			return new EncryptedSecretKey(
 				acc.publicKey,
 				acc.name,

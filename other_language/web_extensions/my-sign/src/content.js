@@ -17,7 +17,7 @@ document.documentElement.style.border = "5px solid green";
 		color: "white",
 		zIndex: "2147483647"
 	});
-	div.textContent = account;
+	div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
 	document.body.append(div);
 })();
 
