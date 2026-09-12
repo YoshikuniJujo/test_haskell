@@ -102,10 +102,8 @@ EncryptedSecretKey
 			pk, nm, lgn, slt, nnc, ksb, ct, sfcp, hfcp );
 	}
 
-	get publicKey()
-	{
-		return this.#publicKey
-	}
+	get publicKey() { return this.#publicKey }
+	get name() { return this.#name }
 
 	toObject_563e7e39d4()
 	{

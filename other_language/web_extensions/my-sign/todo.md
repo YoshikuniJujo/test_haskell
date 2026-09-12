@@ -27,7 +27,7 @@ TODO
     + [x] マッチのところを修正
 * [ ] 画面へのアカウント表示
     + [x] クライアントのURLからアカウントを取得するところを関数にする
-    + [ ] EncryptedSecretKeyクラスにnameのgetterを作る
+    + [x] EncryptedSecretKeyクラスにnameのgetterを作る
     + [ ] 公開鍵からEncryptedSecretKeyクラスのインスタンスを取り出す関数を作成する
     + [ ] get-accountがnullまたはアカウントを返すようにする
     + [ ] URLがクライアントにマッチしている場合のみ表示とする
