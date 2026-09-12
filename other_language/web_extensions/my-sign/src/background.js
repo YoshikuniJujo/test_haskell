@@ -53,6 +53,10 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			const { pswds = {} } = await browser.storage.session.get("pswds");
 			const smk = pswds[m.pubKey];
 			return acc.signEvent(m.event, smk);
+		case "clientChanged":
+			console.log("background: clientChanged");
+			await broadcast({ method: "clientChanged" });
+			return;
 	}
 });
 
@@ -123,4 +127,17 @@ getAccount(pbk)
 				acc.ciphertext,
 				acc.saltForCheckPassword,
 				acc.hashForCheckPassword )
+}
+
+async function
+broadcast(m)
+{
+	const tabs = await browser.tabs.query({});
+	for (const tab of tabs) {
+		if (tab.id === undefined) continue;
+		try {
+			await browser.tabs.sendMessage(tab.id, m);
+		}
+		catch (e) { console.log("broadcast", e) }
+	}
 }

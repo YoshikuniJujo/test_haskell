@@ -2,12 +2,11 @@ import { addToArrayMap, forEachValues } from "./mapArray.js"
 
 document.documentElement.style.border = "5px solid green";
 
+const div = document.createElement("div");
+
 (async () => {
 	await browser.runtime.sendMessage({ method: "contentStarted" });
 
-	const account = await browser.runtime.sendMessage({ method: "get-account" });
-
-	const div = document.createElement("div");
 	Object.assign(div.style, {
 		position: "fixed",
 		top: "10px",
@@ -17,7 +16,11 @@ document.documentElement.style.border = "5px solid green";
 		color: "white",
 		zIndex: "2147483647"
 	});
-	div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
+	const account = await browser.runtime.sendMessage({ method: "get-account" });
+	if (account !== null) {
+		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
+	} else {
+		div.hidden = true; }
 	document.body.append(div);
 })();
 
@@ -66,13 +69,22 @@ const nostr = {
 	}
 }
 
-browser.runtime.onMessage.addListener((m) => { switch (m.method) {
+browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 	case "pswdReady":
 		console.log("content: pswdReady");
 		console.log(m.pubKey);
 		console.log(requestsWaitingForPassword);
 		forEachValues(requestsWaitingForPassword,
 			m.pubKey, wtr => wtr.resolve()); break;
+	case "clientChanged":
+		console.log("content: clientChanged");
+		const account = await browser.runtime.sendMessage({ method: "get-account" });
+		if (account === null) {
+			div.hidden = true;
+			break; }
+		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
+		div.hidden = false;
+		break;
 } });
 
 window.wrappedJSObject.nostr =

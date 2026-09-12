@@ -184,6 +184,10 @@ clientFormD.addEventListener("submit", async event => {
 	await DB.putClient(editingClient);
 	await loadClients();
 
+	await browser.runtime.sendMessage({
+		method: "clientChanged"
+	});
+
 	document.querySelector("#client-detail").hidden = true;
 	document.querySelector("#clients").hidden = false;
 });
@@ -196,6 +200,9 @@ document.querySelector("#cancel-edit-client").addEventListener("click", () => {
 document.querySelector("#delete-client").addEventListener("click", async () => {
 	await DB.deleteClient(editingClient.uuid);
 	await loadClients();
+	await browser.runtime.sendMessage({
+		method: "clientChanged"
+	});
 	document.querySelector("#client-detail").hidden = true;
 	document.querySelector("#clients").hidden = false;
 });
