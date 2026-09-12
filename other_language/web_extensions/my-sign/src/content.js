@@ -4,7 +4,7 @@ document.documentElement.style.border = "5px solid green";
 
 const div = document.createElement("div");
 
-let acount = null;
+let account = null;
 
 (async () => {
 	await browser.runtime.sendMessage({ method: "contentStarted" });
