@@ -1,3 +1,5 @@
+import * as Bech32 from "./codec/bech32.js"
+
 const pubKey = new URLSearchParams(location.search).get("publicKey");
 const input = document.querySelector("#input");
 const show = document.querySelector("#show-password");
@@ -15,6 +17,9 @@ onMessage.addListener((m) => { switch (m.method) {
 
 const form = document.querySelector("#password-form");
 
+document.querySelector("#account-info").textContent =
+	Bech32.encode("npub", unhex(pubKey));
+
 form.addEventListener("submit", (event) => {
 	event.preventDefault();
 	sendPswd(input.value);
@@ -24,4 +29,13 @@ function
 sendPswd(p)
 {
 	browser.runtime.sendMessage({ method: "returnPswd", pubKey, pswd: p });
+}
+
+function
+unhex(s)
+{
+	const bs = new Uint8Array(s.length / 2);
+	for (let i = 0; i < bs.length; ++i)
+		bs[i] = parseInt(s.slice(i * 2, i * 2 + 2), 16);
+	return bs;
 }
