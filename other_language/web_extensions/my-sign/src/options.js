@@ -4,6 +4,47 @@ import * as Bech32 from "./codec/bech32.js";
 
 console.log("barbaz");
 
+const params = new URLSearchParams(location.search);
+const clientUrl = params.get("clientUrl");
+
+console.log("options: clientUrl = ", clientUrl);
+
+const newClient = document.querySelector("#new-client");
+
+const currentKeyD = document.querySelector("#current-key-d");
+
+const usePriority = document.querySelector("#use-priority");
+const priorityLabel = document.querySelector("#priority-label");
+const priority = document.querySelector("#priority");
+
+const displayAccount = document.querySelector("#display-account");
+const accountDisplaySettings =
+	document.querySelector("#account-display-settings");
+const positionX = document.querySelector("#position-x");
+const positionY = document.querySelector("#position-y");
+const backgroundColor = document.querySelector("#background-color");
+const backgroundOpacity = document.querySelector("#background-opacity");
+
+newClient.addEventListener("click", () => {
+	editingClient = {
+		uuid: crypto.randomUUID(),
+		name: "",
+		urlPattern: "",
+		publicKey: undefined,
+		priority: null
+	};
+
+	const client = editingClient;
+
+	loadClientToForm(client);
+
+	document.querySelector("#delete-client").hidden = true;
+	document.querySelector("#clients").hidden = true;
+	document.querySelector("#client-detail").hidden = false;
+});
+
+if (clientUrl !== null) newClient.click();
+
 const form = document.querySelector("#generate-form");
 const accName = document.querySelector("#account-name");
 const password = document.querySelector("#password");
@@ -14,8 +55,6 @@ const publicKeys = document.querySelector("#public-keys");
 const passwordError = document.querySelector("#password-error");
 
 const showPassword = document.querySelector("#show-password");
-
-const currentKeyD = document.querySelector("#current-key-d");
 
 console.log("foobar");
 
@@ -91,18 +130,6 @@ showPassword.addEventListener("change", () => {
 
 // const forDebug = document.querySelector("#for-debug");
 
-const usePriority = document.querySelector("#use-priority");
-const priorityLabel = document.querySelector("#priority-label");
-const priority = document.querySelector("#priority");
-
-const displayAccount = document.querySelector("#display-account");
-const accountDisplaySettings =
-	document.querySelector("#account-display-settings");
-const positionX = document.querySelector("#position-x");
-const positionY = document.querySelector("#position-y");
-const backgroundColor = document.querySelector("#background-color");
-const backgroundOpacity = document.querySelector("#background-opacity");
-
 usePriority.addEventListener("change", () => {
 	priorityLabel.hidden = !usePriority.checked;
 });
@@ -159,26 +186,6 @@ loadClientToForm(client)
 	backgroundColor.value = client.backgroundColor ?? "#008000";
 	backgroundOpacity.value = client.backgroundOpacity ?? 0.5;
 }
-
-const newClient = document.querySelector("#new-client");
-
-newClient.addEventListener("click", () => {
-	editingClient = {
-		uuid: crypto.randomUUID(),
-		name: "",
-		urlPattern: "",
-		publicKey: undefined,
-		priority: null
-	};
-
-	const client = editingClient;
-
-	loadClientToForm(client);
-
-	document.querySelector("#delete-client").hidden = true;
-	document.querySelector("#clients").hidden = true;
-	document.querySelector("#client-detail").hidden = false;
-});
 
 const clientFormD = document.querySelector("#client-form-d");
 const clientNameD = document.querySelector("#client-name-d");
