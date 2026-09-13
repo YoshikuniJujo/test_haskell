@@ -51,7 +51,7 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			return;
 		case "contentStarted":
 			console.log("background: contentStarted");
-			return ;
+			return pgVanished(s.tab.id);
 		case "sign-event":
 			console.log("background: sign-event");
 			const acc = await getAccount(unhex(m.pubKey));
@@ -64,6 +64,8 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			return;
 	}
 });
+
+browser.tabs.onRemoved.addListener(pgVanished);
 
 async function
 getPublicKey(s)
@@ -166,4 +168,14 @@ hexToRgb(hex)
 		green: parseInt(hex.slice(3, 5), 16),
 		blue: parseInt(hex.slice(5, 7), 16)
 	};
+}
+
+async function
+pgVanished(vt)
+{
+	const r = await itbs.tabClosed(vt);
+	for (const c of r.toClose) await browser.tabs.remove(c);
+	for (const c of r.cancelled) for (const s of c.sources)
+		await browser.tabs.sendMessage(
+			s, { method: "inputPageVanished", pubKey: c.pubKey });
 }

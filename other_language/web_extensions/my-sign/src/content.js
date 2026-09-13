@@ -109,6 +109,11 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 		console.log(account.backgroundOpacity);
 
 		break;
+	case "inputPageVanished":
+		console.log("content: inputPageVanished");
+		forEachValues(requestsWaitingForPassword,
+			m.pubKey, wtr => wtr.reject(new Error("input page vanished")));
+		break;
 } });
 
 window.wrappedJSObject.nostr =
