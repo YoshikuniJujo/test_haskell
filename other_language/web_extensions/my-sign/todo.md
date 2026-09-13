@@ -66,7 +66,25 @@ TODO
 	+ [x] new clientボタンを押したときの処理を関数化する
 	+ [x] URLPatternのところをうめておく
 	+ [x] InputTabs.assign
-* [ ] リファクタリング
+* [x] backgroundのリスナーの中のべた書きを関数にする
+* [ ] 使用者、役割、機能をmemo.ja.mdにまとめる
+	+ [x] get-account
+	+ [x] get-public-key
+	+ [ ] queryPswd
+	+ [ ] returnPswd
+	+ [ ] contentStarted
+	+ [ ] sign-event
+	+ [ ] clientChanged
+* [ ] backgroundへのメッセージをclass, methodという形にする
+	+ [ ] get-account
+	+ [ ] get-public-key
+	+ [ ] queryPswd
+	+ [ ] returnPswd
+	+ [ ] contentStarted
+	+ [ ] sign-event
+	+ [ ] clientChanged
+* [ ] backgroundからAPIを公開するという形へのリファクタリング
+* [ ] リファクタリング残り
 * [ ] options.jsから直接データベース処理をするのではなくbackgroundに依頼するようにする
 	+ [ ] 設定画面の「状態」を表すオブジェクトを設計する
 	+ [ ] storage.session上の状態をinputなどで変化させる

@@ -6,19 +6,35 @@ import * as Bech32 from "./codec/bech32.js"
 
 console.log("background.js");
 
-const itbs = new InputTabs();
-const otbs = new InputTabs();
-
 browser.runtime.onMessage.addListener( async (m, s) => {
 	console.log("message received", m);
 	switch (m.method) {
-		case "get-account": {
-			console.log(s.url);
-			const c = await getClient(s.url);
+		case "get-account": return getAccountMethod(s.url);
+		case "get-public-key": return hex(await getPublicKey(s));
+		case "queryPswd": return qPswd(m.pubKey, s.tab.id);
+		case "returnPswd": return rtnPswd(s.tab.id, m.pubKey, m.pswd);
+		case "contentStarted": return pgVanished(s.tab.id);
+		case "sign-event": return signEvent(m.pubKey, m.event);
+		case "clntChanged": return broadcast({ method: "clntChanged" });
+	}
+});
+browser.tabs.onRemoved.addListener(pgVanished);
+
+const itbs = new InputTabs();
+const otbs = new InputTabs();
+
+const waitForClientChanged = new Map();
+
+async function
+getAccountMethod(url)
+{
+			console.log("getAccountMethod: ", url);
+			const c = await getClient(url);
 			if (c === null || c.displayAccount === false) return null;
 			const pbk = c.publicKey;
 
 			const acc = await getAccount(pbk);
+			console.log("getAccountMethod: acc = ", acc);
 			return {
 				name: acc.name,
 				publicKey: Bech32.encode("npub", acc.publicKey),
@@ -26,49 +42,35 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 				positionY: c.positionY ?? 0,
 				backgroundColor: hexToRgb(c.backgroundColor ?? "#008000"),
 				backgroundOpacity: c.backgroundOpacity ?? 0.5
-			}; }
-		case "get-public-key":
-			return hex(await getPublicKey(s));
-		case "queryPswd":
-			return qPswd(m.pubKey, s.tab.id);
-		case "returnPswd":
-			console.log("background: returnPswd")
-			console.log(m.pubKey);
-			console.log(unhex(m.pubKey));
-			const acc2 = await getAccount(unhex(m.pubKey));
-			console.log(acc2);
-			if (await acc2.checkPassword(m.pswd)) {
+			};
+}
+
+async function
+rtnPswd(tid, pbk, pswd)
+{
+			const acc2 = await getAccount(unhex(pbk));
+			if (await acc2.checkPassword(pswd)) {
 				const { pswds = {} } =
 					await browser.storage.session.get("pswds");
-				pswds[m.pubKey] = await acc2.getSymmetricKey(m.pswd);
+				pswds[pbk] = await acc2.getSymmetricKey(pswd);
 				await browser.storage.session.set({ pswds });
 
-				const sts = await itbs.complete(m.pubKey, s.tab.id);
+				const sts = await itbs.complete(pbk, tid);
 				for (const st of sts)
-					await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: m.pubKey });
+					await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: pbk });
 				await browser.tabs.update(sts[0], { active: true });
-				await browser.tabs.remove(s.tab.id); }
-			else {	await browser.tabs.sendMessage(s.tab.id, { method: "wrongPswd" }); }
-			return;
-		case "contentStarted":
-			console.log("background: contentStarted");
-			return pgVanished(s.tab.id);
-		case "sign-event":
-			console.log("background: sign-event");
-			const acc = await getAccount(unhex(m.pubKey));
+				await browser.tabs.remove(tid); }
+			else {	await browser.tabs.sendMessage(tid, { method: "wrongPswd" }); }
+}
+
+async function
+signEvent(pbk, evt)
+{
+			const acc = await getAccount(unhex(pbk));
 			const { pswds = {} } = await browser.storage.session.get("pswds");
-			const smk = pswds[m.pubKey];
-			return acc.signEvent(m.event, smk);
-		case "clientChanged":
-			console.log("background: clientChanged");
-			await broadcast({ method: "clientChanged" });
-			return;
-	}
-});
-
-browser.tabs.onRemoved.addListener(pgVanished);
-
-const waitForClientChanged = new Map();
+			const smk = pswds[pbk];
+			return acc.signEvent(evt, smk);
+}
 
 async function
 getPublicKey(s)

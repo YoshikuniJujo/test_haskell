@@ -224,7 +224,7 @@ clientFormD.addEventListener("submit", async event => {
 	await loadClients();
 
 	await browser.runtime.sendMessage({
-		method: "clientChanged"
+		method: "clntChanged"
 	});
 
 	document.querySelector("#client-detail").hidden = true;
@@ -242,7 +242,7 @@ document.querySelector("#delete-client").addEventListener("click", async () => {
 	await DB.deleteClient(editingClient.uuid);
 	await loadClients();
 	await browser.runtime.sendMessage({
-		method: "clientChanged"
+		method: "clntChanged"
 	});
 	document.querySelector("#client-detail").hidden = true;
 	document.querySelector("#clients").hidden = false;
