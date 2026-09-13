@@ -85,7 +85,9 @@ getPublicKey(s)
 
 	console.log(waitForClientChanged);
 
-	browser.runtime.openOptionsPage();
+	browser.tabs.create({
+		url: browser.runtime.getURL("options.html")
+	});
 	throw new Error("No client matches sender URL: " + s.url);
 
 	async function
