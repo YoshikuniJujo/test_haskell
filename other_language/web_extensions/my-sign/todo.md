@@ -67,6 +67,15 @@ TODO
     + [x] URLPatternのところをうめておく
     + [x] InputTabs.assign
 * [ ] options.jsから直接データベース処理をするのではなくbackgroundに依頼するようにする
+    + [ ] 設定画面の「状態」を表すオブジェクトを設計する
+    + [ ] storage.session上の状態をinputなどで変化させる
+    + [ ] storage.session上の状態から復元する
+    + [ ] OKのときstorage.session上の状態からデータベースに書き込む
+    + [ ] Cancelではstorage.session上の状態を削除する
+    + [ ] Deleteではデータベース上からエントリーを削除する
+    + [ ] パスワード入力時の処理を記述
+    + [ ] options.jsからデータベースをいじる処理を削除する
+    + [ ] その他
 * [ ] 未登録クライアントから誘導される設定画面タブの管理(続き)
     + [ ] InputTabs.complete
     + [ ] InputTabs.tabClosed
