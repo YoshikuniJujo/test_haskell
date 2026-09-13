@@ -67,11 +67,24 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 
 browser.tabs.onRemoved.addListener(pgVanished);
 
+const waitForClientChanged = new Map();
+
 async function
 getPublicKey(s)
 {
 	const pbk = await getAccountPublicKey();
 	if (pbk !== null) return pbk;
+
+	console.log("getPublicKey: ", s.url);
+
+	const { promise: pr, resolve: rs, reject: rj } = Promise.withResolvers();
+
+	console.log("after Promise.withResolvers");
+
+	waitForClientChanged.set(s.url, { resolve: rs, reject: rj });
+
+	console.log(waitForClientChanged);
+
 	browser.runtime.openOptionsPage();
 	throw new Error("No client matches sender URL: " + s.url);
 
