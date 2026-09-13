@@ -65,8 +65,11 @@ TODO
     + [x] new clientボタンを押しておく
     + [x] new clientボタンを押したときの処理を関数化する
     + [x] URLPatternのところをうめておく
+    + [x] InputTabs.assign
+    + [ ] InputTabs.complete
+    + [ ] InputTabs.tabClosed
     + [ ] 仕様を検討する
-    + [ ] inputTabs.jsを使うようにする
+    + [ ] テスト
     + [ ] 残り
 * [ ] パスワード入力用タブの異常系のテストのために/others/try-sign.htmlを修正する
     + [ ] ボタンを押すとイベントに署名するようにする
@@ -76,6 +79,7 @@ TODO
 * [ ] パスワード入力用タブの異常系
     + [ ] 同じタブから3回パスワードを送る
     + [ ] 異なるタブから3つのアカウントを開く
+* [ ] アカウント表示領域のクリックを設定可能にする
 * [ ] クライアントの権限テーブル
 * [ ] ncryptsecのエクスポート
 * [ ] ncryptsecのインポート

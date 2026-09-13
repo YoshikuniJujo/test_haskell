@@ -7,6 +7,7 @@ import * as Bech32 from "./codec/bech32.js"
 console.log("background.js");
 
 const itbs = new InputTabs();
+const otbs = new InputTabs();
 
 browser.runtime.onMessage.addListener( async (m, s) => {
 	console.log("message received", m);
@@ -85,10 +86,15 @@ getPublicKey(s)
 
 	console.log(waitForClientChanged);
 
-	browser.tabs.create({
+	const ot = await browser.tabs.create({
 		url: browser.runtime.getURL(
 			"options.html?clientUrl=" + encodeURIComponent(s.url) )
 	});
+	console.log(ot);
+	console.log("getPublicKey", s.url, s.tab.id, ot.id)
+	const use = await otbs.assign(s.url, s.tab.id, ot.id);
+	if (use != ot.id) await browser.tabs.remove(ot.id);
+	await browser.tabs.update(use, { active: true });
 	throw new Error("No client matches sender URL: " + s.url);
 
 	async function
