@@ -59,13 +59,15 @@ TODO
 * [x] パスワード入力欄にアカウント名とnpubの最初の25文字くらいを表示
 * [x] ユーザーがタブを閉じた時の動作を実装
 * [x] タブ内で他のページに移動したときの処理を実装
-* [ ] 未登録クライアントから誘導される設定画面タブの管理
+* [x] 未登録クライアントから誘導される設定画面タブの管理(途中)
     + [x] Promise.withResolversでresolveとrejectをMapに保存
     + [x] タブを開いて設定用ページに接続するようにする
     + [x] new clientボタンを押しておく
     + [x] new clientボタンを押したときの処理を関数化する
     + [x] URLPatternのところをうめておく
     + [x] InputTabs.assign
+* [ ] options.jsから直接データベース処理をするのではなくbackgroundに依頼するようにする
+* [ ] 未登録クライアントから誘導される設定画面タブの管理(続き)
     + [ ] InputTabs.complete
     + [ ] InputTabs.tabClosed
     + [ ] 仕様を検討する
