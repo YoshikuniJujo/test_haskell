@@ -40,6 +40,7 @@ newClient.addEventListener("click", () => {
 
 	document.querySelector("#delete-client").hidden = true;
 	document.querySelector("#clients").hidden = true;
+	document.querySelector("#new-client").hidden = true;
 	document.querySelector("#client-detail").hidden = false;
 });
 
@@ -155,6 +156,7 @@ loadClients()
 			editingClient = client;
 			console.log(editingClient.uuid);
 			document.querySelector("#clients").hidden = true;
+			document.querySelector("#new-client").hidden = true;
 			document.querySelector("#client-detail").hidden = false;
 			document.querySelector("#delete-client").hidden = false;
 
@@ -224,11 +226,13 @@ clientFormD.addEventListener("submit", async event => {
 
 	document.querySelector("#client-detail").hidden = true;
 	document.querySelector("#clients").hidden = false;
+	document.querySelector("#new-client").hidden = false;
 });
 
 document.querySelector("#cancel-edit-client").addEventListener("click", () => {
 	document.querySelector("#client-detail").hidden = true;
 	document.querySelector("#clients").hidden = false;
+	document.querySelector("#new-client").hidden = false;
 });
 
 document.querySelector("#delete-client").addEventListener("click", async () => {
@@ -239,4 +243,5 @@ document.querySelector("#delete-client").addEventListener("click", async () => {
 	});
 	document.querySelector("#client-detail").hidden = true;
 	document.querySelector("#clients").hidden = false;
+	document.querySelector("#new-client").hidden = false;
 });
