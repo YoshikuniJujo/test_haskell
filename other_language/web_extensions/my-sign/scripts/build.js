@@ -32,3 +32,4 @@ await copyFile("src/manifest.json", "dist/manifest.json");
 await copyFile("src/options.html", "dist/options.html");
 await copyFile("src/options.css", "dist/options.css");
 await copyFile("src/input.html", "dist/input.html");
+await copyFile("src/input.css", "dist/input.css");

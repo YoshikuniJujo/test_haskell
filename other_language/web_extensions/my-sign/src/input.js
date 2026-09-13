@@ -1,5 +1,6 @@
 import * as Bech32 from "./codec/bech32.js"
 
+const accName = new URLSearchParams(location.search).get("accountName");
 const pubKey = new URLSearchParams(location.search).get("publicKey");
 const input = document.querySelector("#input");
 const show = document.querySelector("#show-password");
@@ -18,7 +19,7 @@ onMessage.addListener((m) => { switch (m.method) {
 const form = document.querySelector("#password-form");
 
 document.querySelector("#account-info").textContent =
-	Bech32.encode("npub", unhex(pubKey));
+	accName + " " + Bech32.encode("npub", unhex(pubKey)).slice(0, 25) + "...";
 
 form.addEventListener("submit", (event) => {
 	event.preventDefault();

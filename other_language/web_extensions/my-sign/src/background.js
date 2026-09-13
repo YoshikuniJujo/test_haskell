@@ -104,7 +104,9 @@ qPswd(pk, st)
 	const it = await browser.tabs.create({
 		active: false,
 		url: browser.runtime.getURL(
-			`input.html?publicKey=${encodeURIComponent(pk)}` ) });
+			"input.html?" +
+			"accountName=" + encodeURIComponent((await getAccount(unhex(pk))).name) +
+			"&publicKey=" + encodeURIComponent(pk) ) });
 	const use = await itbs.assign(pk, st, it.id);
 	if (use != it.id) await browser.tabs.remove(it.id);
 	await browser.tabs.update(use, { active: true });
