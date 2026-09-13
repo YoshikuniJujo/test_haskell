@@ -62,8 +62,9 @@ TODO
 * [ ] 未登録クライアントから誘導される設定画面タブの管理
     + [x] Promise.withResolversでresolveとrejectをMapに保存
     + [x] タブを開いて設定用ページに接続するようにする
-    + [ ] new clientボタンを押しておく
-    + [ ] URLPatternのところをうめておく
+    + [x] new clientボタンを押しておく
+    + [x] new clientボタンを押したときの処理を関数化する
+    + [x] URLPatternのところをうめておく
     + [ ] 仕様を検討する
     + [ ] inputTabs.jsを使うようにする
     + [ ] 残り

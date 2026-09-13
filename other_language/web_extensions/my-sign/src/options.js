@@ -25,11 +25,14 @@ const positionY = document.querySelector("#position-y");
 const backgroundColor = document.querySelector("#background-color");
 const backgroundOpacity = document.querySelector("#background-opacity");
 
-newClient.addEventListener("click", () => {
+newClient.addEventListener("click", openNewClient);
+
+function
+openNewClient(url) {
 	editingClient = {
 		uuid: crypto.randomUUID(),
 		name: "",
-		urlPattern: "",
+		urlPattern: url ?? "",
 		publicKey: undefined,
 		priority: null
 	};
@@ -42,9 +45,9 @@ newClient.addEventListener("click", () => {
 	document.querySelector("#clients").hidden = true;
 	document.querySelector("#new-client").hidden = true;
 	document.querySelector("#client-detail").hidden = false;
-});
+}
 
-if (clientUrl !== null) newClient.click();
+if (clientUrl !== null) openNewClient(clientUrl);
 
 const form = document.querySelector("#generate-form");
 const accName = document.querySelector("#account-name");
