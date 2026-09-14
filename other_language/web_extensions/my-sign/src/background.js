@@ -10,7 +10,7 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 	console.log("message received", m);
 	switch (m.method) {
 		case "get-account": return getAccountMethod(s.url);
-		case "get-public-key": return hex(await getPublicKey(s));
+		case "get-public-key": return hex(await getPublicKey(s.url, s.tab.id));
 		case "queryPswd": return qPswd(m.pubKey, s.tab.id);
 		case "returnPswd": return rtnPswd(s.tab.id, m.pubKey, m.pswd);
 		case "contentStarted": return pgVanished(s.tab.id);
@@ -73,36 +73,36 @@ signEvent(pbk, evt)
 }
 
 async function
-getPublicKey(s)
+getPublicKey(url, tid)
 {
 	const pbk = await getAccountPublicKey();
 	if (pbk !== null) return pbk;
 
-	console.log("getPublicKey: ", s.url);
+	console.log("getPublicKey: ", url);
 
 	const { promise: pr, resolve: rs, reject: rj } = Promise.withResolvers();
 
 	console.log("after Promise.withResolvers");
 
-	waitForClientChanged.set(s.url, { resolve: rs, reject: rj });
+	waitForClientChanged.set(url, { resolve: rs, reject: rj });
 
 	console.log(waitForClientChanged);
 
 	const ot = await browser.tabs.create({
 		url: browser.runtime.getURL(
-			"options.html?clientUrl=" + encodeURIComponent(s.url) )
+			"options.html?clientUrl=" + encodeURIComponent(url) )
 	});
 	console.log(ot);
-	console.log("getPublicKey", s.url, s.tab.id, ot.id)
-	const use = await otbs.assign(s.url, s.tab.id, ot.id);
+	console.log("getPublicKey", url, tid, ot.id)
+	const use = await otbs.assign(url, tid, ot.id);
 	if (use != ot.id) await browser.tabs.remove(ot.id);
 	await browser.tabs.update(use, { active: true });
-	throw new Error("No client matches sender URL: " + s.url);
+	throw new Error("No client matches sender URL: " + url);
 
 	async function
 	getAccountPublicKey()
 	{
-		const c = await getClient(s.url);
+		const c = await getClient(url);
 		if (c === null) return null;
 		else return c.publicKey;
 	}
