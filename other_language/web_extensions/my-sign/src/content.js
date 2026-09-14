@@ -68,7 +68,7 @@ const nostr = {
 						{ resolve: rs, reject: rj } );
 					console.log("signEvent: ", requestsWaitingForPassword);
 					browser.runtime.sendMessage({
-						method: "queryPswd", pubKey: pbk });
+						method: "prepareSymmetricKey", pubKey: pbk });
 				});
 				const sig = await browser.runtime.sendMessage({
 					method: "signEvent",

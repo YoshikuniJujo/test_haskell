@@ -11,7 +11,7 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 	switch (m.method) {
 		case "accountDisplayInfo": return getAccountMethod(s.url);
 		case "publicKey": return hex(await getPublicKey(s.url, s.tab.id));
-		case "queryPswd": return qPswd(m.pubKey, s.tab.id);
+		case "prepareSymmetricKey": return qPswd(m.pubKey, s.tab.id);
 		case "returnPswd": return rtnPswd(s.tab.id, m.pubKey, m.pswd);
 		case "contentStarted": return pgVanished(s.tab.id);
 		case "signEvent": return signEvent(m.pubKey, m.event);

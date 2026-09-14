@@ -75,10 +75,13 @@ TODO
 	+ [x] contentStarted
 	+ [x] sign-event
 	+ [x] clientChanged
-* [ ] 7つのAPIについて名前を変更する
+* [x] 7つのAPIについて名前を変更する(途中)
 	+ [x] getAccount -> accountDisplayInfo
 	+ [x] getPublicKey -> publicKey
-	+ [ ] queryPswd
+* [x] もう1台のPCでもrun-keepでフラグメントによるアカウントが変更できるような設定を保存する
+	+ [x] アカウントは3つくらい用意しよう
+* [ ] 7つのAPIについて名前を変更する(続き)
+	+ [x] queryPswd -> prepareSymmetricKey
 	+ [ ] returnPswd
 	+ [ ] contentStarted
 	+ [ ] signEvent
@@ -112,8 +115,6 @@ TODO
 * [ ] パスワード入力用タブの異常系のテストのために/others/try-sign.htmlを修正する
 	+ [ ] ボタンを押すとイベントに署名するようにする
 	+ [ ] コンテンツ部分を入力できるようにする
-* [ ] もう1台のPCでもrun-keepでフラグメントによるアカウントが変更できるような設定を保存する
-	+ [ ] アカウントは3つくらい用意しよう
 * [ ] パスワード入力用タブの異常系
 	+ [ ] 同じタブから3回パスワードを送る
 	+ [ ] 異なるタブから3つのアカウントを開く
