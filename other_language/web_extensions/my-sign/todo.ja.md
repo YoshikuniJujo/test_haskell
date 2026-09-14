@@ -67,14 +67,14 @@ TODO
 	+ [x] URLPatternのところをうめておく
 	+ [x] InputTabs.assign
 * [x] backgroundのリスナーの中のべた書きを関数にする
-* [ ] 使用者、役割、機能をmemo.ja.mdにまとめる
+* [x] 使用者、役割、機能をmemo.ja.mdにまとめる
 	+ [x] get-account
 	+ [x] get-public-key
-	+ [ ] queryPswd
-	+ [ ] returnPswd
-	+ [ ] contentStarted
-	+ [ ] sign-event
-	+ [ ] clientChanged
+	+ [x] queryPswd
+	+ [x] returnPswd
+	+ [x] contentStarted
+	+ [x] sign-event
+	+ [x] clientChanged
 * [ ] backgroundへのメッセージをclass, methodという形にする
 	+ [ ] get-account
 	+ [ ] get-public-key
