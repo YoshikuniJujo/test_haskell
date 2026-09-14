@@ -16,7 +16,7 @@ background.js
 
 ### API
 
-#### get-account
+#### accountDisplayInfo
 
 ##### 使用者
 
@@ -41,7 +41,7 @@ URLからクライアントを検索する。
 * 表示領域の位置
 * 表示領域の色と不透明度
 
-#### get-public-key
+#### getPublicKey
 
 ##### 使用者
 
@@ -126,7 +126,7 @@ content.js
 クライアントページが閉じたのであれば入力用タブを消す。
 入力用のページが閉じたのであればクライアントページにエラーを通知する
 
-#### sign-event
+#### signEvent
 
 ##### 使用者
 

@@ -19,7 +19,7 @@ let account = null;
 	});
 
 	document.body.append(div);
-	account = await browser.runtime.sendMessage({ method: "getAccount" });
+	account = await browser.runtime.sendMessage({ method: "accountDisplayInfo" });
 
 	if (account !== null) {
 		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
@@ -91,7 +91,7 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 			m.pubKey, wtr => wtr.resolve()); break;
 	case "clntChanged":
 		console.log("content: clientChanged");
-		account = await browser.runtime.sendMessage({ method: "getAccount" });
+		account = await browser.runtime.sendMessage({ method: "accountDisplayInfo" });
 		if (account === null) {
 			div.hidden = true;
 			break; }

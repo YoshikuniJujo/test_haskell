@@ -75,6 +75,14 @@ TODO
 	+ [x] contentStarted
 	+ [x] sign-event
 	+ [x] clientChanged
+* [ ] 7つのAPIについて名前を変更する
+	+ [x] getAccount -> accountDisplayInfo
+	+ [ ] getPublicKey
+	+ [ ] queryPswd
+	+ [ ] returnPswd
+	+ [ ] contentStarted
+	+ [ ] signEvent
+	+ [ ] clntChanged
 * [ ] backgroundへのメッセージをclass, methodという形にする
 	+ [ ] get-account
 	+ [ ] get-public-key
