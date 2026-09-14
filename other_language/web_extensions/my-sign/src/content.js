@@ -47,7 +47,7 @@ const nostr = {
 		return new window.Promise(async (rs, rj) => {
 			try {
 				const v = await browser.runtime.sendMessage({
-					method: "getPublicKey"
+					method: "publicKey"
 				});
 				rs(v);
 			}
@@ -60,7 +60,7 @@ const nostr = {
 		return new window.Promise(async (rs, rj) => {
 			try {
 				const pbk = await browser.runtime.sendMessage({
-					method: "getPublicKey"
+					method: "publicKey"
 				});
 				await new Promise((rs, rj) => {
 					addToArrayMap(

@@ -77,7 +77,7 @@ TODO
 	+ [x] clientChanged
 * [ ] 7つのAPIについて名前を変更する
 	+ [x] getAccount -> accountDisplayInfo
-	+ [ ] getPublicKey
+	+ [x] getPublicKey -> publicKey
 	+ [ ] queryPswd
 	+ [ ] returnPswd
 	+ [ ] contentStarted

@@ -25,7 +25,7 @@ const positionY = document.querySelector("#position-y");
 const backgroundColor = document.querySelector("#background-color");
 const backgroundOpacity = document.querySelector("#background-opacity");
 
-newClient.addEventListener("click", openNewClient);
+newClient.addEventListener("click", () => openNewClient());
 
 function
 openNewClient(url) {
