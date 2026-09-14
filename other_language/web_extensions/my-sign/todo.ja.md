@@ -87,10 +87,12 @@ TODO
 	+ [x] signEvent
 	+ [x] contentStarted
 	+ [x] clntChanged -> clientChanged
-* [ ] backgroundからAPIを公開するという形へのリファクタリング
-* [ ] リファクタリング残り
++ [x] 表示領域の背景の色を#rrggbbで指定できるようにする
++ [ ] options.jsの仕様を考える
 * [ ] options.jsから直接データベース処理をするのではなくbackgroundに依頼するようにする
 	+ [ ] 設定画面の「状態」を表すオブジェクトを設計する
+		- [ ] memo.ja.md上で
+		- [ ] コード上で
 	+ [ ] storage.session上の状態をinputなどで変化させる
 	+ [ ] storage.session上の状態から復元する
 	+ [ ] OKのときstorage.session上の状態からデータベースに書き込む

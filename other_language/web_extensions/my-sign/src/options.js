@@ -23,9 +23,14 @@ const accountDisplaySettings =
 const positionX = document.querySelector("#position-x");
 const positionY = document.querySelector("#position-y");
 const backgroundColor = document.querySelector("#background-color");
+const backgroundColor16 = document.querySelector("#background-color-16");
 const backgroundOpacity = document.querySelector("#background-opacity");
 
 newClient.addEventListener("click", () => openNewClient());
+
+backgroundColor.addEventListener("input", () => {
+	backgroundColor16.value = backgroundColor.value;
+});
 
 function
 openNewClient(url) {
@@ -189,6 +194,7 @@ loadClientToForm(client)
 	positionY.value = client.positionY ?? 0;
 
 	backgroundColor.value = client.backgroundColor ?? "#008000";
+	backgroundColor16.value = client.backgroundColor ?? "#008000";
 	backgroundOpacity.value = client.backgroundOpacity ?? 0.5;
 }
 
@@ -217,7 +223,7 @@ clientFormD.addEventListener("submit", async event => {
 	editingClient.positionX = Number(positionX.value);
 	editingClient.positionY = Number(positionY.value);
 
-	editingClient.backgroundColor = backgroundColor.value;
+	editingClient.backgroundColor = backgroundColor16.value;
 	editingClient.backgroundOpacity = backgroundOpacity.value;
 
 	await DB.putClient(editingClient);
