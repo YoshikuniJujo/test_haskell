@@ -13,23 +13,23 @@ input.focus();
 input.addEventListener("input", () => { error.hidden = true; });
 show.addEventListener("change", () => {
 	input.type = show.checked ? "text" : "password"; });
-onMessage.addListener((m) => { switch (m.method) {
-	case "wrongPswd": error.hidden = false; input.value = ""; break; } });
 
 const form = document.querySelector("#password-form");
 
 document.querySelector("#account-info").textContent =
 	accName + " " + Bech32.encode("npub", unhex(pubKey)).slice(0, 25) + "...";
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
 	event.preventDefault();
-	sendPswd(input.value);
+	await sendPswd(input.value);
 });
 
-function
+async function
 sendPswd(p)
 {
-	browser.runtime.sendMessage({ method: "returnPswd", pubKey, pswd: p });
+	const ok = await browser.runtime.sendMessage({
+		method: "registerSymmetricKey", pubKey, pswd: p });
+	if (!ok) { error.hidden = false; input.value = ""; }
 }
 
 function

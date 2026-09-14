@@ -89,7 +89,7 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 		console.log(requestsWaitingForPassword);
 		forEachValues(requestsWaitingForPassword,
 			m.pubKey, wtr => wtr.resolve()); break;
-	case "clntChanged":
+	case "clientChanged":
 		console.log("content: clientChanged");
 		account = await browser.runtime.sendMessage({ method: "accountDisplayInfo" });
 		if (account === null) {

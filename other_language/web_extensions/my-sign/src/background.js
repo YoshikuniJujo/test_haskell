@@ -10,12 +10,14 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 	console.log("message received", m);
 	switch (m.method) {
 		case "accountDisplayInfo": return getAccountMethod(s.url);
-		case "publicKey": return hex(await getPublicKey(s.url, s.tab.id));
+		case "publicKey":
+			return hex(await getPublicKey(s.url, s.tab.id));
 		case "prepareSymmetricKey": return qPswd(m.pubKey, s.tab.id);
-		case "returnPswd": return rtnPswd(s.tab.id, m.pubKey, m.pswd);
-		case "contentStarted": return pgVanished(s.tab.id);
+		case "registerSymmetricKey":
+			return rgSymkey(s.tab.id, m.pubKey, m.pswd);
 		case "signEvent": return signEvent(m.pubKey, m.event);
-		case "clntChanged": return broadcast({ method: "clntChanged" });
+		case "contentStarted": return pgVanished(s.tab.id);
+		case "clientChanged": return broadcast({ method: "clientChanged" });
 	}
 });
 browser.tabs.onRemoved.addListener(pgVanished);
@@ -46,7 +48,7 @@ getAccountMethod(url)
 }
 
 async function
-rtnPswd(tid, pbk, pswd)
+rgSymkey(tid, pbk, pswd)
 {
 			const acc2 = await getAccount(unhex(pbk));
 			if (await acc2.checkPassword(pswd)) {
@@ -59,8 +61,9 @@ rtnPswd(tid, pbk, pswd)
 				for (const st of sts)
 					await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: pbk });
 				await browser.tabs.update(sts[0], { active: true });
-				await browser.tabs.remove(tid); }
-			else {	await browser.tabs.sendMessage(tid, { method: "wrongPswd" }); }
+				await browser.tabs.remove(tid);
+				return true; }
+			else {	return false; }
 }
 
 async function

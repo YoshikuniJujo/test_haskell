@@ -80,20 +80,13 @@ TODO
 	+ [x] getPublicKey -> publicKey
 * [x] もう1台のPCでもrun-keepでフラグメントによるアカウントが変更できるような設定を保存する
 	+ [x] アカウントは3つくらい用意しよう
-* [ ] 7つのAPIについて名前を変更する(続き)
+* [x] 7つのAPIについて名前を変更する(続き)
 	+ [x] queryPswd -> prepareSymmetricKey
-	+ [ ] returnPswd
-	+ [ ] contentStarted
-	+ [ ] signEvent
-	+ [ ] clntChanged
-* [ ] backgroundへのメッセージをclass, methodという形にする
-	+ [ ] get-account
-	+ [ ] get-public-key
-	+ [ ] queryPswd
-	+ [ ] returnPswd
-	+ [ ] contentStarted
-	+ [ ] sign-event
-	+ [ ] clientChanged
+	+ [x] returnPswd -> registerSymmetricKey
+	+ [x] wrongPswdを送る代わりにregisterSymmetricKeyの返り値とする
+	+ [x] signEvent
+	+ [x] contentStarted
+	+ [x] clntChanged -> clientChanged
 * [ ] backgroundからAPIを公開するという形へのリファクタリング
 * [ ] リファクタリング残り
 * [ ] options.jsから直接データベース処理をするのではなくbackgroundに依頼するようにする
