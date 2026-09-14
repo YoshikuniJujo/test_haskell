@@ -19,7 +19,7 @@ let account = null;
 	});
 
 	document.body.append(div);
-	account = await browser.runtime.sendMessage({ method: "get-account" });
+	account = await browser.runtime.sendMessage({ method: "getAccount" });
 
 	if (account !== null) {
 		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
@@ -47,7 +47,7 @@ const nostr = {
 		return new window.Promise(async (rs, rj) => {
 			try {
 				const v = await browser.runtime.sendMessage({
-					method: "get-public-key"
+					method: "getPublicKey"
 				});
 				rs(v);
 			}
@@ -60,7 +60,7 @@ const nostr = {
 		return new window.Promise(async (rs, rj) => {
 			try {
 				const pbk = await browser.runtime.sendMessage({
-					method: "get-public-key"
+					method: "getPublicKey"
 				});
 				await new Promise((rs, rj) => {
 					addToArrayMap(
@@ -71,7 +71,7 @@ const nostr = {
 						method: "queryPswd", pubKey: pbk });
 				});
 				const sig = await browser.runtime.sendMessage({
-					method: "sign-event",
+					method: "signEvent",
 					pubKey: pbk,
 					event: ev
 				});
@@ -91,7 +91,7 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 			m.pubKey, wtr => wtr.resolve()); break;
 	case "clntChanged":
 		console.log("content: clientChanged");
-		account = await browser.runtime.sendMessage({ method: "get-account" });
+		account = await browser.runtime.sendMessage({ method: "getAccount" });
 		if (account === null) {
 			div.hidden = true;
 			break; }

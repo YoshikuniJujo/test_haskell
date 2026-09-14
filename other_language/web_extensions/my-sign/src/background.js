@@ -9,12 +9,12 @@ console.log("background.js");
 browser.runtime.onMessage.addListener( async (m, s) => {
 	console.log("message received", m);
 	switch (m.method) {
-		case "get-account": return getAccountMethod(s.url);
-		case "get-public-key": return hex(await getPublicKey(s.url, s.tab.id));
+		case "getAccount": return getAccountMethod(s.url);
+		case "getPublicKey": return hex(await getPublicKey(s.url, s.tab.id));
 		case "queryPswd": return qPswd(m.pubKey, s.tab.id);
 		case "returnPswd": return rtnPswd(s.tab.id, m.pubKey, m.pswd);
 		case "contentStarted": return pgVanished(s.tab.id);
-		case "sign-event": return signEvent(m.pubKey, m.event);
+		case "signEvent": return signEvent(m.pubKey, m.event);
 		case "clntChanged": return broadcast({ method: "clntChanged" });
 	}
 });
