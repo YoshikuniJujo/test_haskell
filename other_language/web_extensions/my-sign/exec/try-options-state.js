@@ -1,7 +1,5 @@
 import { OptionsState } from "../src/optionsState.js";
 
-console.log(new OptionsState());
-
 class StorageSessionMock {
 	constructor() {
 		this.data = new Map();
@@ -18,3 +16,9 @@ class StorageSessionMock {
 			this.data.set(key, value);
 	}
 }
+
+const storage = new StorageSessionMock();
+
+const state = await OptionsState.create(storage);
+
+console.log(state);
