@@ -88,6 +88,14 @@ export class InputTabs {
 		await this.#storage.set({ [STORAGE_KEY]: assns });
 	}
 
+	async getInputTabIds()
+	{
+		const assns = await this.#getAssignments();
+		return [...new Set(
+			Object.values(assns).map(tbs => tbs.inputTab)
+		)];
+	}
+
 }
 
 function

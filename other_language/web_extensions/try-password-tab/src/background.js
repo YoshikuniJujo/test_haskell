@@ -1,6 +1,24 @@
 import { InputTabs } from "./inputTabs.js";
+import { log } from "./debug.js";
+
+console.log("*** BACKGROUND BEGIN ***");
+
+await log("background-start");
+
+const data = await browser.storage.local.get("debug-log");
+console.log("LOG debug:", data);
 
 const itbs = new InputTabs();
+
+console.log(await itbs.getInputTabIds());
+
+const foo = await itbs.getInputTabIds();
+
+await log("Input Tabs", { tabs: foo });
+
+await browser.storage.local.set( {
+	debug: Date.now(),
+	tabids: foo } );
 
 browser.runtime.onMessage.addListener((m, s) => { switch (m.method) {
 	case "queryPswd": return qPswd(m.pubKey, s.tab.id);
@@ -38,6 +56,7 @@ qPswd(pk, st)
 		url: browser.runtime.getURL(
 			`input.html?publicKey=${encodeURIComponent(pk)}` ) });
 	const use = await itbs.assign(pk, st, it.id);
+	console.log("qPswd:", await itbs.getInputTabIds())
 	if (use !== it.id) await browser.tabs.remove(it.id);
 	await browser.tabs.update(use, { active: true });
 }
