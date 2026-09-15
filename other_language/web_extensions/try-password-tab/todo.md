@@ -13,6 +13,17 @@ TODO
 	+ [x] mutex.js
 	+ [x] inputTab.js
 	+ [x] manifest.json
+* [ ] タブを閉じたのを検出するのではなくportの切断を検出する
+	+ [x] 入力用タブ側からportをつなぐ
+	+ [x] background側で接続、切断を検出
+	+ [ ] background.jsのはじめで新しいportでつなぎ直す
+	+ [ ] portの切断を検出する
+	+ [ ] portの切断の検出をタブを閉じたことの検出の代やりに使う
+* [ ] メッセージの送受信をportで行うようにする
+* [ ] テスト
+	+ [ ] npm run start
+	+ [ ] bidiによるテスト
+	+ [ ] npm run start-android
 
 DIRECTORY
 ---------

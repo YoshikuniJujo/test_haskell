@@ -5,6 +5,10 @@ const send = document.querySelector("#send");
 const error = document.querySelector("#error");
 const onMessage = browser.runtime.onMessage;
 
+const port = browser.runtime.connect({
+	name: "try-password"
+});
+
 input.focus();
 
 input.addEventListener("keydown", (event) => { if (event.key === "Enter") {

@@ -10,6 +10,13 @@ browser.runtime.onMessage.addListener((m, s) => { switch (m.method) {
 	case "contentStarted": return pgVanished(s.tab.id); } });
 browser.tabs.onRemoved.addListener((t) => pgVanished(t));
 
+browser.runtime.onConnect.addListener(port => {
+	console.log("connected:", port);
+	port.onDisconnect.addListener(() => {
+		console.log("disconnected", port.sender.tab.id);
+	});
+});
+
 async function
 qPswd(pk, st)
 {
