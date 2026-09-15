@@ -7,7 +7,7 @@ export class OptionsState
 	#account;
 	#client;
 
-	constructor(strg)
+	constructor(strg = browser.storage.session)
 	{
 		this.#storage = strg;
 	}
@@ -20,7 +20,7 @@ export class OptionsState
 		this.#client = data[clientKey];
 	}
 
-	static async create(strg) {
+	static async create(strg = browser.storage.session) {
 		const st = new OptionsState(strg);
 		await st.load();
 		return st;

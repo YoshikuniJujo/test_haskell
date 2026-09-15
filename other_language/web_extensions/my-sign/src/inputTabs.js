@@ -20,7 +20,8 @@ export class InputTabs {
 			if (tbs) {
 				addUnique(tbs.sourceTabs, st);
 				use = tbs.inputTab; }
-			else {	assns[pk] = { sourceTabs: [st], inputTab: it }
+			else {	if (st === null) assns[pk] = { sourceTabs: [], inputTab: it };
+				else assns[pk] = { sourceTabs: [st], inputTab: it }
 				use = it; }
 			await this.#setAssignments(assns); return use; }
 		finally { this.#mutex.release(); }
@@ -93,5 +94,5 @@ export class InputTabs {
 function
 addUnique(a, v)
 {
-	if (!a.includes(v)) a.push(v);
+	if (v !== null && !a.includes(v)) a.push(v);
 }

@@ -2,7 +2,9 @@ import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
 
-console.log("barbaz");
+console.log("options begin");
+
+browser.runtime.sendMessage({ method: "optionsStarted" });
 
 const params = new URLSearchParams(location.search);
 const clientUrl = params.get("clientUrl");

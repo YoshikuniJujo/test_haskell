@@ -6,6 +6,9 @@ import * as Bech32 from "./codec/bech32.js"
 
 console.log("background.js");
 
+const itbs = new InputTabs();
+const otbs = new InputTabs();
+
 browser.runtime.onMessage.addListener( async (m, s) => {
 	console.log("message received", m);
 	switch (m.method) {
@@ -18,12 +21,15 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 		case "signEvent": return signEvent(m.pubKey, m.event);
 		case "contentStarted": return pgVanished(s.tab.id);
 		case "clientChanged": return broadcast({ method: "clientChanged" });
+		case "optionsStarted":
+			console.log("background: optionsStarted");
+			console.log(s.tab.id);
+			const use = await itbs.assign("", null, s.tab.id);
+			console.log(use);
+			return;
 	}
 });
 browser.tabs.onRemoved.addListener(pgVanished);
-
-const itbs = new InputTabs();
-const otbs = new InputTabs();
 
 const waitForClientChanged = new Map();
 

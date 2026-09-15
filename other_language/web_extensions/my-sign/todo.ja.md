@@ -88,6 +88,9 @@ TODO
 	+ [x] contentStarted
 	+ [x] clntChanged -> clientChanged
 + [x] 表示領域の背景の色を#rrggbbで指定できるようにする
++ [ ] ブラウザの「拡張機能の設定」から開いた設定画面をInputTabsの管理下に置く
++ [ ] optionsStateのaccountの部分を書く
++ [ ] optionsStateのaccountの部分を実際に使ってみる
 + [ ] options.jsの仕様を考える
 * [ ] options.jsから直接データベース処理をするのではなくbackgroundに依頼するようにする
 	+ [ ] 設定画面の「状態」を表すオブジェクトを設計する
