@@ -15,6 +15,15 @@ browser.runtime.onConnect.addListener(port => {
 	port.onDisconnect.addListener(() => {
 		console.log("disconnected", port.sender.tab.id);
 	});
+
+	port.onMessage.addListener(msg => {
+		console.log(msg);
+	});
+
+	port.postMessage( {
+		type: "hello",
+		message: "おれはチョコの上に乗ってるマシュマロさー"
+	});
 });
 
 async function

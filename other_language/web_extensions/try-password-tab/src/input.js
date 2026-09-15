@@ -9,6 +9,11 @@ const port = browser.runtime.connect({
 	name: "try-password"
 });
 
+port.postMessage({ type: "hello", message: "こにゃにゃちは" });
+
+port.onMessage.addListener(msg => {
+	console.log("received", msg); });
+
 input.focus();
 
 input.addEventListener("keydown", (event) => { if (event.key === "Enter") {
