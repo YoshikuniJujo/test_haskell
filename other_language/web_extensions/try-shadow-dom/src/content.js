@@ -1,8 +1,9 @@
 document.documentElement.style.border = "5px solid green";
 
-(async () => {
-	const div = document.createElement("div");
+const div = document.createElement("div");
+let position
 
+(async () => {
 	Object.assign(div.style, {
 		position: "fixed",
 		padding: "8px 12px",
@@ -20,16 +21,19 @@ document.documentElement.style.border = "5px solid green";
 	document.body.append(div);
 	div.textContent = "Foo Bar";
 
-	setAccountPosition(div, adi);
+	position = { x: adi.positionX, y: adi.positionY };
+	setPosition();
 })();
 
 function
-setAccountPosition(div, adi)
+setPosition()
 {
 	const rect = div.getBoundingClientRect();
-	const left = (innerWidth - rect.width) * adi.positionX / 100;
-	const top = (innerHeight - rect.height) * adi.positionY / 100;
+	const left = (innerWidth - rect.width) * position.x / 100;
+	const top = (innerHeight - rect.height) * position.y / 100;
 	console.log(left, top);
 	div.style.left = `${left}px`
 	div.style.top = `${top}px`
 }
+
+window.addEventListener("resize", () => { setPosition(); });
