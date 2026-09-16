@@ -28,6 +28,8 @@ const backgroundColor = document.querySelector("#background-color");
 const backgroundColor16 = document.querySelector("#background-color-16");
 const backgroundOpacity = document.querySelector("#background-opacity");
 
+const openSettingsByClick = document.querySelector("#open-settings-by-click");
+
 newClient.addEventListener("click", () => openNewClient());
 
 backgroundColor.addEventListener("input", () => {
@@ -198,6 +200,8 @@ loadClientToForm(client)
 	backgroundColor.value = client.backgroundColor ?? "#008000";
 	backgroundColor16.value = client.backgroundColor ?? "#008000";
 	backgroundOpacity.value = client.backgroundOpacity ?? 0.5;
+
+	openSettingsByClick.checked = client.openSettingsByClick ?? true;
 }
 
 const clientFormD = document.querySelector("#client-form-d");
@@ -227,6 +231,8 @@ clientFormD.addEventListener("submit", async event => {
 
 	editingClient.backgroundColor = backgroundColor16.value;
 	editingClient.backgroundOpacity = backgroundOpacity.value;
+
+	editingClient.openSettingsByClick = openSettingsByClick.checked;
 
 	await DB.putClient(editingClient);
 	await loadClients();

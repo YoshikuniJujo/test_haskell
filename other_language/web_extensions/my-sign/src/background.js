@@ -27,6 +27,15 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			const use = await itbs.assign("", null, s.tab.id);
 			console.log(use);
 			return;
+		case "openSettings":
+			console.log("background: openSettings");
+			console.log(s.url);
+			const cl = await getClient(s.url);
+			const ot = await browser.tabs.create({
+				url: browser.runtime.getURL(
+					"options.html?clientUuid=" + encodeURIComponent(cl.uuid) )
+			});
+			return;
 	}
 });
 browser.tabs.onRemoved.addListener(pgVanished);

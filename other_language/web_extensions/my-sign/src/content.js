@@ -82,6 +82,11 @@ const nostr = {
 	}
 }
 
+div.addEventListener("click", () => {
+	console.log("DIV CLICKED");
+	browser.runtime.sendMessage({ method: "openSettings" });
+});
+
 browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 	case "pswdReady":
 		console.log("content: pswdReady");
