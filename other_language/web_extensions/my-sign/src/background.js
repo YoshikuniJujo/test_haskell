@@ -21,12 +21,6 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 		case "signEvent": return signEvent(m.pubKey, m.event);
 		case "contentStarted": return pgVanished(s.tab.id);
 		case "clientChanged": return broadcast({ method: "clientChanged" });
-		case "optionsStarted":
-			console.log("background: optionsStarted");
-			console.log(s.tab.id);
-			const use = await itbs.assign("", null, s.tab.id);
-			console.log(use);
-			return;
 		case "openSettings":
 			console.log("background: openSettings");
 			console.log(s.url);
