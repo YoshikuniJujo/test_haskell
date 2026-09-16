@@ -91,7 +91,7 @@ TODO
 * [x] ブラウザの「拡張機能の設定」から開いた設定画面をInputTabsの管理下に置く
 	+ [x] 置かない置かない
 * [ ] Shadow DOMを試す
-	+ [ ] try-sadow-domを作る
+	+ [ ] try-shadow-domを作る
 	+ [ ] アカウント表示領域のモデルを作る
 	+ [ ] Shadow DOMを試すためのテストページを作成
 	+ [ ] Shadow DOMを実装する
