@@ -2,10 +2,14 @@
 	"manifest_version": 3,
 	"name": "Try Shadow DOM",
 	"version": "0.1.0.0",
+	"permissions": ["storage"],
 	"content_scripts": [
 		{
 			"matches": ["<all_urls>"],
 			"js": ["content.js"]
 		}
-	]
+	],
+	"options_ui": {
+		"page": "options.html"
+	}
 }
