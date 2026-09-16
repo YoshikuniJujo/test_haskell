@@ -99,6 +99,8 @@ TODO
 	+ [x] 透過させない場合のリンクを設定
 * [x] optionsStartedあたりを消していく
 * [x] ブラウザの「拡張機能の設定」から開いた設定画面のあつかいを考える
+* [ ] backgroundの受け取るメッセージをメソッドとして解釈するようにする
+* [ ] options.jsからbackground.jsに送るメッセージの構造を考える
 * [ ] optionsStateのaccountの部分を書く
 * [ ] optionsStateのaccountの部分を実際に使ってみる
 * [ ] options.jsの仕様を考える
@@ -141,3 +143,5 @@ TODO
 * [ ] フォームの内容をデータベースに書き込む時の検証について考える
 	+ とくにBech32.decode()のところ
 	+ 今のところHTML側でvalidateしてJS側では例外を発生させるので良いと考えている
+* [ ] InputTabsにあるverificationについて存在価値を検討する
+* [ ] 「ブラウザが開いた設定画面であることの確認」をするかしないか検討する

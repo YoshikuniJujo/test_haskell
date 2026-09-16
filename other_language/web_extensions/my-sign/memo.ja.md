@@ -205,3 +205,24 @@ options.js
 * 表示領域の色と不透明度
 
 #### アカウント
+
+optionsState.js
+----------------
+
+クラスOptionsStateを定義する。
+まずはアカウント部分について。
+
+### アカウント
+
+まずはgenerateの部分だけを作る。
+
+* generateに必要なのはアカウントの名前とパスワード
+* アカウントの名前は入力のたびにbackgroundに送られる
+* OptionsStateのインスタンスとstorage.sessionに保存される
+* Generateボタンが押されたらパスワードがbackgroundに送られる
+	+ このときフォームは空文字列にする
+	+ 送信前にNFKCにnormalizeしてuint8arrayにしてから送る
+* OptionsStateインスタンスはパスワードを引数として受け取る
+* backgroundのやるべきことを「名前」と「パスワード」を追加して返す
+
+### クライアント

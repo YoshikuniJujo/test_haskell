@@ -30,6 +30,9 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 					"options.html?clientUuid=" + encodeURIComponent(cl.uuid) )
 			});
 			return;
+		case "testOptionsSender":
+			console.log("options sender:", s);
+			return;
 	}
 });
 browser.tabs.onRemoved.addListener(pgVanished);

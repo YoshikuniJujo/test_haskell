@@ -4,6 +4,8 @@ import * as Bech32 from "./codec/bech32.js";
 
 console.log("options begin");
 
+browser.runtime.sendMessage({ method: "testOptionsSender" });
+
 const params = new URLSearchParams(location.search);
 const clientUrl = params.get("clientUrl");
 
