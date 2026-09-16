@@ -86,7 +86,7 @@ p.on("exit", (code) => process.exit(code ?? 1));
     "build": "node scripts/build.js",
     "prerun": "npm run build",
     "run": "node scripts/run.js"
-  },
+  }
 }
 ```
 
