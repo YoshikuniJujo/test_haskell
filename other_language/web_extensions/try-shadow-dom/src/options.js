@@ -1,4 +1,4 @@
-import { putAccountDisplayInfo, getAccountDisplayInfo } from "./db.js"
+import { putAccountDisplayInfo, listAccountDisplayInfos } from "./db.js"
 
 const form = document.querySelector("#form");
 
@@ -18,5 +18,5 @@ form.addEventListener("submit", async event => {
 	console.log("options.js: before put");
 	await putAccountDisplayInfo(adi);
 	console.log("options.js: after put");
-	console.log(await getAccountDisplayInfo());
+	console.log(await listAccountDisplayInfos());
 });

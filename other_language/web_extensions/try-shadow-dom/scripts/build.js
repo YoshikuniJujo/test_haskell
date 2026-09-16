@@ -11,6 +11,12 @@ await esbuild.build({
 });
 
 await esbuild.build({
+	entryPoints: ["src/background.js"],
+	bundle: true,
+	outfile: "dist/background.js"
+});
+
+await esbuild.build({
 	entryPoints: ["src/options.js"],
 	bundle: true,
 	outfile: "dist/options.js"

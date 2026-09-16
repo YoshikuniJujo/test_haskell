@@ -42,7 +42,22 @@ putAccountDisplayInfo(adi)
 }
 
 export async function
-getAccountDisplayInfo()
+getAccountDisplayInfo(q)
+{
+	console.log("getAccountDisplayInfo begin");
+	const db = await open();
+	const { promise: pr, resolve: rs, reject: rj } =
+		Promise.withResolvers();
+	const tx = db.transaction("AccountDisplayInfo", "readonly");
+	const req = tx.objectStore("AccountDisplayInfo").get(q);
+	req.onsuccess = () => rs(req.result);
+	req.onerror = () => rj(req.error);
+	console.log("getAccountDisplayInfo end");
+	return pr
+}
+
+export async function
+listAccountDisplayInfos()
 {
 	const db = await open();
 
