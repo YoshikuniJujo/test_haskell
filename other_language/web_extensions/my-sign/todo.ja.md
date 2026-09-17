@@ -129,6 +129,10 @@ TODO
 	+ [ ] 試す
 * [ ] backgroundの受け取るメッセージをメソッドとして解釈するようにする(続き)
 	+ [ ] classがundefinedではない場合には、classの名前によってswitchして、それぞれの関数を呼ぶ
+* [ ] optionsStateのclientの部分についても同様に作る
+	+ [ ] optionsState.js側を作成
+	+ [ ] options.js側を作成
+	+ [ ] background.js側を作成
 * [ ] ログ表示機能を設定画面に追加する(続き)
 	+ [ ] ログ表示領域をチェックボタンでon/offできるようにする
 * [ ] options.jsの仕様を考える
