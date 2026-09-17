@@ -99,10 +99,13 @@ TODO
 	+ [x] 透過させない場合のリンクを設定
 * [x] optionsStartedあたりを消していく
 * [x] ブラウザの「拡張機能の設定」から開いた設定画面のあつかいを考える
-* [ ] backgroundの受け取るメッセージをメソッドとして解釈するようにする
-* [ ] options.jsからbackground.jsに送るメッセージの構造を考える
+* [x] backgroundの受け取るメッセージをメソッドとして解釈するようにする(途中)
+	+ [x] 今あるメソッドについてはclassやinstanceがundefinedの場合とする
+	+ [x] classがundefinedのときにはそれ用の関数を呼ぶ
 * [ ] optionsStateのaccountの部分を書く
 * [ ] optionsStateのaccountの部分を実際に使ってみる
+* [ ] backgroundの受け取るメッセージをメソッドとして解釈するようにする(続き)
+	+ [ ] classがundefinedではない場合には、classの名前によってswitchして、それぞれの関数を呼ぶ
 * [ ] options.jsの仕様を考える
 * [ ] options.jsから直接データベース処理をするのではなくbackgroundに依頼するようにする
 	+ [ ] 設定画面の「状態」を表すオブジェクトを設計する

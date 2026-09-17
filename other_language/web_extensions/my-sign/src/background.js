@@ -10,6 +10,18 @@ const itbs = new InputTabs();
 const otbs = new InputTabs();
 
 browser.runtime.onMessage.addListener( async (m, s) => {
+	if (typeof m.class === "undefined") return globalMethod(m, s);
+	else if (typeof m.instance === "undefined")
+		throw Error("It need a instance if a class is defined.");
+	else switch (m.class) {
+		default:
+			console.log("no such class: ", m, s);
+	}
+});
+
+async function
+globalMethod(m, s)
+{
 	console.log("message received", m);
 	switch (m.method) {
 		case "accountDisplayInfo": return getAccountMethod(s.url);
@@ -34,7 +46,8 @@ browser.runtime.onMessage.addListener( async (m, s) => {
 			console.log("options sender:", s);
 			return;
 	}
-});
+}
+
 browser.tabs.onRemoved.addListener(pgVanished);
 
 const waitForClientChanged = new Map();
