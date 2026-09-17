@@ -103,7 +103,16 @@ TODO
 	+ [x] 今あるメソッドについてはclassやinstanceがundefinedの場合とする
 	+ [x] classがundefinedのときにはそれ用の関数を呼ぶ
 * [ ] optionsStateのaccountの部分を書く
+	+ [x] アカウント名の入力中にインスタンス側に写しを作る
+	+ [ ] アカウント名の入力中にstorage.sessionに写しを作る
 * [ ] optionsStateのaccountの部分を実際に使ってみる
+	+ [ ] 実際に写しを取ってみる
+	+ [ ] generateボタンを押すとbackground側にメソッドを送る
+	+ [ ] optionsState.jsにgenerateメソッドを作る
+	+ [ ] 実際に動くようにする
+	+ [ ] 古いほうの仕組みを消す
+	+ [ ] symmetric keyをキャッシュするようにする
+	+ [ ] 試す
 * [ ] backgroundの受け取るメッセージをメソッドとして解釈するようにする(続き)
 	+ [ ] classがundefinedではない場合には、classの名前によってswitchして、それぞれの関数を呼ぶ
 * [ ] options.jsの仕様を考える

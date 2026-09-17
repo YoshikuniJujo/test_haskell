@@ -16,13 +16,18 @@ export class OptionsState
 		const data = await this.#storage.get([
 			accountKey,
 			clientKey ]);
-		this.#account = data[accountKey];
-		this.#client = data[clientKey];
+		this.#account = data[accountKey] ?? {};
+		this.#client = data[clientKey] ?? {};
 	}
 
 	static async create(strg = browser.storage.session) {
 		const st = new OptionsState(strg);
 		await st.load();
 		return st;
+	}
+
+	async setAccountName(nm)
+	{
+		this.#account.name = nm;
 	}
 }

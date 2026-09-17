@@ -22,3 +22,7 @@ const storage = new StorageSessionMock();
 const state = await OptionsState.create(storage);
 
 console.log(state);
+
+state.setAccountName("Ali");
+
+console.log(state);
