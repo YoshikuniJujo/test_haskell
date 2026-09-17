@@ -113,6 +113,9 @@ TODO
 	+ [x] ログの読み出し関数を定義する
 	+ [x] ログ表示領域を用意する
 	+ [x] ログを書き出す
+* [ ] options.jsでクエリを読み出す
+	+ [ ] クエリを読み出す
+	+ [ ] console.logやLog.writeで確認する
 * [ ] options.jsが始まったときにbackground.jsにメッセージを送る
 * [ ] background.jsはoptions.jsのタブをタブ管理に置く
 * [ ] InputTabsから入力用タブのIDを全部取り出せるようにする
