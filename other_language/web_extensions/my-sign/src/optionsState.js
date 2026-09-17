@@ -29,5 +29,6 @@ export class OptionsState
 	async setAccountName(nm)
 	{
 		this.#account.name = nm;
+		await this.#storage.set({ [accountKey]: this.#account });
 	}
 }
