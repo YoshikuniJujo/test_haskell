@@ -19,10 +19,14 @@ class StorageSessionMock {
 
 const storage = new StorageSessionMock();
 
-const state = await OptionsState.create(storage);
+const state = await OptionsState.create("", storage);
 
 console.log(state);
 
-state.setAccountName("Ali");
+await state.write("set", "accountName", "Ali");
 
-console.log(state);
+await state.write("set", "accountName", "Alice");
+
+const r = state.write("generateAccount", "password", "hogepiyo");
+
+console.log(r);
