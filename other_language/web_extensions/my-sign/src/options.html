@@ -8,6 +8,7 @@
 		<link rel="stylesheet" href="options.css">
 	</head>
 	<body>
+		<h1>FOOBAR</h1>
 		<form id="generate-form">
 			<label>
 				Account name
@@ -91,8 +92,8 @@
 				<label>
 					Public key
 					<select id="current-key-d" size="8" required></select>
-				<p id="detail-error" role="alert"></p>
 				</label>
+				<p id="detail-error" role="alert"></p>
 				<div class="edit-client-buttons">
 					<button type="button" id="delete-client">Delete</button>
 					<div class="right-buttons">
@@ -104,6 +105,12 @@
 
 		<div id="public-keys"></div>
 		<pre id="for-debug"></pre>
+		</div>
+
+		<section id="logs">
+			<h2>log</h2>
+			<pre id="log-output"></pre>
+		</section>
 
 		<script type="module" src="options.js"></script>
 	</body>

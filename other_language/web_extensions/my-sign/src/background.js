@@ -1,10 +1,12 @@
 import { InputTabs } from "./inputTabs.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
-import * as DB from "./db.js"
+import * as DB from "./db.js";
+import * as Log from "./log.js";
 
-import * as Bech32 from "./codec/bech32.js"
+import * as Bech32 from "./codec/bech32.js";
 
 console.log("background.js");
+Log.write("BACKGROUND BEGIN");
 
 const itbs = new InputTabs();
 const otbs = new InputTabs();
@@ -225,6 +227,7 @@ hexToRgb(hex)
 async function
 pgVanished(vt)
 {
+	console.log("vanished:", vt);
 	const r = await itbs.tabClosed(vt);
 	for (const c of r.toClose) await browser.tabs.remove(c);
 	for (const c of r.cancelled) for (const s of c.sources)

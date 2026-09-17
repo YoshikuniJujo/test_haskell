@@ -17,3 +17,41 @@ open()
 		req.onerror = () => { rj(req.error); };
 	});
 }
+
+export async function
+write(msg)
+{
+	const db = await getDB();
+	const tx = db.transaction(STORE_NAME, "readwrite");
+	const store = tx.objectStore(STORE_NAME);
+
+	store.add({
+		time: Date.now(),
+		message: msg });
+
+	return new Promise((rs, rj) => {
+		tx.oncomplete = rs;
+		tx.onerror = () => rj(tx.error);
+	});
+}
+
+export async function
+readAll()
+{
+	const db = await getDB();
+	const tx = db.transaction(STORE_NAME, "readonly");
+	const store = tx.objectStore(STORE_NAME);
+
+	return new Promise((rs, rj) => {
+		const req = store.getAll();
+		req.onsuccess = () => rs(req.result);
+		req.onerror = () => rj(req.error);
+	});
+}
+
+function
+getDB()
+{
+	if (!dbPromise) dbPromise = open();
+	return dbPromise;
+}

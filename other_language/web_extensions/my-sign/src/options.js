@@ -1,6 +1,7 @@
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
+import * as Log from "./log.js"
 
 console.log("options begin");
 
@@ -262,3 +263,13 @@ document.querySelector("#delete-client").addEventListener("click", async () => {
 	document.querySelector("#clients").hidden = false;
 	document.querySelector("#new-client").hidden = false;
 });
+
+(async () => {
+	console.log("LOG OUTPUT BEGIN");
+	const logOutput = document.querySelector("#log-output");
+	const logs = await Log.readAll();
+	console.log(logs);
+	logOutput.textContent =
+		logs.map(log => `${new Date(log.time).toLocaleString()} ${log.message}`)
+			.join("\n");
+})()
