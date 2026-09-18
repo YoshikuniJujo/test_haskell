@@ -292,3 +292,9 @@ document.querySelector("#delete-client").addEventListener("click", async () => {
 const browserFooter = document.querySelector("#browser-footer");
 
 if (openType === "browser") browserFooter.hidden = false;
+
+const openInTab = document.querySelector("#open-in-tab");
+
+openInTab.addEventListener("click", () => {
+	browser.runtime.sendMessage({ method: "openOptionsInTab" });
+});

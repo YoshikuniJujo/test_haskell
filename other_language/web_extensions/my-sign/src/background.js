@@ -47,6 +47,13 @@ globalMethod(m, s)
 		case "testOptionsSender":
 			console.log("options sender:", s);
 			return;
+		case "openOptionsInTab":
+			console.log("background: openOptionsInTab");
+			await browser.tabs.create({
+				url: browser.runtime.getURL(
+					"options.html?openType=tab&id=tab")
+			});
+			return;
 	}
 }
 
