@@ -4,11 +4,12 @@ const STORAGE_KEY = "857e7986-2f57-4f41-b91f-3d4392a52fcf";
 
 export class InputTabs {
 
-	#storage; #mutex;
+	#storage; #mutex; #key;
 
-	constructor(str = browser.storage.session)
+	constructor(nm, str = browser.storage.session)
 	{
 		this.#storage = str; this.#mutex = new Mutex;
+		this.#key = STORAGE_KEY + ":" + nm;
 	}
 
 	async assign(pk, st, it)
@@ -80,13 +81,13 @@ export class InputTabs {
 
 	async #getAssignments()
 	{
-		const { [STORAGE_KEY]: assns = {} } =
-			await this.#storage.get(STORAGE_KEY); return assns;
+		const { [this.#key]: assns = {} } =
+			await this.#storage.get(this.#key); return assns;
 	}
 
 	async #setAssignments(assns)
 	{
-		await this.#storage.set({ [STORAGE_KEY]: assns });
+		await this.#storage.set({ [this.#key]: assns });
 	}
 
 }

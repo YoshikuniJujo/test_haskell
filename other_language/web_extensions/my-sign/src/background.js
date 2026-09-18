@@ -8,8 +8,8 @@ import * as Bech32 from "./codec/bech32.js";
 console.log("background.js");
 Log.write("BACKGROUND BEGIN");
 
-const itbs = new InputTabs();
-const otbs = new InputTabs();
+const itbs = new InputTabs("input");
+const otbs = new InputTabs("options");
 
 browser.runtime.onMessage.addListener( async (m, s) => {
 	if (typeof m.class === "undefined") return globalMethod(m, s);
@@ -58,9 +58,9 @@ globalMethod(m, s)
 			console.log(use, ot2.id);
 			if (use !== ot2.id) {
 				console.log("remove not used");
-//				await browser.tabs.remove(ot2.id);
+				await browser.tabs.remove(ot2.id);
 			}
-			await browser.tabs.update(use, { active: false });
+			await browser.tabs.update(use, { active: true });
 			return;
 	}
 }
@@ -103,6 +103,7 @@ rgSymkey(tid, pbk, pswd)
 				for (const st of sts)
 					await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: pbk });
 				await browser.tabs.update(sts[0], { active: true });
+//				console.log("TAB REMOVE 0", tid);
 				await browser.tabs.remove(tid);
 				return true; }
 			else {	return false; }
@@ -140,7 +141,10 @@ getPublicKey(url, tid)
 	console.log(ot);
 	console.log("getPublicKey", url, tid, ot.id)
 	const use = await otbs.assign(url, tid, ot.id);
-	if (use != ot.id) await browser.tabs.remove(ot.id);
+	if (use != ot.id) {
+//		console.log("TAB REMOVE 1", tid);
+		await browser.tabs.remove(ot.id);
+	}
 	await browser.tabs.update(use, { active: true });
 	throw new Error("No client matches sender URL: " + url);
 
@@ -179,7 +183,10 @@ qPswd(pk, st)
 			"accountName=" + encodeURIComponent((await getAccount(unhex(pk))).name) +
 			"&publicKey=" + encodeURIComponent(pk) ) });
 	const use = await itbs.assign(pk, st, it.id);
-	if (use != it.id) await browser.tabs.remove(it.id);
+	if (use != it.id) {
+//		console.log("TAB REMOVE 2", tid);
+		await browser.tabs.remove(it.id);
+	}
 	await browser.tabs.update(use, { active: true });
 }
 
@@ -244,7 +251,10 @@ pgVanished(vt)
 {
 	console.log("vanished:", vt);
 	const r = await itbs.tabClosed(vt);
-	for (const c of r.toClose) await browser.tabs.remove(c);
+	for (const c of r.toClose) {
+		console.log("TAB REMOVE 3", c);
+		await browser.tabs.remove(c);
+	}
 	for (const c of r.cancelled) for (const s of c.sources)
 		await browser.tabs.sendMessage(
 			s, { method: "inputPageVanished", pubKey: c.pubKey });
