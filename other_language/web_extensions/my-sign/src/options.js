@@ -50,6 +50,10 @@ backgroundColor.addEventListener("input", () => {
 	backgroundColor16.value = backgroundColor.value;
 });
 
+const optionsError = document.querySelector("#options-error");
+
+let editingClient;
+
 function
 openNewClient(url) {
 	editingClient = {
@@ -68,6 +72,7 @@ openNewClient(url) {
 	document.querySelector("#clients").hidden = true;
 	document.querySelector("#new-client").hidden = true;
 	document.querySelector("#client-detail").hidden = false;
+	optionsError.textContent = "";
 }
 
 if (openType === "url") openNewClient(id);
@@ -165,8 +170,6 @@ displayAccount.addEventListener("change", () => {
 	accountDisplaySettings.hidden = !displayAccount.checked;
 });
 
-let editingClient;
-
 async function
 loadClients()
 {
@@ -185,6 +188,7 @@ loadClients()
 			document.querySelector("#new-client").hidden = true;
 			document.querySelector("#client-detail").hidden = false;
 			document.querySelector("#delete-client").hidden = false;
+			optionsError.textContent = "";
 
 			loadClientToForm(client);
 		});
@@ -260,8 +264,12 @@ clientFormD.addEventListener("submit", async event => {
 	document.querySelector("#clients").hidden = false;
 	document.querySelector("#new-client").hidden = false;
 
-	if (openType === "url")
-		browser.runtime.sendMessage({ method: "clientSubmited", id: id });
+	if (openType === "url") {
+		const r = await browser.runtime.sendMessage(
+			{ method: "clientSubmited", id: id } );
+		console.log("clientSubmited: return:", r);
+		if (!r) optionsError.textContent = "The client does not match the original URL.";
+	}
 });
 
 document.querySelector("#cancel-edit-client").addEventListener("click", () => {

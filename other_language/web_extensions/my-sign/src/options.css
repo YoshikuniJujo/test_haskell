@@ -42,3 +42,7 @@ label {
 .top-buttons {
 	text-align: right;
 }
+
+#options-error {
+	color: #c00;
+}

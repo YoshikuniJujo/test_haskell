@@ -131,9 +131,10 @@ TODO
 	+ [x] クエリを付ける部分を修正する
 	+ [x] クエリを読み出す
 	+ [x] console.logやLog.writeで確認する
-* [ ] URLのerror recoveryでerrorのときにエラーメッセージを表示する
-* [ ] options.jsが始まったときにbackground.jsにメッセージを送る
-* [ ] background.jsはoptions.jsのタブをタブ管理に置く
+* [x] URLのerror recoveryでerrorのときにエラーメッセージを表示する
+	+ [x] clientSubmitedの返り値を表示
+	+ [x] エラー表示領域を作成
+	+ [x] エラーを表示する
 * [ ] InputTabsから入力用タブのIDを全部取り出せるようにする
 * [ ] ログ出力時に設定画面にメッセージを送るようにする
 * [ ] 設定画面はメッセージを受けてログ出力を更新する
