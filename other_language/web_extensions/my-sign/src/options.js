@@ -3,14 +3,29 @@ import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
 import * as Log from "./log.js"
 
+let openType;
+let id;
+
+if (location.search === "") {
+	openType = "browser";
+	id = "browser"; }
+else {
+	const params = new URLSearchParams(location.search);
+	openType = params.get("openType");
+	id = params.get("id");
+}
+
 console.log("options begin");
+console.log("options.js: ", location.search);
 
 browser.runtime.sendMessage({ method: "testOptionsSender" });
 
 const params = new URLSearchParams(location.search);
 const clientUrl = params.get("clientUrl");
+const clientUuid = params.get("clientUuid");
 
 console.log("options: clientUrl = ", clientUrl);
+console.log("options: clientUuid = ", clientUuid);
 
 const newClient = document.querySelector("#new-client");
 
@@ -273,3 +288,7 @@ document.querySelector("#delete-client").addEventListener("click", async () => {
 		logs.map(log => `${new Date(log.time).toLocaleString()} ${log.message}`)
 			.join("\n");
 })()
+
+const browserFooter = document.querySelector("#browser-footer");
+
+if (openType === "browser") browserFooter.hidden = false;

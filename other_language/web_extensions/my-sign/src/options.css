@@ -38,3 +38,7 @@ label {
 	width: 100%;
 	box-sizing: border-box;
 }
+
+.top-buttons {
+	text-align: right;
+}
