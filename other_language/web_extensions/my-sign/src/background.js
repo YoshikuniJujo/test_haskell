@@ -49,10 +49,18 @@ globalMethod(m, s)
 			return;
 		case "openOptionsInTab":
 			console.log("background: openOptionsInTab");
-			await browser.tabs.create({
+			const ot2 = await browser.tabs.create({
+				active: false,
 				url: browser.runtime.getURL(
 					"options.html?openType=tab&id=tab")
 			});
+			const use = await otbs.assign("tab", s.tab.id, ot2.id);
+			console.log(use, ot2.id);
+			if (use !== ot2.id) {
+				console.log("remove not used");
+//				await browser.tabs.remove(ot2.id);
+			}
+			await browser.tabs.update(use, { active: false });
 			return;
 	}
 }
