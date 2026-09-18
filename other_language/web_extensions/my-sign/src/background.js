@@ -5,6 +5,8 @@ import * as Log from "./log.js";
 
 import * as Bech32 from "./codec/bech32.js";
 
+import { addToArrayMap, forEachValues } from "./mapArray.js"
+
 console.log("background.js");
 Log.write("BACKGROUND BEGIN");
 
@@ -54,16 +56,41 @@ globalMethod(m, s)
 				url: browser.runtime.getURL(
 					"options.html?openType=tab&id=tab")
 			});
-			const use = await otbs.assign("tab", s.tab.id, ot2.id);
-			console.log(use, ot2.id);
-			if (use !== ot2.id) {
-				console.log("remove not used");
-				await browser.tabs.remove(ot2.id);
-			}
-			await browser.tabs.update(use, { active: true });
 			return;
 		case "optionsStarted":
 			console.log("background: optionsStarted");
+			const use = await otbs.assign(m.id, null, s.tab.id);
+			if (use !== s.tab.id) {
+				console.log("remove not used");
+				await browser.tabs.remove(s.tab.id);
+			}
+			await browser.tabs.update(use, { active: true });
+			return;
+		case "prepareClient":
+			console.log("background: prepareClient");
+			const c = await getClient(m.clientUrl);
+			console.log("background: getClient return: ", c);
+			if (c !== null) await browser.tabs.sendMessage(s.tab.id, { method: "clientReady", clientUrl: m.clientUrl });
+			else {
+				console.log("c is:", c);
+				const ot = await browser.tabs.create({
+					active: false,
+					url: browser.runtime.getURL(
+						"options.html?openType=url&id=" + encodeURIComponent(m.clientUrl) )
+				});
+				console.log(ot);
+				console.log("getPublicKey", m.clientUrl, s.tab.id, ot.id)
+				const use = await otbs.assign(m.clientUrl, s.tab.id, ot.id);
+				if (use != ot.id) await browser.tabs.remove(ot.id);
+				await browser.tabs.update(use, { active: true }); }
+
+			return;
+		case "clientSubmited":
+			console.log("background: clientSubmited");
+			const sts = await otbs.complete(m.id, s.tab.id);
+			for (const st of sts)
+				await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: m.id });
+			await browser.tabs.update(sts[0], { active: true });
 			return;
 	}
 }
@@ -121,6 +148,8 @@ signEvent(pbk, evt)
 			return acc.signEvent(evt, smk);
 }
 
+const requestsWAitingForClient = new Map();
+
 async function
 getPublicKey(url, tid)
 {
@@ -133,22 +162,22 @@ getPublicKey(url, tid)
 
 	console.log("after Promise.withResolvers");
 
-	waitForClientChanged.set(url, { resolve: rs, reject: rj });
+//	waitForClientChanged.set(url, { resolve: rs, reject: rj });
+	addToArrayMap(waitForClientChanged, url, { resolve: rs, reject: rj });
 
 	console.log(waitForClientChanged);
 
 	const ot = await browser.tabs.create({
+		active: false,
 		url: browser.runtime.getURL(
 			"options.html?openType=url&id=" + encodeURIComponent(url) )
 	});
 	console.log(ot);
 	console.log("getPublicKey", url, tid, ot.id)
 	const use = await otbs.assign(url, tid, ot.id);
-	if (use != ot.id) {
-//		console.log("TAB REMOVE 1", tid);
-		await browser.tabs.remove(ot.id);
-	}
+	if (use != ot.id) await browser.tabs.remove(ot.id);
 	await browser.tabs.update(use, { active: true });
+
 	throw new Error("No client matches sender URL: " + url);
 
 	async function

@@ -223,6 +223,7 @@ const clientNameD = document.querySelector("#client-name-d");
 const urlPatternD = document.querySelector("#url-pattern-d");
 
 clientFormD.addEventListener("submit", async event => {
+	console.log("clientFormD: submit");
 	event.preventDefault();
 
 	editingClient.name = clientNameD.value;
@@ -258,6 +259,8 @@ clientFormD.addEventListener("submit", async event => {
 	document.querySelector("#client-detail").hidden = true;
 	document.querySelector("#clients").hidden = false;
 	document.querySelector("#new-client").hidden = false;
+
+	browser.runtime.sendMessage({ method: "clientSubmited", id: id });
 });
 
 document.querySelector("#cancel-edit-client").addEventListener("click", () => {

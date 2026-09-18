@@ -39,6 +39,7 @@ let account = null;
 
 
 const requestsWaitingForPassword = new Map();
+const waitingForClient = new Map();
 
 const nostr = {
 
@@ -46,6 +47,18 @@ const nostr = {
 	{
 		return new window.Promise(async (rs, rj) => {
 			try {
+
+				const url = location.href;
+				console.log("content.js:", url);
+
+				await new Promise((rs, rj) => {
+					addToArrayMap(
+						waitingForClient, url,
+						{ resolve: rs, reject: rj } );
+					browser.runtime.sendMessage({
+						method: "prepareClient", clientUrl: url });
+				});
+
 				const v = await browser.runtime.sendMessage({
 					method: "publicKey"
 				});
@@ -118,6 +131,11 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 		console.log("content: inputPageVanished");
 		forEachValues(requestsWaitingForPassword,
 			m.pubKey, wtr => wtr.reject(new Error("input page vanished")));
+		break;
+	case "clientReady":
+		console.log("content: clientReady");
+		forEachValues(waitingForClient,
+			m.clientUrl, wtr => wtr.resolve()); break;
 		break;
 } });
 

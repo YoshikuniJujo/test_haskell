@@ -117,18 +117,18 @@ TODO
 	+ [x] タブで開くボタンを追加
 	+ [x] タブで開くボタンからbackgroundにメッセージを送る
 	+ [x] 設定画面を開く
-* [ ] 4個の設定画面の開き方について全部InputTabs.assign()する
+* [x] 4個の設定画面の開き方について全部InputTabs.assign()する
 	+ [x] options.jsからbackgroundにメッセージ
 		- "browser"と"tab"と"UUID"
 		- つまり"URL"以外
 		- optionsStartedあたりか
 	+ [x] クエリを修正するUUIDとURL
-	+ [ ] ブラウザから
-	+ [ ] タブで開く
-	+ [ ] getPublicKeyから
-	+ [ ] アカウント表示領域から
+	+ [x] ブラウザから
+	+ [x] タブで開く
+	+ [x] アカウント表示領域から
+	+ [x] getPublicKeyから
 * [ ] options.jsでクエリを読み出す
-	+ [ ] クエリを付ける部分を修正する
+	+ [x] クエリを付ける部分を修正する
 	+ [x] クエリを読み出す
 	+ [ ] console.logやLog.writeで確認する
 * [ ] options.jsが始まったときにbackground.jsにメッセージを送る

@@ -8,6 +8,7 @@ const p = spawn(
 		"--url", "https://yoshikunijujo.github.io/others/try-sign#account=alice",
 		"--url", "https://yoshikunijujo.github.io/others/try-sign#account=bob",
 		"--url", "https://yoshikunijujo.github.io/others/try-sign#account=carol",
+		"--url", "https://yoshikunijujo.github.io/others/try-sign#account=dave",
 		"--url", "about:debugging#/runtime/this-firefox",
 		"--url", "about:addons"
 	],
