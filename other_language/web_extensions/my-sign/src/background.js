@@ -41,7 +41,7 @@ globalMethod(m, s)
 			const cl = await getClient(s.url);
 			const ot = await browser.tabs.create({
 				url: browser.runtime.getURL(
-					"options.html?clientUuid=" + encodeURIComponent(cl.uuid) )
+					"options.html?openType=uuid&id=" + encodeURIComponent(cl.uuid) )
 			});
 			return;
 		case "testOptionsSender":
@@ -61,6 +61,9 @@ globalMethod(m, s)
 				await browser.tabs.remove(ot2.id);
 			}
 			await browser.tabs.update(use, { active: true });
+			return;
+		case "optionsStarted":
+			console.log("background: optionsStarted");
 			return;
 	}
 }
@@ -136,7 +139,7 @@ getPublicKey(url, tid)
 
 	const ot = await browser.tabs.create({
 		url: browser.runtime.getURL(
-			"options.html?clientUrl=" + encodeURIComponent(url) )
+			"options.html?openType=url&id=" + encodeURIComponent(url) )
 	});
 	console.log(ot);
 	console.log("getPublicKey", url, tid, ot.id)

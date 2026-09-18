@@ -24,11 +24,6 @@ if (openType !== "url") browser.runtime.sendMessage(
 browser.runtime.sendMessage({ method: "testOptionsSender" });
 
 const params = new URLSearchParams(location.search);
-const clientUrl = params.get("clientUrl");
-const clientUuid = params.get("clientUuid");
-
-console.log("options: clientUrl = ", clientUrl);
-console.log("options: clientUuid = ", clientUuid);
 
 const newClient = document.querySelector("#new-client");
 
@@ -75,7 +70,7 @@ openNewClient(url) {
 	document.querySelector("#client-detail").hidden = false;
 }
 
-if (clientUrl !== null) openNewClient(clientUrl);
+if (openType === "url") openNewClient(id);
 
 const form = document.querySelector("#generate-form");
 const accName = document.querySelector("#account-name");

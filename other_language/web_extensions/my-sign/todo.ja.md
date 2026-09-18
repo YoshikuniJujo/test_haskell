@@ -122,7 +122,7 @@ TODO
 		- "browser"と"tab"と"UUID"
 		- つまり"URL"以外
 		- optionsStartedあたりか
-	+ [ ] クエリを修正するUUIDとURL
+	+ [x] クエリを修正するUUIDとURL
 	+ [ ] ブラウザから
 	+ [ ] タブで開く
 	+ [ ] getPublicKeyから
