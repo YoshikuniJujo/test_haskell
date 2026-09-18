@@ -87,11 +87,16 @@ globalMethod(m, s)
 			return;
 		case "clientSubmited":
 			console.log("background: clientSubmited");
-			const sts = await otbs.complete(m.id, s.tab.id);
-			for (const st of sts)
-				await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: m.id });
-			await browser.tabs.update(sts[0], { active: true });
-			return;
+			const clnt = await getClient(m.id);
+			console.log("background: clientSubmited:", clnt);
+			if (clnt !== null) {
+				const sts = await otbs.complete(m.id, s.tab.id);
+				for (const st of sts)
+					await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: m.id });
+				await browser.tabs.update(sts[0], { active: true });
+				await browser.tabs.remove(s.tab.id);
+				return true; }
+			else return false;
 	}
 }
 

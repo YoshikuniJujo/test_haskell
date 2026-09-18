@@ -260,7 +260,8 @@ clientFormD.addEventListener("submit", async event => {
 	document.querySelector("#clients").hidden = false;
 	document.querySelector("#new-client").hidden = false;
 
-	browser.runtime.sendMessage({ method: "clientSubmited", id: id });
+	if (openType === "url")
+		browser.runtime.sendMessage({ method: "clientSubmited", id: id });
 });
 
 document.querySelector("#cancel-edit-client").addEventListener("click", () => {

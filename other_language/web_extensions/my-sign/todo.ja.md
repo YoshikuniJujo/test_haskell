@@ -127,10 +127,11 @@ TODO
 	+ [x] タブで開く
 	+ [x] アカウント表示領域から
 	+ [x] getPublicKeyから
-* [ ] options.jsでクエリを読み出す
+* [x] options.jsでクエリを読み出す
 	+ [x] クエリを付ける部分を修正する
 	+ [x] クエリを読み出す
-	+ [ ] console.logやLog.writeで確認する
+	+ [x] console.logやLog.writeで確認する
+* [ ] URLのerror recoveryでerrorのときにエラーメッセージを表示する
 * [ ] options.jsが始まったときにbackground.jsにメッセージを送る
 * [ ] background.jsはoptions.jsのタブをタブ管理に置く
 * [ ] InputTabsから入力用タブのIDを全部取り出せるようにする
