@@ -137,6 +137,9 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 		forEachValues(waitingForClient,
 			m.clientUrl, wtr => wtr.resolve()); break;
 		break;
+	case "optionPageVanished":
+		console.log("content: clientPageVanished");
+		break;
 } });
 
 window.wrappedJSObject.nostr =

@@ -295,4 +295,15 @@ pgVanished(vt)
 	for (const c of r.cancelled) for (const s of c.sources)
 		await browser.tabs.sendMessage(
 			s, { method: "inputPageVanished", pubKey: c.pubKey });
+
+	console.log("otbs");
+	const s = await otbs.tabClosed(vt);
+	console.log(s);
+	for (const d of s.toClose) {
+		console.log("TAB REMOVE 4", d);
+		await browser.tabs.remove(d);
+	}
+	for (const d of s.cancelled) for (const s of d.sources)
+		await browser.tabs.sendMessage(
+			s, { method: "optionPageVanished", clientUrl: d.pubKey });
 }
