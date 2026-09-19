@@ -13,6 +13,12 @@ Log.write("BACKGROUND BEGIN");
 const itbs = new InputTabs("input");
 const otbs = new InputTabs("options");
 
+(async () => {
+	const ots = await otbs.inputTabs();
+	Log.write(`Options tabs: ${ots}`);
+
+})();
+
 browser.runtime.onMessage.addListener( async (m, s) => {
 	if (typeof m.class === "undefined") return globalMethod(m, s);
 	else if (typeof m.instance === "undefined")

@@ -25,6 +25,8 @@ write(msg)
 	const tx = db.transaction(STORE_NAME, "readwrite");
 	const store = tx.objectStore(STORE_NAME);
 
+	console.log("LOG: msg =", msg);
+
 	store.add({
 		time: Date.now(),
 		message: msg });
