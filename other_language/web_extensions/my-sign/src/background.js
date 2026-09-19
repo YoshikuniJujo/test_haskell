@@ -302,6 +302,9 @@ pgVanished(vt)
 		await browser.tabs.sendMessage(
 			s, { method: "inputPageVanished", pubKey: c.pubKey });
 
+	console.log("pgVanished:", r.cancelled[0]);
+	browser.tabs.update(r.cancelled[0]?.sources[0], { active: true });
+
 	console.log("otbs");
 	const s = await otbs.tabClosed(vt);
 	console.log(s);
