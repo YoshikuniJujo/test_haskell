@@ -315,4 +315,6 @@ pgVanished(vt)
 	for (const d of s.cancelled) for (const s of d.sources)
 		await browser.tabs.sendMessage(
 			s, { method: "optionPageVanished", clientUrl: d.pubKey });
+
+	browser.tabs.update(s.cancelled[0]?.sources[0], { active: true });
 }

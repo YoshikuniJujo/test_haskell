@@ -37,6 +37,23 @@ let account = null;
 	document.body.append(div);
 })();
 
+const error = document.createElement("div");
+error.popover = "manual";
+error.textContent = "Password input was canceled";
+
+Object.assign(error.style, {
+	color: "white",
+	background: "rgba(220, 0, 0, 0.5)",
+	padding: "0.7em 1.2em",
+	border: "none",
+	borderRadius: "0.3em",
+	pointerEvents: "none"
+});
+
+document.body.prepend(error);
+
+document.addEventListener("input", () => error.hidePopover());
+
 
 const requestsWaitingForPassword = new Map();
 const waitingForClient = new Map();
@@ -90,7 +107,7 @@ const nostr = {
 				});
 				rs(cloneInto(sig, window));
 			}
-			catch (e) { rj(cloneInto(e, window)); }
+			catch (e) { setTimeout(() => { rj(cloneInto(e, window)) }, 0); }
 		});
 	}
 }
@@ -130,7 +147,10 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 	case "inputPageVanished":
 		console.log("content: inputPageVanished");
 		forEachValues(requestsWaitingForPassword,
-			m.pubKey, wtr => wtr.reject(new Error("input page vanished")));
+			m.pubKey, wtr => {
+				error.showPopover();
+				wtr.reject(new Error("input page vanished"))
+			});
 		break;
 	case "clientReady":
 		console.log("content: clientReady");
