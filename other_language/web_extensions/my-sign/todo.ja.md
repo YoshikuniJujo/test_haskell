@@ -159,6 +159,7 @@ TODO
 	+ [ ] ブラウザの設定画面
 	+ [ ] タブとして開いた設定画面
 	+ [ ] getPublicKeyのリカバリのための設定画面
+* [ ] InputTabsから[(key, value)]を取り出せるようにする
 * [ ] optionPageVanishedを修正 -> optionsPageVanished
 * [ ] ログ出力時に設定画面にメッセージを送るようにする
 * [ ] 設定画面はメッセージを受けてログ出力を更新する
