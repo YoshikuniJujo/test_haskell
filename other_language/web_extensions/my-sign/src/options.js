@@ -303,6 +303,7 @@ document.querySelector("#delete-client").addEventListener("click", async () => {
 	logOutput.textContent =
 		logs.map(log => `${new Date(log.time).toLocaleString()} ${log.message}`)
 			.join("\n");
+	logOutput.scrollTop = logOutput.scrollHeight;
 })()
 
 const browserFooter = document.querySelector("#browser-footer");
