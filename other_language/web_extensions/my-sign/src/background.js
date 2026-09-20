@@ -47,12 +47,23 @@ globalMethod(m, s)
 			console.log("background: openSettings");
 			console.log(s.url);
 			const cl = await getClient(s.url);
-			const ot = await browser.tabs.create({
-				active: false,
-				url: browser.runtime.getURL(
-					"options.html?openType=uuid&id=" + encodeURIComponent(cl.uuid) )
-			});
-			const use = await otbs.assign(cl.uuid, s.tab.id, ot.id)
+			let ot;
+			let use;
+			if (await DB.getUseClientSet()) {
+				ot = await browser.tabs.create({
+					active: false,
+					url: browser.runtime.getURL(
+						"options.html?openType=set&id=set")
+				});
+				use = await otbs.assign("set", s.tab.id, ot.id)
+			}
+			else {	ot = await browser.tabs.create({
+					active: false,
+					url: browser.runtime.getURL(
+						"options.html?openType=uuid&id=" + encodeURIComponent(cl.uuid) )
+				});
+				use = await otbs.assign(cl.uuid, s.tab.id, ot.id)
+			}
 			console.log("openSettings:", use);
 			if (use !== ot.id) {
 				await browser.tabs.remove(ot.id);
