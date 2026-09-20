@@ -46,3 +46,8 @@ label {
 #options-error {
 	color: #c00;
 }
+
+#log-output {
+	max-height: 20em;
+	overflow-y: auto;
+}
