@@ -44,6 +44,8 @@ const backgroundOpacity = document.querySelector("#background-opacity");
 
 const openSettingsByClick = document.querySelector("#open-settings-by-click");
 
+const useClientSet = document.querySelector("#use-client-set");
+
 newClient.addEventListener("click", () => openNewClient());
 
 backgroundColor.addEventListener("input", () => {
