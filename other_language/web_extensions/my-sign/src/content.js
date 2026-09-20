@@ -161,8 +161,10 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 		break;
 	case "optionPageVanished":
 		console.log("content: clientPageVanished");
-		forEachValues(waitingForClient,
-			m.clientUrl, wtr => wtr.reject(new Error ("options page vanished")));
+		console.log(m);
+		if (m.isUrl)
+			forEachValues(waitingForClient,
+				m.clientUrl, wtr => wtr.reject(new Error ("options page vanished")));
 		break;
 } });
 
