@@ -48,10 +48,7 @@ Object.assign(error.style, {
 	border: "none",
 	borderRadius: "0.3em",
 	pointerEvents: "none",
-	position: "fixed",
-	left: "50%",
-	top: "50%",
-	transform: "translate(-50%, -50%)"
+	position: "fixed"
 });
 
 document.body.prepend(error);
@@ -153,6 +150,7 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 		forEachValues(requestsWaitingForPassword,
 			m.pubKey, wtr => {
 				error.showPopover();
+				setErrorPosition();
 				wtr.reject(new Error("input page vanished"))
 			});
 		break;
@@ -185,4 +183,15 @@ setAccountPosition(account)
 
 window.addEventListener("resize", () => {
 	if (!div.hidden) setAccountPosition(account);
+	if (error.matches(":popover-open")) setErrorPosition();
 });
+
+function
+setErrorPosition() {
+	const ss = getComputedStyle(error);
+	error.style.inset = "auto";
+	error.style.margin = "0";
+	const rect = error.getBoundingClientRect();
+	error.style.left = `${(innerWidth - rect.width) / 2}px`;
+	error.style.top = `${(innerHeight - rect.height) / 2}px`;
+}
