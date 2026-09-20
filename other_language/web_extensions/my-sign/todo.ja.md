@@ -165,11 +165,11 @@ TODO
 	+ [x] ブラウザの設定画面
 	+ [x] タブとして開いた設定画面
 	+ [x] getPublicKeyのリカバリのための設定画面
-* [ ] InputTabsから[(key, value)]を取り出せるようにする
-* [ ] optionPageVanishedを修正 -> optionsPageVanished
+* [x] InputTabsから[(key, value)]を取り出せるようにする
 * [ ] ログ出力時に設定画面にメッセージを送るようにする
 * [ ] 設定画面はメッセージを受けてログ出力を更新する
 * [ ] OptionsStateインスタンスをbackgroundが復元するところを書く
+* [ ] optionPageVanishedを修正 -> optionsPageVanished
 * [ ] optionsStateのaccountの部分を実際に使ってみる
 	+ [ ] 初期化メッセージを送ってきた設定画面についてOptionsStateインスタンスを生成する
 	+ [ ] 実際に写しを取ってみる
