@@ -43,15 +43,23 @@ globalMethod(m, s)
 		case "signEvent": return signEvent(m.pubKey, m.event);
 		case "contentStarted": return pgVanished(s.tab.id);
 		case "clientChanged": return broadcast({ method: "clientChanged" });
-		case "openSettings":
+		case "openSettings": {
 			console.log("background: openSettings");
 			console.log(s.url);
 			const cl = await getClient(s.url);
 			const ot = await browser.tabs.create({
+				active: false,
 				url: browser.runtime.getURL(
 					"options.html?openType=uuid&id=" + encodeURIComponent(cl.uuid) )
 			});
+			const use = await otbs.assign(cl.uuid, s.tab.id, ot.id)
+			console.log("openSettings:", use);
+			if (use !== ot.id) {
+				await browser.tabs.remove(ot.id);
+			}
+			await browser.tabs.update(use, { active: true });
 			return;
+		}
 		case "testOptionsSender":
 			console.log("options sender:", s);
 			return;
@@ -307,7 +315,7 @@ pgVanished(vt)
 
 	console.log("otbs");
 	const s = await otbs.tabClosed(vt);
-	console.log(s);
+	console.log("pgVanished:", s);
 	for (const d of s.toClose) {
 		console.log("TAB REMOVE 4", d);
 		await browser.tabs.remove(d);

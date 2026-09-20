@@ -47,7 +47,11 @@ Object.assign(error.style, {
 	padding: "0.7em 1.2em",
 	border: "none",
 	borderRadius: "0.3em",
-	pointerEvents: "none"
+	pointerEvents: "none",
+	position: "fixed",
+	left: "50%",
+	top: "50%",
+	transform: "translate(-50%, -50%)"
 });
 
 document.body.prepend(error);

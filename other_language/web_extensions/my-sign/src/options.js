@@ -18,7 +18,7 @@ else {
 console.log("options begin");
 console.log("options.js: ", location.search);
 
-if (openType !== "url") browser.runtime.sendMessage(
+if (openType !== "url" && openType !== "uuid") browser.runtime.sendMessage(
 	{ method: "optionsStarted", id: id } );
 
 browser.runtime.sendMessage({ method: "testOptionsSender" });
