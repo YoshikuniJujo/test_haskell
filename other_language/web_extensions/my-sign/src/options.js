@@ -46,6 +46,10 @@ const openSettingsByClick = document.querySelector("#open-settings-by-click");
 
 const useClientSet = document.querySelector("#use-client-set");
 
+(async () => { useClientSet.checked = await DB.getUseClientSet(); })()
+
+useClientSet.addEventListener("change", async () => { await DB.putUseClientSet(useClientSet.checked); })
+
 newClient.addEventListener("click", () => openNewClient());
 
 backgroundColor.addEventListener("input", () => {
