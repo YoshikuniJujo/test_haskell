@@ -315,14 +315,19 @@ pgVanished(vt)
 
 	console.log("otbs");
 	const s = await otbs.tabClosed(vt);
-	console.log("pgVanished:", s);
+	console.log("*** pgVanished:", s);
+	console.log("*** pgVanished:", s.toClose);
+	console.log("*** pgVanished:", s.cancelled);
 	for (const d of s.toClose) {
 		console.log("TAB REMOVE 4", d);
 		await browser.tabs.remove(d);
 	}
-	for (const d of s.cancelled) for (const s of d.sources)
+	console.log("HERE");
+	for (const d of s.cancelled) for (const s of d.sources) {
+		console.log(s);
 		await browser.tabs.sendMessage(
 			s, { method: "optionPageVanished", clientUrl: d.pubKey });
+	}
 
 	browser.tabs.update(s.cancelled[0]?.sources[0], { active: true });
 }
