@@ -93,9 +93,9 @@ export class InputTabs {
 	async keyInputTabs()
 	{
 		const assns = await this.#getAssignments();
-		const r = {};
 		console.log("keyInputTabs():", assns);
-		const keyInputTabs = Object.keys(assns).map(k => r[k] = assns[k].inputTab);
+		const r = {};
+		Object.entries(assns).forEach(([k, v]) => { r[k] = v.inputTab });
 		return r;
 	}
 
