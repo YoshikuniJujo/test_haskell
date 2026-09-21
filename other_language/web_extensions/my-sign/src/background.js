@@ -1,7 +1,7 @@
 import { InputTabs } from "./inputTabs.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js";
-import * as Log from "./log.js";
+import { Log } from "./log2.js";
 
 import * as Bech32 from "./codec/bech32.js";
 
@@ -18,6 +18,8 @@ const otbs = new InputTabs("options");
 	Log.write(`Options tabs: ${ots}`);
 	const otkits = await otbs.keyInputTabs();
 	Log.write(`Options key-tabs: ${JSON.stringify(otkits)}`);
+
+	Log.setLogTabs(ots);
 
 })();
 
@@ -124,6 +126,10 @@ globalMethod(m, s)
 				await browser.tabs.remove(s.tab.id);
 				return true; }
 			else return false;
+		case "addLogTab":
+			console.log("addLogTab");
+			Log.addLogTab(s.tab.id);
+			return;
 	}
 }
 
@@ -343,6 +349,9 @@ pgVanished(vt)
 	}
 
 	browser.tabs.update(s.cancelled[0]?.sources[0], { active: true });
+
+	const ots = Object.values(await otbs.keyInputTabs());
+	Log.setLogTabs(ots);
 }
 
 function

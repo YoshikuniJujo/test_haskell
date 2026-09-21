@@ -1,7 +1,7 @@
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
-import * as Log from "./log.js"
+import { Log } from "./log2.js"
 
 let openType;
 let id;
@@ -20,6 +20,8 @@ console.log("options.js: ", location.search);
 
 if (openType !== "url" && openType !== "uuid" && openType !== "set") browser.runtime.sendMessage(
 	{ method: "optionsStarted", id: id } );
+
+browser.runtime.sendMessage({ method: "addLogTab" });
 
 browser.runtime.sendMessage({ method: "testOptionsSender" });
 

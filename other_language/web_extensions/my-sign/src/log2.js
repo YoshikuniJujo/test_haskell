@@ -1,8 +1,12 @@
+export const Log = (() => {
+
 const DB_NAME = "my-sign-log";
 const DB_VERSION = 1;
 const STORE_NAME = "log";
 
 let dbPromise;
+
+let logTabs = new Set();
 
 function
 open()
@@ -18,8 +22,16 @@ open()
 	});
 }
 
-export async function
-write(msg)
+function
+getDB()
+{
+	if (!dbPromise) dbPromise = open();
+	return dbPromise;
+}
+
+return {
+
+async write(msg)
 {
 	const db = await getDB();
 	const tx = db.transaction(STORE_NAME, "readwrite");
@@ -35,10 +47,9 @@ write(msg)
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
 	});
-}
+},
 
-export async function
-readAll()
+async readAll()
 {
 	const db = await getDB();
 	const tx = db.transaction(STORE_NAME, "readonly");
@@ -49,11 +60,20 @@ readAll()
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
 	});
+},
+
+setLogTabs(tids)
+{
+	logTabs = new Set(tids);
+	console.log("setLogTabs", logTabs);
+},
+
+addLogTab(tid)
+{
+	logTabs.add(tid);
+	console.log("addLogTab", logTabs);
 }
 
-function
-getDB()
-{
-	if (!dbPromise) dbPromise = open();
-	return dbPromise;
-}
+};
+
+})();
