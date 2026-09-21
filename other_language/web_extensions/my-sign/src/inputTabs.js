@@ -90,15 +90,6 @@ export class InputTabs {
 		await this.#storage.set({ [this.#key]: assns });
 	}
 
-	async inputTabs()
-	{
-		const assns = await this.#getAssignments();
-		console.log("inputTabs():", assns);
-		const inputTabs = Object.values(assns).map(tb => tb.inputTab);
-		console.log("inputTabs(): inputTagbs =", inputTabs);
-		return inputTabs;
-	}
-
 	async keyInputTabs()
 	{
 		const assns = await this.#getAssignments();

@@ -178,8 +178,12 @@ TODO
 	+ [x] getPublicKeyのリカバリから開いた設定画面
 	+ [x] 「アカウント表示領域」から開いた設定画面(set不使用時)
 	+ [x] 「アカウント表示領域」から開いた設定画面(set使用時)
-* [ ] InputTabsから返すのはkeyだけでいいかもしれない
+* [x] InputTabsから返すのはkeyだけでいいかもしれない(そうじゃないかもしれない)
 	+ tab idはOptionsStateに保存する
+	+ むしろtab idはInputTabs側に保存するべきかもしれない
+* [x] InputTabs.inputTabsは消す
+	+ [x] InputTabs.keyInputTabsを使うようにする
+	+ InputTabs.keyInputTabsを残す
 * [ ] ログ出力時に設定画面にメッセージを送るようにする
 * [ ] 設定画面はメッセージを受けてログ出力を更新する
 * [ ] OptionsStateインスタンスをbackgroundが復元するところを書く

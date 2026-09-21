@@ -14,7 +14,7 @@ const itbs = new InputTabs("input");
 const otbs = new InputTabs("options");
 
 (async () => {
-	const ots = await otbs.inputTabs();
+	const ots = Object.values(await otbs.keyInputTabs());
 	Log.write(`Options tabs: ${ots}`);
 	const otkits = await otbs.keyInputTabs();
 	Log.write(`Options key-tabs: ${JSON.stringify(otkits)}`);
