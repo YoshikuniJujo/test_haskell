@@ -317,3 +317,22 @@ const openInTab = document.querySelector("#open-in-tab");
 openInTab.addEventListener("click", () => {
 	browser.runtime.sendMessage({ method: "openOptionsInTab" });
 });
+
+browser.runtime.onMessage.addListener((m, s) => {
+	console.log("options.js", m, s);
+	switch(m.method) {
+		case "logUpdated":
+			(async () => {
+				console.log("logUpdated");
+				console.log("LOG OUTPUT BEGIN");
+				const logOutput = document.querySelector("#log-output");
+				const logs = await Log.readAll();
+				console.log(logs);
+				logOutput.textContent =
+					logs.map(log => `${new Date(log.time).toLocaleString()} ${log.message}`)
+						.join("\n");
+				logOutput.scrollTop = logOutput.scrollHeight;
+				return; })();
+		default: return;
+	}
+});

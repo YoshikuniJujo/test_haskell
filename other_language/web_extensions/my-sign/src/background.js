@@ -23,7 +23,7 @@ const otbs = new InputTabs("options");
 
 })();
 
-browser.runtime.onMessage.addListener( async (m, s) => {
+browser.runtime.onMessage.addListener( (m, s) => {
 	if (typeof m.class === "undefined") return globalMethod(m, s);
 	else if (typeof m.instance === "undefined")
 		throw Error("It need a instance if a class is defined.");
@@ -43,7 +43,7 @@ globalMethod(m, s)
 			return hex(await getPublicKey(s.url, s.tab.id));
 		case "prepareSymmetricKey": return qPswd(m.pubKey, s.tab.id);
 		case "registerSymmetricKey":
-			return rgSymkey(s.tab.id, m.pubKey, m.pswd);
+			return await rgSymkey(s.tab.id, m.pubKey, m.pswd);
 		case "signEvent": return signEvent(m.pubKey, m.event);
 		case "contentStarted": return pgVanished(s.tab.id);
 		case "clientChanged": return broadcast({ method: "clientChanged" });
@@ -167,12 +167,14 @@ rgSymkey(tid, pbk, pswd)
 				pswds[pbk] = await acc2.getSymmetricKey(pswd);
 				await browser.storage.session.set({ pswds });
 
+				console.log("*** rgSymkey ***");
 				const sts = await itbs.complete(pbk, tid);
 				for (const st of sts)
 					await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: pbk });
 				await browser.tabs.update(sts[0], { active: true });
 //				console.log("TAB REMOVE 0", tid);
 				await browser.tabs.remove(tid);
+				console.log("*** rgSymkey: return true ***");
 				return true; }
 			else {	return false; }
 }

@@ -29,6 +29,7 @@ sendPswd(p)
 {
 	const ok = await browser.runtime.sendMessage({
 		method: "registerSymmetricKey", pubKey, pswd: p });
+	console.log("*** sendPswd", ok);
 	if (!ok) { error.hidden = false; input.value = ""; }
 }
 

@@ -43,6 +43,12 @@ async write(msg)
 		time: Date.now(),
 		message: msg });
 
+	console.log("log2 write:", logTabs);
+	for (const tid of logTabs) {
+		console.log("log2 write", tid);
+		await browser.tabs.sendMessage(tid, { method: "logUpdated" });
+	}
+
 	return new Promise((rs, rj) => {
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
