@@ -14,10 +14,13 @@ const itbs = new InputTabs("input");
 const otbs = new InputTabs("options");
 
 (async () => {
-	const ots = Object.values(await otbs.keyInputTabs());
+	const ots = [...(await otbs.keyInputTabs())]
+		.filter(([key]) => key !== "browser")
+		.map(([, value]) => value);
+//	Log.write(`Options tabs: ${[...ots]}`);
 	Log.write(`Options tabs: ${ots}`);
-	const otkits = await otbs.keyInputTabs();
-	Log.write(`Options key-tabs: ${JSON.stringify(otkits)}`);
+//	const otkits = await otbs.keyInputTabs();
+//	Log.write(`Options key-tabs: ${JSON.stringify(otkits)}`);
 
 	Log.setLogTabs(ots);
 
@@ -352,7 +355,9 @@ pgVanished(vt)
 
 	browser.tabs.update(s.cancelled[0]?.sources[0], { active: true });
 
-	const ots = Object.values(await otbs.keyInputTabs());
+	const ots = [...(await otbs.keyInputTabs())]
+		.filter(([key]) => key !== "browser")
+		.map(([, value]) => value);
 	Log.setLogTabs(ots);
 }
 

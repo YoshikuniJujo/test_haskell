@@ -201,7 +201,8 @@ TODO
 		- [x] options.js
 		- [x] background.js
 	+ [ ] logUpdatedの送信に使ってみる
-		- [ ] log.writeにはidがbrowser以外のtab idを引数としてわたす
+		- [x] keyInputTabsの返り値をオブジェクトからMapにする
+		- [x] log.writeにはidがbrowser以外のtab idを引数としてわたす
 		- [ ] focusのときにensurePortをする
 * [ ] portを使ったlogの処理をテストしてみる
 	+ [ ] 独立したタブである3通りについて試してみる
