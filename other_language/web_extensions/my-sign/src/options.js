@@ -336,3 +336,14 @@ browser.runtime.onMessage.addListener((m, s) => {
 		default: return;
 	}
 });
+
+let port = null;
+
+function
+ensurePort()
+{
+	if (port) return port;
+	port = browser.runtime.connect({ name: id });
+	port.onDisconnect.addListener(() => { port = null });
+	return port;
+}

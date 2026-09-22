@@ -196,6 +196,11 @@ TODO
 	+ [x] optionsタブでメッセージを受け取り、ログを更新するようにする
 * [x] 設定画面はメッセージを受けてログ出力を更新する
 * [ ] logUpdatedの送信をconnect/portを利用するようにする
+	+ [x] background.jsとoptions.jsにensurePortを定義する
+	+ [ ] onConnectを定義
+	+ [ ] logUpdatedの送信に使ってみる
+		- [ ] log.writeにはidがbrowser以外のtab idを引数としてわたす
+		- [ ] focusのときにensurePortをする
 * [ ] OptionsStateインスタンスをbackgroundが復元するところを書く
 * [ ] optionPageVanishedを修正 -> optionsPageVanished
 * [ ] optionsStateのaccountの部分を実際に使ってみる

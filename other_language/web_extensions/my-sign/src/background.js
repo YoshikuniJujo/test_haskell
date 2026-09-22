@@ -366,3 +366,19 @@ isUrl(s)
 		return false;
 	}
 }
+
+const ports = new Map();
+
+function
+ensurePort(tabId)
+{
+	let port = ports.get(tabId);
+	if (!port) {
+		port = browser.tabs.connect(tabId);
+		ports.set(tabId, port);
+		port.onDisconnect.addListener(() => {
+			if (ports.get(tabId) === port) ports.delete(tabId);
+		});
+	}
+	return port;
+}
