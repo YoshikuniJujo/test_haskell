@@ -197,10 +197,19 @@ TODO
 * [x] 設定画面はメッセージを受けてログ出力を更新する
 * [ ] logUpdatedの送信をconnect/portを利用するようにする
 	+ [x] background.jsとoptions.jsにensurePortを定義する
-	+ [ ] onConnectを定義
+	+ [x] onConnectを定義
+		- [x] options.js
+		- [x] background.js
 	+ [ ] logUpdatedの送信に使ってみる
 		- [ ] log.writeにはidがbrowser以外のtab idを引数としてわたす
 		- [ ] focusのときにensurePortをする
+* [ ] portを使ったlogの処理をテストしてみる
+	+ [ ] 独立したタブである3通りについて試してみる
+	+ [ ] ブラウザの設定画面に組み込まれたものについて試してみる
+	+ [ ] focusか発火しない場合について試す
+		- [ ] 60秒後にcontent.jsからbackgroundにメッセージを送るようなコードを書く
+			* 上はアカウント表示領域のクリックに関連づければ良さそう
+		- [ ] 独立したタブを開いて60秒待つ
 * [ ] OptionsStateインスタンスをbackgroundが復元するところを書く
 * [ ] optionPageVanishedを修正 -> optionsPageVanished
 * [ ] optionsStateのaccountの部分を実際に使ってみる

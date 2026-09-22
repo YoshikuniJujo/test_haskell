@@ -343,7 +343,17 @@ function
 ensurePort()
 {
 	if (port) return port;
-	port = browser.runtime.connect({ name: id });
-	port.onDisconnect.addListener(() => { port = null });
+	setPort(browser.runtime.connect({ name: id }));
 	return port;
+}
+
+browser.runtime.onConnect.addListener(p => {
+	setPort(p);
+});
+
+function
+setPort(p)
+{
+	port = p;
+	p.onDisconnect.addListener(() => { if (port === p) port = null; });
 }

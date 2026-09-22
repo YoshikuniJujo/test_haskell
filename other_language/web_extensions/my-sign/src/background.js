@@ -373,12 +373,23 @@ function
 ensurePort(tabId)
 {
 	let port = ports.get(tabId);
-	if (!port) {
-		port = browser.tabs.connect(tabId);
-		ports.set(tabId, port);
-		port.onDisconnect.addListener(() => {
-			if (ports.get(tabId) === port) ports.delete(tabId);
-		});
-	}
+	if (port) return port;
+	port = browser.tabs.connect(tabId);
+	setPort(tabId, port);
 	return port;
+}
+
+browser.runtime.onConnect.addListener(port => {
+	const tabId = port.sender?.tab?.id;
+	if (tabId === undefined) return;
+	setPort(tabId, port);
+});
+
+function
+setPort(tabId, port)
+{
+	ports.set(tabId, port);
+	port.onDisconnect.addListener(() => {
+		if (ports.get(tabId) === port) ports.delete(tabId);
+	});
 }
