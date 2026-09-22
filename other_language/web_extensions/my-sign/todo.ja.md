@@ -207,6 +207,8 @@ TODO
 	+ [x] クラスを定義
 	+ [ ] options.jsで使ってみる
 * [ ] EnsurablePortListクラスを定義
+	+ [x] クラスを実装
+	+ [ ] background.jsで使ってみる
 * [ ] logUpdatedの送信をconnect/portを利用するようにする(続き)
 	+ [ ] logUpdatedの送信に使ってみる(続き)
 		- [ ] log.writeにportsを渡すことを検討する

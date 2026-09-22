@@ -19,6 +19,8 @@ else {
 console.log("options begin");
 console.log("options.js: ", location.search);
 
+const eport = new EnsurablePort(id);
+
 if (openType !== "url" && openType !== "uuid" && openType !== "set") browser.runtime.sendMessage(
 	{ method: "optionsStarted", id: id } );
 
@@ -337,26 +339,3 @@ browser.runtime.onMessage.addListener((m, s) => {
 		default: return;
 	}
 });
-
-let port = null;
-
-function
-ensurePort()
-{
-	if (port) return port;
-	setPort(browser.runtime.connect({ name: id }));
-	return port;
-}
-
-browser.runtime.onConnect.addListener(p => {
-	setPort(p);
-});
-
-function
-setPort(p)
-{
-	port = p;
-	p.onDisconnect.addListener(() => { if (port === p) port = null; });
-}
-
-const eport = new EnsurablePort(id);
