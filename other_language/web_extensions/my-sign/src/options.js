@@ -2,6 +2,7 @@ import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
 import { Log } from "./log2.js"
+import { EnsurablePort } from "./ensurablePort.js";
 
 let openType;
 let id;
@@ -357,3 +358,5 @@ setPort(p)
 	port = p;
 	p.onDisconnect.addListener(() => { if (port === p) port = null; });
 }
+
+const eport = new EnsurablePort(id);

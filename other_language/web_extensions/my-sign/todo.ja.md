@@ -195,14 +195,22 @@ TODO
 	+ [x] ログ出力用タブにメッセージを送るようにする
 	+ [x] optionsタブでメッセージを受け取り、ログを更新するようにする
 * [x] 設定画面はメッセージを受けてログ出力を更新する
-* [ ] logUpdatedの送信をconnect/portを利用するようにする
+* [x] logUpdatedの送信をconnect/portを利用するようにする(途中)
 	+ [x] background.jsとoptions.jsにensurePortを定義する
 	+ [x] onConnectを定義
 		- [x] options.js
 		- [x] background.js
-	+ [ ] logUpdatedの送信に使ってみる
+	+ [x] logUpdatedの送信に使ってみる(途中)
 		- [x] keyInputTabsの返り値をオブジェクトからMapにする
 		- [x] log.writeにはidがbrowser以外のtab idを引数としてわたす
+* [ ] EnsurablePortクラスを定義
+	+ [x] クラスを定義
+	+ [ ] options.jsで使ってみる
+* [ ] EnsurablePortListクラスを定義
+* [ ] logUpdatedの送信をconnect/portを利用するようにする(続き)
+	+ [ ] logUpdatedの送信に使ってみる(続き)
+		- [ ] log.writeにportsを渡すことを検討する
+		- [ ] log.writeのときにensurePortをしてlogUpdatedを送る
 		- [ ] focusのときにensurePortをする
 * [ ] portを使ったlogの処理をテストしてみる
 	+ [ ] 独立したタブである3通りについて試してみる
