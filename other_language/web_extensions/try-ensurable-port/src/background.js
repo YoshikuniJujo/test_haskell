@@ -1,1 +1,23 @@
 console.log("BACKGROUND BEGIN");
+
+browser.runtime.onMessage.addListener((m, s) => {
+	console.log(m);
+	console.log(s);
+	console.log(s.tab);
+	switch(m.method) {
+		case "hello":
+			console.log("background: hello");
+			browser.tabs.sendMessage(s.tab.id, "WORLD");
+			break;
+		case "openOptionsInTab":
+			(async () => {
+			console.log("background: openInTab");
+			const ot = await browser.tabs.create({
+				active: false,
+				url: browser.runtime.getURL(
+					"options.html?openType=tab&id=tab" )
+			});
+			})();
+			break;
+	}
+});
