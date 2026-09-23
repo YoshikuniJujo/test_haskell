@@ -7,7 +7,8 @@ browser.runtime.onMessage.addListener((m, s) => {
 	switch(m.method) {
 		case "hello":
 			console.log("background: hello");
-			browser.tabs.sendMessage(s.tab.id, "WORLD");
+			browser.tabs.sendMessage(s.tab.id,
+				{ method: "world" } );
 			break;
 		case "openOptionsInTab":
 			(async () => {
@@ -15,7 +16,7 @@ browser.runtime.onMessage.addListener((m, s) => {
 			const ot = await browser.tabs.create({
 				active: false,
 				url: browser.runtime.getURL(
-					"options.html?openType=tab&id=tab" )
+					"options.html?openType=tab&pageId=tab" )
 			});
 			})();
 			break;
