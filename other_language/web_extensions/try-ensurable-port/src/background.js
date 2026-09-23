@@ -13,10 +13,11 @@ browser.runtime.onMessage.addListener((m, s) => {
 				*/
 			const port = browser.tabs.connect(s.tab.id,
 				{ name: "port" } );
-			console.log("background.js: port is ", port);
 			port.onDisconnect.addListener(() => {
-				console.log("background.js: disconnect");
+				console.log("background.js: disconnect:", port);
 			});
+			console.log("background.js: port is ", port);
+			console.log("background.js: port.error is ", port.error);
 			port.postMessage("Foo Bar");
 			break;
 		case "openOptionsInTab":
