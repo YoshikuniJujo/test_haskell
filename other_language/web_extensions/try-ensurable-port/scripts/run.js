@@ -4,7 +4,9 @@ const p = spawn(
 	"npx",
 	[
 		"web-ext", "run", "--source-dir", "dist",
-		"--url", "https://yoshikunijujo.github.io/"
+		"--url", "https://yoshikunijujo.github.io/",
+		"--url", "about:debugging#/runtime/this-firefox",
+		"--url", "about:addons"
 	],
 	{ stdio: "inherit" }
 );
