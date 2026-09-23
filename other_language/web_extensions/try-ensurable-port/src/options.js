@@ -29,3 +29,10 @@ if (openType === "browser") openInTab.hidden = false;
 openInTab.addEventListener("click", () => {
 	browser.runtime.sendMessage({ method: "openOptionsInTab" });
 });
+
+browser.runtime.onConnect.addListener(port => {
+	console.log("options.js: receive port", port.name);
+	port.onMessage.addListener(m => {
+		console.log("options.js: received:", m);
+	});
+});

@@ -7,8 +7,17 @@ browser.runtime.onMessage.addListener((m, s) => {
 	switch(m.method) {
 		case "hello":
 			console.log("background: hello");
+			/*
 			browser.tabs.sendMessage(s.tab.id,
 				{ method: "world" } );
+				*/
+			const port = browser.tabs.connect(s.tab.id,
+				{ name: "port" } );
+			console.log("background.js: port is ", port);
+			port.onDisconnect.addListener(() => {
+				console.log("background.js: disconnect");
+			});
+			port.postMessage("Foo Bar");
 			break;
 		case "openOptionsInTab":
 			(async () => {
