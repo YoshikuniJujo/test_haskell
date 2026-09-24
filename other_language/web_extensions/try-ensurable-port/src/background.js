@@ -8,7 +8,7 @@ browser.runtime.onMessage.addListener((m, s) => {
 			return new Promise((rs, rj) => connectToMe(s, rs, rj));
 		case "openOptionsInTab": return openOptionsInTab(s);
 		case "portConnectionToBackground":
-			return portConnectionToBackground(s);
+			return portConnectionToBackground();
 	}
 });
 
@@ -49,25 +49,20 @@ openOptionsInTab(s)
 }
 
 async function
-portConnectionToBackground(s)
+portConnectionToBackground()
 {
 	browser.runtime.onConnect.addListener(listener);
-	return 123;
 
 	async function
 	listener(p)
 	{
 		console.log("background.js", p);
-
 		p.onMessage.addListener(m => {
 			console.log("background.js: receive:", m);
 			p.disconnect();
-			browser.runtime.onConnect.removeListener(listener);
-		});
-
+			browser.runtime.onConnect.removeListener(listener); });
 		p.onDisconnect.addListener(() => {
 			console.log("background.js: disconnect") });
-
 		p.postMessage("HOGEPIYO");
 	}
 }

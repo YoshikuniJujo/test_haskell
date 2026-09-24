@@ -56,12 +56,9 @@ portConnectionToBackground.addEventListener("click", async () => {
 	console.log("options.js:", port);
 	port.onMessage.addListener(m => {
 		console.log("options.js: receive:", m);
-		port.postMessage("FOOBARBAZ");
-	});
+		port.postMessage("FOOBARBAZ"); });
 	port.onDisconnect.addListener(() => {
-		console.log("options.js: disconnect");
-	});
-});
+		console.log("options.js: disconnect"); }); });
 
 
 const openInTab = document.querySelector("#open-in-tab");
