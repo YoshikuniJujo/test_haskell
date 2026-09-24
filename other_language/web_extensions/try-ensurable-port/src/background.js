@@ -1,16 +1,13 @@
 console.log("BACKGROUND BEGIN");
 
 browser.runtime.onMessage.addListener((m, s) => {
-	console.log(m);
-	console.log(s);
-	console.log(s.tab);
+	console.log("background.js: receive message:", m, s);
 	switch(m.method) {
+		case "sendMessageToMe":
+			return browser.tabs.sendMessage(s.tab.id, {
+				method: "messageFromBackground" } );
 		case "hello":
 			console.log("background: hello");
-			/*
-			browser.tabs.sendMessage(s.tab.id,
-				{ method: "world" } );
-				*/
 			const port = browser.tabs.connect(s.tab.id,
 				{ name: "port" } );
 			port.onDisconnect.addListener(() => {
