@@ -6,9 +6,9 @@ browser.runtime.onMessage.addListener((m, s) => {
 		case "sendMessageToMe":
 			return browser.tabs.sendMessage(s.tab.id, {
 				method: "messageFromBackground" } );
-		case "hello":
+		case "connectToMe":
 			return new Promise((rs, rj) => {
-				console.log("background: hello");
+				console.log("background.js: connectToMe");
 				const port = browser.tabs.connect(s.tab.id,
 					{ name: "port" } );
 				port.onDisconnect.addListener(() => {
@@ -18,7 +18,7 @@ browser.runtime.onMessage.addListener((m, s) => {
 					else rs();
 				});
 				port.onMessage.addListener(m => {
-					console.log("background.js: port recieve:", m);
+					console.log("background.js: port receive:", m);
 					port.disconnect();
 					rs();
 				});
@@ -30,7 +30,7 @@ browser.runtime.onMessage.addListener((m, s) => {
 			(async () => {
 			console.log("background: openInTab");
 			const ot = await browser.tabs.create({
-				active: false,
+				active: true,
 				url: browser.runtime.getURL(
 					"options.html?openType=tab&pageId=tab" )
 			});

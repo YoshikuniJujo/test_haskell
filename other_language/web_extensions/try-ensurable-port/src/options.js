@@ -31,7 +31,8 @@ const portConnectionFromBackground =
 portConnectionFromBackground.addEventListener("click", async () => {
 	browser.runtime.onConnect.addListener(listener);
 
-	try {	await browser.runtime.sendMessage( { method: "hello" } ); }
+	try {	await browser.runtime.sendMessage( {
+		method: "connectToMe" } ); }
 	finally {
 		console.log("portConnectionFromBackground: remove listener");
 		browser.runtime.onConnect.removeListener(listener); }
@@ -39,7 +40,7 @@ portConnectionFromBackground.addEventListener("click", async () => {
 	function
 	listener(p)
 	{
-		console.log("options.js: receive port", p.name);
+		console.log("options.js: receive port:", p.name);
 		p.onMessage.addListener(m => {
 			console.log("options.js: received:", m);
 			p.postMessage("Bar Baz");
