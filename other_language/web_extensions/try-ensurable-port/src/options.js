@@ -11,13 +11,12 @@ const messageFromBackground =
 	document.querySelector("#message-from-background");
 
 messageFromBackground.addEventListener("click", async () => {
-	try {
-		browser.runtime.onMessage.addListener(listener);
-		await browser.runtime.sendMessage({ method: "sendMessageToMe" }); }
+	browser.runtime.onMessage.addListener(listener);
+	try {	await browser.runtime.sendMessage({
+			method: "sendMessageToMe" }); }
 	finally {
 		console.log("messageFromBackground: remove listener");
-		browser.runtime.onMessage.removeListener(listener);
-	}
+		browser.runtime.onMessage.removeListener(listener); }
 
 	function
 	listener(m, s)
@@ -29,17 +28,23 @@ messageFromBackground.addEventListener("click", async () => {
 const portConnectionFromBackground =
 	document.querySelector("#port-connection-from-background");
 
-portConnectionFromBackground.addEventListener("click", () => {
+portConnectionFromBackground.addEventListener("click", async () => {
+	browser.runtime.onConnect.addListener(listener);
 
-	browser.runtime.onConnect.addListener(port => {
-		console.log("options.js: receive port", port.name);
-		port.onMessage.addListener(m => {
+	try {	await browser.runtime.sendMessage( { method: "hello" } ); }
+	finally {
+		console.log("portConnectionFromBackground: remove listener");
+		browser.runtime.onConnect.removeListener(listener); }
+
+	function
+	listener(p)
+	{
+		console.log("options.js: receive port", p.name);
+		p.onMessage.addListener(m => {
 			console.log("options.js: received:", m);
+			p.postMessage("Bar Baz");
 		});
-	});
-
-	browser.runtime.sendMessage( { method: "hello" } );
-
+	}
 });
 
 

@@ -7,16 +7,25 @@ browser.runtime.onMessage.addListener((m, s) => {
 			return browser.tabs.sendMessage(s.tab.id, {
 				method: "messageFromBackground" } );
 		case "hello":
-			console.log("background: hello");
-			const port = browser.tabs.connect(s.tab.id,
-				{ name: "port" } );
-			port.onDisconnect.addListener(() => {
-				console.log("background.js: disconnect:", port);
+			return new Promise((rs, rj) => {
+				console.log("background: hello");
+				const port = browser.tabs.connect(s.tab.id,
+					{ name: "port" } );
+				port.onDisconnect.addListener(() => {
+					console.log("background.js: disconnect:", port);
+					console.log("background.js: disconnect: port.error:", port.error);
+					if (port.error) rj(new Error(port.error));
+					else rs();
+				});
+				port.onMessage.addListener(m => {
+					console.log("background.js: port recieve:", m);
+					port.disconnect();
+					rs();
+				});
+				console.log("background.js: port is ", port);
+				console.log("background.js: port.error is ", port.error);
+				port.postMessage("Foo Bar");
 			});
-			console.log("background.js: port is ", port);
-			console.log("background.js: port.error is ", port.error);
-			port.postMessage("Foo Bar");
-			break;
 		case "openOptionsInTab":
 			(async () => {
 			console.log("background: openInTab");
