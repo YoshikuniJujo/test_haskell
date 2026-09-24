@@ -13,10 +13,12 @@ TODO
 + [x] ポートについてテストの流れをチェック
 * [x] 上記のチェックで使ったコードを整理する
 * [ ] 設定画面からbackgroundに対してportを接続する
+	+ [x] まずは単純に
+	+ [ ] できたらonConnectへのリスナーを一時的なものにする
 * [ ] 上記のポートでやりとりを試す
-* [ ] backgroundから設定画面に対してportを接続する
-	+ [ ] 設定画面からbackgroundにメッセージを送りそこからtab IDを取得する
-	+ [ ] portを接続する
+* [x] backgroundから設定画面に対してportを接続する
+	+ [x] 設定画面からbackgroundにメッセージを送りそこからtab IDを取得する
+	+ [x] portを接続する
 * [ ] 上記のポートでやりとりを試す
 * [ ] クラスEnsurablePortを定義する
 * [ ] EnsurablePortを使ってみる

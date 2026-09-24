@@ -44,3 +44,7 @@ connectToMe(s, rs, rj)
 	console.log( "background.js: port.error is ", port.error );
 	port.postMessage("Foo Bar");
 }
+
+browser.runtime.onConnect.addListener(port => {
+	console.log("background.js", port)
+});

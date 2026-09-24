@@ -46,6 +46,14 @@ portConnectionFromBackground.addEventListener("click", async () => {
 	}
 });
 
+const portConnectionToBackground =
+	document.querySelector("#port-connection-to-background");
+
+portConnectionToBackground.addEventListener("click", async () => {
+	const port = browser.runtime.connect({ name: "port" });
+	console.log("options.js:", port);
+});
+
 
 const openInTab = document.querySelector("#open-in-tab");
 if (openType === "browser") openInTab.hidden = false;
