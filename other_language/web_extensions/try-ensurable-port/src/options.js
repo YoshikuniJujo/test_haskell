@@ -30,7 +30,6 @@ const portConnectionFromBackground =
 
 portConnectionFromBackground.addEventListener("click", async () => {
 	browser.runtime.onConnect.addListener(listener);
-
 	try {	await browser.runtime.sendMessage( {
 		method: "connectToMe" } ); }
 	finally {
@@ -43,16 +42,12 @@ portConnectionFromBackground.addEventListener("click", async () => {
 		console.log("options.js: receive port:", p.name);
 		p.onMessage.addListener(m => {
 			console.log("options.js: received:", m);
-			p.postMessage("Bar Baz");
-		});
+			p.postMessage("Bar Baz"); });
 	}
 });
 
 
 const openInTab = document.querySelector("#open-in-tab");
-
 if (openType === "browser") openInTab.hidden = false;
-
 openInTab.addEventListener("click", () => {
-	browser.runtime.sendMessage({ method: "openOptionsInTab" });
-});
+	browser.runtime.sendMessage({ method: "openOptionsInTab" }); });

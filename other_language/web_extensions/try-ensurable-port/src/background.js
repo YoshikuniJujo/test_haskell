@@ -12,29 +12,37 @@ browser.runtime.onMessage.addListener((m, s) => {
 				const port = browser.tabs.connect(s.tab.id,
 					{ name: "port" } );
 				port.onDisconnect.addListener(() => {
-					console.log("background.js: disconnect:", port);
-					console.log("background.js: disconnect: port.error:", port.error);
-					if (port.error) rj(new Error(port.error));
+					console.log(
+						"background.js: disconnect:",
+						port);
+					console.log(
+						"background.js: disconnect: " +
+						"port.error:", port.error);
+					if (port.error)
+						rj(new Error(port.error));
 					else rs();
 				});
 				port.onMessage.addListener(m => {
-					console.log("background.js: port receive:", m);
+					console.log(
+						"background.js: port receive:",
+						m );
 					port.disconnect();
 					rs();
 				});
 				console.log("background.js: port is ", port);
-				console.log("background.js: port.error is ", port.error);
-				port.postMessage("Foo Bar");
-			});
+				console.log(
+					"background.js: port.error is ",
+					port.error );
+				port.postMessage("Foo Bar"); });
 		case "openOptionsInTab":
 			(async () => {
-			console.log("background: openInTab");
-			const ot = await browser.tabs.create({
-				active: true,
-				url: browser.runtime.getURL(
-					"options.html?openType=tab&pageId=tab" )
-			});
-			})();
+				console.log("background: openInTab");
+				await browser.tabs.create({
+					active: true,
+					url: browser.runtime.getURL(
+						"options.html" +
+						"?openType=tab&pageId=tab" )
+				}); })();
 			break;
 	}
 });
