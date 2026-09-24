@@ -7,6 +7,8 @@ browser.runtime.onMessage.addListener((m, s) => {
 		case "connectToMe":
 			return new Promise((rs, rj) => connectToMe(s, rs, rj));
 		case "openOptionsInTab": return openOptionsInTab(s);
+		case "portConnectionToBackground":
+			return portConnectionToBackground(s);
 	}
 });
 
@@ -46,6 +48,26 @@ openOptionsInTab(s)
 			"options.html?openType=tab&pageId=tab" ) });
 }
 
-browser.runtime.onConnect.addListener(port => {
-	console.log("background.js", port)
-});
+async function
+portConnectionToBackground(s)
+{
+	browser.runtime.onConnect.addListener(listener);
+	return 123;
+
+	async function
+	listener(p)
+	{
+		console.log("background.js", p);
+
+		p.onMessage.addListener(m => {
+			console.log("background.js: receive:", m);
+			p.disconnect();
+			browser.runtime.onConnect.removeListener(listener);
+		});
+
+		p.onDisconnect.addListener(() => {
+			console.log("background.js: disconnect") });
+
+		p.postMessage("HOGEPIYO");
+	}
+}

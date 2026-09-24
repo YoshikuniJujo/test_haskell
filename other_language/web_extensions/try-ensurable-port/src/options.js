@@ -50,8 +50,17 @@ const portConnectionToBackground =
 	document.querySelector("#port-connection-to-background");
 
 portConnectionToBackground.addEventListener("click", async () => {
+	await browser.runtime.sendMessage({
+		method: "portConnectionToBackground" });
 	const port = browser.runtime.connect({ name: "port" });
 	console.log("options.js:", port);
+	port.onMessage.addListener(m => {
+		console.log("options.js: receive:", m);
+		port.postMessage("FOOBARBAZ");
+	});
+	port.onDisconnect.addListener(() => {
+		console.log("options.js: disconnect");
+	});
 });
 
 
