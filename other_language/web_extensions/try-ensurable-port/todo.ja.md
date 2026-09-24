@@ -24,7 +24,11 @@ TODO
 	+ [x] 設定画面からbackgroundにメッセージを送りそこからtab IDを取得する
 	+ [x] portを接続する
 * [x] 上記のポートでやりとりを試す
+* [x] ensurablePort.jsをcopyする
 * [ ] クラスEnsurablePortを定義する
 * [ ] EnsurablePortを使ってみる
+* [ ] EnsurablePortのリファクタリング
 * [ ] クラスEnsurablePortListを実装する
+	+ [ ] sendを追加するなど
 * [ ] EnsurablePortListを使ってみる
+* [ ] EnsurablePortListのリファクタリング

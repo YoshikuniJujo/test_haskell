@@ -6,7 +6,7 @@ browser.runtime.onMessage.addListener((m, s) => {
 		case "sendMessageToMe": return sendMessageToMe(s);
 		case "connectToMe":
 			return new Promise((rs, rj) => connectToMe(s, rs, rj));
-		case "openOptionsInTab": return openOptionsInTab(s);
+		case "openOptionsInTab": return openOptionsInTab();
 		case "portConnectionToBackground":
 			return portConnectionToBackground();
 	}
@@ -39,7 +39,7 @@ connectToMe(s, rs, rj)
 }
 
 async function
-openOptionsInTab(s)
+openOptionsInTab()
 {
 	console.log("background: openInTab");
 	await browser.tabs.create({
