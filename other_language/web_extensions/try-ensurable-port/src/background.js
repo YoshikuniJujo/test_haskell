@@ -6,16 +6,7 @@ browser.runtime.onMessage.addListener((m, s) => {
 		case "sendMessageToMe": return sendMessageToMe(s);
 		case "connectToMe":
 			return new Promise((rs, rj) => connectToMe(s, rs, rj));
-		case "openOptionsInTab":
-			(async () => {
-				console.log("background: openInTab");
-				await browser.tabs.create({
-					active: true,
-					url: browser.runtime.getURL(
-						"options.html" +
-						"?openType=tab&pageId=tab" )
-				}); })();
-			break;
+		case "openOptionsInTab": return openOptionsInTab(s);
 	}
 });
 
@@ -43,6 +34,16 @@ connectToMe(s, rs, rj)
 	console.log("background.js: port is ", port);
 	console.log( "background.js: port.error is ", port.error );
 	port.postMessage("Foo Bar");
+}
+
+async function
+openOptionsInTab(s)
+{
+	console.log("background: openInTab");
+	await browser.tabs.create({
+		active: true,
+		url: browser.runtime.getURL(
+			"options.html?openType=tab&pageId=tab" ) });
 }
 
 browser.runtime.onConnect.addListener(port => {
