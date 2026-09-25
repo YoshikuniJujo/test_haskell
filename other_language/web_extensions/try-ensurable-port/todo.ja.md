@@ -40,8 +40,8 @@ TODO
 	+ [x] base nameと指定された名前を結合してインスタンス内部の#nameにする
 * [x] 後始末をする(続き)
 	+ [x] EnsurablePortにdisposeを定義する
-* [ ] EnsurablePortのリファクタリング
 * [ ] EnsurablePortListを使ってみる
 * [ ] クラスEnsurablePortListを実装する
 	+ [ ] sendを追加するなど
+* [ ] EnsurablePortのリファクタリング
 * [ ] EnsurablePortListのリファクタリング
