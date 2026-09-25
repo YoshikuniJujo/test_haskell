@@ -1,12 +1,15 @@
+const APP_ID = "556b2913-820c-46e7-9f37-3e0d6a67e680"
+
 export class
 EnsurablePort
 {
 	#name;
-	#port;
+	#port = null;
+	#disconnect = false;
 
 	constructor(name)
 	{
-		this.#name = name;
+		this.#name = APP_ID + ":" + name;
 		this.#port = null;
 
 		browser.runtime.onConnect.addListener(this.#listener);
@@ -19,24 +22,36 @@ EnsurablePort
 		return this.#port;
 	}
 
-	dispose()
+	#dispose()
 	{
-		if (this.#port) {
-			this.#port.disconnect();
-			this.#port = null; }
 		browser.runtime.onConnect.removeListener(this.#listener);
 	}
 
-	#listener(p)
+	#listener = p =>
 	{
-		if (p.name === name) this.#setPort(p);
+		if (p.name === this.#name) this.#setPort(p);
 	}
 
 	#setPort(p)
 	{
 		this.#port = p;
 		p.onDisconnect.addListener(() => {
-			if (this.#port === p) this.#port = null; });
+			if (this.#port !== p) return;
+			this.#port = null;
+			if (this.#disconnect) {
+				console.log("DISPOSE"); this.#dispose(); }
+		});
+		this.#port.onMessage.addListener(m => {
+			console.log("ensurablePort.js:", m);
+			switch(m.method) {
+				case this.#name + ":disconnect":
+					console.log("DISCONNECT");
+					this.#disconnect = true;
+					this.#port.postMessage({
+						method: this.#name + ":disconnect-ack" });
+					break;
+			}
+		});
 
 	}
 }

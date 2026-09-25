@@ -35,11 +35,11 @@ TODO
 	+ [x] background.jsでmessageを受け取る
 * [x] 後始末をする(途中)
 	+ [x] background.jsでlistenerを消す
-* [ ] EnsurablePortやEnsurablePortListの「名前」を定義する
-	+ [ ] base nameを定義する
-	+ [ ] base nameと指定された名前を結合してインスタンス内部の#nameにする
-* [ ] 後始末をする(続き)
-	+ [ ] EnsurablePortにdisposeを定義する
+* [x] EnsurablePortやEnsurablePortListの「名前」を定義する
+	+ [x] base nameを定義する
+	+ [x] base nameと指定された名前を結合してインスタンス内部の#nameにする
+* [x] 後始末をする(続き)
+	+ [x] EnsurablePortにdisposeを定義する
 * [ ] EnsurablePortのリファクタリング
 * [ ] EnsurablePortListを使ってみる
 * [ ] クラスEnsurablePortListを実装する

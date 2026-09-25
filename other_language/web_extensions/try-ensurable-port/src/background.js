@@ -1,5 +1,8 @@
 console.log("BACKGROUND BEGIN");
 
+// FOR DEBUG. REMOVE IT.
+const APP_ID = "556b2913-820c-46e7-9f37-3e0d6a67e680"
+
 browser.runtime.onMessage.addListener((m, s) => {
 	console.log("background.js: receive message:", m, s);
 	switch(m.method) {
@@ -68,20 +71,28 @@ portConnectionToBackground()
 	}
 }
 
+// FOR DEBUG. USE EnsurablePortList.
 async function
 testEnsurablePort()
 {
 	console.log("background.js: testEnsurablePort");
 	browser.runtime.onConnect.addListener(listener);
 
-	async function
+	function
 	listener(p)
 	{
 		console.log("background.js: testEnsurablePort: listener:", p);
 		p.onMessage.addListener(m => {
 			console.log("background.js: testEnsurablePort:", m);
-			p.disconnect();
-			browser.runtime.onConnect.removeListener(listener);
+			switch(m.method) {
+				case APP_ID + ":test-port:disconnect-ack":
+					console.log("background: ACK");
+					p.disconnect();
+					break;
+				default:
+					p.postMessage({ method: APP_ID + ":test-port:disconnect" });
+					browser.runtime.onConnect.removeListener(listener);
+			}
 		});
 	}
 }
