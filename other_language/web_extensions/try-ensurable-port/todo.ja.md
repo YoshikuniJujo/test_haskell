@@ -40,8 +40,16 @@ TODO
 	+ [x] base nameと指定された名前を結合してインスタンス内部の#nameにする
 * [x] 後始末をする(続き)
 	+ [x] EnsurablePortにdisposeを定義する
-* [ ] EnsurablePortListを使ってみる
-* [ ] クラスEnsurablePortListを実装する
+* [x] EnsurablePortListを使ってみる
+	+ [x] portを接続する
+	+ [x] メッセージを送信する
+* [ ] クラスEnsurablePortListを修正する
+	+ [ ] disconnectを実装する
+		- [ ] options.jsからdisconnectメッセージを送信する
+		- [ ] EnsurablePortListの#disconnectをtrueにする
+		- [ ] EnsurablePortListからACKを送る
+		- [ ] options.jsでdisconnectする
+		- [ ] disconnectを検出して#disconnectがtrueなら#disposeする
 	+ [ ] sendを追加するなど
 * [ ] EnsurablePortのリファクタリング
 * [ ] EnsurablePortListのリファクタリング

@@ -1,3 +1,5 @@
+import { EnsurablePortList } from "./ensurablePort.js"
+
 console.log("BACKGROUND BEGIN");
 
 // FOR DEBUG. REMOVE IT.
@@ -13,6 +15,7 @@ browser.runtime.onMessage.addListener((m, s) => {
 		case "portConnectionToBackground":
 			return portConnectionToBackground();
 		case "testEnsurablePort": return testEnsurablePort();
+		case "testEnsurablePortList": return testEnsurablePortList(s);
 	}
 });
 
@@ -95,4 +98,15 @@ testEnsurablePort()
 			}
 		});
 	}
+}
+
+const eport = new EnsurablePortList();
+
+async function
+testEnsurablePortList(s)
+{
+	console.log("background.js: testEnsurablePortList:", s);
+	const p = eport.ensure("test-port", s.tab.id);
+	console.log("background.js: port =", p);
+	p.postMessage("ENSURABLE PORT LIST TEST from background.js");
 }

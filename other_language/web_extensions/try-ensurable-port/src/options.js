@@ -2,6 +2,9 @@ import { EnsurablePort } from "./ensurablePort.js";
 
 console.log("OPTIONS BEGIN");
 
+// FOR DEBUG. REMOVE IT.
+const APP_ID = "556b2913-820c-46e7-9f37-3e0d6a67e680"
+
 let openType; let pageId;
 
 if (location.search === "") { openType = "browser"; pageId = "browser"; }
@@ -70,6 +73,18 @@ testEnsurablePort.addEventListener("click", async () => {
 	console.log("options: testEnsurablePort listener: after sendMessage");
 	const p = eport.ensure();
 	p.postMessage("ENSURABLE PORT TEST FROM options.js");
+});
+
+const testEnsurablePortList = document.querySelector("#test-ensurable-port-list");
+testEnsurablePortList.addEventListener("click", async () => {
+	await browser.runtime.onConnect.addListener(p => {
+		console.log("options.js: port =", p);
+		p.onMessage.addListener(m => {
+			console.log("options.js:", m);
+		});
+	});
+	await browser.runtime.sendMessage({
+		method: "testEnsurablePortList" });
 });
 
 const openInTab = document.querySelector("#open-in-tab");

@@ -59,14 +59,14 @@ EnsurablePort
 export class
 EnsurablePortList
 {
-	#ports;
+	#ports = new Map();
 
 	constructor()
 	{
-		this.#ports = new Map();
+		console.log("EnsurablePortList: constructor()");
 
 		browser.runtime.onConnect.addListener(port => {
-			const nm = port.name;
+			const nm = port.name.split(":").pop();
 			this.#setPort(nm, port);
 		});
 	}
@@ -75,7 +75,7 @@ EnsurablePortList
 	{
 		let port = this.#ports.get(name);
 		if (port) return port;
-		port = browser.tabs.connect(tid, { name: name });
+		port = browser.tabs.connect(tid, { name: `${APP_ID}:${name}` });
 		this.#setPort (name, port);
 		return port;
 	}
