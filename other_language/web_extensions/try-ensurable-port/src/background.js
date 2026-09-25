@@ -9,6 +9,9 @@ browser.runtime.onMessage.addListener((m, s) => {
 		case "openOptionsInTab": return openOptionsInTab();
 		case "portConnectionToBackground":
 			return portConnectionToBackground();
+		case "testEnsurablePort":
+			console.log("background.js: testEnsurablePort");
+			return;
 	}
 });
 

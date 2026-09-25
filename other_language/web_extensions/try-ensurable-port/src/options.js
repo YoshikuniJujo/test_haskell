@@ -48,7 +48,6 @@ portConnectionFromBackground.addEventListener("click", async () => {
 
 const portConnectionToBackground =
 	document.querySelector("#port-connection-to-background");
-
 portConnectionToBackground.addEventListener("click", async () => {
 	await browser.runtime.sendMessage({
 		method: "portConnectionToBackground" });
@@ -60,6 +59,11 @@ portConnectionToBackground.addEventListener("click", async () => {
 	port.onDisconnect.addListener(() => {
 		console.log("options.js: disconnect"); }); });
 
+const testEnsurablePort = document.querySelector("#test-ensurable-port");
+testEnsurablePort.addEventListener("click", async () => {
+	await browser.runtime.sendMessage({
+		method: "testEnsurablePort" });
+});
 
 const openInTab = document.querySelector("#open-in-tab");
 if (openType === "browser") openInTab.hidden = false;
