@@ -9,9 +9,7 @@ EnsurablePort
 		this.#name = name;
 		this.#port = null;
 
-		browser.runtime.onConnect.addListener(port => {
-			if (port.name === name) this.#setPort(port);
-		});
+		browser.runtime.onConnect.addListener(this.#listener);
 	}
 
 	ensure()
@@ -19,6 +17,19 @@ EnsurablePort
 		if (this.#port === null)
 			this.#setPort(browser.runtime.connect({ name: this.#name }));
 		return this.#port;
+	}
+
+	dispose()
+	{
+		if (this.#port) {
+			this.#port.disconnect();
+			this.#port = null; }
+		browser.runtime.onConnect.removeListener(this.#listener);
+	}
+
+	#listener(p)
+	{
+		if (p.name === name) this.#setPort(p);
 	}
 
 	#setPort(p)

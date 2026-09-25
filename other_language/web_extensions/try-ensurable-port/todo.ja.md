@@ -33,8 +33,10 @@ TODO
 	+ [x] options.jsからensureする
 	+ [x] 上で取り出したportにmessageを送る
 	+ [x] background.jsでmessageを受け取る
-* [ ] 後始末をする
+* [x] 後始末をする(途中)
 	+ [x] background.jsでlistenerを消す
+* [ ] EnsurablePortやEnsurablePortListの「名前」を定義する
+* [ ] 後始末をする(続き)
 	+ [ ] EnsurablePortにdisposeを定義する
 * [ ] EnsurablePortのリファクタリング
 * [ ] EnsurablePortListを使ってみる
