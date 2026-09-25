@@ -9,9 +9,7 @@ browser.runtime.onMessage.addListener((m, s) => {
 		case "openOptionsInTab": return openOptionsInTab();
 		case "portConnectionToBackground":
 			return portConnectionToBackground();
-		case "testEnsurablePort":
-			console.log("background.js: testEnsurablePort");
-			return;
+		case "testEnsurablePort": return testEnsurablePort();
 	}
 });
 
@@ -67,5 +65,23 @@ portConnectionToBackground()
 		p.onDisconnect.addListener(() => {
 			console.log("background.js: disconnect") });
 		p.postMessage("HOGEPIYO");
+	}
+}
+
+async function
+testEnsurablePort()
+{
+	console.log("background.js: testEnsurablePort");
+	browser.runtime.onConnect.addListener(listener);
+
+	async function
+	listener(p)
+	{
+		console.log("background.js: testEnsurablePort: listener:", p);
+		p.onMessage.addListener(m => {
+			console.log("background.js: testEnsurablePort:", m);
+			p.disconnect();
+			browser.runtime.onConnect.removeListener(listener);
+		});
 	}
 }

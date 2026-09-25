@@ -1,3 +1,5 @@
+import { EnsurablePort } from "./ensurablePort.js";
+
 console.log("OPTIONS BEGIN");
 
 let openType; let pageId;
@@ -59,10 +61,15 @@ portConnectionToBackground.addEventListener("click", async () => {
 	port.onDisconnect.addListener(() => {
 		console.log("options.js: disconnect"); }); });
 
+const eport = new EnsurablePort("test-port");
+
 const testEnsurablePort = document.querySelector("#test-ensurable-port");
 testEnsurablePort.addEventListener("click", async () => {
 	await browser.runtime.sendMessage({
 		method: "testEnsurablePort" });
+	console.log("options: testEnsurablePort listener: after sendMessage");
+	const p = eport.ensure();
+	p.postMessage("ENSURABLE PORT TEST FROM options.js");
 });
 
 const openInTab = document.querySelector("#open-in-tab");

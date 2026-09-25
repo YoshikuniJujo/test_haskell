@@ -26,14 +26,15 @@ TODO
 * [x] 上記のポートでやりとりを試す
 * [x] ensurablePort.jsをcopyする
 * [x] クラスEnsurablePortを定義する
-* [ ] EnsurablePortを使ってみる
+* [x] EnsurablePortを使ってみる
 	+ [x] options.htmlにTest Ensurable Portボタンを置く
 	+ [x] options.jsからメッセージを送る
-	+ [ ] background.jsはlistenerを設定する
-	+ [ ] options.jsからensureしmessageを送る
-	+ [ ] background.jsでmessageを受け取る
+	+ [x] background.jsはlistenerを設定する
+	+ [x] options.jsからensureする
+	+ [x] 上で取り出したportにmessageを送る
+	+ [x] background.jsでmessageを受け取る
 * [ ] 後始末をする
-	+ [ ] background.jsでlistenerを消す
+	+ [x] background.jsでlistenerを消す
 	+ [ ] EnsurablePortにdisposeを定義する
 * [ ] EnsurablePortのリファクタリング
 * [ ] EnsurablePortListを使ってみる
