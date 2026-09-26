@@ -43,6 +43,7 @@ TODO
 * [x] EnsurablePortListを使ってみる
 	+ [x] portを接続する
 	+ [x] メッセージを送信する
+* [x] TypeScriptで拡張機能を書くモデルを作る
 * [ ] クラスEnsurablePortListを修正する
 	+ [ ] disconnectを実装する
 		- [ ] options.jsからdisconnectメッセージを送信する

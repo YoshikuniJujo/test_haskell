@@ -5,7 +5,21 @@ console.log("BACKGROUND BEGIN");
 // FOR DEBUG. REMOVE IT.
 const APP_ID = "556b2913-820c-46e7-9f37-3e0d6a67e680"
 
-browser.runtime.onMessage.addListener((m, s) => {
+type BackgroundMessage =
+	| { method: "sendMessageToMe"; }
+	| { method: "connectToMe"; }
+	| { method: "openOptionsInTab"; }
+	| { method: "portConnectionToBackground"; }
+	| { method: "testEnsurablePort"; }
+	| { method: "testEnsurablePortList"; }
+
+
+browser.runtime.onMessage.addListener((
+	m: BackgroundMessage,
+//	m,
+	s : browser.runtime.MessageSender ) : Promise<void> | undefined => {
+//	m,
+//	s ) : Promise<void> => {
 	console.log("background.js: receive message:", m, s);
 	switch(m.method) {
 		case "sendMessageToMe": return sendMessageToMe(s);
@@ -19,30 +33,43 @@ browser.runtime.onMessage.addListener((m, s) => {
 	}
 });
 
+/**
+ * @param {browser.runtime.MessageSender} s
+ */
 
 async function
-sendMessageToMe(s)
+sendMessageToMe(s : browser.runtime.MessageSender)
 {
+	if (!s.tab) throw new Error("sender is not from a tab");
+	if (!s.tab.id) throw new Error("no s.tab.id");
 	return browser.tabs.sendMessage(s.tab.id, {
 		method: "messageFromBackground" });
 }
 
+/**
+ * @param {browser.runtime.MessageSender} s
+ */
+
 async function
-connectToMe(s, rs, rj)
+connectToMe(
+	s: browser.runtime.MessageSender,
+	rs: () => void, rj: (e: Error) => void)
 {
+	if (!s.tab) throw new Error("sender is not from a tab");
+	if (!s.tab.id) throw new Error("no s.tab.id");
 	console.log("background.js: connectToMe");
 	const port = browser.tabs.connect(s.tab.id, { name: "port" } );
 	port.onDisconnect.addListener(() => {
 		console.log("background.js: disconnect:", port);
 		console.log("background.js: disconnect: port.error:",
 			port.error);
-		if (port.error) rj(new Error(port.error)); else rs(); });
+		if (port.error) rj(new Error(port.error.message)); else rs(); });
 	port.onMessage.addListener(m => {
 		console.log("background.js: port receive:", m);
 		port.disconnect(); rs(); });
 	console.log("background.js: port is ", port);
 	console.log( "background.js: port.error is ", port.error );
-	port.postMessage("Foo Bar");
+	port.postMessage({ method: "foobar", content: "Foo Bar" });
 }
 
 async function
@@ -61,7 +88,7 @@ portConnectionToBackground()
 	browser.runtime.onConnect.addListener(listener);
 
 	async function
-	listener(p)
+	listener(p: browser.runtime.Port)
 	{
 		console.log("background.js", p);
 		p.onMessage.addListener(m => {
@@ -74,6 +101,9 @@ portConnectionToBackground()
 	}
 }
 
+type TestEnsurablePortMessage =
+	| { method: "TestEnsurablePortMessage"; }
+
 // FOR DEBUG. USE EnsurablePortList.
 async function
 testEnsurablePort()
@@ -82,10 +112,11 @@ testEnsurablePort()
 	browser.runtime.onConnect.addListener(listener);
 
 	function
-	listener(p)
+	listener(p: browser.runtime.Port)
 	{
 		console.log("background.js: testEnsurablePort: listener:", p);
-		p.onMessage.addListener(m => {
+		p.onMessage.addListener((message: object) => {
+			const m = message as TestEnsurablePortMessage;
 			console.log("background.js: testEnsurablePort:", m);
 			switch(m.method) {
 				case APP_ID + ":test-port:disconnect-ack":
@@ -104,10 +135,12 @@ testEnsurablePort()
 const eport = new EnsurablePortList();
 
 async function
-testEnsurablePortList(s)
+testEnsurablePortList(s: browser.runtime.MessageSender)
 {
 	console.log("background.js: testEnsurablePortList:", s);
+	if (!s.tab) throw new Error("sender is not from a tab");
+	if (!s.tab.id) throw new Error("no s.tab.id");
 	const p = eport.ensure("test-port", s.tab.id);
 	console.log("background.js: port =", p);
-	p.postMessage("ENSURABLE PORT LIST TEST from background.js");
+	p.postMessage({ method: "foobar", content: "ENSURABLE PORT LIST TEST from background.js" });
 }

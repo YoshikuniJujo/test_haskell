@@ -15,6 +15,8 @@ else {
 const messageFromBackground =
 	document.querySelector("#message-from-background");
 
+if (!messageFromBackground) throw(new Error("no #message-from-background"));
+
 messageFromBackground.addEventListener("click", async () => {
 	browser.runtime.onMessage.addListener(listener);
 	try {	await browser.runtime.sendMessage({
@@ -24,7 +26,7 @@ messageFromBackground.addEventListener("click", async () => {
 		browser.runtime.onMessage.removeListener(listener); }
 
 	function
-	listener(m, s)
+	listener(m: string, s: browser.runtime.MessageSender)
 	{
 		console.log("options.js: recieve message:", m, s);
 	}
@@ -32,6 +34,8 @@ messageFromBackground.addEventListener("click", async () => {
 
 const portConnectionFromBackground =
 	document.querySelector("#port-connection-from-background");
+
+if (!portConnectionFromBackground) throw new Error("no #port-connection-from-background");
 
 portConnectionFromBackground.addEventListener("click", async () => {
 	browser.runtime.onConnect.addListener(listener);
@@ -42,7 +46,7 @@ portConnectionFromBackground.addEventListener("click", async () => {
 		browser.runtime.onConnect.removeListener(listener); }
 
 	function
-	listener(p)
+	listener(p: browser.runtime.Port)
 	{
 		console.log("options.js: receive port:", p.name);
 		p.onMessage.addListener(m => {
@@ -53,6 +57,9 @@ portConnectionFromBackground.addEventListener("click", async () => {
 
 const portConnectionToBackground =
 	document.querySelector("#port-connection-to-background");
+
+if (!portConnectionToBackground) throw new Error("no #port-connection-to-background");
+
 portConnectionToBackground.addEventListener("click", async () => {
 	await browser.runtime.sendMessage({
 		method: "portConnectionToBackground" });
@@ -60,27 +67,35 @@ portConnectionToBackground.addEventListener("click", async () => {
 	console.log("options.js:", port);
 	port.onMessage.addListener(m => {
 		console.log("options.js: receive:", m);
-		port.postMessage("FOOBARBAZ"); });
+		port.postMessage({ method: "foobarbaz", content: "FOOBARBAZ" }); });
 	port.onDisconnect.addListener(() => {
 		console.log("options.js: disconnect"); }); });
 
 const eport = new EnsurablePort("test-port");
 
 const testEnsurablePort = document.querySelector("#test-ensurable-port");
+
+if (!testEnsurablePort) throw new Error("no #test-ensurable-port");
+
 testEnsurablePort.addEventListener("click", async () => {
 	await browser.runtime.sendMessage({
 		method: "testEnsurablePort" });
 	console.log("options: testEnsurablePort listener: after sendMessage");
 	const p = eport.ensure();
-	p.postMessage("ENSURABLE PORT TEST FROM options.js");
+	if (!p) throw new Error("no port");
+	p.postMessage({ method: "", content: "ENSURABLE PORT TEST FROM options.js" });
 });
 
 const testEnsurablePortList = document.querySelector("#test-ensurable-port-list");
+
+if (!testEnsurablePortList) throw new Error("no #test-ensurable-port-list");
+
 testEnsurablePortList.addEventListener("click", async () => {
 	await browser.runtime.onConnect.addListener(p => {
 		console.log("options.js: port =", p);
 		p.onMessage.addListener(m => {
 			console.log("options.js:", m);
+			if (hasMethod(m))
 			switch(m.method) {
 				default:
 					console.log("options.js: HERE:", p.name, m);
@@ -93,7 +108,16 @@ testEnsurablePortList.addEventListener("click", async () => {
 		method: "testEnsurablePortList" });
 });
 
-const openInTab = document.querySelector("#open-in-tab");
+const openInTab = document.querySelector<HTMLElement>("#open-in-tab");
+if (!openInTab) throw new Error("no #open-in-tab");
 if (openType === "browser") openInTab.hidden = false;
 openInTab.addEventListener("click", () => {
 	browser.runtime.sendMessage({ method: "openOptionsInTab" }); });
+
+type MessageWithMethod = {
+	method: string;
+};
+
+function hasMethod(m: object): m is MessageWithMethod {
+	return "method" in m;
+}
