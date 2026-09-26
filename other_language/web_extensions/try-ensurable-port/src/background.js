@@ -93,6 +93,7 @@ testEnsurablePort()
 					p.disconnect();
 					break;
 				default:
+					console.log("background: HERE:", m);
 					p.postMessage({ method: APP_ID + ":test-port:disconnect" });
 					browser.runtime.onConnect.removeListener(listener);
 			}

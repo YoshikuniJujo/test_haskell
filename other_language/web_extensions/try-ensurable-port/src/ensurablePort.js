@@ -43,6 +43,9 @@ EnsurablePort
 		});
 		this.#port.onMessage.addListener(m => {
 			console.log("ensurablePort.js:", m);
+			console.log("ensurablePort.js: this.#name =", this.#name);
+			console.log("ensurablePort.js: m =", m);
+			console.log("ensurablePort.js: m.method =", m.method);
 			switch(m.method) {
 				case this.#name + ":disconnect":
 					console.log("DISCONNECT");
@@ -85,6 +88,9 @@ EnsurablePortList
 		this.#ports.set(name, port);
 		port.onDisconnect.addListener(() => {
 			if (this.#ports.get(name) === port) this.#ports.delete(name);
+		});
+		port.onMessage.addListener(m => {
+			console.log("EnsurablePortList: onMessage:", m);
 		});
 	}
 }

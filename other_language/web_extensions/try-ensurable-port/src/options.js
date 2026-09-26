@@ -81,6 +81,12 @@ testEnsurablePortList.addEventListener("click", async () => {
 		console.log("options.js: port =", p);
 		p.onMessage.addListener(m => {
 			console.log("options.js:", m);
+			switch(m.method) {
+				default:
+					console.log("options.js: HERE:", p.name, m);
+					p.postMessage({ method: `${p.name}:disconnect` });
+					break;
+			}
 		});
 	});
 	await browser.runtime.sendMessage({
