@@ -50,7 +50,7 @@ sendMessageToMe(s : browser.runtime.MessageSender)
  * @param {browser.runtime.MessageSender} s
  */
 
-async function
+function
 connectToMe(
 	s: browser.runtime.MessageSender,
 	rs: () => void, rj: (e: Error) => void)
@@ -132,12 +132,11 @@ testEnsurablePort()
 	}
 }
 
-const eport = new EnsurablePortList();
-
 async function
 testEnsurablePortList(s: browser.runtime.MessageSender)
 {
 	console.log("background.js: testEnsurablePortList:", s);
+	const eport = new EnsurablePortList();
 	if (!s.tab) throw new Error("sender is not from a tab");
 	if (!s.tab.id) throw new Error("no s.tab.id");
 	const p = eport.ensure("test-port", s.tab.id);

@@ -5,13 +5,13 @@ type MessageWithMethod = {
 };
 
 function hasMethod(m: object): m is MessageWithMethod {
-	return "method" in m;
+	return "method" in m && typeof m.method === "string";
 }
 
 export class
 EnsurablePort
 {
-	#name;
+	#name: string;
 	#port: browser.runtime.Port | null = null;
 	#disconnect = false;
 
@@ -72,7 +72,7 @@ EnsurablePort
 export class
 EnsurablePortList
 {
-	#ports = new Map();
+	#ports = new Map<string, browser.runtime.Port>();
 
 	constructor()
 	{

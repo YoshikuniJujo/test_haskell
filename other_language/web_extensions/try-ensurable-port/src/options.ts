@@ -71,13 +71,12 @@ portConnectionToBackground.addEventListener("click", async () => {
 	port.onDisconnect.addListener(() => {
 		console.log("options.js: disconnect"); }); });
 
-const eport = new EnsurablePort("test-port");
-
 const testEnsurablePort = document.querySelector("#test-ensurable-port");
 
 if (!testEnsurablePort) throw new Error("no #test-ensurable-port");
 
 testEnsurablePort.addEventListener("click", async () => {
+	const eport = new EnsurablePort("test-port");
 	await browser.runtime.sendMessage({
 		method: "testEnsurablePort" });
 	console.log("options: testEnsurablePort listener: after sendMessage");
@@ -119,5 +118,5 @@ type MessageWithMethod = {
 };
 
 function hasMethod(m: object): m is MessageWithMethod {
-	return "method" in m;
+	return "method" in m && typeof m.method === "string";
 }
