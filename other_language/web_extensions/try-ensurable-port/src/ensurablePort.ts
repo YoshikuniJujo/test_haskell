@@ -78,11 +78,7 @@ EnsurablePortList
 	{
 		console.log("EnsurablePortList: constructor()");
 
-		browser.runtime.onConnect.addListener(port => {
-			const nm = port.name.split(":").pop();
-			if (!nm) throw(new Error("bad"));
-			this.#setPort(nm, port);
-		});
+		browser.runtime.onConnect.addListener(this.#listener);
 	}
 
 	ensure(name: string, tid: number)
@@ -103,5 +99,12 @@ EnsurablePortList
 		port.onMessage.addListener(m => {
 			console.log("EnsurablePortList: onMessage:", m);
 		});
+	}
+
+	#listener = (p: browser.runtime.Port) =>
+	{
+		const nm = p.name.split(":").pop();
+		if (!nm) throw(new Error("bad"));
+		this.#setPort(nm, p);
 	}
 }

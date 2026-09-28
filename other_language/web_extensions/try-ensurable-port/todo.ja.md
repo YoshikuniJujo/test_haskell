@@ -48,7 +48,8 @@ TODO
 * [x] EnsurablePortListクラスのインスタンスの作成をリスナー内にする
 * [ ] クラスEnsurablePortListを修正する
 	+ [ ] disconnectを実装する
-		- [ ] options.jsからdisconnectメッセージを送信する
+		- [x] options.jsからdisconnectメッセージを送信する
+		- [x] #listenerを定義する
 		- [ ] EnsurablePortListの#disconnectをtrueにする
 		- [ ] EnsurablePortListからACKを送る
 		- [ ] options.jsでdisconnectする
