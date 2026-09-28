@@ -69,10 +69,21 @@ EnsurablePort
 	}
 }
 
+type DisconnectMessage<N extends string> = {
+	method: `${typeof APP_ID}:${N}:disconnect`;
+};
+
+function
+isDisconnectMessage<N extends string>(m: object, nm: N): m is DisconnectMessage<N> {
+	return "method" in m
+		&& m.method === `${APP_ID}:${nm}:disconnect`;
+}
+
 export class
 EnsurablePortList
 {
 	#ports = new Map<string, browser.runtime.Port>();
+	#disconnects = new Map<string, boolean>();
 
 	constructor()
 	{
@@ -98,6 +109,12 @@ EnsurablePortList
 		});
 		port.onMessage.addListener(m => {
 			console.log("EnsurablePortList: onMessage:", m);
+			if (!isDisconnectMessage(m, name)) throw new Error("m is not DisconnectMessage");
+			switch (m.method) {
+				case `${APP_ID}:${name}:disconnect`:
+					console.log("EnsurablePortList: DISCONNECT");
+					break;
+			}
 		});
 	}
 
