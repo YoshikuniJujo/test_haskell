@@ -90,21 +90,31 @@ const testEnsurablePortList = document.querySelector("#test-ensurable-port-list"
 if (!testEnsurablePortList) throw new Error("no #test-ensurable-port-list");
 
 testEnsurablePortList.addEventListener("click", async () => {
-	await browser.runtime.onConnect.addListener(p => {
+	browser.runtime.onConnect.addListener(listener);
+	await browser.runtime.sendMessage({
+		method: "testEnsurablePortList" });
+
+	function
+	listener(p: browser.runtime.Port)
+	{
 		console.log("options.js: port =", p);
 		p.onMessage.addListener(m => {
 			console.log("options.js:", m);
 			if (hasMethod(m))
 			switch(m.method) {
+				case `${p.name}:disconnect-ack`:
+					console.log("options.ts: DISCONNECT ACK");
+					p.disconnect();
+					browser.runtime.onConnect.removeListener(listener);
+					break;
 				default:
 					console.log("options.js: HERE:", p.name, m);
 					p.postMessage({ method: `${p.name}:disconnect` });
 					break;
 			}
 		});
-	});
-	await browser.runtime.sendMessage({
-		method: "testEnsurablePortList" });
+	}
+
 });
 
 const openInTab = document.querySelector<HTMLElement>("#open-in-tab");

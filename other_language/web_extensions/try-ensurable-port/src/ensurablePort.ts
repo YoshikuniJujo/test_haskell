@@ -113,6 +113,15 @@ EnsurablePortList
 			switch (m.method) {
 				case `${APP_ID}:${name}:disconnect`:
 					console.log("EnsurablePortList: DISCONNECT");
+					this.#disconnects.set(name, true);
+					if ([...this.#ports.keys()].every(
+						nm => this.#disconnects.get(nm) === true )) {
+						browser.runtime.onConnect.removeListener(this.#listener);
+						console.log("EnsurablePortList: after remove runtime listener");
+						}
+					port.postMessage({
+						method: `${APP_ID}:${name}:disconnect-ack` });
+					console.log("EnsurablePortList: after remove listener");
 					break;
 			}
 		});
