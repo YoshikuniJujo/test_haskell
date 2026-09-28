@@ -56,7 +56,7 @@ TODO
 		- [x] disconnectを検出して#disconnectがtrueなら#disposeする
 	+ [ ] postを追加するなど
 		- [x] postを定義
-		- [ ] #postWithTabを定義
+		- [x] #postWithTabを定義
 		- [ ] #postWithoutTabを定義
 		- [ ] portの接続を受けたらwithoutのほうでためたキューのメッセージを注ぎ込むようにする
 * [ ] EnsurablePortのリファクタリング

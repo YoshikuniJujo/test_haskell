@@ -148,6 +148,9 @@ EnsurablePortList
 
 	#postWithTab(name: string, message: object, tid: number)
 	{
+		const p = browser.tabs.connect(tid, { name: `${APP_ID}:${name}` });
+		this.#setPort(name, p);
+		p.postMessage(message);
 	}
 
 	#postWithoutTab(name: string, message: object)
