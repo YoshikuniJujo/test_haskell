@@ -54,6 +54,10 @@ TODO
 		- [x] EnsurablePortListからACKを送る
 		- [x] options.jsでdisconnectする
 		- [x] disconnectを検出して#disconnectがtrueなら#disposeする
-	+ [ ] sendを追加するなど
+	+ [ ] postを追加するなど
+		- [x] postを定義
+		- [ ] #postWithTabを定義
+		- [ ] #postWithoutTabを定義
+		- [ ] portの接続を受けたらwithoutのほうでためたキューのメッセージを注ぎ込むようにする
 * [ ] EnsurablePortのリファクタリング
 * [ ] EnsurablePortListのリファクタリング

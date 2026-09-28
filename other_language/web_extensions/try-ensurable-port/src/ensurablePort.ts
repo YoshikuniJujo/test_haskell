@@ -92,6 +92,18 @@ EnsurablePortList
 		browser.runtime.onConnect.addListener(this.#listener);
 	}
 
+	post(name: string, message: object, tid?: number)
+	{
+		const port = this.#ports.get(name);
+
+		if (port) {
+			port.postMessage(message);
+		}
+
+		if (tid !== undefined) this.#postWithTab(name, message, tid);
+		else this.#postWithoutTab(name, message);
+	}
+
 	ensure(name: string, tid: number)
 	{
 		let port = this.#ports.get(name);
@@ -132,5 +144,13 @@ EnsurablePortList
 		const nm = p.name.split(":").pop();
 		if (!nm) throw(new Error("bad"));
 		this.#setPort(nm, p);
+	}
+
+	#postWithTab(name: string, message: object, tid: number)
+	{
+	}
+
+	#postWithoutTab(name: string, message: object)
+	{
 	}
 }
