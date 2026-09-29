@@ -145,11 +145,12 @@ const ensure = document.querySelector<HTMLElement>("#ensure");
 if (!ensure) throw new Error("no #ensure");
 ensure.addEventListener("click", () => {
 	console.log("addEventListener clicked");
-/*
 	const ep = new EnsurablePort(pageId);
-	ep.ensure();
-	ep.disconnect();
-*/
+	ep.ensure().onMessage.addListener(m => {
+		console.log("received:", m);
+		if (!hasMethod(m)) throw new Error("bad");
+		if (m.method === "foobar") ep.disconnect();
+	});
 });
 
 const openInTab = document.querySelector<HTMLElement>("#open-in-tab");

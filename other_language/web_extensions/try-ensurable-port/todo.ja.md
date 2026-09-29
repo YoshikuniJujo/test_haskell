@@ -65,12 +65,12 @@ TODO
 	+ [x] EnsurablePort側でACKを受信
 	+ [x] EnsurablePort側からdisconnect
 	+ [x] background側でlistenerをremoveする
-* [ ] EnsurablePortListにdisconnectメソッドを追加
-* [ ] クラスEnsurablePortListを修正する(続き)
-	+ [ ] postを追加するなど
+* [x] クラスEnsurablePortListを修正する(続き)
+	+ [x] postを追加するなど
 		- [x] postを定義
 		- [x] #postWithTabを定義
-		- [ ] #postWithoutTabを定義
-		- [ ] portの接続を受けたらwithoutのほうでためたキューのメッセージを注ぎ込むようにする
+		- [x] #postWithoutTabを定義
+		- [x] portの接続を受けたらwithoutのほうでためたキューのメッセージを注ぎ込むようにする
+* [ ] EnsurablePortListにdisconnectメソッドを追加
 * [ ] EnsurablePortのリファクタリング
 * [ ] EnsurablePortListのリファクタリング

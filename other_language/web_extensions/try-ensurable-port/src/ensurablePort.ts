@@ -158,13 +158,19 @@ EnsurablePortList
 		});
 	}
 
-	#listener = (p: browser.runtime.Port) =>
+	#listener = async (p: browser.runtime.Port) =>
 	{
 		const name = p.name
 		console.log("EnsurablePortList: #listener:", name);
 		const nm = name.split(":").pop();
 		if (!nm) throw(new Error("bad"));
+		const key = name;
+		const result = await browser.storage.session.get(key);
+		const queue = result[key] ?? [];
+		console.log("EnsurablePortList:#listener:", queue);
 		this.#setPort(nm, p);
+		queue.forEach((m: object) => { p.postMessage(m); });
+		await browser.storage.session.set( { [key]: [] });
 	}
 
 	#postWithTab(name: string, message: object, tid: number)
