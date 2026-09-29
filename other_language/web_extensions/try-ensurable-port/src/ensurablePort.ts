@@ -23,11 +23,20 @@ EnsurablePort
 		browser.runtime.onConnect.addListener(this.#listener);
 	}
 
-	ensure()
+	ensure(): browser.runtime.Port
 	{
 		if (this.#port === null)
 			this.#setPort(browser.runtime.connect({ name: this.#name }));
+		if (this.#port === null)
+			throw new Error("failed to ensure port");
 		return this.#port;
+	}
+
+	disconnect()
+	{
+		this.ensure().postMessage({ method: `${this.#name}:disconnect` });
+		this.#disconnect = true;
+		this.#dispose();
 	}
 
 	#dispose()
@@ -37,11 +46,13 @@ EnsurablePort
 
 	#listener = (p: browser.runtime.Port) =>
 	{
+		console.log("EnsurablePort:", p.name, this.#name);
 		if (p.name === this.#name) this.#setPort(p);
 	}
 
 	#setPort(p: browser.runtime.Port)
 	{
+		console.log("EnsurablePort: #setPort:", p);
 		this.#port = p;
 		p.onDisconnect.addListener(() => {
 			if (this.#port !== p) return;
@@ -61,6 +72,10 @@ EnsurablePort
 					this.#disconnect = true;
 					this.#port!.postMessage({
 						method: this.#name + ":disconnect-ack" });
+					break;
+				case this.#name + ":disconnect-ack":
+					console.log("EnsurablePort: DISCONNECT ACK");
+					this.#port!.disconnect();
 					break;
 			}
 			}

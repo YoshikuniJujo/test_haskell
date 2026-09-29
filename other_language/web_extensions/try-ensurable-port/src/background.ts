@@ -12,6 +12,7 @@ type BackgroundMessage =
 	| { method: "portConnectionToBackground"; }
 	| { method: "testEnsurablePort"; }
 	| { method: "testEnsurablePortList", name: string; }
+	| { method: "testEnsurablePortReverse", name: string; }
 
 
 browser.runtime.onMessage.addListener((
@@ -30,6 +31,7 @@ browser.runtime.onMessage.addListener((
 			return portConnectionToBackground();
 		case "testEnsurablePort": return testEnsurablePort();
 		case "testEnsurablePortList": return testEnsurablePortList(m.name, s);
+		case "testEnsurablePortReverse": return testEnsurablePortReverse(m.name, s);
 	}
 });
 
@@ -131,6 +133,37 @@ testEnsurablePort()
 		});
 	}
 }
+
+type MessageWithMethod = {
+	method: string;
+};
+
+function hasMethod(m: object): m is MessageWithMethod {
+	return "method" in m && typeof m.method === "string";
+}
+
+async function
+testEnsurablePortReverse(name: string, s: browser.runtime.MessageSender)
+{
+	if (!s.tab) throw new Error("sender is not from a tab");
+	if (!s.tab.id) throw new Error("no s.tab.id");
+	console.log("background.js: testEnsurablePortReverse", name, s.tab.id);
+
+	const p = browser.tabs.connect(s.tab.id, { name: `${APP_ID}:${name}` });
+	p.postMessage({ method: "background.js: FOOBARBAZ" });
+
+	p.onMessage.addListener(m => {
+		console.log("background.ts: testEnsurablePortReverse: ", m);
+		if (!hasMethod(m)) throw new Error("bad");
+		switch (m.method) {
+			case `${APP_ID}:${name}:disconnect`:
+				console.log("background.ts: RECEIVE DISCONNECT");
+				p.postMessage({ method: `${APP_ID}:${name}:disconnect-ack` });
+				break;
+		}
+	});
+}
+
 
 async function
 testEnsurablePortList(nm: string, s: browser.runtime.MessageSender)

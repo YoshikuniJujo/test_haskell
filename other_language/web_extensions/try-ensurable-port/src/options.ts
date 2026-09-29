@@ -5,12 +5,15 @@ console.log("OPTIONS BEGIN");
 // FOR DEBUG. REMOVE IT.
 const APP_ID = "556b2913-820c-46e7-9f37-3e0d6a67e680"
 
-let openType; let pageId;
+let openType : string = ""; let pageId = "";
 
 if (location.search === "") { openType = "browser"; pageId = "browser"; }
 else {
 	const params = new URLSearchParams(location.search);
-	openType = params.get("openType"); pageId = params.get("pageId"); }
+	const ot = params.get("openType");
+	const pid = params.get("pageId");
+	if (ot === null || pid === null) throw new Error("bad");
+	openType = ot; pageId = pid; }
 
 const messageFromBackground =
 	document.querySelector("#message-from-background");
@@ -72,9 +75,7 @@ portConnectionToBackground.addEventListener("click", async () => {
 		console.log("options.js: disconnect"); }); });
 
 const testEnsurablePort = document.querySelector("#test-ensurable-port");
-
 if (!testEnsurablePort) throw new Error("no #test-ensurable-port");
-
 testEnsurablePort.addEventListener("click", async () => {
 	const eport = new EnsurablePort("test-port");
 	await browser.runtime.sendMessage({
@@ -116,6 +117,28 @@ testEnsurablePortList.addEventListener("click", async () => {
 		});
 	}
 
+});
+
+const testEnsurablePortReverse =
+	document.querySelector<HTMLElement>("#test-ensurable-port-reverse");
+if (!testEnsurablePortReverse)
+	throw new Error("no #test-ensurable-port-reverse");
+testEnsurablePortReverse.addEventListener("click", async () => {
+	console.log("Test Ensurable Port Reverse: clicked");
+	const eport = new EnsurablePort(pageId);
+	await browser.runtime.sendMessage({
+		method: "testEnsurablePortReverse",
+		name: pageId
+	});
+	eport.ensure().onMessage.addListener(m => {
+		console.log("options.ts: testEnsurablePortReverse:", m);
+		if (!hasMethod(m)) throw new Error("bad");
+		switch (m.method) {
+			case "background.js: FOOBARBAZ":
+				eport.disconnect();
+//				eport.ensure().postMessage({ method: `${APP_ID}:${pageId}:disconnect` });
+		}
+	});
 });
 
 const ensure = document.querySelector<HTMLElement>("#ensure");

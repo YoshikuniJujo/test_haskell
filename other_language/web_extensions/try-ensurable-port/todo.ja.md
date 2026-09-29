@@ -54,7 +54,17 @@ TODO
 		- [x] EnsurablePortListからACKを送る
 		- [x] options.jsでdisconnectする
 		- [x] disconnectを検出して#disconnectがtrueなら#disposeする
-* [ ] EnsurablePortにdisconnectメソッドを追加
+* [x] EnsurablePortにdisconnectメソッドを追加
+	+ [x] options.htmlにTest EnsurablePort reverseボタンを追加
+	+ [x] Test Ensurable Portと同様にするがメッセージを逆方向にする
+	+ [x] EnsurablePortにdisconnectメソッド(空)を追加
+	+ [x] EnsurablePort側からdisconnectメッセージを送信
+	+ [x] EnsurablePort側で#listenerをremoveする
+	+ [x] EnsurablePort側で#disconnectフラグをtrueにする
+	+ [x] background側からACKを送信
+	+ [x] EnsurablePort側でACKを受信
+	+ [x] EnsurablePort側からdisconnect
+	+ [x] background側でlistenerをremoveする
 * [ ] EnsurablePortListにdisconnectメソッドを追加
 * [ ] クラスEnsurablePortListを修正する(続き)
 	+ [ ] postを追加するなど
