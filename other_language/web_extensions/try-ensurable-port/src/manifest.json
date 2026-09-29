@@ -11,7 +11,7 @@
 	],
 	"background": {
 		"scripts": ["background.js"],
-		"typoe": "module"
+		"type": "module"
 	},
 	"options_ui": {
 		"page": "options.html"
