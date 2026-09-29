@@ -46,7 +46,7 @@ TODO
 * [x] TypeScriptで拡張機能を書くモデルを作る
 * [x] EnsurablePortクラスのインスタンスの作成をリスナー内にする
 * [x] EnsurablePortListクラスのインスタンスの作成をリスナー内にする
-* [ ] クラスEnsurablePortListを修正する
+* [x] クラスEnsurablePortListを修正する(途中)
 	+ [x] disconnectを実装する
 		- [x] options.jsからdisconnectメッセージを送信する
 		- [x] #listenerを定義する
@@ -54,6 +54,9 @@ TODO
 		- [x] EnsurablePortListからACKを送る
 		- [x] options.jsでdisconnectする
 		- [x] disconnectを検出して#disconnectがtrueなら#disposeする
+* [ ] EnsurablePortにdisconnectメソッドを追加
+* [ ] EnsurablePortListにdisconnectメソッドを追加
+* [ ] クラスEnsurablePortListを修正する(続き)
 	+ [ ] postを追加するなど
 		- [x] postを定義
 		- [x] #postWithTabを定義

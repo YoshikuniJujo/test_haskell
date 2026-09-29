@@ -92,7 +92,8 @@ if (!testEnsurablePortList) throw new Error("no #test-ensurable-port-list");
 testEnsurablePortList.addEventListener("click", async () => {
 	browser.runtime.onConnect.addListener(listener);
 	await browser.runtime.sendMessage({
-		method: "testEnsurablePortList" });
+		method: "testEnsurablePortList",
+		name: pageId });
 
 	function
 	listener(p: browser.runtime.Port)
@@ -115,6 +116,17 @@ testEnsurablePortList.addEventListener("click", async () => {
 		});
 	}
 
+});
+
+const ensure = document.querySelector<HTMLElement>("#ensure");
+if (!ensure) throw new Error("no #ensure");
+ensure.addEventListener("click", () => {
+	console.log("addEventListener clicked");
+/*
+	const ep = new EnsurablePort(pageId);
+	ep.ensure();
+	ep.disconnect();
+*/
 });
 
 const openInTab = document.querySelector<HTMLElement>("#open-in-tab");

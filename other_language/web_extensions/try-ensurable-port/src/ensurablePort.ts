@@ -94,10 +94,12 @@ EnsurablePortList
 
 	post(name: string, message: object, tid?: number)
 	{
+		console.log("EnsurablePortList: post", name, message, tid);
 		const port = this.#ports.get(name);
 
 		if (port) {
 			port.postMessage(message);
+			return;
 		}
 
 		if (tid !== undefined) this.#postWithTab(name, message, tid);
@@ -115,8 +117,10 @@ EnsurablePortList
 
 	#setPort(name: string, port: browser.runtime.Port)
 	{
+		console.log("EnsurablePortList: #setPort", name, port);
 		this.#ports.set(name, port);
 		port.onDisconnect.addListener(() => {
+			console.log("EnsurablePortList: disconnect", name, port);
 			if (this.#ports.get(name) === port) this.#ports.delete(name);
 		});
 		port.onMessage.addListener(m => {
@@ -141,7 +145,9 @@ EnsurablePortList
 
 	#listener = (p: browser.runtime.Port) =>
 	{
-		const nm = p.name.split(":").pop();
+		const name = p.name
+		console.log("EnsurablePortList: #listener:", name);
+		const nm = name.split(":").pop();
 		if (!nm) throw(new Error("bad"));
 		this.#setPort(nm, p);
 	}
@@ -153,7 +159,14 @@ EnsurablePortList
 		p.postMessage(message);
 	}
 
-	#postWithoutTab(name: string, message: object)
+	async #postWithoutTab(name: string, message: object)
 	{
+		const key = `${APP_ID}:${name}`;
+		const result = await browser.storage.session.get(key);
+		const queue = result[key] ?? [];
+		queue.push(message);
+		await browser.storage.session.set({
+			[key]: queue
+		});
 	}
 }

@@ -11,7 +11,7 @@ type BackgroundMessage =
 	| { method: "openOptionsInTab"; }
 	| { method: "portConnectionToBackground"; }
 	| { method: "testEnsurablePort"; }
-	| { method: "testEnsurablePortList"; }
+	| { method: "testEnsurablePortList", name: string; }
 
 
 browser.runtime.onMessage.addListener((
@@ -29,7 +29,7 @@ browser.runtime.onMessage.addListener((
 		case "portConnectionToBackground":
 			return portConnectionToBackground();
 		case "testEnsurablePort": return testEnsurablePort();
-		case "testEnsurablePortList": return testEnsurablePortList(s);
+		case "testEnsurablePortList": return testEnsurablePortList(m.name, s);
 	}
 });
 
@@ -133,13 +133,18 @@ testEnsurablePort()
 }
 
 async function
-testEnsurablePortList(s: browser.runtime.MessageSender)
+testEnsurablePortList(nm: string, s: browser.runtime.MessageSender)
 {
 	console.log("background.js: testEnsurablePortList:", s);
 	const eport = new EnsurablePortList();
 	if (!s.tab) throw new Error("sender is not from a tab");
 	if (!s.tab.id) throw new Error("no s.tab.id");
-	const p = eport.ensure("test-port", s.tab.id);
-	console.log("background.js: port =", p);
-	p.postMessage({ method: "foobar", content: "ENSURABLE PORT LIST TEST from background.js" });
+	if (nm === "browser") {
+		eport.post(nm, { method: "foobar", content: "ENSURABLE PORT LIST TEST from background.js" });
+	}
+	else {
+		const p = eport.ensure(nm, s.tab.id);
+		console.log("background.js: port =", p);
+		p.postMessage({ method: "foobar", content: "ENSURABLE PORT LIST TEST from background.js" });
+	}
 }
