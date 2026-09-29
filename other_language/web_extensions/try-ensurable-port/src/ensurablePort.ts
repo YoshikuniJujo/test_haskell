@@ -32,6 +32,11 @@ EnsurablePort
 		return this.#port;
 	}
 
+	post(message: object)
+	{
+		this.ensure().postMessage(message);
+	}
+
 	disconnect()
 	{
 		this.ensure().postMessage({ method: `${this.#name}:disconnect` });

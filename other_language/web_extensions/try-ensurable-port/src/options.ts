@@ -81,9 +81,7 @@ testEnsurablePort.addEventListener("click", async () => {
 	await browser.runtime.sendMessage({
 		method: "testEnsurablePort" });
 	console.log("options: testEnsurablePort listener: after sendMessage");
-	const p = eport.ensure();
-	if (!p) throw new Error("no port");
-	p.postMessage({ method: "", content: "ENSURABLE PORT TEST FROM options.js" });
+	eport.post({ method: "", content: "ENSURABLE PORT TEST FROM options.js" });
 });
 
 const testEnsurablePortList = document.querySelector("#test-ensurable-port-list");
@@ -136,7 +134,6 @@ testEnsurablePortReverse.addEventListener("click", async () => {
 		switch (m.method) {
 			case "background.js: FOOBARBAZ":
 				eport.disconnect();
-//				eport.ensure().postMessage({ method: `${APP_ID}:${pageId}:disconnect` });
 		}
 	});
 });

@@ -72,7 +72,7 @@ TODO
 		- [x] #postWithoutTabを定義
 		- [x] portの接続を受けたらwithoutのほうでためたキューのメッセージを注ぎ込むようにする
 * [x] portの実装について別ディレクトリで確認する
-* [ ] EnsurablePortにpostメソッドを追加
+* [x] EnsurablePortにpostメソッドを追加
 * [ ] EnsurablePortにaddListenerメソッドを追加
 	+ [ ] listenerはインスタンス内に保持しておく
 	+ [ ] 接続要求があったら保持しておいたlistenerをaddする
