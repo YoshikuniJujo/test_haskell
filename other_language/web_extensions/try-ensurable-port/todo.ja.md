@@ -71,6 +71,7 @@ TODO
 		- [x] #postWithTabを定義
 		- [x] #postWithoutTabを定義
 		- [x] portの接続を受けたらwithoutのほうでためたキューのメッセージを注ぎ込むようにする
+* [ ] portの実装について別ディレクトリで確認する
 * [ ] EnsurablePortListにdisconnectメソッドを追加
 * [ ] EnsurablePortのリファクタリング
 * [ ] EnsurablePortListのリファクタリング
