@@ -165,10 +165,10 @@ EnsurablePortList
 		const nm = name.split(":").pop();
 		if (!nm) throw(new Error("bad"));
 		const key = name;
+		this.#setPort(nm, p);
 		const result = await browser.storage.session.get(key);
 		const queue = result[key] ?? [];
 		console.log("EnsurablePortList:#listener:", queue);
-		this.#setPort(nm, p);
 		queue.forEach((m: object) => { p.postMessage(m); });
 		await browser.storage.session.set( { [key]: [] });
 	}
