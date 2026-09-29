@@ -173,7 +173,9 @@ testEnsurablePortList(nm: string, s: browser.runtime.MessageSender)
 	if (!s.tab) throw new Error("sender is not from a tab");
 	if (!s.tab.id) throw new Error("no s.tab.id");
 	if (nm === "browser") {
-		eport.post(nm, { method: "foobar", content: "ENSURABLE PORT LIST TEST from background.js" });
+		eport.post(nm, { method: "foobar", content: "ENSURABLE PORT LIST TEST #0 from background.js" });
+		eport.post(nm, { method: "foobar", content: "ENSURABLE PORT LIST TEST #1 from background.js" });
+		eport.post(nm, { method: "foobar", content: "ENSURABLE PORT LIST TEST #2 from background.js" });
 	}
 	else {
 		const p = eport.ensure(nm, s.tab.id);

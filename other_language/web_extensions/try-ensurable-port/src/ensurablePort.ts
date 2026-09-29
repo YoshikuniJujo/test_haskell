@@ -180,14 +180,19 @@ EnsurablePortList
 		p.postMessage(message);
 	}
 
+	#queue: Promise<void> = Promise.resolve();
+
 	async #postWithoutTab(name: string, message: object)
 	{
 		const key = `${APP_ID}:${name}`;
+		this.#queue = this.#queue.then(async () => {
 		const result = await browser.storage.session.get(key);
 		const queue = result[key] ?? [];
 		queue.push(message);
+		console.log("*** QUEUE:", queue);
 		await browser.storage.session.set({
 			[key]: queue
+		});
 		});
 	}
 }
