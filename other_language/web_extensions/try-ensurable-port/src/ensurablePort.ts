@@ -14,6 +14,7 @@ EnsurablePort
 	#name: string;
 	#port: browser.runtime.Port | null = null;
 	#disconnect = false;
+	#listeners: Array<(message: object) => void> = [];
 
 	constructor(name: string)
 	{
@@ -25,8 +26,11 @@ EnsurablePort
 
 	ensure(): browser.runtime.Port
 	{
-		if (this.#port === null)
-			this.#setPort(browser.runtime.connect({ name: this.#name }));
+		if (this.#port === null) {
+			const port = browser.runtime.connect({ name: this.#name });
+			this.#setPort(port);
+			this.#listeners.forEach(l => { port.onMessage.addListener(l); });
+		}
 		if (this.#port === null)
 			throw new Error("failed to ensure port");
 		return this.#port;
@@ -35,6 +39,13 @@ EnsurablePort
 	post(message: object)
 	{
 		this.ensure().postMessage(message);
+	}
+
+	addListener(listener: (message: object) => void)
+	{
+		const p = this.ensure();
+		this.#listeners.push(listener);
+		p.onMessage.addListener(listener);
 	}
 
 	disconnect()
@@ -52,7 +63,10 @@ EnsurablePort
 	#listener = (p: browser.runtime.Port) =>
 	{
 		console.log("EnsurablePort:", p.name, this.#name);
-		if (p.name === this.#name) this.#setPort(p);
+		if (p.name === this.#name) {
+			this.#setPort(p);
+			this.#listeners.forEach(l => { p.onMessage.addListener(l); });
+		}
 	}
 
 	#setPort(p: browser.runtime.Port)
@@ -65,7 +79,7 @@ EnsurablePort
 			if (this.#disconnect) {
 				console.log("DISPOSE"); this.#dispose(); }
 		});
-		this.#port.onMessage.addListener(m => {
+		p.onMessage.addListener(m => {
 			if (hasMethod(m)) {
 			console.log("ensurablePort.js:", m);
 			console.log("ensurablePort.js: this.#name =", this.#name);

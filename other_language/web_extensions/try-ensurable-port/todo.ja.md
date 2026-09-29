@@ -73,9 +73,9 @@ TODO
 		- [x] portの接続を受けたらwithoutのほうでためたキューのメッセージを注ぎ込むようにする
 * [x] portの実装について別ディレクトリで確認する
 * [x] EnsurablePortにpostメソッドを追加
-* [ ] EnsurablePortにaddListenerメソッドを追加
-	+ [ ] listenerはインスタンス内に保持しておく
-	+ [ ] 接続要求があったら保持しておいたlistenerをaddする
+* [x] EnsurablePortにaddListenerメソッドを追加
+	+ [x] listenerはインスタンス内に保持しておく
+	+ [x] 接続要求があったら保持しておいたlistenerをaddする
 * [ ] EnsurablePortのensureをプライベートメソッドにする
 * [ ] EnsurablePortListにdisconnectメソッドを追加
 * [ ] EnsurablePortListにaddListenerメソッドを追加

@@ -175,7 +175,7 @@ testEnsurablePortList(nm: string, s: browser.runtime.MessageSender)
 	if (nm === "browser") {
 		eport.post(nm, { method: "foobar", content: "ENSURABLE PORT LIST TEST #0 from background.js" });
 		eport.post(nm, { method: "foobar", content: "ENSURABLE PORT LIST TEST #1 from background.js" });
-		eport.post(nm, { method: "foobar", content: "ENSURABLE PORT LIST TEST #2 from background.js" });
+		eport.post(nm, { method: "foobarbaz", content: "ENSURABLE PORT LIST TEST #2 from background.js" });
 	}
 	else {
 		const p = eport.ensure(nm, s.tab.id);

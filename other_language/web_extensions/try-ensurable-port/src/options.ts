@@ -128,7 +128,7 @@ testEnsurablePortReverse.addEventListener("click", async () => {
 		method: "testEnsurablePortReverse",
 		name: pageId
 	});
-	eport.ensure().onMessage.addListener(m => {
+	eport.addListener(m => {
 		console.log("options.ts: testEnsurablePortReverse:", m);
 		if (!hasMethod(m)) throw new Error("bad");
 		switch (m.method) {
@@ -143,10 +143,10 @@ if (!ensure) throw new Error("no #ensure");
 ensure.addEventListener("click", () => {
 	console.log("addEventListener clicked");
 	const ep = new EnsurablePort(pageId);
-	ep.ensure().onMessage.addListener(m => {
+	ep.addListener(m => {
 		console.log("received:", m);
 		if (!hasMethod(m)) throw new Error("bad");
-		if (m.method === "foobar") ep.disconnect();
+		if (m.method === "foobarbaz") ep.disconnect();
 	});
 });
 
