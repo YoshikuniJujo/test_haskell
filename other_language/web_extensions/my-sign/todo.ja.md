@@ -218,6 +218,9 @@ TODO
 	+ [x] npm install --save-dev typescript @types/firefox-webext-browser
 	+ [x] npx tsc --init
 	+ [x] codec/word.ts
+	+ [x] codec/polymod.ts
+	+ [x] codec/bech32.ts
+	+ [ ] content.ts
 	+ [ ] その他
 * [ ] logの処理について実装を再度検討する
 * [ ] portを使ったlogの処理をテストしてみる(portは使わないことにする)

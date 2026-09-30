@@ -4,7 +4,7 @@ import * as W from './word.js';
 const charset = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
 
 export function
-encode(hrp, dp)
+encode(hrp: string, dp: Iterable<number>)
 {
 	const { init: ci, last: cl, lastN: cn } = chunks(5, Array.from(dp));
 	const w5i = ci.map(W.pack8sTo40).map(W.unpack40To5s);
@@ -15,7 +15,7 @@ encode(hrp, dp)
 }
 
 export function
-decode(txt)
+decode(txt: string)
 {
 	const cs = [...txt];
 	const i = cs.lastIndexOf('1'); const hrp = cs.slice(0, i);
@@ -28,7 +28,7 @@ decode(txt)
 }
 
 function
-unpad(xs, n)
+unpad(xs: number[], n: number)
 {
 	if (xs.slice(n).some(x => x !== 0)) throw new Error("invalid padding");
 	return xs.slice(0, n);
@@ -37,14 +37,14 @@ unpad(xs, n)
 const chksmErr = "invalid checksum";
 
 function
-hrpEx(hrp)
+hrpEx(hrp: string[])
 {
-	const ns = hrp.map(c => c.charCodeAt(0));
+	const ns: number[] = hrp.map(c => c.charCodeAt(0));
 	return [...ns.map(n => n >>> 5), 0, ...ns.map(n => n & 0x1f)];
 }
 
 function
-chunks(sz, xs)
+chunks(sz: number, xs: number[]): { init: number[][], last: number[], lastN: number }
 {
 	const ln = xs.length;
 	if (ln < sz) return { init: [], last: xs, lastN: ln };
