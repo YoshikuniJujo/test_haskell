@@ -76,21 +76,21 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			return getAccountMethod(s.url);
 		case "publicKey":
 			if (!s.tab) throw new Error("bad");
-			if (!s.tab.id) throw new Error("bad");
+			if (s.tab.id === undefined) throw new Error("bad");
 			if (!s.url) throw new Error("bad");
 			return hex(await getPublicKey(s.url, s.tab.id));
 		case "prepareSymmetricKey":
 			if (!s.tab) throw new Error("bad");
-			if (!s.tab.id) throw new Error("bad");
+			if (s.tab.id === undefined) throw new Error("bad");
 			return qPswd(m.pubKey, s.tab.id);
 		case "registerSymmetricKey":
 			if (!s.tab) throw new Error("bad");
-			if (!s.tab.id) throw new Error("bad");
+			if (s.tab.id === undefined) throw new Error("bad");
 			return await rgSymkey(s.tab.id, m.pubKey, m.pswd);
 		case "signEvent": return signEvent(m.pubKey, m.event);
 		case "contentStarted":
 			if (!s.tab) throw new Error("bad");
-			if (!s.tab.id) throw new Error("bad");
+			if (s.tab.id === undefined) throw new Error("bad");
 			return pgVanished(s.tab.id);
 		case "clientChanged": return broadcast({ method: "clientChanged" });
 		case "openSettings": {
@@ -144,7 +144,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			const use = await otbs.assign(m.id, null, s.tab.id);
 			if (use !== s.tab.id) {
 				console.log("remove not used");
-				if (!s.tab.id) throw new Error("bad");
+				if (s.tab.id === undefined) throw new Error("bad");
 				await browser.tabs.remove(s.tab.id);
 			}
 			await browser.tabs.update(use, { active: true });
@@ -154,7 +154,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			const c = await getClient(m.clientUrl);
 			console.log("background: getClient return: ", c);
 			if (!s.tab) throw new Error("bad");
-			if (!s.tab.id) throw new Error("bad");
+			if (s.tab.id === undefined) throw new Error("bad");
 			if (c !== null) await browser.tabs.sendMessage(s.tab.id, { method: "clientReady", clientUrl: m.clientUrl });
 			else {
 				console.log("c is:", c);
@@ -181,7 +181,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				for (const st of sts)
 					await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: m.id });
 				await browser.tabs.update(sts[0], { active: true });
-				if (!s.tab.id) throw new Error("bad");
+				if (s.tab.id === undefined) throw new Error("bad");
 				await browser.tabs.remove(s.tab.id);
 				return true; }
 			else return false;
