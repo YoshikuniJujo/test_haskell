@@ -78,6 +78,9 @@ TODO
 	+ [x] 接続要求があったら保持しておいたlistenerをaddする
 * [x] EnsurablePortのensureをプライベートメソッドにする
 * [ ] EnsurablePortListにdisconnectメソッドを追加
+	+ [x] Try Ensurable Port List Reverseボタンを作る
+	+ [ ] メッセージの送受信をする
+	+ [ ] disconnectのやりとりを実装していく
 * [ ] EnsurablePortListにaddListenerメソッドを追加
 	+ [ ] 同上
 	+ [ ] 同上

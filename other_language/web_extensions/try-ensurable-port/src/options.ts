@@ -141,13 +141,22 @@ testEnsurablePortReverse.addEventListener("click", async () => {
 const ensure = document.querySelector<HTMLElement>("#ensure");
 if (!ensure) throw new Error("no #ensure");
 ensure.addEventListener("click", () => {
-	console.log("addEventListener clicked");
+	console.log("ensure clicked");
 	const ep = new EnsurablePort(pageId);
 	ep.addListener(m => {
 		console.log("received:", m);
 		if (!hasMethod(m)) throw new Error("bad");
 		if (m.method === "foobarbaz") ep.disconnect();
 	});
+});
+
+const testEnsurablePortListReverse =
+	document.querySelector<HTMLElement>(
+		"#test-ensurable-port-list-reverse" );
+if (!testEnsurablePortListReverse)
+	throw new Error("no #test-ensurable-port-list-reverse");
+testEnsurablePortListReverse.addEventListener("click", () => {
+	console.log("testEnsurablePortListReverse clicked");
 });
 
 const openInTab = document.querySelector<HTMLElement>("#open-in-tab");
