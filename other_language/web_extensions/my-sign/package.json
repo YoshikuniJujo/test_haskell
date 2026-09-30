@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "prebuild": "npx tsc",
     "build": "node scripts/build.js",
     "prerun": "npm run build",
     "run": "node scripts/run.js",
@@ -19,9 +20,11 @@
   "type": "module",
   "devDependencies": {
     "@hono/node-server": "^2.1.1",
+    "@types/firefox-webext-browser": "^143.0.1",
     "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.5",
     "hono": "^4.13.5",
+    "typescript": "^7.0.2",
     "web-ext": "^10.6.0"
   },
   "dependencies": {

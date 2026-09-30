@@ -203,18 +203,24 @@ TODO
 	+ [x] logUpdatedの送信に使ってみる(途中)
 		- [x] keyInputTabsの返り値をオブジェクトからMapにする
 		- [x] log.writeにはidがbrowser以外のtab idを引数としてわたす
-* [ ] EnsurablePortクラスを定義
+* [x] EnsurablePortクラスを定義(中断)
 	+ [x] クラスを定義
-	+ [ ] options.jsで使ってみる
-* [ ] EnsurablePortListクラスを定義
+	+ [x] options.jsで使ってみる(やめた)
+* [x] EnsurablePortListクラスを定義(中断)
 	+ [x] クラスを実装
-	+ [ ] background.jsで使ってみる
-* [ ] logUpdatedの送信をconnect/portを利用するようにする(続き)
-	+ [ ] logUpdatedの送信に使ってみる(続き)
-		- [ ] log.writeにportsを渡すことを検討する
-		- [ ] log.writeのときにensurePortをしてlogUpdatedを送る
-		- [ ] focusのときにensurePortをする
-* [ ] portを使ったlogの処理をテストしてみる
+	+ [x] background.jsで使ってみる(やめた)
+* [x] logUpdatedの送信をconnect/portを利用するようにする(中断)
+	+ [x] logUpdatedの送信に使ってみる(中断)
+		- [x] log.writeにportsを渡すことを検討する(やめた)
+		- [x] log.writeのときにensurePortをしてlogUpdatedを送る(やめた)
+		- [x] focusのときにensurePortをする(やめた)
+* [ ] TypeScriptに移行する
+	+ [x] npm install --save-dev typescript @types/firefox-webext-browser
+	+ [x] npx tsc --init
+	+ [x] codec/word.ts
+	+ [ ] その他
+* [ ] logの処理について実装を再度検討する
+* [ ] portを使ったlogの処理をテストしてみる(portは使わないことにする)
 	+ [ ] 独立したタブである3通りについて試してみる
 	+ [ ] ブラウザの設定画面に組み込まれたものについて試してみる
 	+ [ ] focusか発火しない場合について試す

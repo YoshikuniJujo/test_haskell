@@ -1,19 +1,19 @@
 export function
-pack5sTo40(ws)
+pack5sTo40(ws: number[])
 {
 	return ws.reduce(
 		(w, x, i) => w | BigInt(x) << (35n - 5n * BigInt(i)), 0n);
 }
 
 export function
-pack8sTo40(ws)
+pack8sTo40(ws: number[])
 {
 	return ws.reduce(
 		(w, x, i) => w | BigInt(x) << (32n - 8n * BigInt(i)), 0n);
 }
 
 export function
-unpack30To5s(w)
+unpack30To5s(w: number)
 {
 	return [
 		extract(w, 25, 0x1f), extract(w, 20, 0x1f),
@@ -22,13 +22,13 @@ unpack30To5s(w)
 }
 
 function
-extract(w, s, m)
+extract(w: number, s: number, m: number)
 {
 	return (w >>> s) & m;
 }
 
 export function
-unpack40To5s(w)
+unpack40To5s(w: bigint)
 {
 	return [
 		extractn(w, 35n, 0x1fn), extractn(w, 30n, 0x1fn),
@@ -37,7 +37,8 @@ unpack40To5s(w)
 		extractn(w, 5n, 0x1fn), extractn(w, 0n, 0x1fn) ];
 }
 
-export function unpack40To8s(w)
+export function
+unpack40To8s(w: bigint)
 {
 	return [
 		extractn(w, 32n, 0xffn), extractn(w, 24n, 0xffn),
@@ -46,7 +47,7 @@ export function unpack40To8s(w)
 }
 
 function
-extractn(w, s, m)
+extractn(w: bigint, s: bigint, m: bigint)
 {
 	return Number((w >> s) & m);
 }
