@@ -24,7 +24,7 @@ EnsurablePort
 		browser.runtime.onConnect.addListener(this.#listener);
 	}
 
-	ensure(): browser.runtime.Port
+	#ensure(): browser.runtime.Port
 	{
 		if (this.#port === null) {
 			const port = browser.runtime.connect({ name: this.#name });
@@ -38,19 +38,19 @@ EnsurablePort
 
 	post(message: object)
 	{
-		this.ensure().postMessage(message);
+		this.#ensure().postMessage(message);
 	}
 
 	addListener(listener: (message: object) => void)
 	{
-		const p = this.ensure();
+		const p = this.#ensure();
 		this.#listeners.push(listener);
 		p.onMessage.addListener(listener);
 	}
 
 	disconnect()
 	{
-		this.ensure().postMessage({ method: `${this.#name}:disconnect` });
+		this.#ensure().postMessage({ method: `${this.#name}:disconnect` });
 		this.#disconnect = true;
 		this.#dispose();
 	}

@@ -76,7 +76,7 @@ TODO
 * [x] EnsurablePortにaddListenerメソッドを追加
 	+ [x] listenerはインスタンス内に保持しておく
 	+ [x] 接続要求があったら保持しておいたlistenerをaddする
-* [ ] EnsurablePortのensureをプライベートメソッドにする
+* [x] EnsurablePortのensureをプライベートメソッドにする
 * [ ] EnsurablePortListにdisconnectメソッドを追加
 * [ ] EnsurablePortListにaddListenerメソッドを追加
 	+ [ ] 同上
