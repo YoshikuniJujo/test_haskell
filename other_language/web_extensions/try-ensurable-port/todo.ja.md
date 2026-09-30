@@ -77,10 +77,26 @@ TODO
 	+ [x] listenerはインスタンス内に保持しておく
 	+ [x] 接続要求があったら保持しておいたlistenerをaddする
 * [x] EnsurablePortのensureをプライベートメソッドにする
-* [ ] EnsurablePortListにdisconnectメソッドを追加
+* [x] Test Ensurable Port List Reverseを実装する(途中)
 	+ [x] Try Ensurable Port List Reverseボタンを作る
-	+ [ ] メッセージの送受信をする
-	+ [ ] disconnectのやりとりを実装していく
+	+ [x] backgroundにメッセージを送る
+	+ [x] backgroundはEnsurablePortListのインスタンスを作成する
+* [ ] EnsurablePortListにaddListenerToAllを実装する
+	+ [ ] Test Ensurable Port List Reverseから呼び出す
+	+ [ ] 中身を作成する
+* [ ] Test Ensurable Port List Reverseを実装する(続き)
+	+ [ ] options側からportをconnectする
+	+ [ ] background側はconnectを受けて受信の用意をする
+	+ [ ] options側からportにメッセージを送る
+* [ ] EnsurablePortListにdisconnectメソッドを追加
+	+ [ ] background側はそのメッセージに対してdisconnectする
+	+ [ ] EnsurablePortListでdisconnectメッセージを送る
+	+ [ ] options側はdisconnectメッセージを受け取り、disconnect-ackを送る
+	+ [ ] options側はonConnectのリスナーをremoveする
+	+ [ ] EnsurablePortListでdisconnectする
+	+ [ ] #disconnectsの要素のひとつの値をtrueにする
+	+ [ ] #portsの全ての鍵について#disconnectsの全てがtrueになったら
+		onConnectのリスナーをremoveする
 * [ ] EnsurablePortListにaddListenerメソッドを追加
 	+ [ ] 同上
 	+ [ ] 同上

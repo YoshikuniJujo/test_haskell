@@ -13,6 +13,7 @@ type BackgroundMessage =
 	| { method: "testEnsurablePort"; }
 	| { method: "testEnsurablePortList", name: string; }
 	| { method: "testEnsurablePortReverse", name: string; }
+	| { method: "testEnsurablePortListReverse" }
 
 
 browser.runtime.onMessage.addListener((
@@ -32,6 +33,7 @@ browser.runtime.onMessage.addListener((
 		case "testEnsurablePort": return testEnsurablePort();
 		case "testEnsurablePortList": return testEnsurablePortList(m.name, s);
 		case "testEnsurablePortReverse": return testEnsurablePortReverse(m.name, s);
+		case "testEnsurablePortListReverse": return testEnsurablePortListReverse();
 	}
 });
 
@@ -180,6 +182,14 @@ testEnsurablePortList(nm: string, s: browser.runtime.MessageSender)
 	else {
 		const p = eport.ensure(nm, s.tab.id);
 		console.log("background.js: port =", p);
-		p.postMessage({ method: "foobar", content: "ENSURABLE PORT LIST TEST from background.js" });
+		p.postMessage({ method: "foobarbaz", content: "ENSURABLE PORT LIST TEST from background.js" });
 	}
+}
+
+async function
+testEnsurablePortListReverse()
+{
+	console.log("BACKGROUND: testEnsurablePortListReverse: begin");
+	const eport = new EnsurablePortList();
+	console.log(eport);
 }

@@ -155,8 +155,10 @@ const testEnsurablePortListReverse =
 		"#test-ensurable-port-list-reverse" );
 if (!testEnsurablePortListReverse)
 	throw new Error("no #test-ensurable-port-list-reverse");
-testEnsurablePortListReverse.addEventListener("click", () => {
+testEnsurablePortListReverse.addEventListener("click", async () => {
 	console.log("testEnsurablePortListReverse clicked");
+	await browser.runtime.sendMessage({
+		method: "testEnsurablePortListReverse" });
 });
 
 const openInTab = document.querySelector<HTMLElement>("#open-in-tab");
