@@ -40,23 +40,63 @@ browser.runtime.onMessage.addListener( (m, s) => {
 	}
 });
 
+type GlobalMethod =
+	| { method: "accountDisplayInfo"; }
+	| { method: "publicKey"; }
+	| { method: "prepareSymmetricKey", pubKey: string; }
+	| { method: "registerSymmetricKey", pubKey: string, pswd: Uint8Array; }
+	| { method: "signEvent", pubKey: string, event: object; }
+	| { method: "contentStarted" }
+	| { method: "clientChanged" }
+	| { method: "openSettings" }
+	| { method: "testOptionsSender" }
+	| { method: "openOptionsInTab" }
+	| { method: "optionsStarted", id: string }
+	| { method: "prepareClient", clientUrl: string }
+	| { method: "clientSubmited", id: string }
+	| { method: "addLogTab" }
+
+type Client = {
+	uuid: string,
+	displayAccount: boolean,
+	publicKey: Uint8Array,
+	positionX: number, positionY: number,
+	backgroundColor: string, backgroundOpacity: number,
+	priority: number,
+	urlPattern: string
+}
+
 async function
-globalMethod(m, s)
+globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 {
 	console.log("message received", m);
 	switch (m.method) {
-		case "accountDisplayInfo": return getAccountMethod(s.url);
+		case "accountDisplayInfo":
+			if (!s.url) throw new Error("bad");
+			return getAccountMethod(s.url);
 		case "publicKey":
+			if (!s.tab) throw new Error("bad");
+			if (!s.tab.id) throw new Error("bad");
+			if (!s.url) throw new Error("bad");
 			return hex(await getPublicKey(s.url, s.tab.id));
-		case "prepareSymmetricKey": return qPswd(m.pubKey, s.tab.id);
+		case "prepareSymmetricKey":
+			if (!s.tab) throw new Error("bad");
+			if (!s.tab.id) throw new Error("bad");
+			return qPswd(m.pubKey, s.tab.id);
 		case "registerSymmetricKey":
+			if (!s.tab) throw new Error("bad");
+			if (!s.tab.id) throw new Error("bad");
 			return await rgSymkey(s.tab.id, m.pubKey, m.pswd);
 		case "signEvent": return signEvent(m.pubKey, m.event);
-		case "contentStarted": return pgVanished(s.tab.id);
+		case "contentStarted":
+			if (!s.tab) throw new Error("bad");
+			if (!s.tab.id) throw new Error("bad");
+			return pgVanished(s.tab.id);
 		case "clientChanged": return broadcast({ method: "clientChanged" });
 		case "openSettings": {
 			console.log("background: openSettings");
 			console.log(s.url);
+			if (!s.url) throw new Error("bad");
 			const cl = await getClient(s.url);
 			let ot;
 			let use;
@@ -66,16 +106,21 @@ globalMethod(m, s)
 					url: browser.runtime.getURL(
 						"options.html?openType=set&id=set")
 				});
+				if (!s.tab) throw new Error("bad");
 				use = await otbs.assign("set", s.tab.id, ot.id)
 			}
-			else {	ot = await browser.tabs.create({
+			else if (cl) {
+				ot = await browser.tabs.create({
 					active: false,
 					url: browser.runtime.getURL(
 						"options.html?openType=uuid&id=" + encodeURIComponent(cl.uuid) )
 				});
+				if (!s.tab) throw new Error("bad");
 				use = await otbs.assign(cl.uuid, s.tab.id, ot.id)
 			}
 			console.log("openSettings:", use);
+			if (!ot) throw new Error("bad");
+			if (!ot.id) throw new Error("bad");
 			if (use !== ot.id) {
 				await browser.tabs.remove(ot.id);
 			}
@@ -95,9 +140,11 @@ globalMethod(m, s)
 			return;
 		case "optionsStarted":
 			console.log("background: optionsStarted");
+			if (!s.tab) throw new Error("bad");
 			const use = await otbs.assign(m.id, null, s.tab.id);
 			if (use !== s.tab.id) {
 				console.log("remove not used");
+				if (!s.tab.id) throw new Error("bad");
 				await browser.tabs.remove(s.tab.id);
 			}
 			await browser.tabs.update(use, { active: true });
@@ -106,6 +153,8 @@ globalMethod(m, s)
 			console.log("background: prepareClient");
 			const c = await getClient(m.clientUrl);
 			console.log("background: getClient return: ", c);
+			if (!s.tab) throw new Error("bad");
+			if (!s.tab.id) throw new Error("bad");
 			if (c !== null) await browser.tabs.sendMessage(s.tab.id, { method: "clientReady", clientUrl: m.clientUrl });
 			else {
 				console.log("c is:", c);
@@ -117,6 +166,7 @@ globalMethod(m, s)
 				console.log(ot);
 				console.log("getPublicKey", m.clientUrl, s.tab.id, ot.id)
 				const use = await otbs.assign(m.clientUrl, s.tab.id, ot.id);
+				if (!ot.id) throw new Error("bad");
 				if (use != ot.id) await browser.tabs.remove(ot.id);
 				await browser.tabs.update(use, { active: true }); }
 
@@ -126,15 +176,18 @@ globalMethod(m, s)
 			const clnt = await getClient(m.id);
 			console.log("background: clientSubmited:", clnt);
 			if (clnt !== null) {
+				if (!s.tab) throw new Error("bad");
 				const sts = await otbs.complete(m.id, s.tab.id);
 				for (const st of sts)
 					await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: m.id });
 				await browser.tabs.update(sts[0], { active: true });
+				if (!s.tab.id) throw new Error("bad");
 				await browser.tabs.remove(s.tab.id);
 				return true; }
 			else return false;
 		case "addLogTab":
 			console.log("addLogTab");
+			if (!s.tab) throw new Error("bad");
 			Log.addLogTab(s.tab.id);
 			return;
 	}
@@ -144,8 +197,12 @@ browser.tabs.onRemoved.addListener(pgVanished);
 
 const waitForClientChanged = new Map();
 
+type Account = {
+	name: string;
+}
+
 async function
-getAccountMethod(url)
+getAccountMethod(url: string)
 {
 			console.log("getAccountMethod: ", url);
 			const c = await getClient(url);
@@ -165,7 +222,7 @@ getAccountMethod(url)
 }
 
 async function
-rgSymkey(tid, pbk, pswd)
+rgSymkey(tid: number, pbk: string, pswd: Uint8Array)
 {
 			const acc2 = await getAccount(unhex(pbk));
 			if (await acc2.checkPassword(pswd)) {
@@ -187,7 +244,7 @@ rgSymkey(tid, pbk, pswd)
 }
 
 async function
-signEvent(pbk, evt)
+signEvent(pbk: string, evt: object)
 {
 			const acc = await getAccount(unhex(pbk));
 			const { pswds = {} } = await browser.storage.session.get("pswds");
@@ -198,7 +255,7 @@ signEvent(pbk, evt)
 const requestsWAitingForClient = new Map();
 
 async function
-getPublicKey(url, tid)
+getPublicKey(url: string, tid: number)
 {
 	const pbk = await getAccountPublicKey();
 	if (pbk !== null) return pbk;
@@ -222,6 +279,7 @@ getPublicKey(url, tid)
 	console.log(ot);
 	console.log("getPublicKey", url, tid, ot.id)
 	const use = await otbs.assign(url, tid, ot.id);
+	if (!ot.id) throw new Error("bad");
 	if (use != ot.id) await browser.tabs.remove(ot.id);
 	await browser.tabs.update(use, { active: true });
 
@@ -237,10 +295,10 @@ getPublicKey(url, tid)
 }
 
 async function
-getClient(url)
+getClient(url: string): Promise<Client|null>
 {
 	console.log("getClient begin", url);
-	const cs = await DB.getClients();
+	const cs: Client[] = await DB.getClients();
 	cs.sort((a, b) => (b.priority ?? 100) - (a.priority ?? 100));
 	for (const c of cs) {
 		const pattern = new URLPattern(c.urlPattern);
@@ -249,7 +307,7 @@ getClient(url)
 }
 
 async function
-qPswd(pk, st)
+qPswd(pk: string, st: number)
 {
 	const { pswds = {} } = await browser.storage.session.get("pswds");
 	if (pswds[pk] !== undefined) {
@@ -264,20 +322,21 @@ qPswd(pk, st)
 	const use = await itbs.assign(pk, st, it.id);
 	if (use != it.id) {
 //		console.log("TAB REMOVE 2", tid);
+		if (!it.id) throw new Error("bad");
 		await browser.tabs.remove(it.id);
 	}
 	await browser.tabs.update(use, { active: true });
 }
 
 function
-hex(bs)
+hex(bs: Iterable<number>): string
 {
 	return [...bs]
 		.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 function
-unhex(s)
+unhex(s: string)
 {
 	const bs = new Uint8Array(s.length / 2);
 	for (let i = 0; i < bs.length; ++i)
@@ -286,7 +345,7 @@ unhex(s)
 }
 
 async function
-getAccount(pbk)
+getAccount(pbk: Uint8Array)
 {
 			const acc = await DB.getAccount(pbk);
 			return new EncryptedSecretKey(
@@ -302,7 +361,7 @@ getAccount(pbk)
 }
 
 async function
-broadcast(m)
+broadcast(m: object)
 {
 	const tabs = await browser.tabs.query({});
 	for (const tab of tabs) {
@@ -315,7 +374,7 @@ broadcast(m)
 }
 
 function
-hexToRgb(hex)
+hexToRgb(hex: string)
 {
 	console.log("hexToRgb", hex);
 	return {
@@ -326,7 +385,7 @@ hexToRgb(hex)
 }
 
 async function
-pgVanished(vt)
+pgVanished(vt: number)
 {
 	console.log("vanished:", vt);
 	const r = await itbs.tabClosed(vt);
@@ -366,7 +425,7 @@ pgVanished(vt)
 }
 
 function
-isUrl(s)
+isUrl(s: string)
 {
 	try {
 		new URL(s);
@@ -379,7 +438,7 @@ isUrl(s)
 const ports = new Map();
 
 function
-ensurePort(tabId)
+ensurePort(tabId: number)
 {
 	let port = ports.get(tabId);
 	if (port) return port;
@@ -395,7 +454,7 @@ browser.runtime.onConnect.addListener(port => {
 });
 
 function
-setPort(tabId, port)
+setPort(tabId: number, port: browser.runtime.Port)
 {
 	ports.set(tabId, port);
 	port.onDisconnect.addListener(() => {

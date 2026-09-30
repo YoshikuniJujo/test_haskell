@@ -220,6 +220,7 @@ TODO
 	+ [x] codec/word.ts
 	+ [x] codec/polymod.ts
 	+ [x] codec/bech32.ts
+	+ [x] background.ts
 	+ [ ] content.ts
 	+ [ ] その他
 * [ ] logの処理について実装を再度検討する
