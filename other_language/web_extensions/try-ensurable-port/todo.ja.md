@@ -82,8 +82,12 @@ TODO
 	+ [x] backgroundにメッセージを送る
 	+ [x] backgroundはEnsurablePortListのインスタンスを作成する
 * [ ] EnsurablePortListにaddListenerToAllを実装する
+	+ [x] 空のaddListenerToAllを追加する
 	+ [ ] Test Ensurable Port List Reverseから呼び出す
-	+ [ ] 中身を作成する
+	+ [ ] #listenersToAllを宣言する
+	+ [ ] addListenerToAllで#listenersToAllにlistenerを追加する
+	+ [ ] ポートが接続されたら#listenersToAllの中身の要素を順にリスナーとして追加する
+	+ [ ] Test Ensurable Port List Reverseで動作を確認する
 * [ ] Test Ensurable Port List Reverseを実装する(続き)
 	+ [ ] options側からportをconnectする
 	+ [ ] background側はconnectを受けて受信の用意をする

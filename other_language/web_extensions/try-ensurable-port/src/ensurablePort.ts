@@ -140,6 +140,10 @@ EnsurablePortList
 		else this.#postWithoutTab(name, message);
 	}
 
+	addListenerToAll(listner: (message: object) => void)
+	{
+	}
+
 	ensure(name: string, tid: number)
 	{
 		let port = this.#ports.get(name);
