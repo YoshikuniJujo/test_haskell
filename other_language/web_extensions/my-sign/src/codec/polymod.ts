@@ -1,11 +1,11 @@
 export function
-generate(ws)
+generate(ws: number[])
 {
 	return (1 ^ polymod([...ws, 0, 0, 0, 0, 0, 0])) >>> 0;
 }
 
 export function
-verify(ws)
+verify(ws: number[])
 {
 	return polymod(ws) == 1;
 }
@@ -14,7 +14,7 @@ const gen = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
 const mask = 0x3fffffff;
 
 function
-polymod(ws)
+polymod(ws: number[])
 {
 	let cs = 1;
 	for (const w5 of ws) {
@@ -24,8 +24,8 @@ polymod(ws)
 }
 
 function
-applyGen(w5, cs)
+applyGen(w5: number, cs: number)
 {
-	for (let i = 0; i < 5; i++) if ((w5 & (1 << i)) !== 0) cs ^= gen[i];
+	for (let i = 0; i < 5; i++) if ((w5 & (1 << i)) !== 0) cs ^= gen[i]!;
 	return (cs & mask);
 }
