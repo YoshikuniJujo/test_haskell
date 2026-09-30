@@ -83,7 +83,7 @@ TODO
 	+ [x] backgroundはEnsurablePortListのインスタンスを作成する
 * [ ] EnsurablePortListにaddListenerToAllを実装する
 	+ [x] 空のaddListenerToAllを追加する
-	+ [ ] Test Ensurable Port List Reverseから呼び出す
+	+ [x] Test Ensurable Port List Reverseから呼び出す
 	+ [ ] #listenersToAllを宣言する
 	+ [ ] addListenerToAllで#listenersToAllにlistenerを追加する
 	+ [ ] ポートが接続されたら#listenersToAllの中身の要素を順にリスナーとして追加する

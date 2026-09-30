@@ -192,4 +192,5 @@ testEnsurablePortListReverse()
 	console.log("BACKGROUND: testEnsurablePortListReverse: begin");
 	const eport = new EnsurablePortList();
 	console.log(eport);
+	eport.addListenerToAll(m => { console.log(m); });
 }

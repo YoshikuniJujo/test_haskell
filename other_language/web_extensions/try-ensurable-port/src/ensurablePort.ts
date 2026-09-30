@@ -142,6 +142,7 @@ EnsurablePortList
 
 	addListenerToAll(listner: (message: object) => void)
 	{
+		console.log("EnsurablePortList: addListenerToAll()");
 	}
 
 	ensure(name: string, tid: number)
