@@ -5,7 +5,7 @@ await rm("dist", { recursive: true, force: true });
 await mkdir("dist");
 
 await esbuild.build({
-	entryPoints: ["src/content.js"],
+	entryPoints: ["src/content.ts"],
 	bundle: true,
 	outfile: "dist/content.js"
 });

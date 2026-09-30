@@ -4,7 +4,17 @@ document.documentElement.style.border = "5px solid green";
 
 const div = document.createElement("div");
 
-let account = null;
+type AccountDisplayInfo = {
+	name: string,
+	publicKey: string,
+	backgroundColor: Color,
+	backgroundOpacity: number,
+	positionX: number, positionY: number
+}
+
+type Color = { red: number, green: number, blue: number }
+
+let account: AccountDisplayInfo | null = null;
 
 (async () => {
 	await browser.runtime.sendMessage({ method: "contentStarted" });
@@ -86,7 +96,7 @@ const nostr = {
 		});
 	},
 
-	signEvent(ev)
+	signEvent(ev: object)
 	{
 		return new window.Promise(async (rs, rj) => {
 			try {
@@ -118,13 +128,22 @@ div.addEventListener("click", () => {
 	browser.runtime.sendMessage({ method: "openSettings" });
 });
 
-browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
+type Message =
+	| { method: "pswdReady", pubKey: string }
+	| { method: "clientChanged" }
+	| { method: "inputPageVanished", pubKey: string }
+	| { method: "clientReady", clientUrl: string }
+	| { method: "optionPageVanished", isUrl: boolean, clientUrl: string }
+
+type RequestWaitingForPassword = { resolve: () => void, reject: (err: Error) => void }
+
+browser.runtime.onMessage.addListener(async (m: Message) => { switch (m.method) {
 	case "pswdReady":
 		console.log("content: pswdReady");
 		console.log(m.pubKey);
 		console.log(requestsWaitingForPassword);
 		forEachValues(requestsWaitingForPassword,
-			m.pubKey, wtr => wtr.resolve()); break;
+			m.pubKey, (wtr: RequestWaitingForPassword) => wtr.resolve()); break;
 	case "clientChanged":
 		console.log("content: clientChanged");
 		account = await browser.runtime.sendMessage({ method: "accountDisplayInfo" });
@@ -148,7 +167,7 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 	case "inputPageVanished":
 		console.log("content: inputPageVanished");
 		forEachValues(requestsWaitingForPassword,
-			m.pubKey, wtr => {
+			m.pubKey, (wtr: RequestWaitingForPassword) => {
 				error.showPopover();
 				setErrorPosition();
 				wtr.reject(new Error("input page vanished"))
@@ -157,14 +176,14 @@ browser.runtime.onMessage.addListener(async (m) => { switch (m.method) {
 	case "clientReady":
 		console.log("content: clientReady");
 		forEachValues(waitingForClient,
-			m.clientUrl, wtr => wtr.resolve()); break;
+			m.clientUrl, (wtr: RequestWaitingForPassword) => wtr.resolve()); break;
 		break;
 	case "optionPageVanished":
 		console.log("content: clientPageVanished");
 		console.log(m);
 		if (m.isUrl)
 			forEachValues(waitingForClient,
-				m.clientUrl, wtr => wtr.reject(new Error ("options page vanished")));
+				m.clientUrl, (wtr: RequestWaitingForPassword) => wtr.reject(new Error ("options page vanished")));
 		break;
 } });
 
@@ -172,7 +191,7 @@ window.wrappedJSObject.nostr =
 	cloneInto(nostr, window, { cloneFunctions: true });
 
 function
-setAccountPosition(account)
+setAccountPosition(account: AccountDisplayInfo)
 {
 		const rect = div.getBoundingClientRect();
 		const left =
@@ -184,6 +203,7 @@ setAccountPosition(account)
 }
 
 window.addEventListener("resize", () => {
+	if (!account) throw new Error("bad");
 	if (!div.hidden) setAccountPosition(account);
 	if (error.matches(":popover-open")) setErrorPosition();
 });
