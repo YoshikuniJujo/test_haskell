@@ -22,6 +22,8 @@ open()
 	});
 }
 
+type Log = { time: Date, message: string }
+
 function
 getDB()
 {
@@ -55,7 +57,7 @@ async write(msg: object|string)
 	});
 },
 
-async readAll()
+async readAll(): Promise<Log[]>
 {
 	const db = await getDB();
 	const tx = db.transaction(STORE_NAME, "readonly");
