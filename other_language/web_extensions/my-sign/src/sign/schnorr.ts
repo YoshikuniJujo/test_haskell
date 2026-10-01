@@ -1,8 +1,15 @@
 import { sha256 } from '@noble/hashes/sha2.js';
 import { schnorr } from '@noble/secp256k1';
 
+type Event = {
+	created_at: number,
+	kind: number,
+	tags: string[][],
+	content: string
+}
+
 export async function
-signEvent(ev, sk, pk)
+signEvent(ev: Event, sk: Uint8Array, pk: Uint8Array)
 {
 	const pkh = hex(pk);
 	const srlzd = JSON.stringify(
@@ -13,7 +20,7 @@ signEvent(ev, sk, pk)
 }
 
 function
-hex(bs)
+hex(bs: Uint8Array)
 {
 	return Array.from(bs, b => b.toString(16).padStart(2, "0")).join("");
 }
