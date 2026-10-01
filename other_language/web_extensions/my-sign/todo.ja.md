@@ -227,7 +227,7 @@ TODO
 	+ [x] mapArray.ts
 	+ [x] options.ts
 	+ [x] sign/schnorr.ts
-	+ [ ] crypto/ncryptsec.ts
+	+ [x] crypto/ncryptsec.ts
 	+ [ ] db.ts
 	+ [ ] inputTab.ts
 	+ [ ] mutex.ts

@@ -9,6 +9,13 @@ import { addToArrayMap, forEachValues } from "./mapArray.js"
 
 import { EnsurablePortList } from "./ensurablePort.js"
 
+type Event = {
+	created_at: number,
+	kind: number,
+	tags: string[][],
+	content: string
+}
+
 console.log("background.js");
 Log.write("BACKGROUND BEGIN");
 
@@ -44,8 +51,8 @@ type GlobalMethod =
 	| { method: "accountDisplayInfo"; }
 	| { method: "publicKey"; }
 	| { method: "prepareSymmetricKey", pubKey: string; }
-	| { method: "registerSymmetricKey", pubKey: string, pswd: Uint8Array; }
-	| { method: "signEvent", pubKey: string, event: object; }
+	| { method: "registerSymmetricKey", pubKey: string, pswd: string; }
+	| { method: "signEvent", pubKey: string, event: Event; }
 	| { method: "contentStarted" }
 	| { method: "clientChanged" }
 	| { method: "openSettings" }
@@ -223,7 +230,7 @@ getAccountMethod(url: string)
 }
 
 async function
-rgSymkey(tid: number, pbk: string, pswd: Uint8Array)
+rgSymkey(tid: number, pbk: string, pswd: string)
 {
 			const acc2 = await getAccount(unhex(pbk));
 			if (await acc2.checkPassword(pswd)) {
@@ -245,7 +252,7 @@ rgSymkey(tid: number, pbk: string, pswd: Uint8Array)
 }
 
 async function
-signEvent(pbk: string, evt: object)
+signEvent(pbk: string, evt: Event)
 {
 			const acc = await getAccount(unhex(pbk));
 			const { pswds = {} } = await browser.storage.session.get("pswds");

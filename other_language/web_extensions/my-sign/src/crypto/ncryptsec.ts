@@ -6,6 +6,22 @@ import * as Bech32 from "../codec/bech32.js";
 
 import * as Schnorr from "../sign/schnorr.js"
 
+type Encrypted = {
+	version: number,
+	logN: number,
+	salt: Uint8Array,
+	nonce: Uint8Array,
+	keySecurityByte: number,
+	ciphertext: Uint8Array
+}
+
+type Event = {
+	created_at: number,
+	kind: number,
+	tags: string[][],
+	content: string
+}
+
 export class
 EncryptedSecretKey
 {
@@ -21,7 +37,10 @@ EncryptedSecretKey
 	#saltForCheckPassword;
 	#hashForCheckPassword;
 
-	constructor(pk, name, ln, slt, nnc, ksb, ct, sfcp, hfcp)
+	constructor(
+		pk: Uint8Array, name: string,
+		ln: number, slt: Uint8Array, nnc: Uint8Array,
+		ksb: number, ct: Uint8Array, sfcp: Uint8Array, hfcp: Uint8Array)
 	{
 		if (ksb > 2) throw new Error(
 			`Invalid key security byte: expected 0, 1, or 2, actual ${ksb}` );
@@ -39,7 +58,7 @@ EncryptedSecretKey
 		this.#hashForCheckPassword = hfcp;
 	}
 
-	static async generate(nm, pswd)
+	static async generate(nm: string, pswd: string)
 	{
 		const lgn = 16
 		const sfcp = randomBytes(16);
@@ -59,7 +78,7 @@ EncryptedSecretKey
 
 	}
 
-	static fromEncrypted(nm, encrypted, pswd)
+	static fromEncrypted(nm: string, encrypted: Encrypted, pswd: string)
 	{
 		if (encrypted.version !== 2) throw new Error(
 			`Invalid ncryptsec version: expected 2, actual ${encrypted.version}` );
@@ -73,7 +92,10 @@ EncryptedSecretKey
 			pswd );
 	}
 
-	static async #fromEncrypted(nm, lgn, slt, nnc, ksb, ct, pswd)
+	static async #fromEncrypted(
+		nm: string, lgn: number,
+		slt: Uint8Array, nnc: Uint8Array, ksb: number,
+		ct: Uint8Array, pswd: string )
 	{
 		if (ksb > 2) throw new Error(
 			"Invalid key security byte: expected 0, 1, or 2, " +
@@ -120,7 +142,7 @@ EncryptedSecretKey
 			hashForCheckPassword: this.#hashForCheckPassword }
 	}
 
-	async checkPassword(pswd)
+	async checkPassword(pswd: string)
 	{
 		const hfcp = await scryptAsync(
 			new TextEncoder().encode(pswd.normalize("NFKC")),
@@ -129,7 +151,7 @@ EncryptedSecretKey
 		return equalBytes(hfcp, this.#hashForCheckPassword);
 	}
 
-	async getSymmetricKey(pswd)
+	async getSymmetricKey(pswd: string)
 	{
 		return scryptAsync(
 			new TextEncoder().encode(pswd.normalize("NFKC")),
@@ -137,7 +159,7 @@ EncryptedSecretKey
 			{ N: 2 ** this.#logN, r: 8, p: 1, dkLen: 32 } );
 	}
 
-	async signEvent(ev, smky)
+	async signEvent(ev: Event, smky: Uint8Array)
 	{
 		const cc = xchacha20poly1305(smky, this.#nonce, new Uint8Array([this.#keySecurityByte]));
 		const sk = cc.decrypt(this.#ciphertext);
@@ -149,7 +171,7 @@ EncryptedSecretKey
 }
 
 export function
-encode(foo)
+encode(foo: Encrypted)
 {
 
 	return Bech32.encode('ncryptsec',
@@ -159,7 +181,7 @@ encode(foo)
 }
 
 export function
-decode(text)
+decode(text: string)
 {
 
 const text2 = text.trim();
@@ -172,6 +194,8 @@ if (decoded.length !== 91) throw new Error(
 const [vsn, lgn, slt, nnc, aad, ct] =
 	split(decoded, [1, 1, 16, 24, 1, 48]);
 
+if (!vsn || !lgn || !aad) throw new Error("bad");
+
 const encrypted = {
 	version: vsn[0], logN: lgn[0], salt: slt, nonce: nnc,
 	keySecurityByte: aad[0], ciphertext: ct };
@@ -180,8 +204,13 @@ return encrypted;
 
 }
 
+type EncryptArguments = {
+	password: string, logN: number, keySecurityByte: number
+}
+
 async function
-encrypt(secKey, { password: pswd, logN: lgn, keySecurityByte: ksb })
+encrypt(secKey: Uint8Array,
+	{ password: pswd, logN: lgn, keySecurityByte: ksb }: EncryptArguments)
 {
 
 	const salt = randomBytes(16);
@@ -212,20 +241,24 @@ encrypt(secKey, { password: pswd, logN: lgn, keySecurityByte: ksb })
 }
 
 function
-split(bs, ns)
+split(bs: Uint8Array, ns: number[]): Uint8Array[]
 {
 	if (ns.length === 0) { return []; }
 	const [n, ...rest] = ns;
 	return [bs.slice(0, n), ...split(bs.slice(n), rest)]; }
 
 function
-equalBytes(a, b)
+equalBytes(a: Uint8Array, b: Uint8Array)
 {
 	if (a.length !== b.length) return false;
 
 	let d = 0;
-	for (let i = 0; i < a.length; ++ i)
-		d |= a[i] ^ b[i];
+	for (let i = 0; i < a.length; ++ i) {
+		const ai = a[i];
+		const bi = b[i];
+		if (ai == undefined || bi == undefined) throw new Error("bad");
+		d |= ai ^ bi;
+	}
 
 	return d === 0;
 }
