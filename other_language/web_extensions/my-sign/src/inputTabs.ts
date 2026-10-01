@@ -2,17 +2,20 @@ import { Mutex } from "./mutex.js"
 
 const STORAGE_KEY = "857e7986-2f57-4f41-b91f-3d4392a52fcf";
 
+type Assigns = Record<string, Tabs>;
+type Tabs = { sourceTabs: number[], inputTab: number };
+
 export class InputTabs {
 
 	#storage; #mutex; #key;
 
-	constructor(nm, str = browser.storage.session)
+	constructor(nm: string, str = browser.storage.session)
 	{
 		this.#storage = str; this.#mutex = new Mutex;
 		this.#key = STORAGE_KEY + ":" + nm;
 	}
 
-	async assign(pk, st, it)
+	async assign(pk: string, st: number | null, it: number)
 	{
 		await this.#mutex.acquire();
 		try {	let use;
@@ -28,7 +31,7 @@ export class InputTabs {
 		finally { this.#mutex.release(); }
 	}
 	
-	async complete(pk, actit)
+	async complete(pk: string, actit: number)
 	{
 		await this.#mutex.acquire();
 		try {	const assns = await this.#getAssignments();
@@ -42,10 +45,10 @@ export class InputTabs {
 		finally { this.#mutex.release(); }
 	}
 
-	async tabClosed(t)
+	async tabClosed(t: number)
 	{
 		await this.#mutex.acquire();
-		try {	const assns = await this.#getAssignments();
+		try {	const assns: Assigns = await this.#getAssignments();
 			const cls = []; const cclls = [];
 			for (const[pk, tbs] of Object.entries(assns)) {
 				const i = tbs.sourceTabs.indexOf(t);
@@ -64,7 +67,7 @@ export class InputTabs {
 		finally { this.#mutex.release(); }
 	}
 	
-	#verifyInputTab(pk, ex, act)
+	#verifyInputTab(pk: string, ex: number, act: number)
 	{
 		if (act !== ex) {
 			console.error(
@@ -85,14 +88,14 @@ export class InputTabs {
 			await this.#storage.get(this.#key); return assns;
 	}
 
-	async #setAssignments(assns)
+	async #setAssignments(assns: Assigns)
 	{
 		await this.#storage.set({ [this.#key]: assns });
 	}
 
 	async keyInputTabs()
 	{
-		const assns = await this.#getAssignments();
+		const assns: Assigns = await this.#getAssignments();
 		console.log("keyInputTabs():", assns);
 		const r = new Map();
 		Object.entries(assns).forEach(([k, v]) => { r.set(k, v.inputTab) });
@@ -102,7 +105,7 @@ export class InputTabs {
 }
 
 function
-addUnique(a, v)
+addUnique<V>(a: V[], v: V)
 {
 	if (v !== null && !a.includes(v)) a.push(v);
 }

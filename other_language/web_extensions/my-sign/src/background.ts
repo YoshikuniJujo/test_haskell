@@ -114,6 +114,8 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 						"options.html?openType=set&id=set")
 				});
 				if (!s.tab) throw new Error("bad");
+				if (!s.tab.id) throw new Error("bad");
+				if (!ot.id) throw new Error("bad");
 				use = await otbs.assign("set", s.tab.id, ot.id)
 			}
 			else if (cl) {
@@ -123,6 +125,8 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 						"options.html?openType=uuid&id=" + encodeURIComponent(cl.uuid) )
 				});
 				if (!s.tab) throw new Error("bad");
+				if (!s.tab.id) throw new Error("bad");
+				if (!ot.id) throw new Error("bad");
 				use = await otbs.assign(cl.uuid, s.tab.id, ot.id)
 			}
 			console.log("openSettings:", use);
@@ -148,6 +152,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 		case "optionsStarted":
 			console.log("background: optionsStarted");
 			if (!s.tab) throw new Error("bad");
+			if (!s.tab.id) throw new Error("bad");
 			const use = await otbs.assign(m.id, null, s.tab.id);
 			if (use !== s.tab.id) {
 				console.log("remove not used");
@@ -172,8 +177,8 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				});
 				console.log(ot);
 				console.log("getPublicKey", m.clientUrl, s.tab.id, ot.id)
-				const use = await otbs.assign(m.clientUrl, s.tab.id, ot.id);
 				if (!ot.id) throw new Error("bad");
+				const use = await otbs.assign(m.clientUrl, s.tab.id, ot.id);
 				if (use != ot.id) await browser.tabs.remove(ot.id);
 				await browser.tabs.update(use, { active: true }); }
 
@@ -184,6 +189,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			console.log("background: clientSubmited:", clnt);
 			if (clnt !== null) {
 				if (!s.tab) throw new Error("bad");
+				if (s.tab.id === undefined) throw new Error("bad");
 				const sts = await otbs.complete(m.id, s.tab.id);
 				for (const st of sts)
 					await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: m.id });
@@ -286,8 +292,8 @@ getPublicKey(url: string, tid: number)
 	});
 	console.log(ot);
 	console.log("getPublicKey", url, tid, ot.id)
-	const use = await otbs.assign(url, tid, ot.id);
 	if (!ot.id) throw new Error("bad");
+	const use = await otbs.assign(url, tid, ot.id);
 	if (use != ot.id) await browser.tabs.remove(ot.id);
 	await browser.tabs.update(use, { active: true });
 
@@ -327,6 +333,7 @@ qPswd(pk: string, st: number)
 			"input.html?" +
 			"accountName=" + encodeURIComponent((await getAccount(unhex(pk))).name) +
 			"&publicKey=" + encodeURIComponent(pk) ) });
+	if (it.id === undefined) throw new Error("bad");
 	const use = await itbs.assign(pk, st, it.id);
 	if (use != it.id) {
 //		console.log("TAB REMOVE 2", tid);
@@ -406,7 +413,9 @@ pgVanished(vt: number)
 			s, { method: "inputPageVanished", pubKey: c.pubKey });
 
 	console.log("pgVanished:", r.cancelled[0]);
-	browser.tabs.update(r.cancelled[0]?.sources[0], { active: true });
+	const rc0 = r.cancelled[0]?.sources[0]
+	if (rc0 === undefined) throw new Error("bad");
+	browser.tabs.update(rc0, { active: true });
 
 	console.log("otbs");
 	const s = await otbs.tabClosed(vt);
@@ -424,7 +433,9 @@ pgVanished(vt: number)
 			s, { method: "optionPageVanished", isUrl: isUrl(d.pubKey), clientUrl: d.pubKey });
 	}
 
-	browser.tabs.update(s.cancelled[0]?.sources[0], { active: true });
+	const sc0 = s.cancelled[0]?.sources[0];
+	if (sc0 === undefined) throw new Error("bad");
+	browser.tabs.update(sc0, { active: true });
 
 	const ots = [...(await otbs.keyInputTabs())]
 		.filter(([key]) => key !== "browser")
