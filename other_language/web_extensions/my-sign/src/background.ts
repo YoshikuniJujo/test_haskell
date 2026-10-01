@@ -188,6 +188,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 		case "addLogTab":
 			console.log("addLogTab");
 			if (!s.tab) throw new Error("bad");
+			if (s.tab.id === undefined) throw new Error("bad");
 			Log.addLogTab(s.tab.id);
 			return;
 	}

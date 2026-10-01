@@ -223,7 +223,7 @@ TODO
 	+ [x] background.ts
 	+ [x] content.ts
 	+ [x] input.ts
-	+ [ ] log2.ts
+	+ [x] log2.ts
 	+ [ ] mapArray.ts
 	+ [ ] options.ts
 	+ [ ] sign/schnorr.ts
