@@ -7,7 +7,30 @@ const SECRET_KEYS = "secret-keys";
 const CLIENTS = "clients";
 const USE_CLIENT_SET = "use-client-set";
 
-let dbPromise;
+let dbPromise: Promise<IDBDatabase>;
+
+type Client = {
+	uuid: string,
+	name: string,
+	displayAccount: boolean,
+	publicKey: Uint8Array,
+	positionX: number, positionY: number,
+	backgroundColor: string, backgroundOpacity: number,
+	priority: number,
+	urlPattern: string,
+	openSettingsByClick: boolean
+}
+
+type Account = {
+	publicKey: Uint8Array ,
+	name: string,
+	logN: number,
+	salt: Uint8Array,
+	nonce: Uint8Array,
+	keySecurityByte: number,
+	ciphertext: Uint8Array,
+	saltForCheckPassword: Uint8Array,
+	hashForCheckPassword: Uint8Array }
 
 function
 open()
@@ -39,7 +62,7 @@ open()
 }
 
 export async function
-addKeyPair(key)
+addKeyPair(key: Account)
 {
 	const db = await open();
 
@@ -68,7 +91,7 @@ getPublicKeys()
 }
 
 export async function
-putClient(client)
+putClient(client: Client)
 {
 	const db = await open();
 
@@ -82,7 +105,7 @@ putClient(client)
 }
 
 export async function
-deleteClient(uuid)
+deleteClient(uuid: string)
 {
 	const db = await open();
 
@@ -94,8 +117,12 @@ deleteClient(uuid)
 	});
 }
 
+type KeyWithName = {
+	publicKey: Uint8Array,
+	name: string }
+
 export async function
-getPublicKeysWithNames()
+getPublicKeysWithNames(): Promise<KeyWithName[]>
 {
 	const db = await open();
 
@@ -112,7 +139,7 @@ getPublicKeysWithNames()
 }
 
 export async function
-getClients()
+getClients(): Promise<Client[]>
 {
 	const db = await open();
 
@@ -126,21 +153,22 @@ getClients()
 }
 
 export async function
-getAccount(pk)
+getAccount(pk: Uint8Array): Promise<Account>
 {
 	const db = await open();
 
 	return new Promise((rs, rj) => {
 		const tx = db.transaction(SECRET_KEYS, "readonly");
 		const store = tx.objectStore(SECRET_KEYS);
-		const req = store.get(pk);
+//		const req = store.get(pk.slice().buffer);
+		const req = store.get(pk as IDBValidKey);
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
 	});
 }
 
 export async function
-getUseClientSet()
+getUseClientSet(): Promise<boolean>
 {
 	const db = await open();
 
@@ -154,7 +182,7 @@ getUseClientSet()
 }
 
 export async function
-putUseClientSet(b)
+putUseClientSet(b: boolean)
 {
 	const db = await open();
 

@@ -228,7 +228,7 @@ TODO
 	+ [x] options.ts
 	+ [x] sign/schnorr.ts
 	+ [x] crypto/ncryptsec.ts
-	+ [ ] db.ts
+	+ [x] db.ts
 	+ [ ] inputTab.ts
 	+ [ ] mutex.ts
 	+ [ ] optionsState.ts

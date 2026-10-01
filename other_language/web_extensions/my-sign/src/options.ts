@@ -87,9 +87,9 @@ const deleteClient = document.querySelector<HTMLElement>("#delete-client");
 if (!optionsError) throw new Error("bad");
 if (!deleteClient) throw new Error("bad");
 
-let editingClient: Client;
+let editingClient: EditingClient;
 
-type Client = {
+type EditingClient = {
 	uuid: string,
 	name: string,
 	urlPattern: string,
@@ -260,7 +260,7 @@ loadClients()
 		row.addEventListener("click", () => {
 			editingClient = client;
 			console.log(editingClient.uuid);
-			clients.hidden = true;
+			clientsElm.hidden = true;
 			newClient.hidden = true;
 			clientDetail.hidden = false;
 			deleteClient.hidden = false;
@@ -273,7 +273,7 @@ loadClients()
 }
 
 function
-loadClientToForm(client: Client)
+loadClientToForm(client: EditingClient)
 {
 	if (!clientNameD) throw new Error("bad");
 	const urlPatternD = document.querySelector<HTMLInputElement>("#url-pattern-d");
@@ -354,7 +354,22 @@ clientFormD.addEventListener("submit", async event => {
 
 	editingClient.openSettingsByClick = openSettingsByClick.checked;
 
-	await DB.putClient(editingClient);
+	const pr = editingClient.priority;
+	if (pr === null) throw new Error("bad");
+
+	await DB.putClient({
+		uuid: editingClient.uuid,
+		name: editingClient.name,
+		displayAccount: editingClient.displayAccount,
+		publicKey: editingClient.publicKey,
+		positionX: editingClient.positionX,
+		positionY: editingClient.positionY,
+		backgroundColor: editingClient.backgroundColor,
+		backgroundOpacity: editingClient.backgroundOpacity,
+		priority: pr,
+		urlPattern: editingClient.urlPattern,
+		openSettingsByClick: editingClient.openSettingsByClick
+	});
 	await loadClients();
 
 	await browser.runtime.sendMessage({
