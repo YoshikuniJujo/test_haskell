@@ -7,8 +7,6 @@ import * as Bech32 from "./codec/bech32.js";
 
 import { addToArrayMap, forEachValues } from "./mapArray.js"
 
-import { EnsurablePortList } from "./ensurablePort.js"
-
 type Event = {
 	created_at: number,
 	kind: number,
@@ -18,8 +16,6 @@ type Event = {
 
 console.log("background.js");
 Log.write("BACKGROUND BEGIN");
-
-const eports = new EnsurablePortList();
 
 const itbs = new InputTabs("input");
 const otbs = new InputTabs("options");

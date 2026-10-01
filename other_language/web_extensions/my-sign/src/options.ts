@@ -2,7 +2,6 @@ import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
 import { Log } from "./log2.js"
-import { EnsurablePort } from "./ensurablePort.js";
 
 let openType;
 let id;
@@ -20,8 +19,6 @@ if (id === null) throw new Error("bad");
 
 console.log("options begin");
 console.log("options.js: ", location.search);
-
-const eport = new EnsurablePort(id);
 
 if (openType !== "url" && openType !== "uuid" && openType !== "set") browser.runtime.sendMessage(
 	{ method: "optionsStarted", id: id } );
