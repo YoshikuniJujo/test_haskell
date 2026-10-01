@@ -23,7 +23,7 @@ await esbuild.build({
 });
 
 await esbuild.build({
-	entryPoints: ["src/input.js"],
+	entryPoints: ["src/input.ts"],
 	bundle: true,
 	outfile: "dist/input.js"
 });

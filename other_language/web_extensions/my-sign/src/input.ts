@@ -2,11 +2,19 @@ import * as Bech32 from "./codec/bech32.js"
 
 const accName = new URLSearchParams(location.search).get("accountName");
 const pubKey = new URLSearchParams(location.search).get("publicKey");
-const input = document.querySelector("#input");
-const show = document.querySelector("#show-password");
-// const send = document.querySelector("#send");
-const error = document.querySelector("#error");
+const input = document.querySelector<HTMLInputElement>("#input");
+const show = document.querySelector<HTMLInputElement>("#show-password");
+const error = document.querySelector<HTMLElement>("#error");
 const onMessage = browser.runtime.onMessage;
+const accountInfo = document.querySelector("#account-info")
+const form = document.querySelector("#password-form");
+
+if (!input) throw new Error("bad");
+if (!error) throw new Error("bad");
+if (!show) throw new Error("bad");
+if (!accountInfo) throw new Error("bad");
+if (!form) throw new Error("bad");
+if (!pubKey) throw new Error("bad");
 
 input.focus();
 
@@ -14,9 +22,7 @@ input.addEventListener("input", () => { error.hidden = true; });
 show.addEventListener("change", () => {
 	input.type = show.checked ? "text" : "password"; });
 
-const form = document.querySelector("#password-form");
-
-document.querySelector("#account-info").textContent =
+accountInfo.textContent =
 	accName + " " + Bech32.encode("npub", unhex(pubKey)).slice(0, 25) + "...";
 
 form.addEventListener("submit", async (event) => {
@@ -25,16 +31,18 @@ form.addEventListener("submit", async (event) => {
 });
 
 async function
-sendPswd(p)
+sendPswd(p: string)
 {
 	const ok = await browser.runtime.sendMessage({
 		method: "registerSymmetricKey", pubKey, pswd: p });
 	console.log("*** sendPswd", ok);
+	if (!error) throw new Error("bad");
+	if (!input) throw new Error("bad");
 	if (!ok) { error.hidden = false; input.value = ""; }
 }
 
 function
-unhex(s)
+unhex(s: string)
 {
 	const bs = new Uint8Array(s.length / 2);
 	for (let i = 0; i < bs.length; ++i)

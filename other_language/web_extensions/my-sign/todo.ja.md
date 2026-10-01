@@ -221,8 +221,17 @@ TODO
 	+ [x] codec/polymod.ts
 	+ [x] codec/bech32.ts
 	+ [x] background.ts
-	+ [ ] content.ts
-	+ [ ] その他
+	+ [x] content.ts
+	+ [x] input.ts
+	+ [ ] log2.ts
+	+ [ ] mapArray.ts
+	+ [ ] options.ts
+	+ [ ] sign/schnorr.ts
+	+ [ ] crypto/ncryptsec.ts
+	+ [ ] db.ts
+	+ [ ] inputTab.ts
+	+ [ ] mutex.ts
+	+ [ ] optionsState.ts
 * [ ] logの処理について実装を再度検討する
 * [ ] portを使ったlogの処理をテストしてみる(portは使わないことにする)
 	+ [ ] 独立したタブである3通りについて試してみる
