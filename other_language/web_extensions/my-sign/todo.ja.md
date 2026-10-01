@@ -230,7 +230,7 @@ TODO
 	+ [x] crypto/ncryptsec.ts
 	+ [x] db.ts
 	+ [ ] inputTab.ts
-	+ [ ] mutex.ts
+	+ [x] mutex.ts
 	+ [ ] optionsState.ts
 * [ ] logの処理について実装を再度検討する
 * [ ] portを使ったlogの処理をテストしてみる(portは使わないことにする)
