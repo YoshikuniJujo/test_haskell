@@ -17,7 +17,7 @@ await esbuild.build({
 });
 
 await esbuild.build({
-	entryPoints: ["src/options.js"],
+	entryPoints: ["src/options.ts"],
 	bundle: true,
 	outfile: "dist/options.js"
 });
