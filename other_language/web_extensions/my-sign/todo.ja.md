@@ -224,7 +224,7 @@ TODO
 	+ [x] content.ts
 	+ [x] input.ts
 	+ [x] log2.ts
-	+ [ ] mapArray.ts
+	+ [x] mapArray.ts
 	+ [ ] options.ts
 	+ [ ] sign/schnorr.ts
 	+ [ ] crypto/ncryptsec.ts
