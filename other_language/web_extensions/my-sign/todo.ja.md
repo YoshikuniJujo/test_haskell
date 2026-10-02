@@ -234,9 +234,9 @@ TODO
 * [ ] input.tsから送信するパスワードをUint8Arrayにする
 	+ [ ] crypto/encryptsec.tsのメソッドの引数をNFKC後のUint8Arrayにする
 		- [x] encodePassword関数を作成
-		- [ ] encodePassword関数を使用
-		- [ ] encodePassword関数をoptions.js側にコピー
-		- [ ] generateを修正
+		- [x] encodePassword関数を使用
+		- [x] encodePassword関数をoptions.js側にコピー
+		- [x] generateを修正
 		- [ ] encodePassword関数をbackground側にコピー
 		- [ ] encodePasswordをbackground側でするようにする
 		- [ ] encodePasswordをinput.ts側でするようにする

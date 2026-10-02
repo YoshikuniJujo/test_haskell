@@ -1,5 +1,7 @@
 import { addToArrayMap, forEachValues } from "./mapArray.js"
 
+console.log("content.ts begin");
+
 document.documentElement.style.border = "5px solid green";
 
 const div = document.createElement("div");
@@ -16,8 +18,13 @@ type Color = { red: number, green: number, blue: number }
 
 let account: AccountDisplayInfo | null = null;
 
+console.log("content.ts: before (async () => {");
+
 (async () => {
+	console.log("content.ts: before contentStarted");
 	await browser.runtime.sendMessage({ method: "contentStarted" });
+
+	console.log("content.ts: after contentStarted");
 
 	Object.assign(div.style, {
 		position: "fixed",
@@ -28,8 +35,11 @@ let account: AccountDisplayInfo | null = null;
 		zIndex: "2147483647"
 	});
 
+	console.log("content.ts: HERE");
+
 	document.body.append(div);
 	account = await browser.runtime.sendMessage({ method: "accountDisplayInfo" });
+	console.log("*** content.ts: account =", account);
 
 	if (account !== null) {
 		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
@@ -46,6 +56,8 @@ let account: AccountDisplayInfo | null = null;
 		div.hidden = true; }
 	document.body.append(div);
 })();
+
+console.log("content.ts: after (async () => { ... })();");
 
 const error = document.createElement("div");
 error.popover = "manual";
@@ -203,7 +215,7 @@ setAccountPosition(account: AccountDisplayInfo)
 }
 
 window.addEventListener("resize", () => {
-	if (!account) throw new Error("bad");
+	if (!account) throw new Error("bad1");
 	if (!div.hidden) setAccountPosition(account);
 	if (error.matches(":popover-open")) setErrorPosition();
 });

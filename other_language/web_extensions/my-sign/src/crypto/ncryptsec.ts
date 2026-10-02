@@ -58,15 +58,14 @@ EncryptedSecretKey
 		this.#hashForCheckPassword = hfcp;
 	}
 
-	static async generate(nm: string, pswd: string)
+	static async generate(nm: string, pswd: Uint8Array)
 	{
 		const lgn = 16
 		const sfcp = randomBytes(16);
 //		const sfcp = new Uint8Array(16);
 //		webcrypto.getRandomValues(sfcp);
 		const hfcp = scryptAsync(
-			encodePassword(pswd),
-			sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
+			pswd, sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 		const { secretKey: sk, publicKey: pk } = schnorr.keygen();
 		let foo;
 		try { foo = await encrypt(
@@ -203,7 +202,7 @@ return encrypted;
 }
 
 type EncryptArguments = {
-	password: string, logN: number, keySecurityByte: number
+	password: Uint8Array, logN: number, keySecurityByte: number
 }
 
 async function
@@ -223,8 +222,7 @@ encrypt(secKey: Uint8Array,
 	*/
 
 	const smkey = await scryptAsync(
-		encodePassword(pswd),
-		salt, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
+		pswd, salt, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 
 	const chacha = xchacha20poly1305(smkey, nonce, new Uint8Array([ksb]));
 

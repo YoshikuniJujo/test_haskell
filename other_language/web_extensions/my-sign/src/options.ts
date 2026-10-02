@@ -188,7 +188,9 @@ form.addEventListener("submit", async event => {
 
 	confirm.setCustomValidity("");
 
-	const esk = await EncryptedSecretKey.generate(accName.value, password.value);
+	const esk = await EncryptedSecretKey.generate(
+		accName.value,
+		encodePassword(password.value) );
 	password.value = "";
 	confirm.value = "";
 
@@ -450,3 +452,9 @@ browser.runtime.onMessage.addListener((m, s) => {
 		default: return;
 	}
 });
+
+function
+encodePassword(pswd: string): Uint8Array
+{
+	return new TextEncoder().encode(pswd.normalize("NFKC"));
+}

@@ -92,8 +92,9 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			return await rgSymkey(s.tab.id, m.pubKey, m.pswd);
 		case "signEvent": return signEvent(m.pubKey, m.event);
 		case "contentStarted":
-			if (!s.tab) throw new Error("bad");
-			if (s.tab.id === undefined) throw new Error("bad");
+			if (!s.tab) throw new Error("background.ts: contentStarted: bad1");
+			if (s.tab.id === undefined) throw new Error(
+				"background.ts: contentStarted: bad2");
 			return pgVanished(s.tab.id);
 		case "clientChanged": return broadcast({ method: "clientChanged" });
 		case "openSettings": {
@@ -415,8 +416,7 @@ pgVanished(vt: number)
 
 	console.log("pgVanished:", r.cancelled[0]);
 	const rc0 = r.cancelled[0]?.sources[0]
-	if (rc0 === undefined) throw new Error("bad");
-	browser.tabs.update(rc0, { active: true });
+	if (rc0 !== undefined) browser.tabs.update(rc0, { active: true });
 
 	console.log("otbs");
 	const s = await otbs.tabClosed(vt);
@@ -435,8 +435,7 @@ pgVanished(vt: number)
 	}
 
 	const sc0 = s.cancelled[0]?.sources[0];
-	if (sc0 === undefined) throw new Error("bad");
-	browser.tabs.update(sc0, { active: true });
+	if (sc0 !== undefined) browser.tabs.update(sc0, { active: true });
 
 	const ots = [...(await otbs.keyInputTabs())]
 		.filter(([key]) => key !== "browser")

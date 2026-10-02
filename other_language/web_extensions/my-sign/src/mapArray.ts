@@ -8,6 +8,6 @@ export function
 forEachValues<K, V>(map: Map<K, V[]>, k: K, f: (v: V) => void)
 {
 	const vs = map.get(k);
-	if (vs === undefined) throw new Error("bad");
+	if (vs === undefined) throw new Error("mapArray.ts: bad");
 	map.delete(k); for (const v of vs) f(v);
 }
