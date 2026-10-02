@@ -244,3 +244,13 @@ optionsState.js
 
 設定画面
 --------
+
+background.tsが再起動したとき開いている設定画面についてOptionsStateインスタンスを復元する。
+設定画面から「開始」のメッセージが来たらOptionsStateインスタンスから設定画面を復元する。
+OptionsStateインスタンスがその時になければIndexDBから作り、そこから設定画面を作る。
+設定画面が操作されたときにはOptionsStateインスタンスの中身を編集してstorage.sessionにバックアップする。
+
+それぞれのclientをクリックしたときにはUUIDを含むメッセージをbackgroundに送る。
+backgroundがIndexedDBからclientの情報を取得し、その値をoptionsStateに渡す。
+optionsStateは名部の値の更新とstorage.sessionへのバックアップをする。
+optionsStateの内容で設定画面を更新する

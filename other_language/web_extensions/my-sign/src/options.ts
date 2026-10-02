@@ -142,8 +142,6 @@ const form = document.querySelector("#generate-form");
 const accName = document.querySelector<HTMLInputElement>("#account-name");
 const password = document.querySelector<HTMLInputElement>("#password");
 const confirm = document.querySelector<HTMLInputElement>("#password-confirm");
-// const generate = document.querySelector("#generate");
-const publicKeys = document.querySelector("#public-keys");
 
 const passwordError = document.querySelector<HTMLElement>("#password-error");
 
@@ -159,7 +157,6 @@ if (!password) throw new Error("bad23");
 if (!passwordError) throw new Error("bad24");
 if (!form) throw new Error("bad25");
 if (!accName) throw new Error("bad26");
-if (!publicKeys) throw new Error("bad27");
 if (!showPassword) throw new Error("bad28");
 
 confirm.addEventListener("input", () => {
@@ -195,7 +192,6 @@ form.addEventListener("submit", async event => {
 	confirm.value = "";
 
 	await DB.addKeyPair(esk.toObject_563e7e39d4());
-	publicKeys.replaceChildren();
 	currentKeyD.replaceChildren();
 	const keys = await DB.getPublicKeysWithNames();
 	for (const pk of keys) {
@@ -203,7 +199,6 @@ form.addEventListener("submit", async event => {
 		const npub = Bech32.encode("npub", new Uint8Array(pk.publicKey));
 		const div = document.createElement("div");
 		div.textContent = npub;
-		publicKeys.append(div);
 	}
 
 	await loadPublicKeys();

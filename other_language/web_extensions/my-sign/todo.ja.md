@@ -251,9 +251,24 @@ TODO
 	+ [x] TypeScriptにする
 	+ [x] この時点でできるならexec/test-options-state.jsを.tsにする
 * [x] password errorをhiddenの切り換えにする
-* [ ] optionsState.jsの仕様を変更する(続き)
-	+ [ ] 仕様を変更する
-	+ [ ] Storage interfaceを使う
+* [ ] 設定画面の実装の変更
+	+ [ ] Backup, All Clear, Restoreボタンを作成
+	+ [ ] OptionsStateにStorage interfaceを使う
+	+ [ ] Backupボタンの処理を書く
+	+ [ ] All Clearボタンの処理を書く
+	+ [ ] Restoreボタンの処理を書く
+	+ [ ] background.ts再起動時のOptionsStateの復元
+	+ [ ] 新しく設定画面を開いたときのIndexedDBからのOptionsStateの生成
+	+ [ ] 設定画面を開き直したときの設定画面の復元
+	+ [ ] 設定画面からOptionsStateへの同期
+	+ [ ] 同期のときにstorage.sessionにバックアップを取る
+	+ [ ] 設定画面を閉じて開くテスト
+	+ [ ] clientをクリックしたときにbackgrount.tsにメッセージを送る
+	+ [ ] background.tsがIndexedDBからクライアント情報を取得
+	+ [ ] クライアント情報でOptionsStateを更新
+	+ [ ] メッセージの返答としてOptionsObjectを送る
+	+ [ ] options.tsは設定画面を更新
+	+ [ ] options.tsの処理をbackground.tsにうつしていく
 * [ ] logの処理について実装を再度検討する
 * [ ] portを使ったlogの処理をテストしてみる(portは使わないことにする)
 	+ [ ] 独立したタブである3通りについて試してみる
