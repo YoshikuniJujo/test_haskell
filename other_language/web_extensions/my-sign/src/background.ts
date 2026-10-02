@@ -128,6 +128,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			console.log("openSettings:", use);
 			if (!ot) throw new Error("bad");
 			if (!ot.id) throw new Error("bad");
+			if (use === undefined) throw new Error("bad");
 			if (use !== ot.id) {
 				await browser.tabs.remove(ot.id);
 			}
@@ -189,7 +190,9 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				const sts = await otbs.complete(m.id, s.tab.id);
 				for (const st of sts)
 					await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: m.id });
-				await browser.tabs.update(sts[0], { active: true });
+				const st0 = sts[0]
+				if (st0 !== undefined)
+					await browser.tabs.update(st0, { active: true });
 				if (s.tab.id === undefined) throw new Error("bad");
 				await browser.tabs.remove(s.tab.id);
 				return true; }
@@ -245,7 +248,9 @@ rgSymkey(tid: number, pbk: string, pswd: string)
 				const sts = await itbs.complete(pbk, tid);
 				for (const st of sts)
 					await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: pbk });
-				await browser.tabs.update(sts[0], { active: true });
+				const st0 = sts[0];
+				if (st0 !== undefined)
+					await browser.tabs.update(st0, { active: true });
 //				console.log("TAB REMOVE 0", tid);
 				await browser.tabs.remove(tid);
 				console.log("*** rgSymkey: return true ***");

@@ -1,4 +1,5 @@
-import { Mutex } from "./mutex.js"
+import { Mutex } from "./mutex.js";
+import type { Storage } from "./storage.js";
 
 const STORAGE_KEY = "857e7986-2f57-4f41-b91f-3d4392a52fcf";
 
@@ -9,13 +10,13 @@ export class InputTabs {
 
 	#storage; #mutex; #key;
 
-	constructor(nm: string, str = browser.storage.session)
+	constructor(nm: string, str: Storage<Assigns> = browser.storage.session)
 	{
 		this.#storage = str; this.#mutex = new Mutex;
 		this.#key = STORAGE_KEY + ":" + nm;
 	}
 
-	async assign(pk: string, st: number | null, it: number)
+	async assign(pk: string, st: number | null, it: number): Promise<number>
 	{
 		await this.#mutex.acquire();
 		try {	let use;
@@ -31,7 +32,7 @@ export class InputTabs {
 		finally { this.#mutex.release(); }
 	}
 	
-	async complete(pk: string, actit: number)
+	async complete(pk: string, actit: number): Promise<number[]>
 	{
 		await this.#mutex.acquire();
 		try {	const assns = await this.#getAssignments();

@@ -214,7 +214,7 @@ TODO
 		- [x] log.writeにportsを渡すことを検討する(やめた)
 		- [x] log.writeのときにensurePortをしてlogUpdatedを送る(やめた)
 		- [x] focusのときにensurePortをする(やめた)
-* [ ] TypeScriptに移行する
+* [x] TypeScriptに移行する
 	+ [x] npm install --save-dev typescript @types/firefox-webext-browser
 	+ [x] npx tsc --init
 	+ [x] codec/word.ts
@@ -231,7 +231,11 @@ TODO
 	+ [x] db.ts
 	+ [x] inputTab.ts
 	+ [x] mutex.ts
-	+ [ ] optionsState.ts
+* [ ] optionsState.jsの仕様を変更する
+	+ [ ] この時点でできるならexec/test-options-state.jsを.tsにする
+	+ [ ] 仕様を変更する
+	+ [ ] TypeScriptにする
+	+ [ ] Storage interfaceを使う
 * [ ] logの処理について実装を再度検討する
 * [ ] portを使ったlogの処理をテストしてみる(portは使わないことにする)
 	+ [ ] 独立したタブである3通りについて試してみる
