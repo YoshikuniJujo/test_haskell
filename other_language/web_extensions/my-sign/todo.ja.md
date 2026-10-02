@@ -243,10 +243,10 @@ TODO
 		- [x] encodeされたpasswordを0クリアするようにする
 			* [x] input.ts側で
 			* [x] background側で
-* [ ] input.tsからbackground.tsへパスワードを送信する経路をセキュアにする
-	+ [ ] registerSymmetricKeyメッセージを受け取ったら、senderのタブにportを接続する
-	+ [ ] input.ts側からportを使ってパスワードを送信する
-	+ [ ] パスワードを受信する
+* [x] input.tsからbackground.tsへパスワードを送信する経路をセキュアにする
+	+ [x] registerSymmetricKeyメッセージを受け取ったら、senderのタブにportを接続する
+	+ [x] input.ts側からportを使ってパスワードを送信する
+	+ [x] パスワードを受信する
 * [ ] optionsState.jsの仕様を変更する
 	+ [x] TypeScriptにする
 	+ [x] この時点でできるならexec/test-options-state.jsを.tsにする

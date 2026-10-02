@@ -89,7 +89,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 		case "registerSymmetricKey":
 			if (!s.tab) throw new Error("bad");
 			if (s.tab.id === undefined) throw new Error("bad");
-			return await rgSymkey(s.tab.id, m.pubKey, m.pswd);
+			return await rgSymkey(s.tab.id, m.pubKey);
 		case "signEvent": return signEvent(m.pubKey, m.event);
 		case "contentStarted":
 			if (!s.tab) throw new Error("background.ts: contentStarted: bad1");
@@ -240,24 +240,18 @@ type PasswordMessage = {
 };
 
 async function
-rgSymkey(tid: number, pbk: string, pswd: Uint8Array)
+rgSymkey(tid: number, pbk: string)
 {
 	const acc2 = await getAccount(unhex(pbk));
 	const tid2 = (await itbs.keyInputTabs()).get(pbk);
-	console.log("background.ts: rgSymKey:", tid, tid2);
 	if (tid !== tid2) throw new Error("bad");
-	const pswd2 = await browser.tabs.sendMessage(tid, { method: "readPassword_ecd3f236f8" });
-	console.log("background.ts: rgSymKey: pswd2 =", pswd2);
 	const port = browser.tabs.connect(tid, { name: "readPassword_ecd3f236f8" });
-	console.log("background.ts: rgSymKey: port =", port);
 	const { promise: pr, resolve: rs } = Promise.withResolvers<Uint8Array>();
 	port.onMessage.addListener(m => {
 		if (!("result" in m) || !(m.result instanceof Uint8Array))
 			throw new Error("bad");
-		rs(m.result);
-	});
+		rs(m.result); });
 	const pswd3: Uint8Array = await pr;
-	console.log("background.ts: rgSymKey: pswd3 =", pswd3);
 	try {
 		if (await acc2.checkPassword(pswd3)) {
 			const { pswds = {} } =
@@ -273,7 +267,6 @@ rgSymkey(tid: number, pbk: string, pswd: Uint8Array)
 			const st = sts[0];
 			if (st !== undefined)
 				await browser.tabs.update(st, { active: true });
-//			console.log("TAB REMOVE 0", tid);
 			await browser.tabs.remove(tid);
 			console.log("*** rgSymkey: return true ***");
 			return true; }
