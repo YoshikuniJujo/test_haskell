@@ -50,7 +50,8 @@ console.log("content.ts: before (async () => {");
 			account.backgroundColor.red,
 			account.backgroundColor.green,
 			account.backgroundColor.blue ]
-		div.style.background = `rgb(${r} ${g} ${b} / ${account.backgroundOpacity})`;
+		div.style.background = `rgb(${r} ${g} ${b}`;
+		div.style.opacity = `${account.backgroundOpacity}`;
 		console.log(account.backgroundOpacity);
 	} else {
 		div.hidden = true; }
