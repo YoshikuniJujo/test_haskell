@@ -247,9 +247,11 @@ TODO
 	+ [x] registerSymmetricKeyメッセージを受け取ったら、senderのタブにportを接続する
 	+ [x] input.ts側からportを使ってパスワードを送信する
 	+ [x] パスワードを受信する
-* [ ] optionsState.jsの仕様を変更する
+* [x] optionsState.jsの仕様を変更する(途中)
 	+ [x] TypeScriptにする
 	+ [x] この時点でできるならexec/test-options-state.jsを.tsにする
+* [x] password errorをhiddenの切り換えにする
+* [ ] optionsState.jsの仕様を変更する(続き)
 	+ [ ] 仕様を変更する
 	+ [ ] Storage interfaceを使う
 * [ ] logの処理について実装を再度検討する
@@ -345,4 +347,4 @@ TODO
 	原因を精査する
 	+ queueMicrotaskではNG
 	+ setTimeout(..., 0)はOK
-* [ ] アカウント表示領域の文字の透過度を背景の透過度に合わせる
+* [x] アカウント表示領域の文字の透過度を背景の透過度に合わせる

@@ -5,9 +5,9 @@ const clientKey = "6b38c0ae-8976-4966-9283-c95404411031";
 
 export class OptionsState
 {
-	#accountStorage;
-	#storage2;
 	#id;
+	#accountStorage;
+	#clientStorage;
 
 	constructor(
 		id: string,
@@ -16,7 +16,7 @@ export class OptionsState
 	{
 		this.#id = id;
 		this.#accountStorage = strg1;
-		this.#storage2 = strg2;
+		this.#clientStorage = strg2;
 	}
 
 	async load() {

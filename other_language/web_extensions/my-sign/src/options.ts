@@ -145,7 +145,7 @@ const confirm = document.querySelector<HTMLInputElement>("#password-confirm");
 // const generate = document.querySelector("#generate");
 const publicKeys = document.querySelector("#public-keys");
 
-const passwordError = document.querySelector("#password-error");
+const passwordError = document.querySelector<HTMLElement>("#password-error");
 
 const showPassword = document.querySelector<HTMLInputElement>("#show-password");
 
@@ -167,10 +167,8 @@ confirm.addEventListener("input", () => {
 		password.value === confirm.value
 			? ""
 			: "Passwords do not match." );
-	if (password.value !== confirm.value)
-		passwordError.textContent = "Passwords do not match.";
-	else
-		passwordError.textContent = "";
+	if (password.value !== confirm.value) passwordError.hidden = false;
+	else passwordError.hidden = true;
 });
 
 form.addEventListener("submit", async event => {
