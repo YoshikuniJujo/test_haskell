@@ -32,31 +32,33 @@ export type ClientSummary =
 
 export type UUID = { type: "UUID", value: string };
 
-export const defaultOptionsObject: OptionsObject = Object.freeze({
-	accountName: "",
-	showPassword: false,
-	passwordErrorHidden: true,
+export function defaultOptionsObject(): OptionsObject
+{
+	return {
+		accountName: "",
+		showPassword: false,
+		passwordErrorHidden: true,
 
-	clientsHidden: false,
-	newClientButtonHidden: false,
-	deleteClientButtonHidden: true,
-	clientDetailHidden: true,
+		clientsHidden: false,
+		newClientButtonHidden: false,
+		deleteClientButtonHidden: true,
+		clientDetailHidden: true,
 
-	clients: [],
+		clients: [],
 
-	clientName: "",
-	urlPattern: "",
-	usePriority: false,
-	priority: 100,
-	displayAccount: true,
-	positionX: 100,
-	positionY: 0,
-	backgroundColor: "#00ff00",
-	backgroundOpacity: 0.5,
-	openSettingsByClick: true,
-	currentKey: null,
-	detailError: "",
+		clientName: "",
+		urlPattern: "",
+		usePriority: false,
+		priority: 100,
+		displayAccount: true,
+		positionX: 100,
+		positionY: 0,
+		backgroundColor: "#00ff00",
+		backgroundOpacity: 0.5,
+		openSettingsByClick: true,
+		currentKey: null,
+		detailError: "",
 
-	optionsError: "",
-	useClientSet: false
-});
+		optionsError: "",
+		useClientSet: false };
+}
