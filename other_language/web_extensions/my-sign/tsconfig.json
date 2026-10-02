@@ -44,5 +44,5 @@
     "noEmit": true,
     "allowJs": true,
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "exec/**/*.ts"]
 }

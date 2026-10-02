@@ -1,45 +1,45 @@
+import type { Storage } from "./storage.js"
+
 const accountKey = "8450604e-6f98-49bf-a5a9-724346528a0a";
 const clientKey = "6b38c0ae-8976-4966-9283-c95404411031";
 
 export class OptionsState
 {
-	#storage;
+	#accountStorage;
+	#storage2;
 	#id;
-	#account;
-	#client;
 
-	constructor(id, strg = browser.storage.session)
+	constructor(
+		id: string,
+		strg1: Storage<object> = browser.storage.session,
+		strg2 = browser.storage.session )
 	{
 		this.#id = id;
-		this.#storage = strg;
+		this.#accountStorage = strg1;
+		this.#storage2 = strg2;
 	}
 
 	async load() {
-		const data = await this.#storage.get([
-			accountKey,
-			clientKey ]);
-		this.#account = data[accountKey]?.[this.#id] ?? {};
-		this.#client = data[clientKey]?.[this.#id] ?? {};
 	}
 
+	/*
 	static async create(id, strg = browser.storage.session) {
 		const st = new OptionsState(id, strg);
 		await st.load();
 		return st;
 	}
+	*/
 
-	async write(cmd, ky, vl)
+	async write(cmd: string, ky: string, vl: string)
 	{
 		switch(cmd)
 		{
 			case "set":
 				switch(ky) {
 					case "accountName":
-						this.#account.name = vl;
-						const data = await this.#storage.get(accountKey);
+						const data = await this.#accountStorage.get(accountKey);
 						const accs = data[accountKey] ?? {};
-						accs[this.#id] = this.#account;
-						await this.#storage.set({ [accountKey]: accs });
+						await this.#accountStorage.set({ [accountKey]: accs });
 						break;
 					default:
 						throw new Error(`no such key: ${ky}`);
@@ -52,7 +52,6 @@ export class OptionsState
 						console.log("foobar");
 						return {
 							method: "generateAccount",
-							name: this.#account.name,
 							password: vl };
 					default:
 						console.log(cmd);

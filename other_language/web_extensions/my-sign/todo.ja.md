@@ -231,10 +231,11 @@ TODO
 	+ [x] db.ts
 	+ [x] inputTab.ts
 	+ [x] mutex.ts
+* [ ] input.tsからbackground.tsへパスワードを送信する経路をセキュアにする
 * [ ] optionsState.jsの仕様を変更する
-	+ [ ] この時点でできるならexec/test-options-state.jsを.tsにする
+	+ [x] TypeScriptにする
+	+ [x] この時点でできるならexec/test-options-state.jsを.tsにする
 	+ [ ] 仕様を変更する
-	+ [ ] TypeScriptにする
 	+ [ ] Storage interfaceを使う
 * [ ] logの処理について実装を再度検討する
 * [ ] portを使ったlogの処理をテストしてみる(portは使わないことにする)

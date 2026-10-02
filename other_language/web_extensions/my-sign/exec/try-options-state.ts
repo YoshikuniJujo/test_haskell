@@ -1,25 +1,28 @@
 import { OptionsState } from "../src/optionsState.js";
 
-class StorageSessionMock {
+class StorageSessionMock<T> {
+
+	#data;
+
 	constructor() {
-		this.data = new Map();
+		this.#data = new Map();
 	}
 
-	async get(key) {
+	async get(key: string) {
 		return {
-			[key]: this.data.get(key)
+			[key]: this.#data.get(key)
 		};
 	}
 
-	async set(values) {
+	async set(values: Record<string,T>) {
 		for (const [key, value] of Object.entries(values))
-			this.data.set(key, value);
+			this.#data.set(key, value);
 	}
 }
 
-const storage = new StorageSessionMock();
+const storage = new StorageSessionMock<object>();
 
-const state = await OptionsState.create("", storage);
+const state = new OptionsState("", storage);
 
 console.log(state);
 
