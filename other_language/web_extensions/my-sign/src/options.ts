@@ -15,7 +15,7 @@ else {
 	id = params.get("id");
 }
 
-if (id === null) throw new Error("bad");
+if (id === null) throw new Error("bad1");
 
 console.log("options begin");
 console.log("options.js: ", location.search);
@@ -29,11 +29,13 @@ browser.runtime.sendMessage({ method: "testOptionsSender" });
 
 const params = new URLSearchParams(location.search);
 
+const clientNameD = document.querySelector<HTMLInputElement>("#client-name-d");
+
 const newClient = document.querySelector<HTMLElement>("#new-client");
-if (!newClient) throw new Error("bad");
+if (!newClient) throw new Error("bad2");
 
 const currentKeyD = document.querySelector<HTMLInputElement>("#current-key-d");
-if (!currentKeyD) throw new Error("bad");
+if (!currentKeyD) throw new Error("bad3");
 
 const usePriority = document.querySelector<HTMLInputElement>("#use-priority");
 const priorityLabel = document.querySelector<HTMLElement>("#priority-label");
@@ -49,24 +51,24 @@ const backgroundColor16 = document.querySelector<HTMLInputElement>("#background-
 const backgroundOpacity = document.querySelector<HTMLInputElement>("#background-opacity");
 const openSettingsByClick = document.querySelector<HTMLInputElement>("#open-settings-by-click");
 
-if (!backgroundColor) throw new Error("bad");
-if (!backgroundColor16) throw new Error("bad");
-if (!backgroundOpacity) throw new Error("bad");
+if (!backgroundColor) throw new Error("bad4");
+if (!backgroundColor16) throw new Error("bad5");
+if (!backgroundOpacity) throw new Error("bad6");
 
-if (!openSettingsByClick) throw new Error("bad");
-if (!usePriority) throw new Error("bad");
-if (!priorityLabel) throw new Error("bad");
-if (!displayAccount) throw new Error("bad");
-if (!accountDisplaySettings) throw new Error("bad");
+if (!openSettingsByClick) throw new Error("bad7");
+if (!usePriority) throw new Error("bad8");
+if (!priorityLabel) throw new Error("bad9");
+if (!displayAccount) throw new Error("bad10");
+if (!accountDisplaySettings) throw new Error("bad11");
 
 const useClientSet = document.querySelector<HTMLInputElement>("#use-client-set");
-if (!useClientSet) throw new Error("bad");
+if (!useClientSet) throw new Error("bad12");
 
 const clientsElm = document.querySelector<HTMLElement>("#clients");
-if (!clientsElm) throw new Error("bad");
+if (!clientsElm) throw new Error("bad13");
 
 const clientDetail = document.querySelector<HTMLElement>("#client-detail");
-if (!clientDetail) throw new Error("bad");
+if (!clientDetail) throw new Error("bad14");
 
 (async () => { useClientSet.checked = await DB.getUseClientSet(); })()
 
@@ -81,8 +83,8 @@ backgroundColor.addEventListener("input", () => {
 const optionsError = document.querySelector("#options-error");
 const deleteClient = document.querySelector<HTMLElement>("#delete-client");
 
-if (!optionsError) throw new Error("bad");
-if (!deleteClient) throw new Error("bad");
+if (!optionsError) throw new Error("bad15");
+if (!deleteClient) throw new Error("bad16");
 
 let editingClient: EditingClient;
 
@@ -106,7 +108,7 @@ openNewClient(url?: string) {
 		name: "",
 		urlPattern: url ?? "",
 		publicKey: undefined,
-		priority: null,
+		priority: 100,
 
 		openSettingsByClick: true,
 		backgroundColor: "#008000",
@@ -121,11 +123,11 @@ openNewClient(url?: string) {
 
 	loadClientToForm(client);
 
-	if (!deleteClient) throw new Error("bad");
-	if (!clientsElm) throw new Error("bad");
-	if (!newClient) throw new Error("bad");
-	if (!clientDetail) throw new Error("bad");
-	if (!optionsError) throw new Error("bad");
+	if (!deleteClient) throw new Error("bad17");
+	if (!clientsElm) throw new Error("bad18");
+	if (!newClient) throw new Error("bad19");
+	if (!clientDetail) throw new Error("bad20");
+	if (!optionsError) throw new Error("bad21");
 
 	deleteClient.hidden = true;
 	clientsElm.hidden = true;
@@ -152,13 +154,13 @@ console.log("foobar");
 loadPublicKeys();
 loadClients();
 
-if (!confirm) throw new Error("bad");
-if (!password) throw new Error("bad");
-if (!passwordError) throw new Error("bad");
-if (!form) throw new Error("bad");
-if (!accName) throw new Error("bad");
-if (!publicKeys) throw new Error("bad");
-if (!showPassword) throw new Error("bad");
+if (!confirm) throw new Error("bad22");
+if (!password) throw new Error("bad23");
+if (!passwordError) throw new Error("bad24");
+if (!form) throw new Error("bad25");
+if (!accName) throw new Error("bad26");
+if (!publicKeys) throw new Error("bad27");
+if (!showPassword) throw new Error("bad28");
 
 confirm.addEventListener("input", () => {
 	confirm.setCustomValidity(
@@ -219,7 +221,7 @@ loadPublicKeys()
 		option.value = npub;
 		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
 
-		if (!currentKeyD) throw new Error("bad");
+		if (!currentKeyD) throw new Error("bad29");
 		currentKeyD.append(option.cloneNode(true));
 	}
 }
@@ -245,13 +247,13 @@ loadClients()
 {
 	const clients = await DB.getClients();
 
-	if (!clientsElm) throw new Error("bad");
+	if (!clientsElm) throw new Error("bad30");
 	clientsElm.replaceChildren();
 
-	if (!newClient) throw new Error("bad");
-	if (!clientDetail) throw new Error("bad");
-	if (!deleteClient) throw new Error("bad");
-	if (!optionsError) throw new Error("bad");
+	if (!newClient) throw new Error("bad31");
+	if (!clientDetail) throw new Error("bad32");
+	if (!deleteClient) throw new Error("bad33");
+	if (!optionsError) throw new Error("bad34");
 
 	for (const client of clients) {
 		const row = document.createElement("div");
@@ -274,21 +276,21 @@ loadClients()
 function
 loadClientToForm(client: EditingClient)
 {
-	if (!clientNameD) throw new Error("bad");
+	if (!clientNameD) throw new Error("bad35");
 	const urlPatternD = document.querySelector<HTMLInputElement>("#url-pattern-d");
-	if (!urlPatternD) throw new Error("bad");
-	if (!currentKeyD) throw new Error("bad");
-	if (!usePriority) throw new Error("bad");
-	if (!priority) throw new Error("bad");
-	if (!priorityLabel) throw new Error("bad");
-	if (!displayAccount) throw new Error("bad");
-	if (!accountDisplaySettings) throw new Error("bad");
-	if (!positionX) throw new Error("bad");
-	if (!positionY) throw new Error("bad");
-	if (!backgroundColor) throw new Error("bad");
-	if (!backgroundColor16) throw new Error("bad");
-	if (!backgroundOpacity) throw new Error("bad");
-	if (!openSettingsByClick) throw new Error("bad");
+	if (!urlPatternD) throw new Error("bad36");
+	if (!currentKeyD) throw new Error("bad37");
+	if (!usePriority) throw new Error("bad38");
+	if (!priority) throw new Error("bad39");
+	if (!priorityLabel) throw new Error("bad40");
+	if (!displayAccount) throw new Error("bad41");
+	if (!accountDisplaySettings) throw new Error("bad42");
+	if (!positionX) throw new Error("bad43");
+	if (!positionY) throw new Error("bad44");
+	if (!backgroundColor) throw new Error("bad45");
+	if (!backgroundColor16) throw new Error("bad46");
+	if (!backgroundOpacity) throw new Error("bad47");
+	if (!openSettingsByClick) throw new Error("bad48");
 	clientNameD.value = client.name ?? "";
 	urlPatternD.value = client.urlPattern;
 	currentKeyD.value = client.publicKey
@@ -313,21 +315,20 @@ loadClientToForm(client: EditingClient)
 }
 
 const clientFormD = document.querySelector<HTMLInputElement>("#client-form-d");
-const clientNameD = document.querySelector<HTMLInputElement>("#client-name-d");
 const urlPatternD = document.querySelector<HTMLInputElement>("#url-pattern-d");
 const detailError = document.querySelector<HTMLElement>("#detail-error");
 
-if (!clientFormD) throw new Error("bad");
-if (!detailError) throw new Error("bad");
+if (!clientFormD) throw new Error("bad49");
+if (!detailError) throw new Error("bad50");
 clientFormD.addEventListener("submit", async event => {
 	console.log("clientFormD: submit");
 	event.preventDefault();
 
-	if (!clientNameD) throw new Error("bad");
-	if (!urlPatternD) throw new Error("bad");
-	if (!priority) throw new Error("bad");
-	if (!positionX) throw new Error("bad");
-	if (!positionY) throw new Error("bad");
+	if (!clientNameD) throw new Error("bad51");
+	if (!urlPatternD) throw new Error("bad52");
+	if (!priority) throw new Error("bad53");
+	if (!positionX) throw new Error("bad54");
+	if (!positionY) throw new Error("bad55");
 
 	editingClient.name = clientNameD.value;
 	try {
@@ -354,7 +355,7 @@ clientFormD.addEventListener("submit", async event => {
 	editingClient.openSettingsByClick = openSettingsByClick.checked;
 
 	const pr = editingClient.priority;
-	if (pr === null) throw new Error("bad");
+	if (pr === null) throw new Error("bad56");
 
 	await DB.putClient({
 		uuid: editingClient.uuid,
@@ -388,7 +389,7 @@ clientFormD.addEventListener("submit", async event => {
 });
 
 const cancelEditClient = document.querySelector("#cancel-edit-client");
-if (!cancelEditClient) throw new Error("bad");
+if (!cancelEditClient) throw new Error("bad57");
 
 cancelEditClient.addEventListener("click", () => {
 	clientDetail.hidden = true;
@@ -410,7 +411,7 @@ deleteClient.addEventListener("click", async () => {
 (async () => {
 	console.log("LOG OUTPUT BEGIN");
 	const logOutput = document.querySelector("#log-output");
-	if (!logOutput) throw new Error("bad");
+	if (!logOutput) throw new Error("bad58");
 	const logs: Log[] = await Log.readAll();
 	console.log(logs);
 	logOutput.textContent =
@@ -420,12 +421,12 @@ deleteClient.addEventListener("click", async () => {
 })()
 
 const browserFooter = document.querySelector<HTMLElement>("#browser-footer");
-if (!browserFooter) throw new Error("bad");
+if (!browserFooter) throw new Error("bad59");
 
 if (openType === "browser") browserFooter.hidden = false;
 
 const openInTab = document.querySelector("#open-in-tab");
-if (!openInTab) throw new Error("bad");
+if (!openInTab) throw new Error("bad60");
 
 openInTab.addEventListener("click", () => {
 	browser.runtime.sendMessage({ method: "openOptionsInTab" });
@@ -441,7 +442,7 @@ browser.runtime.onMessage.addListener((m, s) => {
 				console.log("logUpdated");
 				console.log("LOG OUTPUT BEGIN");
 				const logOutput = document.querySelector("#log-output");
-				if (!logOutput) throw new Error("bad");
+				if (!logOutput) throw new Error("bad61");
 				const logs: Log[] = await Log.readAll();
 				console.log(logs);
 				logOutput.textContent =
