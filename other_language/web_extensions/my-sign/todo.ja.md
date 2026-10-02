@@ -345,3 +345,4 @@ TODO
 	原因を精査する
 	+ queueMicrotaskではNG
 	+ setTimeout(..., 0)はOK
+* [ ] アカウント表示領域の文字の透過度を背景の透過度に合わせる
