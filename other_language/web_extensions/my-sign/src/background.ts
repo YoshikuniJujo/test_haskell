@@ -235,15 +235,34 @@ getAccountMethod(url: string)
 			};
 }
 
+type PasswordMessage = {
+	result: Uint8Array
+};
+
 async function
 rgSymkey(tid: number, pbk: string, pswd: Uint8Array)
 {
 	const acc2 = await getAccount(unhex(pbk));
+	const tid2 = (await itbs.keyInputTabs()).get(pbk);
+	console.log("background.ts: rgSymKey:", tid, tid2);
+	if (tid !== tid2) throw new Error("bad");
+	const pswd2 = await browser.tabs.sendMessage(tid, { method: "readPassword_ecd3f236f8" });
+	console.log("background.ts: rgSymKey: pswd2 =", pswd2);
+	const port = browser.tabs.connect(tid, { name: "readPassword_ecd3f236f8" });
+	console.log("background.ts: rgSymKey: port =", port);
+	const { promise: pr, resolve: rs } = Promise.withResolvers<Uint8Array>();
+	port.onMessage.addListener(m => {
+		if (!("result" in m) || !(m.result instanceof Uint8Array))
+			throw new Error("bad");
+		rs(m.result);
+	});
+	const pswd3: Uint8Array = await pr;
+	console.log("background.ts: rgSymKey: pswd3 =", pswd3);
 	try {
-		if (await acc2.checkPassword(pswd)) {
+		if (await acc2.checkPassword(pswd3)) {
 			const { pswds = {} } =
 				await browser.storage.session.get("pswds");
-			pswds[pbk] = await acc2.getSymmetricKey(pswd);
+			pswds[pbk] = await acc2.getSymmetricKey(pswd3);
 			await browser.storage.session.set({ pswds });
 
 			console.log("*** rgSymkey ***");
@@ -259,7 +278,7 @@ rgSymkey(tid: number, pbk: string, pswd: Uint8Array)
 			console.log("*** rgSymkey: return true ***");
 			return true; }
 		else {	return false; } }
-	finally { pswd.fill(0); }
+	finally { pswd3.fill(0); }
 }
 
 async function

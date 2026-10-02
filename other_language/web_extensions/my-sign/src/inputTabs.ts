@@ -94,7 +94,7 @@ export class InputTabs {
 		await this.#storage.set({ [this.#key]: assns });
 	}
 
-	async keyInputTabs()
+	async keyInputTabs(): Promise<Map<string, number>>
 	{
 		const assns: Assigns = await this.#getAssignments();
 		console.log("keyInputTabs():", assns);

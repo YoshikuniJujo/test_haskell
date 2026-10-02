@@ -25,14 +25,20 @@ show.addEventListener("change", () => {
 accountInfo.textContent =
 	accName + " " + Bech32.encode("npub", unhex(pubKey)).slice(0, 25) + "...";
 
+let password: Uint8Array;
+
 form.addEventListener("submit", async (event) => {
 	event.preventDefault();
-	const pswd = encodePassword(input.value);
+	password = encodePassword(input.value);
+	// DENGEROUS REMOVE IT
+	console.log("input.ts:", password);
 	input.value = "";
 	try {	const ok = await browser.runtime.sendMessage({
-			method: "registerSymmetricKey", pubKey, pswd: pswd });
+			method: "registerSymmetricKey", pubKey, pswd: password });
 		if (!ok) { error.hidden = false; input.value = ""; } }
-	finally { pswd.fill(0); }
+	catch(e) {
+		password.fill(0);
+		throw e; }
 });
 
 function
@@ -49,3 +55,31 @@ encodePassword(pswd: string): Uint8Array
 {
 	return new TextEncoder().encode(pswd.normalize("NFKC"));
 }
+
+type Message = { method: "readPassword_ecd3f236f8" }
+
+browser.runtime.onMessage.addListener((m: Message, s) => {
+	console.log("input.ts:", m, s);
+	switch (m.method) {
+		case "readPassword_ecd3f236f8":
+			// DENGEROUS REMOVE IT
+			console.log("input.ts:", password);
+			try {
+				console.log("input.ts: readPassword");
+				const { promise: pr, resolve: rs } = Promise.withResolvers();
+				rs(password);
+				return pr; }
+			finally { /* password.fill(0); */ }
+	}
+});
+
+browser.runtime.onConnect.addListener(p => {
+	console.log("input.ts: port =", p);
+	try {	switch (p.name) {
+			case "readPassword_ecd3f236f8":
+				p.postMessage({ result: password });
+				break; } }
+	finally{
+		password.fill(0);
+		p.disconnect(); }
+});

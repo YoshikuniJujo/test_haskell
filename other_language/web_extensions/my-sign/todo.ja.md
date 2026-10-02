@@ -232,7 +232,7 @@ TODO
 	+ [x] inputTab.ts
 	+ [x] mutex.ts
 * [x] input.tsから送信するパスワードをUint8Arrayにする
-	+ [ ] crypto/encryptsec.tsのメソッドの引数をNFKC後のUint8Arrayにする
+	+ [x] crypto/encryptsec.tsのメソッドの引数をNFKC後のUint8Arrayにする
 		- [x] encodePassword関数を作成
 		- [x] encodePassword関数を使用
 		- [x] encodePassword関数をoptions.js側にコピー
@@ -245,7 +245,8 @@ TODO
 			* [x] background側で
 * [ ] input.tsからbackground.tsへパスワードを送信する経路をセキュアにする
 	+ [ ] registerSymmetricKeyメッセージを受け取ったら、senderのタブにportを接続する
-	+ [ ] input.ts側から
+	+ [ ] input.ts側からportを使ってパスワードを送信する
+	+ [ ] パスワードを受信する
 * [ ] optionsState.jsの仕様を変更する
 	+ [x] TypeScriptにする
 	+ [x] この時点でできるならexec/test-options-state.jsを.tsにする
