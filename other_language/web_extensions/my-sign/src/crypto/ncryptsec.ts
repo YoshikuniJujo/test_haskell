@@ -65,7 +65,7 @@ EncryptedSecretKey
 //		const sfcp = new Uint8Array(16);
 //		webcrypto.getRandomValues(sfcp);
 		const hfcp = scryptAsync(
-			new TextEncoder().encode(pswd.normalize("NFKC")),
+			encodePassword(pswd),
 			sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 		const { secretKey: sk, publicKey: pk } = schnorr.keygen();
 		let foo;
@@ -105,7 +105,7 @@ EncryptedSecretKey
 			"actual " + lgn );
 
 		const smkey = scryptAsync(
-			new TextEncoder().encode(pswd.normalize("NFKC")), slt,
+			encodePassword(pswd), slt,
 			{ N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 
 		const cc = xchacha20poly1305(await smkey, nnc, new Uint8Array([ksb]));
@@ -118,7 +118,7 @@ EncryptedSecretKey
 //		const sfcp = new Uint8Array(16);
 //		webcrypto.getRandomValues(sfcp);
 		const hfcp = await scryptAsync(
-			new TextEncoder().encode(pswd.normalize("NFKC")),
+			encodePassword(pswd),
 			sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 		return new EncryptedSecretKey(
 			pk, nm, lgn, slt, nnc, ksb, ct, sfcp, hfcp );
@@ -145,8 +145,7 @@ EncryptedSecretKey
 	async checkPassword(pswd: string)
 	{
 		const hfcp = await scryptAsync(
-			new TextEncoder().encode(pswd.normalize("NFKC")),
-			this.#saltForCheckPassword,
+			encodePassword(pswd), this.#saltForCheckPassword,
 			{ N: 2 ** this.#logN, r: 8, p: 1, dkLen: 32 } );
 		return equalBytes(hfcp, this.#hashForCheckPassword);
 	}
@@ -154,8 +153,7 @@ EncryptedSecretKey
 	async getSymmetricKey(pswd: string)
 	{
 		return scryptAsync(
-			new TextEncoder().encode(pswd.normalize("NFKC")),
-			this.#salt,
+			encodePassword(pswd), this.#salt,
 			{ N: 2 ** this.#logN, r: 8, p: 1, dkLen: 32 } );
 	}
 
@@ -225,7 +223,7 @@ encrypt(secKey: Uint8Array,
 	*/
 
 	const smkey = await scryptAsync(
-		new TextEncoder().encode(pswd.normalize("NFKC")),
+		encodePassword(pswd),
 		salt, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 
 	const chacha = xchacha20poly1305(smkey, nonce, new Uint8Array([ksb]));
@@ -261,4 +259,10 @@ equalBytes(a: Uint8Array, b: Uint8Array)
 	}
 
 	return d === 0;
+}
+
+function
+encodePassword(pswd: string): Uint8Array
+{
+	return new TextEncoder().encode(pswd.normalize("NFKC"));
 }
