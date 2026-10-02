@@ -1,11 +1,11 @@
 import * as Bech32 from "./codec/bech32.js"
 
-const accName = new URLSearchParams(location.search).get("accountName");
-const pubKey = new URLSearchParams(location.search).get("publicKey");
+const params = new URLSearchParams(location.search);
+const accName = params.get("accountName");
+const pubKey = params.get("publicKey");
 const input = document.querySelector<HTMLInputElement>("#input");
 const show = document.querySelector<HTMLInputElement>("#show-password");
 const error = document.querySelector<HTMLElement>("#error");
-const onMessage = browser.runtime.onMessage;
 const accountInfo = document.querySelector("#account-info")
 const form = document.querySelector("#password-form");
 
@@ -27,19 +27,13 @@ accountInfo.textContent =
 
 form.addEventListener("submit", async (event) => {
 	event.preventDefault();
-	await sendPswd(input.value);
+	const pswd = encodePassword(input.value);
+	input.value = "";
+	try {	const ok = await browser.runtime.sendMessage({
+			method: "registerSymmetricKey", pubKey, pswd: pswd });
+		if (!ok) { error.hidden = false; input.value = ""; } }
+	finally { pswd.fill(0); }
 });
-
-async function
-sendPswd(p: string)
-{
-	const ok = await browser.runtime.sendMessage({
-		method: "registerSymmetricKey", pubKey, pswd: p });
-	console.log("*** sendPswd", ok);
-	if (!error) throw new Error("bad");
-	if (!input) throw new Error("bad");
-	if (!ok) { error.hidden = false; input.value = ""; }
-}
 
 function
 unhex(s: string)
@@ -48,4 +42,10 @@ unhex(s: string)
 	for (let i = 0; i < bs.length; ++i)
 		bs[i] = parseInt(s.slice(i * 2, i * 2 + 2), 16);
 	return bs;
+}
+
+function
+encodePassword(pswd: string): Uint8Array
+{
+	return new TextEncoder().encode(pswd.normalize("NFKC"));
 }

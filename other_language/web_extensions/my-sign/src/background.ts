@@ -47,7 +47,7 @@ type GlobalMethod =
 	| { method: "accountDisplayInfo"; }
 	| { method: "publicKey"; }
 	| { method: "prepareSymmetricKey", pubKey: string; }
-	| { method: "registerSymmetricKey", pubKey: string, pswd: string; }
+	| { method: "registerSymmetricKey", pubKey: string, pswd: Uint8Array; }
 	| { method: "signEvent", pubKey: string, event: Event; }
 	| { method: "contentStarted" }
 	| { method: "clientChanged" }
@@ -236,27 +236,30 @@ getAccountMethod(url: string)
 }
 
 async function
-rgSymkey(tid: number, pbk: string, pswd: string)
+rgSymkey(tid: number, pbk: string, pswd: Uint8Array)
 {
-			const acc2 = await getAccount(unhex(pbk));
-			if (await acc2.checkPassword(pswd)) {
-				const { pswds = {} } =
-					await browser.storage.session.get("pswds");
-				pswds[pbk] = await acc2.getSymmetricKey(pswd);
-				await browser.storage.session.set({ pswds });
+	const acc2 = await getAccount(unhex(pbk));
+	try {
+		if (await acc2.checkPassword(pswd)) {
+			const { pswds = {} } =
+				await browser.storage.session.get("pswds");
+			pswds[pbk] = await acc2.getSymmetricKey(pswd);
+			await browser.storage.session.set({ pswds });
 
-				console.log("*** rgSymkey ***");
-				const sts = await itbs.complete(pbk, tid);
-				for (const st of sts)
-					await browser.tabs.sendMessage(st, { method: "pswdReady", pubKey: pbk });
-				const st0 = sts[0];
-				if (st0 !== undefined)
-					await browser.tabs.update(st0, { active: true });
-//				console.log("TAB REMOVE 0", tid);
-				await browser.tabs.remove(tid);
-				console.log("*** rgSymkey: return true ***");
-				return true; }
-			else {	return false; }
+			console.log("*** rgSymkey ***");
+			const sts = await itbs.complete(pbk, tid);
+			for (const st of sts)
+				await browser.tabs.sendMessage(st,
+					{ method: "pswdReady", pubKey: pbk });
+			const st = sts[0];
+			if (st !== undefined)
+				await browser.tabs.update(st, { active: true });
+//			console.log("TAB REMOVE 0", tid);
+			await browser.tabs.remove(tid);
+			console.log("*** rgSymkey: return true ***");
+			return true; }
+		else {	return false; } }
+	finally { pswd.fill(0); }
 }
 
 async function

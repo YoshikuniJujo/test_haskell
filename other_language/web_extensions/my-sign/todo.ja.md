@@ -231,18 +231,18 @@ TODO
 	+ [x] db.ts
 	+ [x] inputTab.ts
 	+ [x] mutex.ts
-* [ ] input.tsから送信するパスワードをUint8Arrayにする
+* [x] input.tsから送信するパスワードをUint8Arrayにする
 	+ [ ] crypto/encryptsec.tsのメソッドの引数をNFKC後のUint8Arrayにする
 		- [x] encodePassword関数を作成
 		- [x] encodePassword関数を使用
 		- [x] encodePassword関数をoptions.js側にコピー
 		- [x] generateを修正
-		- [ ] encodePassword関数をbackground側にコピー
-		- [ ] encodePasswordをbackground側でするようにする
-		- [ ] encodePasswordをinput.ts側でするようにする
-		- [ ] encodeされたpasswordを0クリアするようにする
-			* [ ] input.ts側で
-			* [ ] background側で
+		- [x] encodePassword関数をbackground側にコピー
+		- [x] encodePasswordをbackground側でするようにする
+		- [x] encodePasswordをinput.ts側でするようにする
+		- [x] encodeされたpasswordを0クリアするようにする
+			* [x] input.ts側で
+			* [x] background側で
 * [ ] input.tsからbackground.tsへパスワードを送信する経路をセキュアにする
 	+ [ ] registerSymmetricKeyメッセージを受け取ったら、senderのタブにportを接続する
 	+ [ ] input.ts側から

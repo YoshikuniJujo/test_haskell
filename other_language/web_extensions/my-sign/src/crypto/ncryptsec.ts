@@ -77,7 +77,7 @@ EncryptedSecretKey
 
 	}
 
-	static fromEncrypted(nm: string, encrypted: Encrypted, pswd: string)
+	static fromEncrypted(nm: string, encrypted: Encrypted, pswd: Uint8Array)
 	{
 		if (encrypted.version !== 2) throw new Error(
 			`Invalid ncryptsec version: expected 2, actual ${encrypted.version}` );
@@ -94,7 +94,7 @@ EncryptedSecretKey
 	static async #fromEncrypted(
 		nm: string, lgn: number,
 		slt: Uint8Array, nnc: Uint8Array, ksb: number,
-		ct: Uint8Array, pswd: string )
+		ct: Uint8Array, pswd: Uint8Array )
 	{
 		if (ksb > 2) throw new Error(
 			"Invalid key security byte: expected 0, 1, or 2, " +
@@ -104,8 +104,7 @@ EncryptedSecretKey
 			"actual " + lgn );
 
 		const smkey = scryptAsync(
-			encodePassword(pswd), slt,
-			{ N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
+			pswd, slt, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 
 		const cc = xchacha20poly1305(await smkey, nnc, new Uint8Array([ksb]));
 		const sk = cc.decrypt(ct);
@@ -117,8 +116,7 @@ EncryptedSecretKey
 //		const sfcp = new Uint8Array(16);
 //		webcrypto.getRandomValues(sfcp);
 		const hfcp = await scryptAsync(
-			encodePassword(pswd),
-			sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
+			pswd, sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 		return new EncryptedSecretKey(
 			pk, nm, lgn, slt, nnc, ksb, ct, sfcp, hfcp );
 	}
@@ -141,18 +139,18 @@ EncryptedSecretKey
 			hashForCheckPassword: this.#hashForCheckPassword }
 	}
 
-	async checkPassword(pswd: string)
+	async checkPassword(pswd: Uint8Array)
 	{
 		const hfcp = await scryptAsync(
-			encodePassword(pswd), this.#saltForCheckPassword,
+			pswd, this.#saltForCheckPassword,
 			{ N: 2 ** this.#logN, r: 8, p: 1, dkLen: 32 } );
 		return equalBytes(hfcp, this.#hashForCheckPassword);
 	}
 
-	async getSymmetricKey(pswd: string)
+	async getSymmetricKey(pswd: Uint8Array)
 	{
 		return scryptAsync(
-			encodePassword(pswd), this.#salt,
+			pswd, this.#salt,
 			{ N: 2 ** this.#logN, r: 8, p: 1, dkLen: 32 } );
 	}
 
@@ -257,10 +255,4 @@ equalBytes(a: Uint8Array, b: Uint8Array)
 	}
 
 	return d === 0;
-}
-
-function
-encodePassword(pswd: string): Uint8Array
-{
-	return new TextEncoder().encode(pswd.normalize("NFKC"));
 }
