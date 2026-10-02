@@ -252,8 +252,8 @@ TODO
 	+ [x] この時点でできるならexec/test-options-state.jsを.tsにする
 * [x] password errorをhiddenの切り換えにする
 * [ ] 設定画面の実装の変更
-	+ [ ] Backup, All Clear, Restoreボタンを作成
-	+ [ ] OptionsStateにStorage interfaceを使う
+	+ [x] Backup, All Clear, Restoreボタンを作成
+	+ [x] OptionsStateにStorage interfaceを使う
 	+ [ ] Backupボタンの処理を書く
 	+ [ ] All Clearボタンの処理を書く
 	+ [ ] Restoreボタンの処理を書く

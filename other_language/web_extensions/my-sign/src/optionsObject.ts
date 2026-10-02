@@ -1,4 +1,4 @@
-type OptionsObject = {
+export type OptionsObject = {
 	accountName: string,
 	showPassword: boolean,
 	passwordErrorHidden: boolean,
@@ -27,7 +27,7 @@ type OptionsObject = {
 	useClientSet: boolean
 }
 
-type ClientSummary =
+export type ClientSummary =
 	{ type: "ClientSummary", uuid: UUID, name: string, urlPattern: string }
 
-type UUID = { type: "UUID", value: string };
+export type UUID = { type: "UUID", value: string };
