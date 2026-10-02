@@ -32,7 +32,7 @@ export type ClientSummary =
 
 export type UUID = { type: "UUID", value: string };
 
-export const defaultOptionsObject: OptionsObject = {
+export const defaultOptionsObject: OptionsObject = Object.freeze({
 	accountName: "",
 	showPassword: false,
 	passwordErrorHidden: true,
@@ -59,4 +59,4 @@ export const defaultOptionsObject: OptionsObject = {
 
 	optionsError: "",
 	useClientSet: false
-}
+});
