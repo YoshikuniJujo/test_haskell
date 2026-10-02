@@ -3,6 +3,9 @@ import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
 import { Log } from "./log2.js"
 
+import type { OptionsObject, ClientSummary, UUID, defaultOptionsObject }
+	from "./optionsObject.js";
+
 let openType;
 let id;
 

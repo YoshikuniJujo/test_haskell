@@ -254,6 +254,7 @@ TODO
 * [ ] 設定画面の実装の変更
 	+ [x] Backup, All Clear, Restoreボタンを作成
 	+ [x] OptionsStateにStorage interfaceを使う
+	+ [x] defaultOptionsObjectを定義する
 	+ [ ] Backupボタンの処理を書く
 	+ [ ] All Clearボタンの処理を書く
 	+ [ ] Restoreボタンの処理を書く

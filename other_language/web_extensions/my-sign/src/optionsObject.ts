@@ -31,3 +31,32 @@ export type ClientSummary =
 	{ type: "ClientSummary", uuid: UUID, name: string, urlPattern: string }
 
 export type UUID = { type: "UUID", value: string };
+
+export const defaultOptionsObject: OptionsObject = {
+	accountName: "",
+	showPassword: false,
+	passwordErrorHidden: true,
+
+	clientsHidden: false,
+	newClientButtonHidden: false,
+	deleteClientButtonHidden: true,
+	clientDetailHidden: true,
+
+	clients: [],
+
+	clientName: "",
+	urlPattern: "",
+	usePriority: false,
+	priority: 100,
+	displayAccount: true,
+	positionX: 100,
+	positionY: 0,
+	backgroundColor: "#00ff00",
+	backgroundOpacity: 0.5,
+	openSettingsByClick: true,
+	currentKey: null,
+	detailError: "",
+
+	optionsError: "",
+	useClientSet: false
+}
