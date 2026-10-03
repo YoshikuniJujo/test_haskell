@@ -507,8 +507,17 @@ loadOptions(obj: OptionsObject)
 	if (!accName) throw new Error("bad");
 	if (!showPassword) throw new Error("bad");
 	if (!passwordError) throw new Error("bad");
+	if (!clientsElm) throw new Error("bad");
+	if (!newClient) throw new Error("bad");
+	if (!deleteClient) throw new Error("bad");
+	if (!clientDetail) throw new Error("bad");
 
-	accName.value = optionsObject.accountName;
-	showPassword.checked = optionsObject.showPassword;
-	passwordError.hidden = optionsObject.passwordErrorHidden;
+	accName.value = obj.accountName;
+	showPassword.checked = obj.showPassword;
+	passwordError.hidden = obj.passwordErrorHidden;
+
+	clientsElm.hidden = obj.clientsHidden;
+	newClient.hidden = obj.newClientButtonHidden;
+	deleteClient.hidden = obj.deleteClientButtonHidden;
+	clientDetail.hidden = obj.clientDetailHidden
 }

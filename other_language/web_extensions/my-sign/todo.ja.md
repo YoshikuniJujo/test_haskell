@@ -264,7 +264,7 @@ TODO
 		- [x] 他をうめる
 	+ [ ] OptionsObjectを引数に取り、設定画面のほうを修正して同期させる関数を定義する
 		- [x] accountNameからpasswordErrorまで
-		- [ ] clientsElmからclientDetailまで
+		- [x] clientsElmからclientDetailまで
 		- [ ] clients
 		- [ ] clientNameからdetailErrorまで
 		- [ ] optionsErrorと各形題手
