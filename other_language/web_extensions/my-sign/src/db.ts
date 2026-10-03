@@ -9,7 +9,7 @@ const USE_CLIENT_SET = "use-client-set";
 
 let dbPromise: Promise<IDBDatabase>;
 
-type Client = {
+export type Client = {
 	uuid: string,
 	name: string,
 	displayAccount: boolean,

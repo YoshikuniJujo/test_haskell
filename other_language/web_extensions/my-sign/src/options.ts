@@ -3,8 +3,11 @@ import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
 import { Log } from "./log2.js"
 
-import type { OptionsObject, ClientSummary, UUID, defaultOptionsObject }
+import type { OptionsObject, ClientSummary, UUID }
 	from "./optionsObject.js";
+import { defaultOptionsObject } from "./optionsObject.js";
+
+let optionsObject: OptionsObject = defaultOptionsObject();
 
 let openType;
 let id;
@@ -455,3 +458,22 @@ encodePassword(pswd: string): Uint8Array
 {
 	return new TextEncoder().encode(pswd.normalize("NFKC"));
 }
+
+const backup = document.querySelector("#backup");
+if (!backup) throw new Error("bad");
+backup.addEventListener("click", async () => {
+	const clnts = await browser.runtime.sendMessage({ method: "getClientsDev" });
+
+	optionsObject.accountName = accName.value;
+	optionsObject.showPassword = showPassword.checked;
+	optionsObject.passwordErrorHidden = passwordError.hidden === true;
+
+	optionsObject.clientsHidden = clientsElm.hidden === true;
+	optionsObject.newClientButtonHidden = newClient.hidden === true;
+	optionsObject.deleteClientButtonHidden = deleteClient.hidden === true;
+	optionsObject.clientDetailHidden = clientDetail.hidden === true;
+
+	optionsObject.clients = clnts;
+
+	console.log("BACKUP:", optionsObject);
+});

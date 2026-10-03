@@ -7,6 +7,8 @@ import * as Bech32 from "./codec/bech32.js";
 
 import { addToArrayMap, forEachValues } from "./mapArray.js"
 
+import type { ClientSummary } from "./optionsObject.js"
+
 type Event = {
 	created_at: number,
 	kind: number,
@@ -58,6 +60,7 @@ type GlobalMethod =
 	| { method: "prepareClient", clientUrl: string }
 	| { method: "clientSubmited", id: string }
 	| { method: "addLogTab" }
+	| { method: "getClientsDev" }
 
 type Client = {
 	uuid: string,
@@ -204,7 +207,22 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			if (s.tab.id === undefined) throw new Error("bad");
 			Log.addLogTab(s.tab.id);
 			return;
+		case "getClientsDev":
+			console.log("background.ts: getClientsDev");
+			const clnts = await DB.getClients();
+			console.log("background.ts: getClientsDev:", clnts);
+			return clientsSummary(clnts);
 	}
+}
+
+function
+clientsSummary(cls: DB.Client[]): ClientSummary[]
+{
+	return cls.map(cl => { return {
+		type: "ClientSummary",
+		uuid: { type: "UUID", value: cl.uuid },
+		name: cl.name,
+		urlPattern: cl.urlPattern }; });
 }
 
 browser.tabs.onRemoved.addListener(pgVanished);

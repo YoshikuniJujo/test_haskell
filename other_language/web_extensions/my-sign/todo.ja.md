@@ -251,11 +251,17 @@ TODO
 	+ [x] TypeScriptにする
 	+ [x] この時点でできるならexec/test-options-state.jsを.tsにする
 * [x] password errorをhiddenの切り換えにする
-* [ ] 設定画面の実装の変更
+* [x] 設定画面の実装の変更(途中)
 	+ [x] Backup, All Clear, Restoreボタンを作成
 	+ [x] OptionsStateにStorage interfaceを使う
 	+ [x] defaultOptionsObjectを定義する
+* [ ] background.tsからoptions.tsで"browser"のときに接続エラーが出るあたり確認
+* [ ] 設定画面の実装の変更(続き)
 	+ [ ] Backupボタンの処理を書く
+		- [x] options.tsからbackground.tsにreadClientListDevを送る
+		- [x] background.tsはIndexedDBからclient listを入手して返信として返す
+		- [x] clientsをうめる
+		- [ ] 他をうめる
 	+ [ ] All Clearボタンの処理を書く
 	+ [ ] Restoreボタンの処理を書く
 	+ [ ] background.ts再起動時のOptionsStateの復元
