@@ -257,11 +257,12 @@ TODO
 	+ [x] defaultOptionsObjectを定義する
 * [ ] background.tsからoptions.tsで"browser"のときに接続エラーが出るあたり確認
 * [ ] 設定画面の実装の変更(続き)
-	+ [ ] Backupボタンの処理を書く
+	+ [x] Backupボタンの処理を書く
 		- [x] options.tsからbackground.tsにreadClientListDevを送る
 		- [x] background.tsはIndexedDBからclient listを入手して返信として返す
 		- [x] clientsをうめる
-		- [ ] 他をうめる
+		- [x] 他をうめる
+	+ [ ] OptionsObjectを引数に取り、設定画面のほうを修正して同期させる関数を定義する
 	+ [ ] All Clearボタンの処理を書く
 	+ [ ] Restoreボタンの処理を書く
 	+ [ ] background.ts再起動時のOptionsStateの復元

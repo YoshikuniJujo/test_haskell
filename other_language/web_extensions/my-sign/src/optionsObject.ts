@@ -32,6 +32,18 @@ export type ClientSummary =
 
 export type UUID = { type: "UUID", value: string };
 
+function
+uuid(s: string): UUID
+{
+	return { type: "UUID", value: s };
+}
+
+export function
+uuidNull(s: string | null)
+{
+	return s === null ? null : uuid(s);
+}
+
 export function defaultOptionsObject(): OptionsObject
 {
 	return {

@@ -5,7 +5,7 @@ import { Log } from "./log2.js"
 
 import type { OptionsObject, ClientSummary, UUID }
 	from "./optionsObject.js";
-import { defaultOptionsObject } from "./optionsObject.js";
+import { defaultOptionsObject, uuidNull } from "./optionsObject.js";
 
 let optionsObject: OptionsObject = defaultOptionsObject();
 
@@ -36,6 +36,7 @@ browser.runtime.sendMessage({ method: "testOptionsSender" });
 const params = new URLSearchParams(location.search);
 
 const clientNameD = document.querySelector<HTMLInputElement>("#client-name-d");
+if (!clientNameD) throw new Error("bad");
 
 const newClient = document.querySelector<HTMLElement>("#new-client");
 if (!newClient) throw new Error("bad2");
@@ -46,6 +47,7 @@ if (!currentKeyD) throw new Error("bad3");
 const usePriority = document.querySelector<HTMLInputElement>("#use-priority");
 const priorityLabel = document.querySelector<HTMLElement>("#priority-label");
 const priority = document.querySelector<HTMLInputElement>("#priority");
+if (!priority) throw new Error("bad");
 
 const displayAccount = document.querySelector<HTMLInputElement>("#display-account");
 const accountDisplaySettings =
@@ -66,6 +68,9 @@ if (!usePriority) throw new Error("bad8");
 if (!priorityLabel) throw new Error("bad9");
 if (!displayAccount) throw new Error("bad10");
 if (!accountDisplaySettings) throw new Error("bad11");
+
+if (!positionX) throw new Error("bad43");
+if (!positionY) throw new Error("bad44");
 
 const useClientSet = document.querySelector<HTMLInputElement>("#use-client-set");
 if (!useClientSet) throw new Error("bad12");
@@ -317,6 +322,8 @@ const clientFormD = document.querySelector<HTMLInputElement>("#client-form-d");
 const urlPatternD = document.querySelector<HTMLInputElement>("#url-pattern-d");
 const detailError = document.querySelector<HTMLElement>("#detail-error");
 
+if (!urlPatternD) throw new Error("bad36");
+
 if (!clientFormD) throw new Error("bad49");
 if (!detailError) throw new Error("bad50");
 clientFormD.addEventListener("submit", async event => {
@@ -474,6 +481,22 @@ backup.addEventListener("click", async () => {
 	optionsObject.clientDetailHidden = clientDetail.hidden === true;
 
 	optionsObject.clients = clnts;
+
+	optionsObject.clientName = clientNameD.value;
+	optionsObject.urlPattern = urlPatternD.value;
+	optionsObject.usePriority = usePriority.checked;
+	optionsObject.priority = priority.valueAsNumber;
+	optionsObject.displayAccount = displayAccount.checked;
+	optionsObject.positionX = positionX.valueAsNumber;
+	optionsObject.positionY = positionY.valueAsNumber;
+	optionsObject.backgroundColor = backgroundColor.value;
+	optionsObject.backgroundOpacity = backgroundOpacity.valueAsNumber;
+	optionsObject.openSettingsByClick = openSettingsByClick.checked;
+	optionsObject.currentKey = uuidNull(currentKeyD.value);
+	optionsObject.detailError = detailError.textContent;
+
+	optionsObject.optionsError = optionsError.textContent;
+	optionsObject.useClientSet = useClientSet.checked;
 
 	console.log("BACKUP:", optionsObject);
 });
