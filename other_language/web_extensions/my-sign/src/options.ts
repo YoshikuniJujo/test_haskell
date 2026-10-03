@@ -500,3 +500,15 @@ backup.addEventListener("click", async () => {
 
 	console.log("BACKUP:", optionsObject);
 });
+
+function
+loadOptions(obj: OptionsObject)
+{
+	if (!accName) throw new Error("bad");
+	if (!showPassword) throw new Error("bad");
+	if (!passwordError) throw new Error("bad");
+
+	accName.value = optionsObject.accountName;
+	showPassword.checked = optionsObject.showPassword;
+	passwordError.hidden = optionsObject.passwordErrorHidden;
+}

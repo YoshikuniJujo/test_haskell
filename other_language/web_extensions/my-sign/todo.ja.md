@@ -263,6 +263,11 @@ TODO
 		- [x] clientsをうめる
 		- [x] 他をうめる
 	+ [ ] OptionsObjectを引数に取り、設定画面のほうを修正して同期させる関数を定義する
+		- [x] accountNameからpasswordErrorまで
+		- [ ] clientsElmからclientDetailまで
+		- [ ] clients
+		- [ ] clientNameからdetailErrorまで
+		- [ ] optionsErrorと各形題手
 	+ [ ] All Clearボタンの処理を書く
 	+ [ ] Restoreボタンの処理を書く
 	+ [ ] background.ts再起動時のOptionsStateの復元
