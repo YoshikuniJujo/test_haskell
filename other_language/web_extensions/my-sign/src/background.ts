@@ -8,6 +8,7 @@ import * as Bech32 from "./codec/bech32.js";
 import { addToArrayMap, forEachValues } from "./mapArray.js"
 
 import type { ClientSummary } from "./optionsObject.js"
+import type { Client } from "./types.js"
 
 type Event = {
 	created_at: number,
@@ -26,10 +27,7 @@ const otbs = new InputTabs("options");
 	const ots = [...(await otbs.keyInputTabs())]
 		.filter(([key]) => key !== "browser")
 		.map(([, value]) => value);
-//	Log.write(`Options tabs: ${[...ots]}`);
 	Log.write(`Options tabs: ${ots}`);
-//	const otkits = await otbs.keyInputTabs();
-//	Log.write(`Options key-tabs: ${JSON.stringify(otkits)}`);
 
 	Log.setLogTabs(ots);
 
@@ -62,6 +60,7 @@ type GlobalMethod =
 	| { method: "addLogTab" }
 	| { method: "getClientsDev" }
 
+	/*
 type Client = {
 	uuid: string,
 	displayAccount: boolean,
@@ -71,6 +70,7 @@ type Client = {
 	priority: number,
 	urlPattern: string
 }
+*/
 
 async function
 globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
@@ -216,7 +216,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 }
 
 function
-clientsSummary(cls: DB.Client[]): ClientSummary[]
+clientsSummary(cls: Client[]): ClientSummary[]
 {
 	return cls.map(cl => { return {
 		type: "ClientSummary",

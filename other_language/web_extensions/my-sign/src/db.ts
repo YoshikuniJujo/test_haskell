@@ -1,4 +1,5 @@
 import { unit } from "./data/unit.js"
+import type { Client, Account } from "./types.js"
 
 const DB_NAME = "my-sign";
 const DB_VERSION = 2;
@@ -8,29 +9,6 @@ const CLIENTS = "clients";
 const USE_CLIENT_SET = "use-client-set";
 
 let dbPromise: Promise<IDBDatabase>;
-
-export type Client = {
-	uuid: string,
-	name: string,
-	displayAccount: boolean,
-	publicKey: Uint8Array,
-	positionX: number, positionY: number,
-	backgroundColor: string, backgroundOpacity: number,
-	priority: number,
-	urlPattern: string,
-	openSettingsByClick: boolean
-}
-
-type Account = {
-	publicKey: Uint8Array ,
-	name: string,
-	logN: number,
-	salt: Uint8Array,
-	nonce: Uint8Array,
-	keySecurityByte: number,
-	ciphertext: Uint8Array,
-	saltForCheckPassword: Uint8Array,
-	hashForCheckPassword: Uint8Array }
 
 function
 open()

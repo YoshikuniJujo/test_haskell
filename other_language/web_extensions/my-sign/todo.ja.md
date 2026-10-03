@@ -265,6 +265,7 @@ TODO
 	+ [ ] OptionsObjectを引数に取り、設定画面のほうを修正して同期させる関数を定義する
 		- [x] accountNameからpasswordErrorまで
 		- [x] clientsElmからclientDetailまで
+		- [x] type Clientを独立したモジュールにうつす
 		- [ ] clients
 		- [ ] clientNameからdetailErrorまで
 		- [ ] optionsErrorと各形題手
