@@ -507,7 +507,8 @@ backup.addEventListener("click", async () => {
 	optionsObject.backgroundColor = backgroundColor.value;
 	optionsObject.backgroundOpacity = backgroundOpacity.valueAsNumber;
 	optionsObject.openSettingsByClick = openSettingsByClick.checked;
-	optionsObject.currentKey = uuidNull(currentKeyD.value);
+//	optionsObject.currentKey = uuidNull(currentKeyD.value);
+	optionsObject.currentKey = currentKeyD.value;
 	optionsObject.detailError = detailError.textContent;
 
 	optionsObject.optionsError = optionsError.textContent;

@@ -20,7 +20,8 @@ export type OptionsObject = {
 	backgroundColor: string,
 	backgroundOpacity: number,
 	openSettingsByClick: boolean,
-	currentKey: UUID | null,
+	currentKey: string | null,
+//	currentKeyOptions:
 	detailError: string,
 
 	optionsError: string,

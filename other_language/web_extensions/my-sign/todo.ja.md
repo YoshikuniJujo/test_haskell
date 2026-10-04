@@ -266,9 +266,11 @@ TODO
 		- [x] accountNameからpasswordErrorまで
 		- [x] clientsElmからclientDetailまで
 		- [x] type Clientを独立したモジュールにうつす
+* [ ] OptionsObjectにcurrentKeyOptionsを追加する
+	+ [ ] 追加する
+	+ [ ] 周辺の修正
 * [ ] loadPublicKeysのcloneNodeを消す
 * [ ] select内のpublicKeyの読み込みについて考える
-* [ ] OptionsObjectにcurrentKeyOptionsを追加する
 * [ ] editingClientを消す
 * [ ] Client型のuuidをUUIDにする
 * [ ] 設定画面の実装の変更(続き)
