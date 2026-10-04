@@ -7,6 +7,8 @@ import type { OptionsObject, ClientSummary, UUID }
 	from "./optionsObject.js";
 import { defaultOptionsObject, uuidNull } from "./optionsObject.js";
 
+import type { Client } from "./types.js";
+
 let optionsObject: OptionsObject = defaultOptionsObject();
 
 let openType;
@@ -268,6 +270,7 @@ loadClients()
 			clientsElm.hidden = true;
 			newClient.hidden = true;
 			clientDetail.hidden = false;
+			clientDetail.dataset.clientUuid = client.uuid;
 			deleteClient.hidden = false;
 			optionsError.textContent = "";
 
@@ -279,9 +282,9 @@ loadClients()
 
 function
 loadClientToForm(client: EditingClient)
+// loadClientToForm(client: Client)
 {
 	if (!clientNameD) throw new Error("bad35");
-	const urlPatternD = document.querySelector<HTMLInputElement>("#url-pattern-d");
 	if (!urlPatternD) throw new Error("bad36");
 	if (!currentKeyD) throw new Error("bad37");
 	if (!usePriority) throw new Error("bad38");
@@ -295,6 +298,7 @@ loadClientToForm(client: EditingClient)
 	if (!backgroundColor16) throw new Error("bad46");
 	if (!backgroundOpacity) throw new Error("bad47");
 	if (!openSettingsByClick) throw new Error("bad48");
+
 	clientNameD.value = client.name ?? "";
 	urlPatternD.value = client.urlPattern;
 	currentKeyD.value = client.publicKey
@@ -316,6 +320,11 @@ loadClientToForm(client: EditingClient)
 	backgroundOpacity.value = String(client.backgroundOpacity ?? 0.5);
 
 	openSettingsByClick.checked = client.openSettingsByClick ?? true;
+}
+
+type ClientDetail = {
+	name: string;
+	urlPattern: string;
 }
 
 const clientFormD = document.querySelector<HTMLInputElement>("#client-form-d");
@@ -363,8 +372,9 @@ clientFormD.addEventListener("submit", async event => {
 	const pr = editingClient.priority;
 	if (pr === null) throw new Error("bad56");
 
+	if (!clientDetail.dataset.clientUuid) throw new Error("bad");
 	await DB.putClient({
-		uuid: editingClient.uuid,
+		uuid: clientDetail.dataset.clientUuid,
 		name: editingClient.name,
 		displayAccount: editingClient.displayAccount,
 		publicKey: editingClient.publicKey,

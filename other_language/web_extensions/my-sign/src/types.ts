@@ -1,13 +1,13 @@
 export type Client = {
 	uuid: string,
 	name: string,
-	displayAccount: boolean,
-	publicKey: Uint8Array,
-	positionX: number, positionY: number,
-	backgroundColor: string, backgroundOpacity: number,
-	priority: number,
 	urlPattern: string,
+	publicKey: Uint8Array,
+	priority: number,
 	openSettingsByClick: boolean
+	backgroundColor: string, backgroundOpacity: number,
+	positionX: number, positionY: number,
+	displayAccount: boolean,
 }
 
 export type Account = {

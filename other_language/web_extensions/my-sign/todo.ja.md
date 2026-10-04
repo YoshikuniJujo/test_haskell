@@ -256,16 +256,19 @@ TODO
 	+ [x] OptionsStateにStorage interfaceを使う
 	+ [x] defaultOptionsObjectを定義する
 * [ ] background.tsからoptions.tsで"browser"のときに接続エラーが出るあたり確認
-* [ ] 設定画面の実装の変更(続き)
+* [x] 設定画面の実装の変更(続き, 途中)
 	+ [x] Backupボタンの処理を書く
 		- [x] options.tsからbackground.tsにreadClientListDevを送る
 		- [x] background.tsはIndexedDBからclient listを入手して返信として返す
 		- [x] clientsをうめる
 		- [x] 他をうめる
-	+ [ ] OptionsObjectを引数に取り、設定画面のほうを修正して同期させる関数を定義する
+	+ [x] OptionsObjectを引数に取り、設定画面のほうを修正して同期させる関数を定義する(途中)
 		- [x] accountNameからpasswordErrorまで
 		- [x] clientsElmからclientDetailまで
 		- [x] type Clientを独立したモジュールにうつす
+* [ ] Client型のuuidをUUIDにする
+* [ ] 設定画面の実装の変更(続き)
+	+ [ ] OptionsObjectを引数に取り、設定画面のほうを修正して同期させる関数を定義する(続き)
 		- [ ] clients
 		- [ ] clientNameからdetailErrorまで
 		- [ ] optionsErrorと各形題手
