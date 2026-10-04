@@ -208,16 +208,6 @@ form.addEventListener("submit", async event => {
 	password.value = "";
 	confirm.value = "";
 
-	await DB.addKeyPair(esk.toObject_563e7e39d4());
-	currentKeyD.replaceChildren();
-	const keys = await DB.getPublicKeysWithNames();
-	for (const pk of keys) {
-		console.log(pk);
-		const npub = Bech32.encode("npub", new Uint8Array(pk.publicKey));
-		const div = document.createElement("div");
-		div.textContent = npub;
-	}
-
 	await loadPublicKeys();
 });
 
