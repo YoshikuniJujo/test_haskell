@@ -266,6 +266,10 @@ TODO
 		- [x] accountNameからpasswordErrorまで
 		- [x] clientsElmからclientDetailまで
 		- [x] type Clientを独立したモジュールにうつす
+* [x] clientsのbackupのデータの流れを修正する
+	+ [x] それぞれのclientにidとしてUUIDを付加する
+	+ [x] HTML側からOptionsObject側にデータをコピーするようにする
+* [ ] currentKeyのoptionのvalueをnpubからhexにする
 * [ ] OptionsObjectにcurrentKeyOptionsを追加する
 	+ [ ] 追加する
 	+ [ ] 周辺の修正

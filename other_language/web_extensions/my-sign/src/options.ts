@@ -37,7 +37,7 @@ browser.runtime.sendMessage({ method: "testOptionsSender" });
 
 const params = new URLSearchParams(location.search);
 
-const clientFormD = document.querySelector<HTMLInputElement>("#client-form-d");
+const clientFormD = document.querySelector<HTMLFormElement>("#client-form-d");
 const urlPatternD = document.querySelector<HTMLInputElement>("#url-pattern-d");
 const detailError = document.querySelector<HTMLElement>("#detail-error");
 
@@ -47,7 +47,7 @@ if (!clientNameD) throw new Error("badA");
 const newClient = document.querySelector<HTMLElement>("#new-client");
 if (!newClient) throw new Error("bad2");
 
-const currentKeyD = document.querySelector<HTMLInputElement>("#current-key-d");
+const currentKeyD = document.querySelector<HTMLSelectElement>("#current-key-d");
 if (!currentKeyD) throw new Error("bad3");
 
 const usePriority = document.querySelector<HTMLInputElement>("#use-priority");
@@ -232,7 +232,7 @@ loadPublicKeys()
 		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
 
 		if (!currentKeyD) throw new Error("bad29");
-		currentKeyD.append(option.cloneNode(true));
+		currentKeyD.append(option);
 	}
 }
 
@@ -267,6 +267,9 @@ loadClients()
 
 	for (const client of clients) {
 		const row = document.createElement("div");
+		row.id = client.uuid;
+		row.dataset.name = client.name;
+		row.dataset.urlPattern = client.urlPattern;
 		row.textContent = client.name + " " + client.urlPattern;
 		row.addEventListener("click", () => {
 			editingClient = client;
@@ -484,7 +487,14 @@ encodePassword(pswd: string): Uint8Array
 const backup = document.querySelector("#backup");
 if (!backup) throw new Error("badD");
 backup.addEventListener("click", async () => {
-	const clnts = await browser.runtime.sendMessage({ method: "getClientsDev" });
+	const clnts2: ClientSummary[] = Array.from(clientsElm.children, child => {
+		if (!(child instanceof HTMLElement)) throw new Error("bad");
+		const nm = child.dataset.name ?? "";
+		const up = child.dataset.urlPattern ?? "";
+		return {
+			type: "ClientSummary",
+			uuid: { type: "UUID", value: child.id },
+			name: nm, urlPattern: up }; });
 
 	optionsObject.accountName = accName.value;
 	optionsObject.showPassword = showPassword.checked;
@@ -495,7 +505,7 @@ backup.addEventListener("click", async () => {
 	optionsObject.deleteClientButtonHidden = deleteClient.hidden === true;
 	optionsObject.clientDetailHidden = clientDetail.hidden === true;
 
-	optionsObject.clients = clnts;
+	optionsObject.clients = clnts2;
 
 	optionsObject.clientName = clientNameD.value;
 	optionsObject.urlPattern = urlPatternD.value;
