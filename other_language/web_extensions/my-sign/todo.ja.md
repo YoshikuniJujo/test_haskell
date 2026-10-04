@@ -266,6 +266,7 @@ TODO
 		- [x] accountNameからpasswordErrorまで
 		- [x] clientsElmからclientDetailまで
 		- [x] type Clientを独立したモジュールにうつす
+* [ ] editingClientを消す
 * [ ] Client型のuuidをUUIDにする
 * [ ] 設定画面の実装の変更(続き)
 	+ [ ] OptionsObjectを引数に取り、設定画面のほうを修正して同期させる関数を定義する(続き)

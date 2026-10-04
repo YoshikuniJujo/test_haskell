@@ -37,8 +37,12 @@ browser.runtime.sendMessage({ method: "testOptionsSender" });
 
 const params = new URLSearchParams(location.search);
 
+const clientFormD = document.querySelector<HTMLInputElement>("#client-form-d");
+const urlPatternD = document.querySelector<HTMLInputElement>("#url-pattern-d");
+const detailError = document.querySelector<HTMLElement>("#detail-error");
+
 const clientNameD = document.querySelector<HTMLInputElement>("#client-name-d");
-if (!clientNameD) throw new Error("bad");
+if (!clientNameD) throw new Error("badA");
 
 const newClient = document.querySelector<HTMLElement>("#new-client");
 if (!newClient) throw new Error("bad2");
@@ -49,7 +53,7 @@ if (!currentKeyD) throw new Error("bad3");
 const usePriority = document.querySelector<HTMLInputElement>("#use-priority");
 const priorityLabel = document.querySelector<HTMLElement>("#priority-label");
 const priority = document.querySelector<HTMLInputElement>("#priority");
-if (!priority) throw new Error("bad");
+if (!priority) throw new Error("badB");
 
 const displayAccount = document.querySelector<HTMLInputElement>("#display-account");
 const accountDisplaySettings =
@@ -116,6 +120,8 @@ type EditingClient = {
 
 function
 openNewClient(url?: string) {
+	if (!clientDetail) throw new Error("bad14");
+	clientDetail.dataset.clientUuid = crypto.randomUUID();
 	editingClient = {
 		uuid: crypto.randomUUID(),
 		name: "",
@@ -266,7 +272,6 @@ loadClients()
 		row.textContent = client.name + " " + client.urlPattern;
 		row.addEventListener("click", () => {
 			editingClient = client;
-			console.log(editingClient.uuid);
 			clientsElm.hidden = true;
 			newClient.hidden = true;
 			clientDetail.hidden = false;
@@ -327,10 +332,6 @@ type ClientDetail = {
 	urlPattern: string;
 }
 
-const clientFormD = document.querySelector<HTMLInputElement>("#client-form-d");
-const urlPatternD = document.querySelector<HTMLInputElement>("#url-pattern-d");
-const detailError = document.querySelector<HTMLElement>("#detail-error");
-
 if (!urlPatternD) throw new Error("bad36");
 
 if (!clientFormD) throw new Error("bad49");
@@ -345,9 +346,7 @@ clientFormD.addEventListener("submit", async event => {
 	if (!positionX) throw new Error("bad54");
 	if (!positionY) throw new Error("bad55");
 
-	editingClient.name = clientNameD.value;
 	try {
-		editingClient.urlPattern = urlPatternD.value;
 		new URLPattern(urlPatternD.value);
 		detailError.textContent = "";
 	}
@@ -356,35 +355,23 @@ clientFormD.addEventListener("submit", async event => {
 		detailError.textContent = e.message;
 		return;
 	}
-	editingClient.publicKey =
-		new Uint8Array(Bech32.decode(currentKeyD.value).dp);
-	editingClient.priority = usePriority.checked ? Number(priority.value) : null;
 
-	editingClient.displayAccount = displayAccount.checked;
-	editingClient.positionX = Number(positionX.value);
-	editingClient.positionY = Number(positionY.value);
-
-	editingClient.backgroundColor = backgroundColor16.value;
-	editingClient.backgroundOpacity = Number(backgroundOpacity.value);
-
-	editingClient.openSettingsByClick = openSettingsByClick.checked;
-
-	const pr = editingClient.priority;
+	const pr = usePriority.checked ? priority.valueAsNumber : null;
 	if (pr === null) throw new Error("bad56");
 
-	if (!clientDetail.dataset.clientUuid) throw new Error("bad");
+	if (!clientDetail.dataset.clientUuid) throw new Error("badC");
 	await DB.putClient({
 		uuid: clientDetail.dataset.clientUuid,
-		name: editingClient.name,
-		displayAccount: editingClient.displayAccount,
-		publicKey: editingClient.publicKey,
-		positionX: editingClient.positionX,
-		positionY: editingClient.positionY,
-		backgroundColor: editingClient.backgroundColor,
-		backgroundOpacity: editingClient.backgroundOpacity,
+		name: clientNameD.value,
+		displayAccount: displayAccount.checked,
+		publicKey: new Uint8Array(Bech32.decode(currentKeyD.value).dp),
+		positionX: positionX.valueAsNumber,
+		positionY: positionY.valueAsNumber,
+		backgroundColor: backgroundColor16.value,
+		backgroundOpacity: backgroundOpacity.valueAsNumber,
 		priority: pr,
-		urlPattern: editingClient.urlPattern,
-		openSettingsByClick: editingClient.openSettingsByClick
+		urlPattern: urlPatternD.value,
+		openSettingsByClick: openSettingsByClick.checked
 	});
 	await loadClients();
 
@@ -477,7 +464,7 @@ encodePassword(pswd: string): Uint8Array
 }
 
 const backup = document.querySelector("#backup");
-if (!backup) throw new Error("bad");
+if (!backup) throw new Error("badD");
 backup.addEventListener("click", async () => {
 	const clnts = await browser.runtime.sendMessage({ method: "getClientsDev" });
 
@@ -514,13 +501,13 @@ backup.addEventListener("click", async () => {
 function
 loadOptions(obj: OptionsObject)
 {
-	if (!accName) throw new Error("bad");
-	if (!showPassword) throw new Error("bad");
-	if (!passwordError) throw new Error("bad");
-	if (!clientsElm) throw new Error("bad");
-	if (!newClient) throw new Error("bad");
-	if (!deleteClient) throw new Error("bad");
-	if (!clientDetail) throw new Error("bad");
+	if (!accName) throw new Error("badE");
+	if (!showPassword) throw new Error("badF");
+	if (!passwordError) throw new Error("badG");
+	if (!clientsElm) throw new Error("badH");
+	if (!newClient) throw new Error("badI");
+	if (!deleteClient) throw new Error("badJ");
+	if (!clientDetail) throw new Error("badK");
 
 	accName.value = obj.accountName;
 	showPassword.checked = obj.showPassword;
