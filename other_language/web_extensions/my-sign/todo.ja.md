@@ -268,6 +268,7 @@ TODO
 		- [x] type Clientを独立したモジュールにうつす
 * [ ] loadPublicKeysのcloneNodeを消す
 * [ ] select内のpublicKeyの読み込みについて考える
+* [ ] OptionsObjectにcurrentKeyOptionsを追加する
 * [ ] editingClientを消す
 * [ ] Client型のuuidをUUIDにする
 * [ ] 設定画面の実装の変更(続き)
