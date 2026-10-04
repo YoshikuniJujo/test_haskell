@@ -325,9 +325,28 @@ loadClientToForm(client: EditingClient)
 	openSettingsByClick.checked = client.openSettingsByClick ?? true;
 }
 
+function
+clientDetailToForm(cd: ClientDetail): void
+{
+	if (!clientNameD) throw new Error("bad35");
+	clientNameD.value = cd.name;
+}
+
 type ClientDetail = {
 	name: string;
 	urlPattern: string;
+	publicKey: string | null;
+	usePriority: boolean;
+	priority: number | null;
+	priorityLabelHidden: boolean;
+	displayAccount: boolean;
+	accountDisplaySettingsHidden: boolean;
+	positionX: number;
+	positionY: number;
+	backgroundColor: string;
+	backgroundColor16: string;
+	backgroundOpacity: number;
+	openSettingByClient: boolean;
 }
 
 if (!urlPatternD) throw new Error("bad36");
