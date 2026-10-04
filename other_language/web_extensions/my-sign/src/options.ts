@@ -106,7 +106,6 @@ if (!deleteClient) throw new Error("bad16");
 let editingClient: EditingClient;
 
 type EditingClient = {
-	uuid: string,
 	name: string,
 	urlPattern: string,
 	publicKey: Uint8Array | undefined,
@@ -123,7 +122,6 @@ openNewClient(url?: string) {
 	if (!clientDetail) throw new Error("bad14");
 	clientDetail.dataset.clientUuid = crypto.randomUUID();
 	editingClient = {
-		uuid: crypto.randomUUID(),
 		name: "",
 		urlPattern: url ?? "",
 		publicKey: undefined,
@@ -401,7 +399,8 @@ cancelEditClient.addEventListener("click", () => {
 });
 
 deleteClient.addEventListener("click", async () => {
-	await DB.deleteClient(editingClient.uuid);
+	if (!clientDetail.dataset.clientUuid) throw new Error("bad");
+	await DB.deleteClient(clientDetail.dataset.clientUuid);
 	await loadClients();
 	await browser.runtime.sendMessage({
 		method: "clientChanged"
