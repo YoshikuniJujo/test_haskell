@@ -103,25 +103,11 @@ const deleteClient = document.querySelector<HTMLElement>("#delete-client");
 if (!optionsError) throw new Error("bad15");
 if (!deleteClient) throw new Error("bad16");
 
-let editingClient: EditingClient;
-
-type EditingClient = {
-	name: string,
-	urlPattern: string,
-	publicKey: Uint8Array | undefined,
-	priority: number | null
-	openSettingsByClick: boolean,
-	backgroundColor: string,
-	backgroundOpacity: number,
-	positionX: number, positionY: number,
-	displayAccount: boolean,
-}
-
-function
+async function
 openNewClient(url?: string) {
 	if (!clientDetail) throw new Error("bad14");
 	clientDetail.dataset.clientUuid = crypto.randomUUID();
-	editingClient = {
+	const client = {
 		name: "",
 		urlPattern: url ?? "",
 		publicKey: undefined,
@@ -136,9 +122,8 @@ openNewClient(url?: string) {
 
 	};
 
-	const client = editingClient;
-
-	loadClientToForm(client);
+	const pks = await publicKeys();
+	loadClientToForm(client, pks);
 
 	if (!deleteClient) throw new Error("bad17");
 	if (!clientsElm) throw new Error("bad18");
@@ -214,19 +199,30 @@ form.addEventListener("submit", async event => {
 async function
 loadPublicKeys()
 {
-	const keys = await DB.getPublicKeysWithNames();
+	const keys = await publicKeys();
+	if (!currentKeyD) throw new Error("bad29");
+	currentKeyD.replaceChildren();
 	for (const pk of keys) {
 		const option = document.createElement("option");
-		const npub = Bech32.encode("npub", new Uint8Array(pk.publicKey));
-		const hex = toHex(pk.publicKey);
-		option.value = hex;
+		const npub = Bech32.encode("npub", fromHex(pk.publicKey));
+		option.value = pk.publicKey;
 		option.dataset.name = pk.name;
 		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
-
-		if (!currentKeyD) throw new Error("bad29");
-		currentKeyD.append(option);
-	}
+		currentKeyD.append(option); }
 }
+
+async function
+publicKeys(): Promise<PublicKeyOption[]>
+{
+	const keys = await DB.getPublicKeysWithNames();
+	return Array.from(keys, pk => {
+		const hex = toHex(pk.publicKey);
+		return {
+			type: "PublicKeyOption",
+			publicKey: hex,
+			name: pk.name } });
+}
+
 
 showPassword.addEventListener("change", () => {
 	const type = showPassword.checked ? "text" : "password";
@@ -263,8 +259,7 @@ loadClients()
 		row.dataset.name = client.name;
 		row.dataset.urlPattern = client.urlPattern;
 		row.textContent = client.name + " " + client.urlPattern;
-		row.addEventListener("click", () => {
-			editingClient = client;
+		row.addEventListener("click", async () => {
 			clientsElm.hidden = true;
 			newClient.hidden = true;
 			clientDetail.hidden = false;
@@ -272,50 +267,18 @@ loadClients()
 			deleteClient.hidden = false;
 			optionsError.textContent = "";
 
-			loadClientToForm(client);
+			const pks = await publicKeys();
+			loadClientToForm(client, pks);
 		});
 		clientsElm.append(row);
 	}
 }
 
 function
-loadClientToForm(client: EditingClient)
-// loadClientToForm(client: Client)
+loadClientToForm(client: EditingClient, pks: PublicKeyOption[])
 {
-	if (!clientNameD) throw new Error("bad35");
-	if (!urlPatternD) throw new Error("bad36");
-	if (!currentKeyD) throw new Error("bad37");
-	if (!usePriority) throw new Error("bad38");
-	if (!priority) throw new Error("bad39");
-	if (!priorityLabel) throw new Error("bad40");
-	if (!displayAccount) throw new Error("bad41");
-	if (!accountDisplaySettings) throw new Error("bad42");
-	if (!positionX) throw new Error("bad43");
-	if (!positionY) throw new Error("bad44");
-	if (!backgroundColor) throw new Error("bad45");
-	if (!backgroundColor16) throw new Error("bad46");
-	if (!backgroundOpacity) throw new Error("bad47");
-	if (!openSettingsByClick) throw new Error("bad48");
-
-	clientNameD.value = client.name ?? "";
-	urlPatternD.value = client.urlPattern;
-	currentKeyD.value = client.publicKey ? toHex(client.publicKey) : "";
-
-	usePriority.checked = client.priority !== null;
-	priority.value = String(client.priority ?? 100);
-	priorityLabel.hidden = client.priority === null;
-
-	displayAccount.checked = client.displayAccount !== false;
-	accountDisplaySettings.hidden = !displayAccount.checked;
-
-	positionX.value = String(client.positionX ?? 100);
-	positionY.value = String(client.positionY ?? 0);
-
-	backgroundColor.value = client.backgroundColor ?? "#008000";
-	backgroundColor16.value = client.backgroundColor ?? "#008000";
-	backgroundOpacity.value = String(client.backgroundOpacity ?? 0.5);
-
-	openSettingsByClick.checked = client.openSettingsByClick ?? true;
+	console.log("LOAD CLIENT TO FORM:", client);
+	clientDetailToForm(fromEditingClient(client, pks));
 }
 
 function
@@ -348,7 +311,7 @@ clientDetailToForm(cd: ClientDetail): void
 	backgroundColor.value = cd.backgroundColor;
 	backgroundColor16.value = cd.backgroundColor16;
 	backgroundOpacity.valueAsNumber = cd.backgroundOpacity;
-	openSettingsByClick.checked = cd.openSettingByClient;
+	openSettingsByClick.checked = cd.openSettingsByClick;
 }
 
 type ClientDetail = {
@@ -366,12 +329,48 @@ type ClientDetail = {
 	backgroundColor: string;
 	backgroundColor16: string;
 	backgroundOpacity: number;
-	openSettingByClient: boolean;
+	openSettingsByClick: boolean;
+}
+
+function
+fromEditingClient(ec: EditingClient, pkos: PublicKeyOption[]): ClientDetail
+{
+	return {
+		name: ec.name,
+		urlPattern: ec.urlPattern,
+		publicKey: ec.publicKey ? toHex(ec.publicKey) : "",
+		publicKeyOptions: pkos,
+		usePriority: ec.priority !== null,
+		priority: ec.priority,
+		priorityLabelHidden: ec.priority === null,
+		displayAccount: ec.displayAccount,
+		accountDisplaySettingsHidden: !ec.displayAccount,
+		positionX: ec.positionX,
+		positionY: ec.positionY,
+		backgroundColor: ec.backgroundColor,
+		backgroundColor16: ec.backgroundColor,
+		backgroundOpacity: ec.backgroundOpacity,
+		openSettingsByClick: ec.openSettingsByClick
+	};
+}
+
+type EditingClient = {
+	name: string,
+	urlPattern: string,
+	publicKey: Uint8Array | undefined,
+	priority: number | null
+	openSettingsByClick: boolean,
+	backgroundColor: string,
+	backgroundOpacity: number,
+	positionX: number, positionY: number,
+	displayAccount: boolean,
 }
 
 async function
 loadPublicKeyFrom(pkos: PublicKeyOption[])
 {
+	if (!currentKeyD) throw new Error("bad29");
+	currentKeyD.replaceChildren();
 	for (const pk of pkos) {
 		const option = document.createElement("option");
 		const hex = pk.publicKey;
@@ -380,7 +379,6 @@ loadPublicKeyFrom(pkos: PublicKeyOption[])
 
 		const npub = Bech32.encode("npub", fromHex(pk.publicKey));
 		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
-		if (!currentKeyD) throw new Error("bad29");
 		currentKeyD.append(option);
 	}
 }
