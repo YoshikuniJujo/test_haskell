@@ -3,7 +3,7 @@ import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
 import { Log } from "./log2.js"
 
-import type { OptionsObject, ClientSummary, UUID }
+import type { OptionsObject, ClientSummary, PublicKeyOption, UUID }
 	from "./optionsObject.js";
 import { defaultOptionsObject } from "./optionsObject.js";
 
@@ -220,6 +220,7 @@ loadPublicKeys()
 		const npub = Bech32.encode("npub", new Uint8Array(pk.publicKey));
 		const hex = toHex(pk.publicKey);
 		option.value = hex;
+		option.dataset.name = pk.name;
 		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
 
 		if (!currentKeyD) throw new Error("bad29");
@@ -321,13 +322,40 @@ function
 clientDetailToForm(cd: ClientDetail): void
 {
 	if (!clientNameD) throw new Error("bad35");
+	if (!urlPatternD) throw new Error("bad");
+	if (!currentKeyD) throw new Error("bad");
+	if (!usePriority) throw new Error("bad");
+	if (!priority) throw new Error("bad");
+	if (!priorityLabel) throw new Error("bad");
+	if (!displayAccount) throw new Error("bad");
+	if (!accountDisplaySettings) throw new Error("bad");
+	if (!positionX || !positionY) throw new Error("bad");
+	if (!backgroundColor || !backgroundColor16) throw new Error("bad");
+	if (!backgroundOpacity) throw new Error("bad");
+	if (!openSettingsByClick) throw new Error("bad");
+
 	clientNameD.value = cd.name;
+	urlPatternD.value = cd.urlPattern;
+	loadPublicKeyFrom(cd.publicKeyOptions);
+	currentKeyD.value = cd.publicKey ?? "";
+	usePriority.checked = cd.usePriority;
+	priority.valueAsNumber = cd.priority ?? 100;
+	priorityLabel.hidden = cd.priorityLabelHidden;
+	displayAccount.checked = cd.displayAccount;
+	accountDisplaySettings.hidden = cd.accountDisplaySettingsHidden;
+	positionX.valueAsNumber = cd.positionX;
+	positionY.valueAsNumber = cd.positionY;
+	backgroundColor.value = cd.backgroundColor;
+	backgroundColor16.value = cd.backgroundColor16;
+	backgroundOpacity.valueAsNumber = cd.backgroundOpacity;
+	openSettingsByClick.checked = cd.openSettingByClient;
 }
 
 type ClientDetail = {
 	name: string;
 	urlPattern: string;
 	publicKey: string | null;
+	publicKeyOptions: PublicKeyOption[];
 	usePriority: boolean;
 	priority: number | null;
 	priorityLabelHidden: boolean;
@@ -339,6 +367,22 @@ type ClientDetail = {
 	backgroundColor16: string;
 	backgroundOpacity: number;
 	openSettingByClient: boolean;
+}
+
+async function
+loadPublicKeyFrom(pkos: PublicKeyOption[])
+{
+	for (const pk of pkos) {
+		const option = document.createElement("option");
+		const hex = pk.publicKey;
+		option.value = hex;
+		option.dataset.name = pk.name;
+
+		const npub = Bech32.encode("npub", fromHex(pk.publicKey));
+		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
+		if (!currentKeyD) throw new Error("bad29");
+		currentKeyD.append(option);
+	}
 }
 
 if (!urlPatternD) throw new Error("bad36");
@@ -485,6 +529,16 @@ backup.addEventListener("click", async () => {
 			uuid: { type: "UUID", value: child.id },
 			name: nm, urlPattern: up }; });
 
+	const crrKyOpts: PublicKeyOption[] = Array.from(currentKeyD.children, child => {
+		if (!(child instanceof HTMLOptionElement)) throw new Error("bad");
+		if (!child.dataset.name) throw new Error("bad");
+		console.log("options.ts: BACKUP: public key value =", child.value);
+		console.log("options.ts: BACKUP: public key value =", child.dataset.name);
+		return {
+			type: "PublicKeyOption",
+			publicKey: child.value,
+			name: child.dataset.name } });
+
 	optionsObject.accountName = accName.value;
 	optionsObject.showPassword = showPassword.checked;
 	optionsObject.passwordErrorHidden = passwordError.hidden === true;
@@ -507,6 +561,7 @@ backup.addEventListener("click", async () => {
 	optionsObject.backgroundOpacity = backgroundOpacity.valueAsNumber;
 	optionsObject.openSettingsByClick = openSettingsByClick.checked;
 	optionsObject.currentKey = currentKeyD.value;
+	optionsObject.currentKeyOptions = crrKyOpts;
 	optionsObject.detailError = detailError.textContent;
 
 	optionsObject.optionsError = optionsError.textContent;

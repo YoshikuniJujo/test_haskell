@@ -270,11 +270,13 @@ TODO
 	+ [x] それぞれのclientにidとしてUUIDを付加する
 	+ [x] HTML側からOptionsObject側にデータをコピーするようにする
 * [x] currentKeyのoptionのvalueをnpubからhexにする
-* [ ] OptionsObjectにcurrentKeyOptionsを追加する
-	+ [ ] 追加する
-	+ [ ] 周辺の修正
-* [ ] loadPublicKeysのcloneNodeを消す
-* [ ] select内のpublicKeyの読み込みについて考える
+* [x] OptionsObjectにcurrentKeyOptionsを追加する
+	+ [x] curerntKeyOptionsの型を考える
+	+ [x] 追加する
+	+ [x] currentKeyDの子要素についてmapする
+	+ [x] 周辺の修正
+* [x] loadPublicKeysのcloneNodeを消す
+* [x] select内のpublicKeyの読み込みについて考える
 * [ ] editingClientを消す
 * [ ] Client型のuuidをUUIDにする
 * [ ] 設定画面の実装の変更(続き)

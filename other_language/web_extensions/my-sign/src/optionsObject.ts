@@ -21,7 +21,7 @@ export type OptionsObject = {
 	backgroundOpacity: number,
 	openSettingsByClick: boolean,
 	currentKey: string | null,
-//	currentKeyOptions:
+	currentKeyOptions: PublicKeyOption[],
 	detailError: string,
 
 	optionsError: string,
@@ -30,6 +30,9 @@ export type OptionsObject = {
 
 export type ClientSummary =
 	{ type: "ClientSummary", uuid: UUID, name: string, urlPattern: string }
+
+export type PublicKeyOption =
+	{ type: "PublicKeyOption", publicKey: string, name: string }
 
 export type UUID = { type: "UUID", value: string };
 
@@ -70,6 +73,7 @@ export function defaultOptionsObject(): OptionsObject
 		backgroundOpacity: 0.5,
 		openSettingsByClick: true,
 		currentKey: null,
+		currentKeyOptions: [],
 		detailError: "",
 
 		optionsError: "",
