@@ -103,8 +103,6 @@ openNewClient(url?: string) {
 
 if (openType === "url") openNewClient(id);
 
-console.log("foobar");
-
 loadPublicKeys();
 loadClients();
 
@@ -118,7 +116,6 @@ confirm.addEventListener("input", () => {
 });
 
 form.addEventListener("submit", async event => {
-	console.log("submit");
 	event.preventDefault();
 
 	if (password.value !== confirm.value) {
@@ -129,8 +126,6 @@ form.addEventListener("submit", async event => {
 		passwordError.textContent = "Passwords do not match.";
 		return;
 	}
-
-	console.log("here");
 
 	confirm.setCustomValidity("");
 
@@ -147,14 +142,7 @@ async function
 loadPublicKeys()
 {
 	const keys = await publicKeys();
-	currentKeyD.replaceChildren();
-	for (const pk of keys) {
-		const option = document.createElement("option");
-		const npub = Bech32.encode("npub", fromHex(pk.publicKey));
-		option.value = pk.publicKey;
-		option.dataset.name = pk.name;
-		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
-		currentKeyD.append(option); }
+	loadPublicKeyFrom(keys);
 }
 
 async function
@@ -196,7 +184,7 @@ loadClients()
 	loadClientsFromSummaries(clientSummaries);
 }
 
-async function
+function
 loadClientsFromSummaries(clientSummaries: ClientSummary[])
 {
 
@@ -228,7 +216,6 @@ loadClientsFromSummaries(clientSummaries: ClientSummary[])
 function
 loadClientToForm(client: EditingClient, pks: PublicKeyOption[])
 {
-	console.log("LOAD CLIENT TO FORM:", client);
 	clientDetailToForm(fromEditingClient(client, pks));
 }
 
@@ -314,7 +301,7 @@ fromEditingClient(ec: EditingClient, pkos: PublicKeyOption[]): ClientDetail
 	};
 }
 
-async function
+function
 loadPublicKeyFrom(pkos: PublicKeyOption[])
 {
 	currentKeyD.replaceChildren();
@@ -373,7 +360,6 @@ clientFormD.addEventListener("submit", async event => {
 	if (openType === "url") {
 		const r = await browser.runtime.sendMessage(
 			{ method: "clientSubmited", id: id } );
-		console.log("clientSubmited: return:", r);
 		if (!r) optionsError.textContent = "The client does not match the original URL.";
 	}
 });
@@ -397,7 +383,6 @@ deleteClient.addEventListener("click", async () => {
 });
 
 (async () => {
-	console.log("LOG OUTPUT BEGIN");
 	const logs: Log[] = await Log.readAll();
 	console.log(logs);
 	logOutput.textContent =
@@ -419,7 +404,6 @@ browser.runtime.onMessage.addListener((m, s) => {
 	switch(m.method) {
 		case "logUpdated":
 			(async () => {
-				console.log("logUpdated");
 				console.log("LOG OUTPUT BEGIN");
 				const logs: Log[] = await Log.readAll();
 				console.log(logs);
@@ -490,13 +474,11 @@ backup.addEventListener("click", async () => {
 });
 
 allClear.addEventListener("click", () => {
-	console.log("All Clear clicked");
 	const clr = defaultOptionsObject();
 	loadOptions(clr);
 });
 
 restore.addEventListener("click", () => {
-	console.log("Restore clicked");
 	loadOptions(optionsObject);
 });
 
