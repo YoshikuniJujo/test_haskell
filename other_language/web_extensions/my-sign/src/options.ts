@@ -7,7 +7,7 @@ import type { OptionsObject, ClientSummary, PublicKeyOption, UUID }
 	from "./optionsObject.js";
 import { defaultOptionsObject } from "./optionsObject.js";
 
-import type { Client } from "./types.js";
+import type { Client, EditingClient } from "./types.js";
 
 let optionsObject: OptionsObject = defaultOptionsObject();
 
@@ -244,6 +244,17 @@ async function
 loadClients()
 {
 	const clients = await DB.getClients();
+	const clientSummaries: ClientSummary[] = Array.from(clients, cl => {
+		return {
+			type: "ClientSummary",
+			uuid: { type: "UUID", value: cl.uuid },
+			name: cl.name, urlPattern: cl.urlPattern }; });
+	loadClientsFromSummaries(clientSummaries);
+}
+
+async function
+loadClientsFromSummaries(clientSummaries: ClientSummary[])
+{
 
 	if (!clientsElm) throw new Error("bad30");
 	clientsElm.replaceChildren();
@@ -253,22 +264,24 @@ loadClients()
 	if (!deleteClient) throw new Error("bad33");
 	if (!optionsError) throw new Error("bad34");
 
-	for (const client of clients) {
+	for (const client of clientSummaries) {
 		const row = document.createElement("div");
-		row.id = client.uuid;
+		row.id = client.uuid.value;
 		row.dataset.name = client.name;
 		row.dataset.urlPattern = client.urlPattern;
 		row.textContent = client.name + " " + client.urlPattern;
+
 		row.addEventListener("click", async () => {
+			const clnt = await DB.getClient(client.uuid.value);
 			clientsElm.hidden = true;
 			newClient.hidden = true;
 			clientDetail.hidden = false;
-			clientDetail.dataset.clientUuid = client.uuid;
+			clientDetail.dataset.clientUuid = client.uuid.value;
 			deleteClient.hidden = false;
 			optionsError.textContent = "";
 
 			const pks = await publicKeys();
-			loadClientToForm(client, pks);
+			loadClientToForm(clnt, pks);
 		});
 		clientsElm.append(row);
 	}
@@ -374,18 +387,6 @@ fromEditingClient(ec: EditingClient, pkos: PublicKeyOption[]): ClientDetail
 		backgroundOpacity: ec.backgroundOpacity,
 		openSettingsByClick: ec.openSettingsByClick
 	};
-}
-
-type EditingClient = {
-	name: string,
-	urlPattern: string,
-	publicKey: Uint8Array | undefined,
-	priority: number | null
-	openSettingsByClick: boolean,
-	backgroundColor: string,
-	backgroundOpacity: number,
-	positionX: number, positionY: number,
-	displayAccount: boolean,
 }
 
 async function
@@ -626,6 +627,8 @@ loadOptions(obj: OptionsObject)
 	newClient.hidden = obj.newClientButtonHidden;
 	deleteClient.hidden = obj.deleteClientButtonHidden;
 	clientDetail.hidden = obj.clientDetailHidden
+
+	loadClientsFromSummaries(obj.clients);
 
 	const cd = optionsObjectToClientDetail(obj);
 	clientDetailToForm(cd);

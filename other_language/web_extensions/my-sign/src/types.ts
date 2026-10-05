@@ -10,6 +10,18 @@ export type Client = {
 	displayAccount: boolean,
 }
 
+export type EditingClient = {
+	name: string,
+	urlPattern: string,
+	publicKey: Uint8Array | undefined,
+	priority: number | null
+	openSettingsByClick: boolean,
+	backgroundColor: string,
+	backgroundOpacity: number,
+	positionX: number, positionY: number,
+	displayAccount: boolean,
+}
+
 export type Account = {
 	publicKey: Uint8Array ,
 	name: string,

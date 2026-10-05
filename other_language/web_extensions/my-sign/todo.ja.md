@@ -281,14 +281,18 @@ TODO
 * [ ] 設定画面の実装の変更(続き)
 	+ [x] OptionsObjectを引数に取り、設定画面のほうを修正して同期させる関数を定義する(続き)
 		- [x] optionsObjectToClientDetail関数を定義
-		- [ ] clients
+		- [x] clients
 		- [x] clientNameからdetailErrorまで
 		- [x] optionsErrorとuseClientSet
 	+ [x] All Clearボタンの処理を書く
 	+ [x] Restoreボタンの処理を書く
-	+ [ ] clients
-		- [ ] All Clearボタンの処理を書く
-		- [ ] Restoreボタンの処理を書く
+	+ [x] type EditingClientをtypesに移動する
+	+ [x] clientクリック時の処理を修正する
+		- [x] backgroundにメッセージを送りdetail用のデータを入手する
+		- [x] 入手したデータでフォームを更新する
+	+ [x] clients
+		- [x] All Clearボタンの処理を書く
+		- [x] Restoreボタンの処理を書く
 	+ [ ] background.ts再起動時のOptionsStateの復元
 	+ [ ] 新しく設定画面を開いたときのIndexedDBからのOptionsStateの生成
 	+ [ ] 設定画面を開き直したときの設定画面の復元
