@@ -1,6 +1,7 @@
 import type { OptionsObject, ClientSummary, PublicKeyOption, UUID }
 	from "./optionsObject.js";
 import type { Client, EditingClient } from "./types.js";
+import { defaultEditingClient } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
@@ -76,23 +77,10 @@ backgroundColor.addEventListener("input", () => {
 async function
 openNewClient(url?: string) {
 	clientDetail.dataset.clientUuid = crypto.randomUUID();
-	const client = {
-		name: "",
-		urlPattern: url ?? "",
-		publicKey: undefined,
-		priority: 100,
-
-		openSettingsByClick: true,
-		backgroundColor: "#008000",
-		backgroundOpacity: 0.5,
-		positionX: 100,
-		positionY: 0,
-		displayAccount: true
-
-	};
-
 	const pks = await publicKeys();
-	loadClientToForm(client, pks);
+	const ec = defaultEditingClient();
+	ec.urlPattern = url ?? "";
+	loadClientToForm(ec, pks);
 
 	deleteClient.hidden = true;
 	clientsElm.hidden = true;
