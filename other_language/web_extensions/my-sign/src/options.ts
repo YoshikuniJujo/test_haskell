@@ -2,37 +2,27 @@ import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
 import { Log } from "./log2.js"
-
 import type { OptionsObject, ClientSummary, PublicKeyOption, UUID }
 	from "./optionsObject.js";
 import { defaultOptionsObject } from "./optionsObject.js";
-
 import type { Client, EditingClient } from "./types.js";
+import { toHex, fromHex } from "./tools.js";
 
 let optionsObject: OptionsObject = defaultOptionsObject();
 
-let openType;
-let id;
+let openType; let id;
 
-if (location.search === "") {
-	openType = "browser";
-	id = "browser"; }
+if (location.search === "") { openType = "browser"; id = "browser"; }
 else {
 	const params = new URLSearchParams(location.search);
-	openType = params.get("openType");
-	id = params.get("id");
-}
+	openType = params.get("openType"); id = params.get("id"); }
 
 if (id === null) throw new Error("bad1");
 
-console.log("options begin");
-console.log("options.js: ", location.search);
-
-if (openType !== "url" && openType !== "uuid" && openType !== "set") browser.runtime.sendMessage(
-	{ method: "optionsStarted", id: id } );
+if (openType !== "url" && openType !== "uuid" && openType !== "set")
+	browser.runtime.sendMessage({ method: "optionsStarted", id: id });
 
 browser.runtime.sendMessage({ method: "addLogTab" });
-
 browser.runtime.sendMessage({ method: "testOptionsSender" });
 
 const params = new URLSearchParams(location.search);
@@ -89,7 +79,8 @@ if (!clientDetail) throw new Error("bad14");
 
 (async () => { useClientSet.checked = await DB.getUseClientSet(); })()
 
-useClientSet.addEventListener("change", async () => { await DB.putUseClientSet(useClientSet.checked); })
+useClientSet.addEventListener("change", async () =>
+	{ await DB.putUseClientSet(useClientSet.checked); })
 
 newClient.addEventListener("click", () => openNewClient());
 
@@ -229,8 +220,6 @@ showPassword.addEventListener("change", () => {
 	password.type = type;
 	confirm.type = type;
 });
-
-// const forDebug = document.querySelector("#for-debug");
 
 usePriority.addEventListener("change", () => {
 	priorityLabel.hidden = !usePriority.checked;
@@ -635,24 +624,4 @@ loadOptions(obj: OptionsObject)
 
 	optionsError.textContent = obj.optionsError;
 	useClientSet.checked = obj.useClientSet;
-}
-
-function
-toHex(bytes: Uint8Array): string
-{
-	return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
-}
-
-function
-fromHex(hex: string): Uint8Array
-{
-	if (!/^[0-9a-fA-F]*$/.test(hex) || hex.length %2 !== 0)
-		throw new Error("Invalid hex");
-
-	const result = new Uint8Array(hex.length / 2);
-
-	for (let i = 0; i < result.length; i++)
-		result[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-
-	return result;
 }
