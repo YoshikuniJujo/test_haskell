@@ -5,7 +5,7 @@ import { Log } from "./log2.js"
 
 import type { OptionsObject, ClientSummary, UUID }
 	from "./optionsObject.js";
-import { defaultOptionsObject, uuidNull } from "./optionsObject.js";
+import { defaultOptionsObject } from "./optionsObject.js";
 
 import type { Client } from "./types.js";
 
@@ -218,7 +218,8 @@ loadPublicKeys()
 	for (const pk of keys) {
 		const option = document.createElement("option");
 		const npub = Bech32.encode("npub", new Uint8Array(pk.publicKey));
-		option.value = npub;
+		const hex = toHex(pk.publicKey);
+		option.value = hex;
 		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
 
 		if (!currentKeyD) throw new Error("bad29");
@@ -297,9 +298,7 @@ loadClientToForm(client: EditingClient)
 
 	clientNameD.value = client.name ?? "";
 	urlPatternD.value = client.urlPattern;
-	currentKeyD.value = client.publicKey
-		? Bech32.encode("npub", client.publicKey)
-		: "";
+	currentKeyD.value = client.publicKey ? toHex(client.publicKey) : "";
 
 	usePriority.checked = client.priority !== null;
 	priority.value = String(client.priority ?? 100);
@@ -374,7 +373,7 @@ clientFormD.addEventListener("submit", async event => {
 		uuid: clientDetail.dataset.clientUuid,
 		name: clientNameD.value,
 		displayAccount: displayAccount.checked,
-		publicKey: new Uint8Array(Bech32.decode(currentKeyD.value).dp),
+		publicKey: fromHex(currentKeyD.value),
 		positionX: positionX.valueAsNumber,
 		positionY: positionY.valueAsNumber,
 		backgroundColor: backgroundColor16.value,
@@ -507,7 +506,6 @@ backup.addEventListener("click", async () => {
 	optionsObject.backgroundColor = backgroundColor.value;
 	optionsObject.backgroundOpacity = backgroundOpacity.valueAsNumber;
 	optionsObject.openSettingsByClick = openSettingsByClick.checked;
-//	optionsObject.currentKey = uuidNull(currentKeyD.value);
 	optionsObject.currentKey = currentKeyD.value;
 	optionsObject.detailError = detailError.textContent;
 
@@ -536,4 +534,24 @@ loadOptions(obj: OptionsObject)
 	newClient.hidden = obj.newClientButtonHidden;
 	deleteClient.hidden = obj.deleteClientButtonHidden;
 	clientDetail.hidden = obj.clientDetailHidden
+}
+
+function
+toHex(bytes: Uint8Array): string
+{
+	return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+}
+
+function
+fromHex(hex: string): Uint8Array
+{
+	if (!/^[0-9a-fA-F]*$/.test(hex) || hex.length %2 !== 0)
+		throw new Error("Invalid hex");
+
+	const result = new Uint8Array(hex.length / 2);
+
+	for (let i = 0; i < result.length; i++)
+		result[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+
+	return result;
 }

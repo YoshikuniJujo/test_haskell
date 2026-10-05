@@ -269,7 +269,7 @@ TODO
 * [x] clientsのbackupのデータの流れを修正する
 	+ [x] それぞれのclientにidとしてUUIDを付加する
 	+ [x] HTML側からOptionsObject側にデータをコピーするようにする
-* [ ] currentKeyのoptionのvalueをnpubからhexにする
+* [x] currentKeyのoptionのvalueをnpubからhexにする
 * [ ] OptionsObjectにcurrentKeyOptionsを追加する
 	+ [ ] 追加する
 	+ [ ] 周辺の修正
