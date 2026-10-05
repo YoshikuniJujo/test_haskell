@@ -333,6 +333,28 @@ type ClientDetail = {
 }
 
 function
+optionsObjectToClientDetail(obj: OptionsObject): ClientDetail
+{
+	return {
+		name: obj.clientName,
+		urlPattern: obj.urlPattern,
+		publicKey: obj.currentKey,
+		publicKeyOptions: obj.currentKeyOptions,
+		usePriority: obj.usePriority,
+		priority: obj.priority,
+		priorityLabelHidden: !obj.usePriority,
+		displayAccount: obj.displayAccount,
+		accountDisplaySettingsHidden: !obj.displayAccount,
+		positionX: obj.positionX,
+		positionY: obj.positionY,
+		backgroundColor: obj.backgroundColor,
+		backgroundColor16: obj.backgroundColor,
+		backgroundOpacity: obj.backgroundOpacity,
+		openSettingsByClick: obj.openSettingsByClick
+	};
+}
+
+function
 fromEditingClient(ec: EditingClient, pkos: PublicKeyOption[]): ClientDetail
 {
 	return {
@@ -568,6 +590,21 @@ backup.addEventListener("click", async () => {
 	console.log("BACKUP:", optionsObject);
 });
 
+const allClear = document.querySelector("#all-clear");
+if (!allClear) throw new Error("bad");
+allClear.addEventListener("click", () => {
+	console.log("All Clear clicked");
+	const clr = defaultOptionsObject();
+	loadOptions(clr);
+});
+
+const restore = document.querySelector("#restore");
+if (!restore) throw new Error("bad");
+restore.addEventListener("click", () => {
+	console.log("Restore clicked");
+	loadOptions(optionsObject);
+});
+
 function
 loadOptions(obj: OptionsObject)
 {
@@ -578,6 +615,8 @@ loadOptions(obj: OptionsObject)
 	if (!newClient) throw new Error("badI");
 	if (!deleteClient) throw new Error("badJ");
 	if (!clientDetail) throw new Error("badK");
+	if (!optionsError) throw new Error("bad");
+	if (!useClientSet) throw new Error("bad");
 
 	accName.value = obj.accountName;
 	showPassword.checked = obj.showPassword;
@@ -587,6 +626,12 @@ loadOptions(obj: OptionsObject)
 	newClient.hidden = obj.newClientButtonHidden;
 	deleteClient.hidden = obj.deleteClientButtonHidden;
 	clientDetail.hidden = obj.clientDetailHidden
+
+	const cd = optionsObjectToClientDetail(obj);
+	clientDetailToForm(cd);
+
+	optionsError.textContent = obj.optionsError;
+	useClientSet.checked = obj.useClientSet;
 }
 
 function
