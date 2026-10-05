@@ -293,6 +293,7 @@ TODO
 	+ [x] clients
 		- [x] All Clearボタンの処理を書く
 		- [x] Restoreボタンの処理を書く
+	+ [ ] TODOの検討
 	+ [ ] background.ts再起動時のOptionsStateの復元
 	+ [ ] 新しく設定画面を開いたときのIndexedDBからのOptionsStateの生成
 	+ [ ] 設定画面を開き直したときの設定画面の復元
