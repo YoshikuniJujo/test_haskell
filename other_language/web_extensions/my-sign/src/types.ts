@@ -13,7 +13,7 @@ export type EditingClient = Omit<Client, "uuid" | "publicKey" | "priority"> & {
 	publicKey: Uint8Array | undefined,
 	priority: number | null }
 
-export function defaultEditingClient()
+export function defaultEditingClient(): EditingClient
 {
 	return {
 		uuid: null,

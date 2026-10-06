@@ -95,8 +95,12 @@ if (openType === "browser") browserFooter.hidden = false;
 		class: "Options",
 		type: openType, instance: id, method: "optionsBegin" });
 
+//	const obj = defaultOptionsObject();
+//	obj.clientUuid = uuid(crypto.randomUUID());
+//	await loadOptions(obj);
+
 	// USE loadOptions
-	if (openType === "url") openNewClient(id);
+	if (openType === "url") await openNewClient(id);
 	await loadPublicKeys();
 	await loadClients();
 	useClientSet.checked = await DB.getUseClientSet();
@@ -230,7 +234,7 @@ cancelEditClient.addEventListener("click", () => {
 	newClient.hidden = false; });
 
 deleteClient.addEventListener("click", async () => {
-	if (!clientDetail.dataset.clientUuid) throw new Error("bad");
+	if (!clientDetail.dataset.clientUuid) throw new Error("badFoo");
 	await DB.deleteClient(clientDetail.dataset.clientUuid);
 	await loadClients();
 	await browser.runtime.sendMessage({
@@ -249,7 +253,7 @@ openInTab.addEventListener("click", () => {
 
 backup.addEventListener("click", async () => {
 	const clnts2: ClientSummary[] = Array.from(clientsElm.children, child => {
-		if (!(child instanceof HTMLElement)) throw new Error("bad");
+		if (!(child instanceof HTMLElement)) throw new Error("badBar");
 		const nm = child.dataset.name ?? "";
 		const up = child.dataset.urlPattern ?? "";
 		return {
@@ -258,8 +262,8 @@ backup.addEventListener("click", async () => {
 			name: nm, urlPattern: up }; });
 
 	const crrKyOpts: PublicKeyOption[] = Array.from(currentKeyD.children, child => {
-		if (!(child instanceof HTMLOptionElement)) throw new Error("bad");
-		if (!child.dataset.name) throw new Error("bad");
+		if (!(child instanceof HTMLOptionElement)) throw new Error("badBaz");
+		if (!child.dataset.name) throw new Error("badHoge");
 		console.log("options.ts: BACKUP: public key value =", child.value);
 		console.log("options.ts: BACKUP: public key value =", child.dataset.name);
 		return {
@@ -374,7 +378,9 @@ openNewClient(url?: string) {
 	clientDetail.dataset.clientUuid = crypto.randomUUID();
 	const pks = await publicKeys();
 	const ec = defaultEditingClient();
+	ec.uuid = clientDetail.dataset.clientUuid;
 	ec.urlPattern = url ?? "";
+	console.log("openNewClient: before loadClientToForm:", ec, pks);
 	loadClientToForm(ec, pks);
 
 	deleteClient.hidden = true;
@@ -439,6 +445,7 @@ loadClientsFromSummaries(clientSummaries: ClientSummary[])
 			optionsError.textContent = "";
 
 			const pks = await publicKeys();
+			console.log("loadClientFromSummaries: before loadClientToForm:", clnt, pks);
 			loadClientToForm(clnt, pks);
 		});
 		clientsElm.append(row);
@@ -475,7 +482,7 @@ clientDetailToForm(cd: ClientDetail): void
 function
 optionsObjectToClientDetail(obj: OptionsObject): ClientDetail
 {
-	if (!obj.clientUuid) throw new Error("bad");
+	if (!obj.clientUuid) throw new Error("badPiyo");
 	return {
 		uuid: obj.clientUuid,
 		name: obj.clientName,
@@ -499,7 +506,7 @@ optionsObjectToClientDetail(obj: OptionsObject): ClientDetail
 function
 fromEditingClient(ec: EditingClient, pkos: PublicKeyOption[]): ClientDetail
 {
-	if (!ec.uuid) throw new Error("bad");
+	if (!ec.uuid) throw new Error("badFooBar: no ec.uuid");
 	return {
 		uuid: uuid(ec.uuid),
 		name: ec.name,
