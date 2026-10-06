@@ -28,16 +28,19 @@ console.log("content.ts: before (async () => {");
 
 	Object.assign(div.style, {
 		position: "fixed",
+		inset: "auto",
+		margin: "0",
 		padding: "8px 12px",
 		background: "rgba(0, 128, 0, 0.5)",
 		color: "white",
-		whiteSpace: "nowrap",
-		zIndex: "2147483647"
+		whiteSpace: "nowrap"
 	});
 
 	console.log("content.ts: HERE");
 
 	document.body.append(div);
+	div.popover = "manual";
+	div.showPopover();
 	account = await browser.runtime.sendMessage({ method: "accountDisplayInfo" });
 	console.log("*** content.ts: account =", account);
 
