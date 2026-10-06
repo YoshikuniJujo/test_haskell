@@ -54,7 +54,7 @@ type GlobalMethod =
 	| { method: "openSettings" }
 	| { method: "testOptionsSender" }
 	| { method: "openOptionsInTab" }
-	| { method: "optionsStarted", id: string }
+	| { method: "optionsBegin", id: string }
 	| { method: "prepareClient", clientUrl: string }
 	| { method: "clientSubmited", id: string }
 	| { method: "addLogTab" }
@@ -147,16 +147,12 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 					"options.html?openType=tab&id=tab")
 			});
 			return;
-		case "optionsStarted":
-			console.log("background: optionsStarted");
-			if (!s.tab) throw new Error("bad");
-			if (!s.tab.id) throw new Error("bad");
+		case "optionsBegin":
+			if (s.tab?.id === undefined) throw backgroundError(
+				"optionsBegin: no sender tab ID" );
 			const use = await otbs.assign(m.id, null, s.tab.id);
-			if (use !== s.tab.id) {
-				console.log("remove not used");
-				if (s.tab.id === undefined) throw new Error("bad");
+			if (use !== s.tab.id)
 				await browser.tabs.remove(s.tab.id);
-			}
 			await browser.tabs.update(use, { active: true });
 			return;
 		case "prepareClient":
@@ -200,8 +196,8 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			else return false;
 		case "addLogTab":
 			console.log("addLogTab");
-			if (!s.tab) throw new Error("bad");
-			if (s.tab.id === undefined) throw new Error("bad");
+			if (s.tab?.id === undefined) throw backgroundError(
+				"addLogTab: no sender tab ID" );
 			Log.addLogTab(s.tab.id);
 			return;
 		case "getClientsDev":
@@ -509,4 +505,10 @@ setPort(tabId: number, port: browser.runtime.Port)
 	port.onDisconnect.addListener(() => {
 		if (ports.get(tabId) === port) ports.delete(tabId);
 	});
+}
+
+function
+backgroundError(msg: string)
+{
+	new Error(`background.ts: ${msg}`);
 }

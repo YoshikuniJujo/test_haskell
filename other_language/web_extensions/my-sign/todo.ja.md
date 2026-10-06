@@ -294,8 +294,11 @@ TODO
 		- [x] All Clearボタンの処理を書く
 		- [x] Restoreボタンの処理を書く
 	+ [ ] options.tsをざっくりと読み細かいところを修正
-		- [ ] GET ELEMENT
+		- [x] GET ELEMENT
 		- [ ] INITIALIZATION
+			* [ ] ObjectOptions型の値を作る
+			* [ ] loadOptionsを使うようにする
+			* [ ] その他
 		- [ ] ADD EVENT LISTENER
 		- [ ] FOR DEVELOPMENT
 		- [ ] TYPES

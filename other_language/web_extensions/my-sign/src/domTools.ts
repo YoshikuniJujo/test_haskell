@@ -5,3 +5,9 @@ getElement<T extends Element>(selector: string): T
 	if (!element) throw new Error(`Element not found: ${selector}`);
 	return element
 }
+
+export function
+scrollToBottom(e: Element): void
+{
+	e.scrollTop = e.scrollHeight - e.clientHeight;
+}

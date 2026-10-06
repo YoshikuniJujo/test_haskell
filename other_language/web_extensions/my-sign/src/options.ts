@@ -15,7 +15,7 @@ import { defaultOptionsObject } from "./optionsObject.js";
 import { defaultEditingClient } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import { Log } from "./log2.js"
-import { getElement } from "./domTools.js";
+import { getElement, scrollToBottom } from "./domTools.js";
 import { toHex, fromHex } from "./tools.js";
 import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
@@ -76,37 +76,32 @@ const restore = getElement("#restore");
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
-// FOR DEVELOPMENT. REMOVE IT
-let optionsObject: OptionsObject = defaultOptionsObject();
-
-let openType; let id;
+let openType: string | null, id: string | null;
 
 if (location.search === "") { openType = "browser"; id = "browser"; }
 else {	const params = new URLSearchParams(location.search);
 	openType = params.get("openType"); id = params.get("id"); }
-if (id === null) throw new Error("bad1");
-if (openType !== "url" && openType !== "uuid" && openType !== "set")
-	browser.runtime.sendMessage({ method: "optionsStarted", id: id });
-
-browser.runtime.sendMessage({ method: "addLogTab" });
-
-(async () => {
-	const logs: Log[] = await Log.readAll();
-	console.log(logs);
-	logOutput.textContent =
-		logs.map(log => `${new Date(log.time).toLocaleString()} ${log.message}`)
-			.join("\n");
-	logOutput.scrollTop = logOutput.scrollHeight;
-})()
-
+if (openType === null || id === null)
+	throw new Error("no openType or no id");
 if (openType === "browser") browserFooter.hidden = false;
 
-if (openType === "url") openNewClient(id);
+(async () => {
+	if (openType !== "url" && openType !== "uuid" && openType !== "set")
+		browser.runtime.sendMessage({ method: "optionsBegin", id: id });
 
-loadPublicKeys();
-loadClients();
+	// USE loadOptions
+	if (openType === "url") openNewClient(id);
+	await loadPublicKeys();
+	await loadClients();
+	useClientSet.checked = await DB.getUseClientSet();
 
-(async () => { useClientSet.checked = await DB.getUseClientSet(); })()
+	// LOG WRITE
+	browser.runtime.sendMessage({ method: "addLogTab" });
+	logOutput.textContent = await Log.toString();
+	scrollToBottom(logOutput); })();
+
+// FOR DEVELOPMENT. REMOVE IT
+let optionsObject: OptionsObject = defaultOptionsObject();
 
 // ------------------------------------------------------------------------
 // ADD EVENT LISTENER
@@ -179,8 +174,7 @@ clientFormD.addEventListener("submit", async event => {
 		return;
 	}
 
-	const pr = usePriority.checked ? priority.valueAsNumber : null;
-	if (pr === null) throw new Error("bad56");
+	const pr = priority.valueAsNumber;
 
 	if (!clientDetail.dataset.clientUuid) throw new Error("badC");
 	await DB.putClient({
@@ -304,12 +298,8 @@ browser.runtime.onMessage.addListener((m, s) => {
 		case "logUpdated":
 			(async () => {
 				console.log("LOG OUTPUT BEGIN");
-				const logs: Log[] = await Log.readAll();
-				console.log(logs);
-				logOutput.textContent =
-					logs.map(log => `${new Date(log.time).toLocaleString()} ${log.message}`)
-						.join("\n");
-				logOutput.scrollTop = logOutput.scrollHeight;
+				logOutput.textContent = await Log.toString();
+				scrollToBottom(logOutput);
 				return; })();
 		default: return;
 	}
@@ -337,8 +327,6 @@ type ClientDetail = {
 	backgroundOpacity: number;
 	openSettingsByClick: boolean;
 }
-
-type Log = { time: Date, message: string }
 
 // ------------------------------------------------------------------------
 // FUNCTIONS

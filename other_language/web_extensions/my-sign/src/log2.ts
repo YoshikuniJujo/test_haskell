@@ -1,5 +1,7 @@
 export const Log = (() => {
 
+type Log = { time: Date, message: string }
+
 const DB_NAME = "my-sign-log";
 const DB_VERSION = 1;
 const STORE_NAME = "log";
@@ -21,8 +23,6 @@ open()
 		req.onerror = () => { rj(req.error); };
 	});
 }
-
-type Log = { time: Date, message: string }
 
 function
 getDB()
@@ -80,6 +80,13 @@ addLogTab(tid: number)
 {
 	logTabs.add(tid);
 	console.log("addLogTab", logTabs);
+},
+
+async toString(): Promise<string>
+{
+	const ls = await Log.readAll();
+	return ls.map(l =>
+		new Date(l.time).toLocaleString() + " " + l.message).join("\n");
 }
 
 };
