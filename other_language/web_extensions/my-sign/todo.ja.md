@@ -296,8 +296,10 @@ TODO
 	+ [ ] options.tsをざっくりと読み細かいところを修正
 		- [x] GET ELEMENT
 		- [ ] INITIALIZATION
-			* [ ] ObjectOptions型の値を作る
-			* [ ] loadOptionsを使うようにする
+			* [x] backgroundにメッセージを送る
+			* [ ] background側でObjectOptions型の値を作り返す
+			* [ ] loadOptionsに上の値をあたえる
+			* [ ] 今までの初期化で不要なものを消す
 			* [ ] その他
 		- [ ] ADD EVENT LISTENER
 		- [ ] FOR DEVELOPMENT
