@@ -294,6 +294,12 @@ TODO
 		- [x] All Clearボタンの処理を書く
 		- [x] Restoreボタンの処理を書く
 	+ [ ] options.tsをざっくりと読み細かいところを修正
+		- [ ] GET ELEMENT
+		- [ ] INITIALIZATION
+		- [ ] ADD EVENT LISTENER
+		- [ ] FOR DEVELOPMENT
+		- [ ] TYPES
+		- [ ] FUNCTIONS
 	+ [ ] OptionsState.tsを作っていく
 	+ [ ] TODOの検討
 	+ [ ] type Clientとtype EditingClientを統一できるか検討する
