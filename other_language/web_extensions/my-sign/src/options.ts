@@ -1,5 +1,6 @@
-import type { OptionsObject, ClientSummary, PublicKeyOption, UUID }
-	from "./optionsObject.js";
+import type {
+	OptionsObject, ClientSummary, PublicKeyOption, UUID
+	} from "./optionsObject.js";
 import type { Client, EditingClient } from "./types.js";
 import { defaultEditingClient } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";

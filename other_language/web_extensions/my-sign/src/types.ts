@@ -6,18 +6,11 @@ export type Client = {
 	openSettingsByClick: boolean
 	backgroundColor: string, backgroundOpacity: number,
 	positionX: number, positionY: number,
-	displayAccount: boolean,
-}
+	displayAccount: boolean }
 
-export type EditingClient = {
-	name: string, urlPattern: string,
+export type EditingClient = Omit<Client, "uuid" | "publicKey" | "priority"> & {
 	publicKey: Uint8Array | undefined,
-	priority: number | null
-	openSettingsByClick: boolean,
-	backgroundColor: string, backgroundOpacity: number,
-	positionX: number, positionY: number,
-	displayAccount: boolean,
-}
+	priority: number | null }
 
 export function defaultEditingClient()
 {
