@@ -34,3 +34,27 @@ export type Account = {
 	ciphertext: Uint8Array,
 	saltForCheckPassword: Uint8Array,
 	hashForCheckPassword: Uint8Array }
+
+export type UUID = { type: "UUID", value: string };
+
+function
+uuid(s: string): UUID
+{
+	return { type: "UUID", value: s };
+}
+
+export function
+uuidNull(s: string | null)
+{
+	return s === null ? null : uuid(s);
+}
+
+export type OptionsInputMessages<T> =
+{
+	[K in keyof T]: {
+		class: "Options";
+		instance: string;
+		method: "input";
+		key: K;
+	}
+}[keyof T];

@@ -1,5 +1,5 @@
 import type { Storage } from "./storage.js"
-import type { OptionsObject, ClientSummary, UUID } from "./optionsObject.js"
+import type { OptionsObject, ClientSummary } from "./optionsObject.js"
 
 const KEY_BASE = "8450604e-6f98-49bf-a5a9-724346528a0a";
 

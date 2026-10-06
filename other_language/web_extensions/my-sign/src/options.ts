@@ -1,23 +1,27 @@
 import type {
-	OptionsObject, ClientSummary, PublicKeyOption, UUID
+	OptionsObject, ClientSummary, PublicKeyOption
 	} from "./optionsObject.js";
-import type { Client, EditingClient } from "./types.js";
+import type {
+	Client, EditingClient, UUID, OptionsInputMessages
+	} from "./types.js";
+import { defaultOptionsObject } from "./optionsObject.js";
 import { defaultEditingClient } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
+import { Log } from "./log2.js"
+import { getElement } from "./domTools.js";
+import { toHex, fromHex } from "./tools.js";
 import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
-import { Log } from "./log2.js"
-import { defaultOptionsObject } from "./optionsObject.js";
-import { toHex, fromHex } from "./tools.js";
-import { getElement } from "./domTools.js";
 
+// FOR DEVELOPMENT. REMOVE IT
 let optionsObject: OptionsObject = defaultOptionsObject();
+
+type InputMessages = OptionsInputMessages<OptionsObject>;
 
 let openType; let id;
 
 if (location.search === "") { openType = "browser"; id = "browser"; }
-else {
-	const params = new URLSearchParams(location.search);
+else {	const params = new URLSearchParams(location.search);
 	openType = params.get("openType"); id = params.get("id"); }
 
 if (id === null) throw new Error("bad1");

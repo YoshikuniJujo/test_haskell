@@ -1,3 +1,5 @@
+import type { UUID } from "./types.js";
+
 export type OptionsObject = {
 	accountName: string,
 	showPassword: boolean,
@@ -33,20 +35,6 @@ export type ClientSummary =
 
 export type PublicKeyOption =
 	{ type: "PublicKeyOption", publicKey: string, name: string }
-
-export type UUID = { type: "UUID", value: string };
-
-function
-uuid(s: string): UUID
-{
-	return { type: "UUID", value: s };
-}
-
-export function
-uuidNull(s: string | null)
-{
-	return s === null ? null : uuid(s);
-}
 
 export function defaultOptionsObject(): OptionsObject
 {
