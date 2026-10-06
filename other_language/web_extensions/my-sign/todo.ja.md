@@ -318,6 +318,7 @@ TODO
 	+ [ ] メッセージの返答としてOptionsObjectを送る
 	+ [ ] options.tsは設定画面を更新
 	+ [ ] options.tsの処理をbackground.tsにうつしていく
+* [x] クリック透過を設定可能にする
 * [ ] Client型のuuidをUUIDにする
 * [ ] logの処理について実装を再度検討する
 * [ ] portを使ったlogの処理をテストしてみる(portは使わないことにする)

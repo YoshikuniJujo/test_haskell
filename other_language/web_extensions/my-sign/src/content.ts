@@ -11,7 +11,8 @@ type AccountDisplayInfo = {
 	publicKey: string,
 	backgroundColor: Color,
 	backgroundOpacity: number,
-	positionX: number, positionY: number
+	positionX: number, positionY: number,
+	openSettingsByClick: boolean
 }
 
 type Color = { red: number, green: number, blue: number }
@@ -53,8 +54,10 @@ console.log("content.ts: before (async () => {");
 			account.backgroundColor.red,
 			account.backgroundColor.green,
 			account.backgroundColor.blue ]
-		div.style.background = `rgb(${r} ${g} ${b}`;
+		div.style.background = `rgb(${r} ${g} ${b})`;
 		div.style.opacity = `${account.backgroundOpacity}`;
+		div.style.pointerEvents =
+			account.openSettingsByClick ? "auto" : "none";
 		console.log(account.backgroundOpacity);
 	} else {
 		div.hidden = true; }
@@ -163,9 +166,11 @@ browser.runtime.onMessage.addListener(async (m: Message) => { switch (m.method) 
 		console.log("content: clientChanged");
 		account = await browser.runtime.sendMessage({ method: "accountDisplayInfo" });
 		if (account === null) {
+			div.hidePopover();
 			div.hidden = true;
 			break; }
 		div.hidden = false;
+		div.showPopover();
 		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
 
 		console.log("clientChanged", account);
@@ -177,6 +182,8 @@ browser.runtime.onMessage.addListener(async (m: Message) => { switch (m.method) 
 			account.backgroundColor.blue ]
 		div.style.background = `rgb(${r} ${g} ${b})`;
 		div.style.opacity = `${account.backgroundOpacity}`;
+		div.style.pointerEvents =
+			account.openSettingsByClick ? "auto" : "none";
 		console.log(account.backgroundOpacity);
 
 		break;
@@ -226,7 +233,6 @@ window.addEventListener("resize", () => {
 
 function
 setErrorPosition() {
-	const ss = getComputedStyle(error);
 	error.style.inset = "auto";
 	error.style.margin = "0";
 	const rect = error.getBoundingClientRect();

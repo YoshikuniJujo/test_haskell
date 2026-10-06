@@ -53,6 +53,7 @@ const openSettingsByClick = getElement<HTMLInputElement>("#open-settings-by-clic
 const currentKeyD = getElement<HTMLSelectElement>("#current-key-d");
 const detailError = getElement<HTMLElement>("#detail-error");
 const deleteClient = getElement<HTMLElement>("#delete-client");
+const applyEditClient = getElement<HTMLButtonElement>("#apply-client");
 const cancelEditClient = getElement<HTMLButtonElement>("#cancel-edit-client");
 
 const form = getElement("#generate-form");
@@ -162,9 +163,9 @@ displayAccount.addEventListener("change", () => {
 	accDisplaySettings.hidden = !displayAccount.checked;
 });
 
-clientFormD.addEventListener("submit", async event => {
-	event.preventDefault();
-
+async function
+applyClient()
+{
 	try {
 		new URLPattern(urlPatternD.value);
 		detailError.textContent = "";
@@ -197,19 +198,27 @@ clientFormD.addEventListener("submit", async event => {
 		method: "clientChanged"
 	});
 
-	clientDetail.hidden = true;
-	clientsElm.hidden = false;
-	newClient.hidden = false;
-
 	if (openType === "url") {
 		const r = await browser.runtime.sendMessage(
 			{ method: "clientSubmited", id: id } );
 		if (!r) optionsError.textContent = "The client does not match the original URL.";
-	} });
+	}
+}
+
+clientFormD.addEventListener("submit", async event => {
+	event.preventDefault();
+
+	await applyClient();
+
+	clientDetail.hidden = true;
+	clientsElm.hidden = false;
+	newClient.hidden = false; });
 
 document.addEventListener("keydown", event => {
 	if (event.key === "Escape" && !clientDetail.hidden)
 		cancelEditClient.click(); });
+
+applyEditClient.addEventListener("click", () => { applyClient(); });
 
 cancelEditClient.addEventListener("click", () => {
 	clientDetail.hidden = true;

@@ -242,7 +242,8 @@ getAccountMethod(url: string)
 				positionX: c.positionX ?? 100,
 				positionY: c.positionY ?? 0,
 				backgroundColor: hexToRgb(c.backgroundColor ?? "#008000"),
-				backgroundOpacity: c.backgroundOpacity ?? 0.5
+				backgroundOpacity: c.backgroundOpacity ?? 0.5,
+				openSettingsByClick: c.openSettingsByClick
 			};
 }
 
