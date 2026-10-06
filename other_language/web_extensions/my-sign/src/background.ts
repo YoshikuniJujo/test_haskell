@@ -38,6 +38,9 @@ browser.runtime.onMessage.addListener( (m, s) => {
 	else if (typeof m.instance === "undefined")
 		throw Error("It need a instance if a class is defined.");
 	else switch (m.class) {
+		case "Options":
+			console.log("background.ts: Options:", m);
+			return;
 		default:
 			console.log("no such class: ", m, s);
 	}

@@ -53,6 +53,7 @@ export type OptionsInputMessages<T> =
 {
 	[K in keyof T]: {
 		class: "Options";
+		type: string;
 		instance: string;
 		method: "input";
 		key: K;

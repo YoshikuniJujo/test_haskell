@@ -91,6 +91,10 @@ if (openType === "browser") browserFooter.hidden = false;
 		browser.runtime.sendMessage({
 			method: "registerOptionsTab", id: id });
 
+	browser.runtime.sendMessage({
+		class: "Options",
+		type: openType, instance: id, method: "optionsBegin" });
+
 	// USE loadOptions
 	if (openType === "url") openNewClient(id);
 	await loadPublicKeys();
