@@ -8,28 +8,9 @@
 		<link rel="stylesheet" href="options.css">
 	</head>
 	<body>
-		<h1>FOOBAR</h1>
-		<form id="generate-form">
-			<label>
-				Account name
-				<input id="account-name" type="text" required>
-			</label>
-			<label>
-				Password
-				<input id="password" type="password" required>
-			</label>
-			<label>
-				Confirm password
-				<input id="password-confirm" type="password" required>
-			</label>
-			<label>
-				<input id="show-password" type="checkbox">
-				Show password
-			</label>
-			<div id="password-error" hidden>Passwords do not match.</div>
-			<button id="generate" type="submit">Generate</button>
-		</form>
-		<hr>
+		<h1>My Sign</h1>
+
+		<h2>Client</h2>
 
 		<div id="clients"></div>
 		<button id="new-client">New client</button>
@@ -103,6 +84,33 @@
 				</div>
 			</form>
 		</div>
+
+		<hr>
+
+		<h2>Account</h2>
+
+		<form id="generate-form">
+			<label>
+				Account name
+				<input id="account-name" type="text" required>
+			</label>
+			<label>
+				Password
+				<input id="password" type="password" required>
+			</label>
+			<label>
+				Confirm password
+				<input id="password-confirm" type="password" required>
+			</label>
+			<label>
+				<input id="show-password" type="checkbox">
+				Show password
+			</label>
+			<div id="password-error" hidden>Passwords do not match.</div>
+			<button id="generate" type="submit">Generate</button>
+		</form>
+
+		<hr>
 
 		<div id="options-error" role="alert"></div>
 
