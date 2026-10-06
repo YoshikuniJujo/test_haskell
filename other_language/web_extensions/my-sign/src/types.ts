@@ -9,12 +9,14 @@ export type Client = {
 	displayAccount: boolean }
 
 export type EditingClient = Omit<Client, "uuid" | "publicKey" | "priority"> & {
+	uuid: string | null,
 	publicKey: Uint8Array | undefined,
 	priority: number | null }
 
 export function defaultEditingClient()
 {
 	return {
+		uuid: null,
 		name: "", urlPattern: "",
 		publicKey: undefined,
 		priority: 100,
@@ -37,10 +39,16 @@ export type Account = {
 
 export type UUID = { type: "UUID", value: string };
 
-function
+export function
 uuid(s: string): UUID
 {
 	return { type: "UUID", value: s };
+}
+
+export function
+fromUuid(u: UUID): string
+{
+	return u.value;
 }
 
 export function

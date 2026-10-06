@@ -12,7 +12,7 @@ import type {
 	Client, EditingClient, UUID, OptionsInputMessages
 	} from "./types.js";
 import { defaultOptionsObject } from "./optionsObject.js";
-import { defaultEditingClient } from "./types.js";
+import { defaultEditingClient, uuid, fromUuid, uuidNull } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import { Log } from "./log2.js"
 import { getElement, scrollToBottom } from "./domTools.js";
@@ -278,6 +278,7 @@ backup.addEventListener("click", async () => {
 
 	optionsObject.clients = clnts2;
 
+	optionsObject.clientUuid = uuidNull(clientDetail.dataset.clientUuid ?? null);
 	optionsObject.clientName = clientNameD.value;
 	optionsObject.urlPattern = urlPatternD.value;
 	optionsObject.usePriority = usePriority.checked;
@@ -325,6 +326,7 @@ browser.runtime.onMessage.addListener((m, s) => {
 type InputMessages = OptionsInputMessages<OptionsObject>;
 
 type ClientDetail = {
+	uuid: UUID;
 	name: string;
 	urlPattern: string;
 	publicKey: string | null;
@@ -368,6 +370,7 @@ loadOptions(obj: OptionsObject)
 
 async function
 openNewClient(url?: string) {
+
 	clientDetail.dataset.clientUuid = crypto.randomUUID();
 	const pks = await publicKeys();
 	const ec = defaultEditingClient();
@@ -451,6 +454,7 @@ loadClientToForm(client: EditingClient, pks: PublicKeyOption[])
 function
 clientDetailToForm(cd: ClientDetail): void
 {
+	clientDetail.dataset.clientUuid = fromUuid(cd.uuid);
 	clientNameD.value = cd.name;
 	urlPatternD.value = cd.urlPattern;
 	loadPublicKeyFrom(cd.publicKeyOptions);
@@ -471,7 +475,9 @@ clientDetailToForm(cd: ClientDetail): void
 function
 optionsObjectToClientDetail(obj: OptionsObject): ClientDetail
 {
+	if (!obj.clientUuid) throw new Error("bad");
 	return {
+		uuid: obj.clientUuid,
 		name: obj.clientName,
 		urlPattern: obj.urlPattern,
 		publicKey: obj.currentKey,
@@ -493,7 +499,9 @@ optionsObjectToClientDetail(obj: OptionsObject): ClientDetail
 function
 fromEditingClient(ec: EditingClient, pkos: PublicKeyOption[]): ClientDetail
 {
+	if (!ec.uuid) throw new Error("bad");
 	return {
+		uuid: uuid(ec.uuid),
 		name: ec.name,
 		urlPattern: ec.urlPattern,
 		publicKey: ec.publicKey ? toHex(ec.publicKey) : "",

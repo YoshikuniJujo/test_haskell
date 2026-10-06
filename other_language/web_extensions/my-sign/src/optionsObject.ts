@@ -12,6 +12,7 @@ export type OptionsObject = {
 
 	clients: ClientSummary[],
 
+	clientUuid: UUID | null,
 	clientName: string,
 	urlPattern: string,
 	usePriority: boolean,
@@ -50,6 +51,7 @@ export function defaultOptionsObject(): OptionsObject
 
 		clients: [],
 
+		clientUuid: null,
 		clientName: "",
 		urlPattern: "",
 		usePriority: false,
