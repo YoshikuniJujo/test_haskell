@@ -23,21 +23,18 @@ let openType; let id;
 if (location.search === "") { openType = "browser"; id = "browser"; }
 else {	const params = new URLSearchParams(location.search);
 	openType = params.get("openType"); id = params.get("id"); }
-
 if (id === null) throw new Error("bad1");
-
 if (openType !== "url" && openType !== "uuid" && openType !== "set")
 	browser.runtime.sendMessage({ method: "optionsStarted", id: id });
 
 browser.runtime.sendMessage({ method: "addLogTab" });
-browser.runtime.sendMessage({ method: "testOptionsSender" });
 
-const clientFormD = getElement<HTMLFormElement>("#client-form-d");
-const urlPatternD = getElement<HTMLInputElement>("#url-pattern-d");
-const detailError = getElement<HTMLElement>("#detail-error");
-const clientNameD = getElement<HTMLInputElement>("#client-name-d");
+const clientsElm = getElement<HTMLElement>("#clients");
 const newClient = getElement<HTMLElement>("#new-client");
-const currentKeyD = getElement<HTMLSelectElement>("#current-key-d");
+const clientDetail = getElement<HTMLElement>("#client-detail");
+const clientFormD = getElement<HTMLFormElement>("#client-form-d");
+const clientNameD = getElement<HTMLInputElement>("#client-name-d");
+const urlPatternD = getElement<HTMLInputElement>("#url-pattern-d");
 const usePriority = getElement<HTMLInputElement>("#use-priority");
 const priorityLabel = getElement<HTMLElement>("#priority-label");
 const priority = getElement<HTMLInputElement>("#priority");
@@ -49,21 +46,25 @@ const backgroundColor = getElement<HTMLInputElement>("#background-color");
 const backgroundColor16 = getElement<HTMLInputElement>("#background-color-16");
 const backgroundOpacity = getElement<HTMLInputElement>("#background-opacity");
 const openSettingsByClick = getElement<HTMLInputElement>("#open-settings-by-click");
-const useClientSet = getElement<HTMLInputElement>("#use-client-set");
-const clientsElm = getElement<HTMLElement>("#clients");
-const clientDetail = getElement<HTMLElement>("#client-detail");
-const optionsError = getElement("#options-error");
+const currentKeyD = getElement<HTMLSelectElement>("#current-key-d");
+const detailError = getElement<HTMLElement>("#detail-error");
 const deleteClient = getElement<HTMLElement>("#delete-client");
+const cancelEditClient = getElement("#cancel-edit-client");
+
 const form = getElement("#generate-form");
 const accName = getElement<HTMLInputElement>("#account-name");
 const password = getElement<HTMLInputElement>("#password");
 const confirm = getElement<HTMLInputElement>("#password-confirm");
-const passwordError = getElement<HTMLElement>("#password-error");
 const showPassword = getElement<HTMLInputElement>("#show-password");
-const cancelEditClient = getElement("#cancel-edit-client");
+const passwordError = getElement<HTMLElement>("#password-error");
+const optionsError = getElement("#options-error");
+const useClientSet = getElement<HTMLInputElement>("#use-client-set");
+
 const logOutput = getElement("#log-output");
 const browserFooter = getElement<HTMLElement>("#browser-footer");
 const openInTab = getElement("#open-in-tab");
+
+// FOR DEVELOPMENT. REMOVE IT
 const backup = getElement("#backup");
 const allClear = getElement("#all-clear");
 const restore = getElement("#restore");

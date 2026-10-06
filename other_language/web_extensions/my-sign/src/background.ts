@@ -139,9 +139,6 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			await browser.tabs.update(use, { active: true });
 			return;
 		}
-		case "testOptionsSender":
-			console.log("options sender:", s);
-			return;
 		case "openOptionsInTab":
 			console.log("background: openOptionsInTab");
 			const ot2 = await browser.tabs.create({
