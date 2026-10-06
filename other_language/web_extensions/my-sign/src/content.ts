@@ -4,6 +4,14 @@ console.log("content.ts begin");
 
 document.documentElement.style.border = "5px solid green";
 
+const style = document.createElement("style");
+style.textContent = `
+.account-display.clickable:hover {
+	filter: brightness(1.2);
+}
+`;
+document.head.append(style);
+
 const div = document.createElement("div");
 
 type AccountDisplayInfo = {
@@ -27,6 +35,7 @@ console.log("content.ts: before (async () => {");
 
 	console.log("content.ts: after contentStarted");
 
+	div.className = "account-display";
 	Object.assign(div.style, {
 		position: "fixed",
 		inset: "auto",
@@ -58,6 +67,9 @@ console.log("content.ts: before (async () => {");
 		div.style.opacity = `${account.backgroundOpacity}`;
 		div.style.pointerEvents =
 			account.openSettingsByClick ? "auto" : "none";
+		div.classList.toggle(
+			"clickable",
+			account.openSettingsByClick);
 		console.log(account.backgroundOpacity);
 	} else {
 		div.hidden = true; }
@@ -184,6 +196,9 @@ browser.runtime.onMessage.addListener(async (m: Message) => { switch (m.method) 
 		div.style.opacity = `${account.backgroundOpacity}`;
 		div.style.pointerEvents =
 			account.openSettingsByClick ? "auto" : "none";
+		div.classList.toggle(
+			"clickable",
+			account.openSettingsByClick);
 		console.log(account.backgroundOpacity);
 
 		break;
