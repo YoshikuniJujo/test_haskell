@@ -1,3 +1,5 @@
+// OPTIONS
+
 import type {
 	OptionsObject, ClientSummary, PublicKeyOption
 	} from "./optionsObject.js";
@@ -12,6 +14,8 @@ import { getElement } from "./domTools.js";
 import { toHex, fromHex } from "./tools.js";
 import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
+
+// ------------------------------------------------------------------------
 
 // FOR DEVELOPMENT. REMOVE IT
 let optionsObject: OptionsObject = defaultOptionsObject();
@@ -28,6 +32,8 @@ if (openType !== "url" && openType !== "uuid" && openType !== "set")
 	browser.runtime.sendMessage({ method: "optionsStarted", id: id });
 
 browser.runtime.sendMessage({ method: "addLogTab" });
+
+// ------------------------------------------------------------------------
 
 const clientsElm = getElement<HTMLElement>("#clients");
 const newClient = getElement<HTMLElement>("#new-client");
@@ -49,7 +55,7 @@ const openSettingsByClick = getElement<HTMLInputElement>("#open-settings-by-clic
 const currentKeyD = getElement<HTMLSelectElement>("#current-key-d");
 const detailError = getElement<HTMLElement>("#detail-error");
 const deleteClient = getElement<HTMLElement>("#delete-client");
-const cancelEditClient = getElement("#cancel-edit-client");
+const cancelEditClient = getElement<HTMLButtonElement>("#cancel-edit-client");
 
 const form = getElement("#generate-form");
 const accName = getElement<HTMLInputElement>("#account-name");
@@ -68,6 +74,13 @@ const openInTab = getElement("#open-in-tab");
 const backup = getElement("#backup");
 const allClear = getElement("#all-clear");
 const restore = getElement("#restore");
+
+// ------------------------------------------------------------------------
+
+if (openType === "url") openNewClient(id);
+
+loadPublicKeys();
+loadClients();
 
 (async () => { useClientSet.checked = await DB.getUseClientSet(); })()
 
@@ -94,11 +107,6 @@ openNewClient(url?: string) {
 	clientDetail.hidden = false;
 	optionsError.textContent = "";
 }
-
-if (openType === "url") openNewClient(id);
-
-loadPublicKeys();
-loadClients();
 
 confirm.addEventListener("input", () => {
 	confirm.setCustomValidity(
@@ -185,7 +193,8 @@ loadClientsFromSummaries(clientSummaries: ClientSummary[])
 	clientsElm.replaceChildren();
 
 	for (const client of clientSummaries) {
-		const row = document.createElement("div");
+		const row = document.createElement("button");
+		row.className = "client";
 		row.id = client.uuid.value;
 		row.dataset.name = client.name;
 		row.dataset.urlPattern = client.urlPattern;
@@ -358,11 +367,13 @@ clientFormD.addEventListener("submit", async event => {
 	}
 });
 
+document.addEventListener("keydown", event => {
+	if (event.key === "Escape" && !clientDetail.hidden)
+		cancelEditClient.click(); });
 cancelEditClient.addEventListener("click", () => {
 	clientDetail.hidden = true;
 	clientsElm.hidden = false;
-	newClient.hidden = false;
-});
+	newClient.hidden = false; });
 
 deleteClient.addEventListener("click", async () => {
 	if (!clientDetail.dataset.clientUuid) throw new Error("bad");

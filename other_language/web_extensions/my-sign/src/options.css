@@ -51,3 +51,20 @@ label {
 	max-height: 20em;
 	overflow-y: auto;
 }
+
+.client {
+	display: block;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.client:hover,
+.client:focus-visible {
+	font-style: italic;
+	outline: none;
+}
