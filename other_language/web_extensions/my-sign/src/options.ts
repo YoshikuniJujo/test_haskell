@@ -87,7 +87,8 @@ if (openType === "browser") browserFooter.hidden = false;
 
 (async () => {
 	if (openType !== "url" && openType !== "uuid" && openType !== "set")
-		browser.runtime.sendMessage({ method: "optionsBegin", id: id });
+		browser.runtime.sendMessage({
+			method: "registerOptionsTab", id: id });
 
 	// USE loadOptions
 	if (openType === "url") openNewClient(id);

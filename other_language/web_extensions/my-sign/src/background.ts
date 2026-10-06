@@ -54,7 +54,7 @@ type GlobalMethod =
 	| { method: "openSettings" }
 	| { method: "testOptionsSender" }
 	| { method: "openOptionsInTab" }
-	| { method: "optionsBegin", id: string }
+	| { method: "registerOptionsTab", id: string }
 	| { method: "prepareClient", clientUrl: string }
 	| { method: "clientSubmited", id: string }
 	| { method: "addLogTab" }
@@ -147,9 +147,9 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 					"options.html?openType=tab&id=tab")
 			});
 			return;
-		case "optionsBegin":
+		case "registerOptionsTab":
 			if (s.tab?.id === undefined) throw backgroundError(
-				"optionsBegin: no sender tab ID" );
+				"registerOptionsTab: no sender tab ID" );
 			const use = await otbs.assign(m.id, null, s.tab.id);
 			if (use !== s.tab.id)
 				await browser.tabs.remove(s.tab.id);
