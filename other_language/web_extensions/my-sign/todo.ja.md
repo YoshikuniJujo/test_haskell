@@ -300,7 +300,7 @@ TODO
 			* [ ] openNewClientから処理を消していく
 				+ [x] clientDetail.dataset.clientUuid
 				+ [x] publicKeys
-				+ [ ] deleteClient.hidden
+				+ [x] deleteClient.hidden
 				+ [ ] clientsElm.hidden
 				+ [ ] newClient.hidden
 				+ [ ] clientDetail.hidden
