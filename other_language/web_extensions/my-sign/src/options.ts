@@ -95,15 +95,17 @@ if (openType === "browser") browserFooter.hidden = false;
 		class: "Options",
 		type: openType, instance: id, method: "optionsBegin" });
 
-//	const obj = defaultOptionsObject();
-//	obj.clientUuid = uuid(crypto.randomUUID());
-//	await loadOptions(obj);
-
 	// USE loadOptions
-	if (openType === "url") await openNewClient(id);
+	if (openType === "url") {
+		const obj = defaultOptionsObject();
+		obj.clientUuid = uuid(crypto.randomUUID());
+		await loadOptions(obj);
+	const pks = await publicKeys();
+		openNewClient(pks, id);
+	}
+	useClientSet.checked = await DB.getUseClientSet();
 	await loadPublicKeys();
 	await loadClients();
-	useClientSet.checked = await DB.getUseClientSet();
 
 	// LOG WRITE
 	browser.runtime.sendMessage({ method: "addLogTab" });
@@ -119,7 +121,12 @@ let optionsObject: OptionsObject = defaultOptionsObject();
 useClientSet.addEventListener("change", async () =>
 	{ await DB.putUseClientSet(useClientSet.checked); })
 
-newClient.addEventListener("click", () => openNewClient());
+newClient.addEventListener("click", async () => {
+	const obj = defaultOptionsObject();
+	obj.clientUuid = uuid(crypto.randomUUID());
+	await loadOptions(obj);
+	const pks = await publicKeys();
+	openNewClient(pks) });
 
 backgroundColor.addEventListener("input", () => {
 	backgroundColor16.value = backgroundColor.value;
@@ -372,16 +379,15 @@ loadOptions(obj: OptionsObject)
 	useClientSet.checked = obj.useClientSet;
 }
 
-async function
-openNewClient(url?: string) {
+function
+openNewClient(pks: PublicKeyOption[], url?: string) {
 
-	clientDetail.dataset.clientUuid = crypto.randomUUID();
-	const pks = await publicKeys();
 	const ec = defaultEditingClient();
-	ec.uuid = clientDetail.dataset.clientUuid;
+	ec.uuid = clientDetail.dataset.clientUuid ?? null;
 	ec.urlPattern = url ?? "";
-	console.log("openNewClient: before loadClientToForm:", ec, pks);
-	loadClientToForm(ec, pks);
+	const cd = fromEditingClient(ec, pks);
+
+	clientDetailToForm(cd);
 
 	deleteClient.hidden = true;
 	clientsElm.hidden = true;
@@ -445,17 +451,11 @@ loadClientsFromSummaries(clientSummaries: ClientSummary[])
 			optionsError.textContent = "";
 
 			const pks = await publicKeys();
-			console.log("loadClientFromSummaries: before loadClientToForm:", clnt, pks);
-			loadClientToForm(clnt, pks);
+			const cd = fromEditingClient(clnt, pks);
+			clientDetailToForm(cd);
 		});
 		clientsElm.append(row);
 	}
-}
-
-function
-loadClientToForm(client: EditingClient, pks: PublicKeyOption[])
-{
-	clientDetailToForm(fromEditingClient(client, pks));
 }
 
 function

@@ -297,6 +297,16 @@ TODO
 		- [x] GET ELEMENT
 		- [ ] INITIALIZATION
 			* [x] backgroundにメッセージを送る
+			* [ ] openNewClientから処理を消していく
+				+ [x] clientDetail.dataset.clientUuid
+				+ [x] publicKeys
+				+ [ ] deleteClient.hidden
+				+ [ ] clientsElm.hidden
+				+ [ ] newClient.hidden
+				+ [ ] clientDetail.hidden
+				+ [ ] optionsError.textContent
+				+ [ ] defaultEditingClient
+				+ [ ] loadClientToForm
 			* [ ] background側でObjectOptions型の値を作り返す
 			* [ ] loadOptionsに上の値をあたえる
 			* [ ] 今までの初期化で不要なものを消す
