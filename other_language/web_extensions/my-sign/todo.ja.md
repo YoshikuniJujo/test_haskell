@@ -303,7 +303,7 @@ TODO
 				+ [x] deleteClient.hidden
 				+ [x] clientsElm.hidden
 				+ [x] newClient.hidden
-				+ [ ] clientDetail.hidden
+				+ [x] clientDetail.hidden
 				+ [ ] optionsError.textContent
 				+ [ ] defaultEditingClient
 				+ [ ] loadClientToForm
