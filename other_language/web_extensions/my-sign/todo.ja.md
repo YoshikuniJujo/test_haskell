@@ -301,7 +301,7 @@ TODO
 				+ [x] clientDetail.dataset.clientUuid
 				+ [x] publicKeys
 				+ [x] deleteClient.hidden
-				+ [ ] clientsElm.hidden
+				+ [x] clientsElm.hidden
 				+ [ ] newClient.hidden
 				+ [ ] clientDetail.hidden
 				+ [ ] optionsError.textContent

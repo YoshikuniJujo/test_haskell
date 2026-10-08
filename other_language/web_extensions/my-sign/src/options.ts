@@ -100,6 +100,7 @@ if (openType === "browser") browserFooter.hidden = false;
 		const obj = defaultOptionsObject();
 		obj.clientUuid = uuid(crypto.randomUUID());
 		obj.deleteClientButtonHidden = true;
+		obj.clientsHidden = true;
 		await loadOptions(obj);
 
 		const pks = await publicKeys();
@@ -128,6 +129,7 @@ newClient.addEventListener("click", async () => {
 	const obj = defaultOptionsObject();
 	obj.clientUuid = uuid(crypto.randomUUID());
 	obj.deleteClientButtonHidden = true;
+	obj.clientsHidden = true;
 	await loadOptions(obj);
 
 	const pks = await publicKeys();
@@ -394,7 +396,6 @@ openNewClient(pks: PublicKeyOption[], url?: string) {
 
 	clientDetailToForm(cd);
 
-	clientsElm.hidden = true;
 	newClient.hidden = true
 	clientDetail.hidden = false;
 	optionsError.textContent = "";
