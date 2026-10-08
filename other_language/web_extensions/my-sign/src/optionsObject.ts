@@ -59,7 +59,7 @@ export function defaultOptionsObject(): OptionsObject
 		displayAccount: true,
 		positionX: 100,
 		positionY: 0,
-		backgroundColor: "#00ff00",
+		backgroundColor: "#008000",
 		backgroundOpacity: 0.5,
 		openSettingsByClick: true,
 		currentKey: null,

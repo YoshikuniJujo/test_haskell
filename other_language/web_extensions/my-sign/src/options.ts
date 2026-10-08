@@ -104,10 +104,10 @@ if (openType === "browser") browserFooter.hidden = false;
 		obj.newClientButtonHidden = true;
 		obj.clientDetailHidden = false;
 		obj.optionsError = "";
-		await loadOptions(obj);
-
+		obj.urlPattern = id;
 		const pks = await publicKeys();
-		openNewClient(pks, id);
+		obj.currentKeyOptions = pks
+		await loadOptions(obj);
 	}
 	useClientSet.checked = await DB.getUseClientSet();
 	await loadPublicKeys();
@@ -136,10 +136,11 @@ newClient.addEventListener("click", async () => {
 	obj.newClientButtonHidden = true;
 	obj.clientDetailHidden = false;
 	obj.optionsError = "";
+	const pks = await publicKeys();
+	obj.currentKeyOptions = pks;
 	await loadOptions(obj);
 
-	const pks = await publicKeys();
-	openNewClient(pks) });
+});
 
 backgroundColor.addEventListener("input", () => {
 	backgroundColor16.value = backgroundColor.value;
@@ -390,17 +391,6 @@ loadOptions(obj: OptionsObject)
 
 	optionsError.textContent = obj.optionsError;
 	useClientSet.checked = obj.useClientSet;
-}
-
-function
-openNewClient(pks: PublicKeyOption[], url?: string) {
-
-	const ec = defaultEditingClient();
-	ec.uuid = clientDetail.dataset.clientUuid ?? null;
-	ec.urlPattern = url ?? "";
-	const cd = fromEditingClient(ec, pks);
-
-	clientDetailToForm(cd);
 }
 
 async function

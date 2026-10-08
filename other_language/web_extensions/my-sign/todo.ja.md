@@ -297,7 +297,7 @@ TODO
 		- [x] GET ELEMENT
 		- [ ] INITIALIZATION
 			* [x] backgroundにメッセージを送る
-			* [x] openNewClientから処理を消していく(途中)
+			* [x] openNewClientから処理を消していく
 				+ [x] clientDetail.dataset.clientUuid
 				+ [x] publicKeys
 				+ [x] deleteClient.hidden
@@ -305,10 +305,9 @@ TODO
 				+ [x] newClient.hidden
 				+ [x] clientDetail.hidden
 				+ [x] optionsError.textContent
-			* [ ] decline defaultClientDetail()
-			* [ ] openNewClientから処理を消していく(続き)
-				+ [ ] defaultEditingClient
-				+ [ ] loadClientToForm
+				+ [x] defaultEditingClient
+				+ [x] loadClientToForm
+			* [x] openNewClient()を削除
 			* [ ] background側でObjectOptions型の値を作り返す
 			* [ ] loadOptionsに上の値をあたえる
 			* [ ] 今までの初期化で不要なものを消す
