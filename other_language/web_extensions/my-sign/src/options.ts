@@ -103,6 +103,7 @@ if (openType === "browser") browserFooter.hidden = false;
 		obj.clientsHidden = true;
 		obj.newClientButtonHidden = true;
 		obj.clientDetailHidden = false;
+		obj.optionsError = "";
 		await loadOptions(obj);
 
 		const pks = await publicKeys();
@@ -134,6 +135,7 @@ newClient.addEventListener("click", async () => {
 	obj.clientsHidden = true;
 	obj.newClientButtonHidden = true;
 	obj.clientDetailHidden = false;
+	obj.optionsError = "";
 	await loadOptions(obj);
 
 	const pks = await publicKeys();
@@ -399,8 +401,6 @@ openNewClient(pks: PublicKeyOption[], url?: string) {
 	const cd = fromEditingClient(ec, pks);
 
 	clientDetailToForm(cd);
-
-	optionsError.textContent = "";
 }
 
 async function

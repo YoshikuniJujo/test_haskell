@@ -304,7 +304,7 @@ TODO
 				+ [x] clientsElm.hidden
 				+ [x] newClient.hidden
 				+ [x] clientDetail.hidden
-				+ [ ] optionsError.textContent
+				+ [x] optionsError.textContent
 				+ [ ] defaultEditingClient
 				+ [ ] loadClientToForm
 			* [ ] background側でObjectOptions型の値を作り返す
