@@ -302,7 +302,7 @@ TODO
 				+ [x] publicKeys
 				+ [x] deleteClient.hidden
 				+ [x] clientsElm.hidden
-				+ [ ] newClient.hidden
+				+ [x] newClient.hidden
 				+ [ ] clientDetail.hidden
 				+ [ ] optionsError.textContent
 				+ [ ] defaultEditingClient
