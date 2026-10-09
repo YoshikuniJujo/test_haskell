@@ -180,7 +180,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			});
 			if (s.tab?.id === undefined) throw new Error("bad");
 			if (ot2.id === undefined) throw new Error("bad");
-			const use = await otbs.assign("tab", s.tab.id, ot2.id)
+			const use = await otbs.assign("tab", null, ot2.id)
 			if (use !== ot2.id) {
 				await browser.tabs.remove(ot2.id);
 			}

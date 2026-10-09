@@ -165,6 +165,8 @@ confirm.addEventListener("input", () => {
 form.addEventListener("submit", async event => {
 	event.preventDefault();
 
+	console.log("options.ts: SUBMIT");
+
 	if (password.value !== confirm.value) {
 		console.log(confirm.validity.valid);
 		confirm.setCustomValidity("Password do not match.");
@@ -181,6 +183,8 @@ form.addEventListener("submit", async event => {
 		encodePassword(password.value) );
 	password.value = "";
 	confirm.value = "";
+
+	DB.addKeyPair(esk.toObject_563e7e39d4());
 
 	await loadPublicKeys();
 });
