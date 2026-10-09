@@ -314,7 +314,10 @@ TODO
 			* [ ] その他
 	+ [x] isUUID()を定義
 	+ [x] isUrl()を定義
-	+ [ ] type OptionsTab = { openType: string, id: string }といった型を定義する
+	+ [x] type OptionsTab = { openType: string, id: string }といった型を定義する
+	+ [x] InputTabsクラスに逆引き関数を定義
+	+ [ ] InputTabsインスタンスを使って、
+		sender tab IDからOptionsTabを生成する関数を書く
 	+ [ ] optionsTabId()を定義
 	+ [ ] options.tsをざっくりと読み細かいところを修正 (続き)
 		- [ ] ADD EVENT LISTENER

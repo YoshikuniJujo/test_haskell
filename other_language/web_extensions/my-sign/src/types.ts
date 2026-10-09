@@ -1,4 +1,4 @@
-import { isUuid } from "./tools.js";
+import { isUuid, isUrl } from "./tools.js";
 
 export type Client = {
 	uuid: string,
@@ -70,3 +70,21 @@ export type OptionsInputMessages<T> =
 		key: K;
 	}
 }[keyof T];
+
+export type OptionsTabTag = { openType: string, id: string }
+
+export function
+optionsTabTag(id: string): OptionsTabTag
+{
+	switch (id) {
+		case "browser":
+		case "tab":
+		case "set":
+			return { openType: id, id: id };
+		default:
+			if (isUuid(id)) return { openType: "uuid", id: id };
+			else if (isUrl(id)) return { openType: "url", id: id };
+			else throw new Error(
+				"optionsTabTag: Invalid options id" );
+	}
+}

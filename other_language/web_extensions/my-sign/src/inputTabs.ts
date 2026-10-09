@@ -103,6 +103,15 @@ export class InputTabs {
 		return r;
 	}
 
+	async key(tid: number): Promise<string | null>
+	{
+		const assns = await this.#getAssignments();
+		for (const [nm, ts] of Object.entries(assns)) {
+			if (tid === ts.inputTab) return nm;
+		}
+		return null;
+	}
+
 }
 
 function
