@@ -320,6 +320,8 @@ TODO
 		sender tab IDからOptionsTabを生成する関数を書く
 	+ [x] browser options tabをInputTab管理下にするコードを移動させる
 * [ ] OptionsStateを実装していく
+	+ [x] openType == "url"の場合のhiddenとerrorの設定を関数にまとめる
+	+ [ ] その他
 * [ ] 設定画面の実装の変更(続き)
 	+ [ ] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期

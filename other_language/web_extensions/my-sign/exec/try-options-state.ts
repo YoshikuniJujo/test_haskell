@@ -1,4 +1,5 @@
 import { OptionsState } from "../src/optionsState.js";
+import { optionsTabTag } from "../src/types.js";
 
 class StorageSessionMock<T> {
 
@@ -22,7 +23,7 @@ class StorageSessionMock<T> {
 
 const storage = new StorageSessionMock<object>();
 
-const state = new OptionsState("", storage);
+const state = new OptionsState(optionsTabTag("browser"), storage);
 
 console.log(state);
 

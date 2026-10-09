@@ -11,7 +11,7 @@ import type {
 import type {
 	Client, EditingClient, UUID, OptionsInputMessages
 	} from "./types.js";
-import { defaultOptionsObject } from "./optionsObject.js";
+import { defaultOptionsObject, newClientMode } from "./optionsObject.js";
 import { defaultEditingClient, uuid, fromUuid, uuidNull } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import { Log } from "./log2.js"
@@ -86,6 +86,9 @@ if (openType === null || id === null)
 	throw new Error("no openType or no id");
 if (openType === "browser") browserFooter.hidden = false;
 
+// FOR DEVELOPMENT. REMOVE IT
+let optionsObject: OptionsObject = defaultOptionsObject();
+
 (async () => {
 	const object: OptionsObject = defaultOptionsObject();
 
@@ -97,13 +100,7 @@ if (openType === "browser") browserFooter.hidden = false;
 	if (openType === "url") {
 
 		object.clientUuid = uuid(crypto.randomUUID());
-
-		object.deleteClientButtonHidden = true;
-		object.clientsHidden = true;
-		object.newClientButtonHidden = true;
-		object.clientDetailHidden = false;
-		object.optionsError = "";
-
+		newClientMode(object);
 		object.urlPattern = id;
 		const pks = await publicKeys();
 		object.currentKeyOptions = pks
@@ -118,15 +115,13 @@ if (openType === "browser") browserFooter.hidden = false;
 			name: cl.name, urlPattern: cl.urlPattern }; });
 	object.clients = clientSummaries;
 
+	optionsObject = object;
 	await loadOptions(object);
 
 	// LOG WRITE
 	browser.runtime.sendMessage({ method: "addLogTab" });
 	logOutput.textContent = await Log.toString();
 	scrollToBottom(logOutput); })();
-
-// FOR DEVELOPMENT. REMOVE IT
-let optionsObject: OptionsObject = defaultOptionsObject();
 
 // ------------------------------------------------------------------------
 // ADD EVENT LISTENER
@@ -135,18 +130,12 @@ useClientSet.addEventListener("change", async () =>
 	{ await DB.putUseClientSet(useClientSet.checked); })
 
 newClient.addEventListener("click", async () => {
-
-	const obj = defaultOptionsObject();
+	const obj = optionsObject;
 	obj.clientUuid = uuid(crypto.randomUUID());
-	obj.deleteClientButtonHidden = true;
-	obj.clientsHidden = true;
-	obj.newClientButtonHidden = true;
-	obj.clientDetailHidden = false;
-	obj.optionsError = "";
+	newClientMode(obj);
 	const pks = await publicKeys();
 	obj.currentKeyOptions = pks;
 	await loadOptions(obj);
-
 });
 
 backgroundColor.addEventListener("input", () => {

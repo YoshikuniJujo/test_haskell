@@ -69,3 +69,13 @@ export function defaultOptionsObject(): OptionsObject
 		optionsError: "",
 		useClientSet: false };
 }
+
+export function
+newClientMode(obj: OptionsObject)
+{
+	obj.deleteClientButtonHidden = true;
+	obj.clientsHidden = true;
+	obj.newClientButtonHidden = true;
+	obj.clientDetailHidden = false;
+	obj.optionsError = "";
+}
