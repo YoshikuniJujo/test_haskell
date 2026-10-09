@@ -278,7 +278,7 @@ TODO
 * [x] loadPublicKeysのcloneNodeを消す
 * [x] select内のpublicKeyの読み込みについて考える
 * [x] editingClientを消す
-* [ ] 設定画面の実装の変更(続き)
+* [ ] 設定画面の実装の変更(続き、途中)
 	+ [x] OptionsObjectを引数に取り、設定画面のほうを修正して同期させる関数を定義する(続き)
 		- [x] optionsObjectToClientDetail関数を定義
 		- [x] clients
@@ -319,6 +319,8 @@ TODO
 	+ [x] InputTabsインスタンスを使って、
 		sender tab IDからOptionsTabを生成する関数を書く
 	+ [x] browser options tabをInputTab管理下にするコードを移動させる
+* [ ] OptionsStateを実装していく
+* [ ] 設定画面の実装の変更(続き)
 	+ [ ] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期
 	+ [ ] optionsTabId()を定義
