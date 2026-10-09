@@ -308,8 +308,8 @@ TODO
 				+ [x] defaultEditingClient
 				+ [x] loadClientToForm
 			* [x] openNewClient()を削除
-			* [ ] background側でObjectOptions型の値を作り返す
-			* [ ] loadOptionsに上の値をあたえる
+			* [x] background側でObjectOptions型の値を作り返す
+			* [x] loadOptionsに上の値をあたえる
 			* [ ] 今までの初期化で不要なものを消す
 			* [ ] その他
 	+ [x] isUUID()を定義
