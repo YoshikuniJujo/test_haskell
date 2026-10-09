@@ -5,10 +5,12 @@ import { Log } from "./log2.js";
 
 import * as Bech32 from "./codec/bech32.js";
 
-import { addToArrayMap, forEachValues } from "./mapArray.js"
+import { addToArrayMap, forEachValues } from "./mapArray.js";
 
-import type { ClientSummary } from "./optionsObject.js"
-import type { Client } from "./types.js"
+import type { ClientSummary } from "./optionsObject.js";
+import type { Client } from "./types.js";
+
+import { isUrl } from "./tools.js";
 
 type Event = {
 	created_at: number,
@@ -471,17 +473,6 @@ pgVanished(vt: number)
 		.filter(([key]) => key !== "browser")
 		.map(([, value]) => value);
 	Log.setLogTabs(ots);
-}
-
-function
-isUrl(s: string)
-{
-	try {
-		new URL(s);
-		return true;
-	} catch {
-		return false;
-	}
 }
 
 const ports = new Map();

@@ -313,7 +313,7 @@ TODO
 			* [ ] 今までの初期化で不要なものを消す
 			* [ ] その他
 	+ [x] isUUID()を定義
-	+ [ ] isUrl()を定義
+	+ [x] isUrl()を定義
 	+ [ ] type OptionsTab = { openType: string, id: string }といった型を定義する
 	+ [ ] optionsTabId()を定義
 	+ [ ] options.tsをざっくりと読み細かいところを修正 (続き)

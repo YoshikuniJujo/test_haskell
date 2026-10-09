@@ -23,3 +23,9 @@ isUuid(value: string): boolean
 {
 	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
+
+export function
+isUrl(s: string)
+{
+	try { new URL(s); return true; } catch { return false; }
+}
