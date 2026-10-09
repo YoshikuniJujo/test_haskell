@@ -1,3 +1,5 @@
+import { isUuid } from "./tools.js";
+
 export type Client = {
 	uuid: string,
 	name: string, urlPattern: string,
@@ -42,6 +44,7 @@ export type UUID = { type: "UUID", value: string };
 export function
 uuid(s: string): UUID
 {
+	if (isUuid(s)) throw new Error("Not UUID");
 	return { type: "UUID", value: s };
 }
 

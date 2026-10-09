@@ -293,7 +293,7 @@ TODO
 	+ [x] clients
 		- [x] All Clearボタンの処理を書く
 		- [x] Restoreボタンの処理を書く
-	+ [ ] options.tsをざっくりと読み細かいところを修正
+	+ [ ] options.tsをざっくりと読み細かいところを修正 (途中)
 		- [x] GET ELEMENT
 		- [ ] INITIALIZATION
 			* [x] backgroundにメッセージを送る
@@ -312,6 +312,11 @@ TODO
 			* [ ] loadOptionsに上の値をあたえる
 			* [ ] 今までの初期化で不要なものを消す
 			* [ ] その他
+	+ [x] isUUID()を定義
+	+ [ ] isUrl()を定義
+	+ [ ] type OptionsTab = { openType: string, id: string }といった型を定義する
+	+ [ ] optionsTabId()を定義
+	+ [ ] options.tsをざっくりと読み細かいところを修正 (続き)
 		- [ ] ADD EVENT LISTENER
 		- [ ] FOR DEVELOPMENT
 		- [ ] TYPES
