@@ -1,4 +1,4 @@
-import type { ClientSummary, UUID } from "./types.js";
+import type { ClientSummary, PublicKeyOption, UUID } from "./types.js";
 
 export type OptionsObject = {
 	accountName: string,
@@ -30,9 +30,6 @@ export type OptionsObject = {
 	optionsError: string,
 	useClientSet: boolean
 }
-
-export type PublicKeyOption =
-	{ type: "PublicKeyOption", publicKey: string, name: string }
 
 export function defaultOptionsObject(): OptionsObject
 {

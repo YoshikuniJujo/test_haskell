@@ -5,11 +5,10 @@
 // ------------------------------------------------------------------------
 // IMPORT MODULES
 
+import type { OptionsObject } from "./optionsObject.js";
 import type {
-	OptionsObject, PublicKeyOption
-	} from "./optionsObject.js";
-import type {
-	Client, ClientSummary, EditingClient, UUID, OptionsInputMessages
+	Client, ClientSummary, EditingClient,
+	UUID, OptionsInputMessages, PublicKeyOption
 	} from "./types.js";
 import { defaultOptionsObject, newClientMode } from "./optionsObject.js";
 import { defaultEditingClient, uuid, fromUuid, uuidNull } from "./types.js";
@@ -102,9 +101,10 @@ let optionsObject: OptionsObject = defaultOptionsObject();
 	if (openType === "url") {
 		object.clientUuid = uuid(crypto.randomUUID());
 		newClientMode(object);
-		object.urlPattern = id;
-		const pks = await publicKeys();
+		const pks = await DB.getPublicKeyOptions();
 		object.currentKeyOptions = pks
+
+		object.urlPattern = id;
 	}
 
 	optionsObject = object;
@@ -125,7 +125,7 @@ newClient.addEventListener("click", async () => {
 	const obj = optionsObject;
 	obj.clientUuid = uuid(crypto.randomUUID());
 	newClientMode(obj);
-	const pks = await publicKeys();
+	const pks = await DB.getPublicKeyOptions();
 	obj.currentKeyOptions = pks;
 	await loadOptions(obj);
 });
@@ -388,20 +388,8 @@ loadOptions(obj: OptionsObject)
 async function
 loadPublicKeys()
 {
-	const keys = await publicKeys();
+	const keys = await DB.getPublicKeyOptions();
 	loadPublicKeyFrom(keys);
-}
-
-async function
-publicKeys(): Promise<PublicKeyOption[]>
-{
-	const keys = await DB.getPublicKeysWithNames();
-	return Array.from(keys, pk => {
-		const hex = toHex(pk.publicKey);
-		return {
-			type: "PublicKeyOption",
-			publicKey: hex,
-			name: pk.name } });
 }
 
 async function
@@ -439,7 +427,7 @@ loadClientsFromSummaries(clientSummaries: ClientSummary[])
 			deleteClient.hidden = false;
 			optionsError.textContent = "";
 
-			const pks = await publicKeys();
+			const pks = await DB.getPublicKeyOptions();
 			const cd = fromEditingClient(clnt, pks);
 			clientDetailToForm(cd);
 		});

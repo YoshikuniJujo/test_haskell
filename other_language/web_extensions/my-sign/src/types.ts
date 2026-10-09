@@ -91,3 +91,6 @@ optionsTabTag(id: string): OptionsTabTag
 				"optionsTabTag: Invalid options id" );
 	}
 }
+
+export type PublicKeyOption =
+	{ type: "PublicKeyOption", publicKey: string, name: string }

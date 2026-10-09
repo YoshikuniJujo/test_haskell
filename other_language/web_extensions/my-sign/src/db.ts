@@ -1,5 +1,8 @@
+import type {
+	Client, ClientSummary, EditingClient,
+	Account, PublicKeyOption } from "./types.js"
 import { unit } from "./data/unit.js"
-import type { Client, ClientSummary, EditingClient, Account } from "./types.js"
+import { toHex } from "./tools.js"
 
 const DB_NAME = "my-sign";
 const DB_VERSION = 2;
@@ -112,6 +115,24 @@ getPublicKeysWithNames(): Promise<KeyWithName[]>
 		req.onsuccess = () => rs(req.result.map(key => ({
 			publicKey: key.publicKey,
 			name: key.name })));
+		req.onerror = () => rj(req.error);
+	});
+}
+
+export async function
+getPublicKeyOptions(): Promise<PublicKeyOption[]>
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(SECRET_KEYS, "readonly");
+		const store = tx.objectStore(SECRET_KEYS);
+		const req = store.getAll();
+
+		req.onsuccess = () => rs(req.result.map(k => ({
+			type: "PublicKeyOption",
+			publicKey: toHex(k.publicKey),
+			name: k.name })));
 		req.onerror = () => rj(req.error);
 	});
 }

@@ -1,6 +1,6 @@
 import type { Storage } from "./storage.js";
 import type { OptionsObject } from "./optionsObject.js";
-import type { ClientSummary, OptionsTabTag } from "./types.js";
+import type { UUID, ClientSummary, OptionsTabTag } from "./types.js";
 import { defaultOptionsObject } from "./optionsObject.js";
 
 const KEY_BASE = "8450604e-6f98-49bf-a5a9-724346528a0a";
@@ -17,11 +17,27 @@ export class OptionsState
 	{
 		this.#storage = strg;
 		this.#key = `${KEY_BASE}:${tag.id}`;
-		const obj = defaultOptionsObject();
+		this.#optionsObject = defaultOptionsObject();
+	}
 
-		this.#optionsObject = obj;
+	optionsObject(): OptionsObject
+	{
+		return  this.#optionsObject;
+	}
 
-		return
+	setUseClientSet(u: boolean)
+	{
+		this.#optionsObject.useClientSet = u;
+	}
+
+	setClientSummaries(css: ClientSummary[])
+	{
+		this.#optionsObject.clients = css;
+	}
+
+	setClientUuid(u: UUID)
+	{
+		this.#optionsObject.clientUuid = u;
 	}
 
 	async write(cmd: string, ky: string, vl: string)
