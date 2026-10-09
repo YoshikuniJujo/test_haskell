@@ -87,27 +87,36 @@ if (openType === null || id === null)
 if (openType === "browser") browserFooter.hidden = false;
 
 (async () => {
+	const object: OptionsObject = defaultOptionsObject();
+
 	browser.runtime.sendMessage({
 		class: "Options",
 		type: openType, instance: id, method: "optionsBegin" });
 
 	// USE loadOptions
 	if (openType === "url") {
-		const obj = defaultOptionsObject();
-		obj.clientUuid = uuid(crypto.randomUUID());
-		obj.deleteClientButtonHidden = true;
-		obj.clientsHidden = true;
-		obj.newClientButtonHidden = true;
-		obj.clientDetailHidden = false;
-		obj.optionsError = "";
-		obj.urlPattern = id;
+
+		object.clientUuid = uuid(crypto.randomUUID());
+		object.deleteClientButtonHidden = true;
+		object.clientsHidden = true;
+		object.newClientButtonHidden = true;
+		object.clientDetailHidden = false;
+		object.optionsError = "";
+		object.urlPattern = id;
 		const pks = await publicKeys();
-		obj.currentKeyOptions = pks
-		await loadOptions(obj);
+		object.currentKeyOptions = pks
 	}
 	useClientSet.checked = await DB.getUseClientSet();
-	await loadPublicKeys();
-	await loadClients();
+
+	const clients = await DB.getClients();
+	const clientSummaries: ClientSummary[] = Array.from(clients, cl => {
+		return {
+			type: "ClientSummary",
+			uuid: { type: "UUID", value: cl.uuid },
+			name: cl.name, urlPattern: cl.urlPattern }; });
+	object.clients = clientSummaries;
+
+	await loadOptions(object);
 
 	// LOG WRITE
 	browser.runtime.sendMessage({ method: "addLogTab" });
@@ -383,7 +392,7 @@ loadOptions(obj: OptionsObject)
 	loadClientsFromSummaries(obj.clients);
 
 	const cd = optionsObjectToClientDetail(obj);
-	clientDetailToForm(cd);
+	if (cd) clientDetailToForm(cd);
 
 	optionsError.textContent = obj.optionsError;
 	useClientSet.checked = obj.useClientSet;
@@ -473,9 +482,9 @@ clientDetailToForm(cd: ClientDetail): void
 }
 
 function
-optionsObjectToClientDetail(obj: OptionsObject): ClientDetail
+optionsObjectToClientDetail(obj: OptionsObject): ClientDetail | null
 {
-	if (!obj.clientUuid) throw new Error("badPiyo");
+	if (!obj.clientUuid) return null;
 	return {
 		uuid: obj.clientUuid,
 		name: obj.clientName,

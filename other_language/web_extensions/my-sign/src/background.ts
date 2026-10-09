@@ -178,6 +178,13 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				url: browser.runtime.getURL(
 					"options.html?openType=tab&id=tab")
 			});
+			if (s.tab?.id === undefined) throw new Error("bad");
+			if (ot2.id === undefined) throw new Error("bad");
+			const use = await otbs.assign("tab", s.tab.id, ot2.id)
+			if (use !== ot2.id) {
+				await browser.tabs.remove(ot2.id);
+			}
+			await browser.tabs.update(use, { active: true });
 			return;
 		case "prepareClient":
 			console.log("background: prepareClient");
