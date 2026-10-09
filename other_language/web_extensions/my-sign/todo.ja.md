@@ -320,6 +320,7 @@ TODO
 		sender tab IDからOptionsTabを生成する関数を書く
 	+ [x] browser options tabをInputTab管理下にするコードを移動させる
 	+ [ ] openTypeやidをoptions.tsから消去する
+	+ [ ] 設定画面の同期
 	+ [ ] optionsTabId()を定義
 	+ [ ] options.tsをざっくりと読み細かいところを修正 (続き)
 		- [ ] ADD EVENT LISTENER
