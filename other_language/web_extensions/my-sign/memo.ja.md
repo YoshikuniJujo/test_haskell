@@ -212,6 +212,15 @@ optionsState.js
 クラスOptionsStateを定義する。
 まずはアカウント部分について。
 
+* 初期化に必要な情報
+	+ 共通
+		- Client Setを使うかのブール値
+		- クライアントのリスト(summaries)
+	+ openType === "url"の場合
+		- 新しいUUID
+		- ID (URLPattern)
+		- 公開鍵のリスト
+
 ### アカウント
 
 まずはgenerateの部分だけを作る。
