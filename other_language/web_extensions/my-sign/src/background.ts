@@ -43,11 +43,38 @@ browser.runtime.onMessage.addListener( (m, s) => {
 	else switch (m.class) {
 		case "Options":
 			console.log("background.ts: Options:", m);
-			return;
+			return optionsMethod(m, s);
 		default:
 			console.log("no such class: ", m, s);
 	}
 });
+
+type OptionsMethod =
+	| { class: "Options", method: "optionsBegin" }
+
+async function
+optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
+{
+	switch(m.method) {
+		case "optionsBegin":
+			console.log("background.ts: optionsMethod:", m, s);
+			if (s.tab?.id === undefined) throw new Error("bad");
+			const id = await otbs.key(s.tab.id);
+			let tg;
+			if (id === null) {
+				const use = await otbs.assign("browser", null, s.tab.id);
+				if (use !== s.tab.id)
+					await browser.tabs.remove(s.tab.id);
+				await browser.tabs.update(use, { active: true });
+				console.log("background.ts: optionsMethod:",
+					await otbs.keyInputTabs());
+				return;
+			} else {
+				tg = optionsTabTag(id);
+			}
+			return;
+	}
+}
 
 type GlobalMethod =
 	| { method: "accountDisplayInfo"; }
@@ -60,7 +87,6 @@ type GlobalMethod =
 	| { method: "openSettings" }
 	| { method: "testOptionsSender" }
 	| { method: "openOptionsInTab" }
-	| { method: "registerOptionsTab", id: string }
 	| { method: "prepareClient", clientUrl: string }
 	| { method: "clientSubmited", id: string }
 	| { method: "addLogTab" }
@@ -152,14 +178,6 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				url: browser.runtime.getURL(
 					"options.html?openType=tab&id=tab")
 			});
-			return;
-		case "registerOptionsTab":
-			if (s.tab?.id === undefined) throw backgroundError(
-				"registerOptionsTab: no sender tab ID" );
-			const use = await otbs.assign(m.id, null, s.tab.id);
-			if (use !== s.tab.id)
-				await browser.tabs.remove(s.tab.id);
-			await browser.tabs.update(use, { active: true });
 			return;
 		case "prepareClient":
 			console.log("background: prepareClient");

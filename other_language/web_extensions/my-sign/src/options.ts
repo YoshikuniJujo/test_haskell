@@ -87,10 +87,6 @@ if (openType === null || id === null)
 if (openType === "browser") browserFooter.hidden = false;
 
 (async () => {
-	if (openType !== "url" && openType !== "uuid" && openType !== "set")
-		browser.runtime.sendMessage({
-			method: "registerOptionsTab", id: id });
-
 	browser.runtime.sendMessage({
 		class: "Options",
 		type: openType, instance: id, method: "optionsBegin" });
