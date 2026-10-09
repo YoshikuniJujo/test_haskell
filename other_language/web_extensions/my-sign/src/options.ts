@@ -97,16 +97,18 @@ if (openType === "browser") browserFooter.hidden = false;
 	if (openType === "url") {
 
 		object.clientUuid = uuid(crypto.randomUUID());
+
 		object.deleteClientButtonHidden = true;
 		object.clientsHidden = true;
 		object.newClientButtonHidden = true;
 		object.clientDetailHidden = false;
 		object.optionsError = "";
+
 		object.urlPattern = id;
 		const pks = await publicKeys();
 		object.currentKeyOptions = pks
 	}
-	useClientSet.checked = await DB.getUseClientSet();
+	object.useClientSet = await DB.getUseClientSet();
 
 	const clients = await DB.getClients();
 	const clientSummaries: ClientSummary[] = Array.from(clients, cl => {
