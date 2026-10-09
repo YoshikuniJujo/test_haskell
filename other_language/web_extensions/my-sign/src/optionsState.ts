@@ -1,7 +1,7 @@
 import type { Storage } from "./storage.js";
 import type { OptionsObject } from "./optionsObject.js";
-import type { UUID, ClientSummary, OptionsTabTag } from "./types.js";
-import { defaultOptionsObject } from "./optionsObject.js";
+import type { UUID, ClientSummary, OptionsTabTag, PublicKeyOption } from "./types.js";
+import { defaultOptionsObject, newClientMode } from "./optionsObject.js";
 
 const KEY_BASE = "8450604e-6f98-49bf-a5a9-724346528a0a";
 
@@ -38,6 +38,21 @@ export class OptionsState
 	setClientUuid(u: UUID)
 	{
 		this.#optionsObject.clientUuid = u;
+	}
+
+	setCurrentKeyOptions(ckos: PublicKeyOption[])
+	{
+		this.#optionsObject.currentKeyOptions = ckos;
+	}
+
+	setUrlPattern(u: string)
+	{
+		this.#optionsObject.urlPattern = u;
+	}
+
+	newClientMode()
+	{
+		newClientMode(this.#optionsObject);
 	}
 
 	async write(cmd: string, ky: string, vl: string)

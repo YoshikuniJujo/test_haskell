@@ -10,7 +10,8 @@ import { addToArrayMap, forEachValues } from "./mapArray.js";
 import type { Client, ClientSummary, OptionsTabTag } from "./types.js";
 
 import { isUrl } from "./tools.js";
-import { optionsTabTag } from "./types.js";
+import { optionsTabTag, uuid } from "./types.js";
+import { OptionsState } from "./optionsState.js";
 
 type Event = {
 	created_at: number,
@@ -67,11 +68,24 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				await browser.tabs.update(use, { active: true });
 				console.log("background.ts: optionsMethod:",
 					await otbs.keyInputTabs());
-				return;
+				tg = optionsTabTag("browser");
 			} else {
 				tg = optionsTabTag(id);
 			}
-			return;
+			const ostt = new OptionsState(tg);
+
+			ostt.setUseClientSet(await DB.getUseClientSet());
+			ostt.setClientSummaries(await DB.getClientSummaries());
+
+			if (tg.openType === "url") {
+				ostt.setClientUuid(uuid(crypto.randomUUID()));
+				ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
+				ostt.newClientMode();
+				ostt.setUrlPattern(tg.id);
+			}
+
+			console.log("background.ts:", ostt);
+			return ostt.optionsObject();
 	}
 }
 

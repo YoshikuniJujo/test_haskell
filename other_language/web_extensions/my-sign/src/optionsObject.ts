@@ -73,3 +73,13 @@ newClientMode(obj: OptionsObject)
 	obj.clientDetailHidden = false;
 	obj.optionsError = "";
 }
+
+export function
+clientDetailMode(obj: OptionsObject)
+{
+	obj.deleteClientButtonHidden = false;
+	obj.clientsHidden = true;
+	obj.newClientButtonHidden = true;
+	obj.clientDetailHidden = false;
+	obj.optionsError = "";
+}

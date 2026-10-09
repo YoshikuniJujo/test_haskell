@@ -89,26 +89,12 @@ if (openType === "browser") browserFooter.hidden = false;
 let optionsObject: OptionsObject = defaultOptionsObject();
 
 (async () => {
-	const object: OptionsObject = defaultOptionsObject();
-
-	browser.runtime.sendMessage({
+	const object2 = await browser.runtime.sendMessage({
 		class: "Options",
 		type: openType, instance: id, method: "optionsBegin" });
-
-	object.useClientSet = await DB.getUseClientSet();
-	object.clients = await DB.getClientSummaries();
-
-	if (openType === "url") {
-		object.clientUuid = uuid(crypto.randomUUID());
-		newClientMode(object);
-		const pks = await DB.getPublicKeyOptions();
-		object.currentKeyOptions = pks
-
-		object.urlPattern = id;
-	}
-
-	optionsObject = object;
-	await loadOptions(object);
+	console.log("options.ts: INITIALIZATION:", object2);
+	optionsObject = object2;
+	await loadOptions(object2);
 
 	// LOG WRITE
 	browser.runtime.sendMessage({ method: "addLogTab" });
@@ -420,10 +406,11 @@ loadClientsFromSummaries(clientSummaries: ClientSummary[])
 
 		row.addEventListener("click", async () => {
 			const clnt = await DB.getClient(client.uuid.value);
+			clientDetail.dataset.clientUuid = client.uuid.value;
+
 			clientsElm.hidden = true;
 			newClient.hidden = true;
 			clientDetail.hidden = false;
-			clientDetail.dataset.clientUuid = client.uuid.value;
 			deleteClient.hidden = false;
 			optionsError.textContent = "";
 
