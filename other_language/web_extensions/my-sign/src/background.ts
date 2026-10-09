@@ -7,8 +7,7 @@ import * as Bech32 from "./codec/bech32.js";
 
 import { addToArrayMap, forEachValues } from "./mapArray.js";
 
-import type { ClientSummary } from "./optionsObject.js";
-import type { Client, OptionsTabTag } from "./types.js";
+import type { Client, ClientSummary, OptionsTabTag } from "./types.js";
 
 import { isUrl } from "./tools.js";
 import { optionsTabTag } from "./types.js";

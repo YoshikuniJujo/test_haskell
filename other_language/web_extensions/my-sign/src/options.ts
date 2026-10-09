@@ -6,10 +6,10 @@
 // IMPORT MODULES
 
 import type {
-	OptionsObject, ClientSummary, PublicKeyOption
+	OptionsObject, PublicKeyOption
 	} from "./optionsObject.js";
 import type {
-	Client, EditingClient, UUID, OptionsInputMessages
+	Client, ClientSummary, EditingClient, UUID, OptionsInputMessages
 	} from "./types.js";
 import { defaultOptionsObject, newClientMode } from "./optionsObject.js";
 import { defaultEditingClient, uuid, fromUuid, uuidNull } from "./types.js";
@@ -96,24 +96,16 @@ let optionsObject: OptionsObject = defaultOptionsObject();
 		class: "Options",
 		type: openType, instance: id, method: "optionsBegin" });
 
-	// USE loadOptions
-	if (openType === "url") {
+	object.useClientSet = await DB.getUseClientSet();
+	object.clients = await DB.getClientSummaries();
 
+	if (openType === "url") {
 		object.clientUuid = uuid(crypto.randomUUID());
 		newClientMode(object);
 		object.urlPattern = id;
 		const pks = await publicKeys();
 		object.currentKeyOptions = pks
 	}
-	object.useClientSet = await DB.getUseClientSet();
-
-	const clients = await DB.getClients();
-	const clientSummaries: ClientSummary[] = Array.from(clients, cl => {
-		return {
-			type: "ClientSummary",
-			uuid: { type: "UUID", value: cl.uuid },
-			name: cl.name, urlPattern: cl.urlPattern }; });
-	object.clients = clientSummaries;
 
 	optionsObject = object;
 	await loadOptions(object);

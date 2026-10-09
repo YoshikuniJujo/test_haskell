@@ -10,6 +10,9 @@ export type Client = {
 	positionX: number, positionY: number,
 	displayAccount: boolean }
 
+export type ClientSummary =
+	{ type: "ClientSummary", uuid: UUID, name: string, urlPattern: string }
+
 export type EditingClient = Omit<Client, "uuid" | "publicKey" | "priority"> & {
 	uuid: string | null,
 	publicKey: Uint8Array | undefined,

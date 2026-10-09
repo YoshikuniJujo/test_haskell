@@ -1,6 +1,6 @@
 import type { Storage } from "./storage.js";
-import type { OptionsObject, ClientSummary } from "./optionsObject.js";
-import type { OptionsTabTag } from "./types.js";
+import type { OptionsObject } from "./optionsObject.js";
+import type { ClientSummary, OptionsTabTag } from "./types.js";
 import { defaultOptionsObject } from "./optionsObject.js";
 
 const KEY_BASE = "8450604e-6f98-49bf-a5a9-724346528a0a";

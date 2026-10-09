@@ -1,5 +1,5 @@
 import { unit } from "./data/unit.js"
-import type { Client, EditingClient, Account } from "./types.js"
+import type { Client, ClientSummary, EditingClient, Account } from "./types.js"
 
 const DB_NAME = "my-sign";
 const DB_VERSION = 2;
@@ -126,6 +126,26 @@ getClients(): Promise<Client[]>
 		const req = tx.objectStore(CLIENTS).getAll();
 
 		req.onsuccess = () => rs(req.result);
+		req.onerror = () => rj(req.error);
+	});
+}
+
+export async function
+getClientSummaries(): Promise<ClientSummary[]>
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(CLIENTS, "readonly");
+		const req = tx.objectStore(CLIENTS).getAll();
+
+		req.onsuccess = () => {
+			const rslts : Client[] = req.result;
+			rs(rslts.map(r => {
+				return {
+					type: "ClientSummary",
+					uuid: { type: "UUID", value: r.uuid },
+					name: r.name, urlPattern: r.urlPattern } })) };
 		req.onerror = () => rj(req.error);
 	});
 }
