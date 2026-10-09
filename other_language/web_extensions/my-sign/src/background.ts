@@ -8,9 +8,10 @@ import * as Bech32 from "./codec/bech32.js";
 import { addToArrayMap, forEachValues } from "./mapArray.js";
 
 import type { ClientSummary } from "./optionsObject.js";
-import type { Client } from "./types.js";
+import type { Client, OptionsTabTag } from "./types.js";
 
 import { isUrl } from "./tools.js";
+import { optionsTabTag } from "./types.js";
 
 type Event = {
 	created_at: number,
@@ -506,4 +507,12 @@ function
 backgroundError(msg: string)
 {
 	new Error(`background.ts: ${msg}`);
+}
+
+async function
+getOptionsTabTag(tid: number): Promise<OptionsTabTag | null>
+{
+	const id = await otbs.key(tid);
+	if (id === null) return null;
+	else return optionsTabTag(id);
 }

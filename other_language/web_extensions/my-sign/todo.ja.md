@@ -316,7 +316,7 @@ TODO
 	+ [x] isUrl()を定義
 	+ [x] type OptionsTab = { openType: string, id: string }といった型を定義する
 	+ [x] InputTabsクラスに逆引き関数を定義
-	+ [ ] InputTabsインスタンスを使って、
+	+ [x] InputTabsインスタンスを使って、
 		sender tab IDからOptionsTabを生成する関数を書く
 	+ [ ] optionsTabId()を定義
 	+ [ ] options.tsをざっくりと読み細かいところを修正 (続き)
