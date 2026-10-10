@@ -327,6 +327,9 @@ TODO
 	+ [ ] backgroundはメッセージを受け取りOptionsStateを操作する
 	+ [ ] OptionsStateはOpitonObjectを更新する
 * [ ] OptionsStateのバックアップやリストアのところを作る
+	+ [x] Mapを作る
+	+ [x] background.tsの起動時に要素を追加する
+	+ [ ] OptionsBeginでMapに要素がなければ追加する
 * [ ] 設定画面の実装の変更(続き)
 	+ [ ] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期

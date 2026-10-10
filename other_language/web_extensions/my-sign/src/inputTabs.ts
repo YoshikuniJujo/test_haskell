@@ -103,6 +103,12 @@ export class InputTabs {
 		return r;
 	}
 
+	async keys(): Promise<string[]>
+	{
+		const assns: Assigns = await this.#getAssignments();
+		return Object.entries(assns).map(([k, v]) => { return k });
+	}
+
 	async key(tid: number): Promise<string | null>
 	{
 		const assns = await this.#getAssignments();

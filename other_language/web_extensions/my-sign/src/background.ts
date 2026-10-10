@@ -26,6 +26,8 @@ Log.write("BACKGROUND BEGIN");
 const itbs = new InputTabs("input");
 const otbs = new InputTabs("options");
 
+const optionsStates: Map<string, OptionsState> = new Map();
+
 (async () => {
 	const ots = [...(await otbs.keyInputTabs())]
 		.filter(([key]) => key !== "browser")
@@ -33,6 +35,15 @@ const otbs = new InputTabs("options");
 	Log.write(`Options tabs: ${ots}`);
 
 	Log.setLogTabs(ots);
+
+	Log.write(`Options Tabs:, ${await otbs.keys()}`);
+
+	(await otbs.keys()).forEach(async k => {
+		const os = new OptionsState(optionsTabTag(k));
+		await os.restore();
+		optionsStates.set(k, os);
+	});
+	Log.write(`BACKGROUND: optionsStates: ${optionsStates}`);
 
 })();
 

@@ -20,6 +20,19 @@ export class OptionsState
 		this.#optionsObject = defaultOptionsObject();
 	}
 
+	async restore()
+	{
+		this.#optionsObject =
+			(await browser.storage.session.get(this.#key))[this.#key];
+	}
+
+	async save()
+	{
+		await browser.storage.session.set({
+			[this.#key]: this.#optionsObject
+		});
+	}
+
 	optionsObject(): OptionsObject
 	{
 		return  this.#optionsObject;
