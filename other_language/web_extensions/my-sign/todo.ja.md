@@ -322,6 +322,11 @@ TODO
 * [ ] OptionsStateを実装していく
 	+ [x] openType == "url"の場合のhiddenとerrorの設定を関数にまとめる
 	+ [ ] その他
+* [ ] アカウント名のところをbackground側とのやりとりをするようにする
+	+ [x] input eventでbackgroundにメッセージを送る
+	+ [ ] backgroundはメッセージを受け取りOptionsStateを操作する
+	+ [ ] OptionsStateはOpitonObjectを更新する
+* [ ] OptionsStateのバックアップやリストアのところを作る
 * [ ] 設定画面の実装の変更(続き)
 	+ [ ] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期

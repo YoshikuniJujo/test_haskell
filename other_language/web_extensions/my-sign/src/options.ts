@@ -104,6 +104,11 @@ let optionsObject: OptionsObject = defaultOptionsObject();
 // ------------------------------------------------------------------------
 // ADD EVENT LISTENER
 
+accName.addEventListener("input", async () => {
+	browser.runtime.sendMessage({
+		class: "Options",
+		method: "accountNameInput", value: accName.value }); });
+
 useClientSet.addEventListener("change", async () =>
 	{ await DB.putUseClientSet(useClientSet.checked); })
 

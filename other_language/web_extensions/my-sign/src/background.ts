@@ -38,8 +38,8 @@ const otbs = new InputTabs("options");
 
 browser.runtime.onMessage.addListener( (m, s) => {
 	if (typeof m.class === "undefined") return globalMethod(m, s);
-	else if (typeof m.instance === "undefined")
-		throw Error("It need a instance if a class is defined.");
+//	else if (typeof m.instance === "undefined")
+//		throw Error("It need a instance if a class is defined.");
 	else switch (m.class) {
 		case "Options":
 			console.log("background.ts: Options:", m);
@@ -55,6 +55,7 @@ type OptionsMethod =
 async function
 optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 {
+	console.log("background.ts: OPTIONS METHOD:", m);
 	switch(m.method) {
 		case "optionsBegin":
 			console.log("background.ts: optionsMethod:", m, s);
