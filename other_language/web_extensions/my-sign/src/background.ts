@@ -62,6 +62,7 @@ browser.runtime.onMessage.addListener( (m, s) => {
 
 type OptionsMethod =
 	| { class: "Options", method: "optionsBegin" }
+	| { class: "Options", method: "accountNameInput"; value: string }
 
 async function
 optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
@@ -81,10 +82,15 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				console.log("background.ts: optionsMethod:",
 					await otbs.keyInputTabs());
 				tg = optionsTabTag("browser");
+				console.log("background.ts: optionsMethod:", optionsStates.get("browser"));
 			} else {
 				tg = optionsTabTag(id);
+				console.log("background.ts: optionsMethod:", optionsStates.get(id));
 			}
-			const ostt = new OptionsState(tg);
+			let ostt;
+			ostt = optionsStates.get(id ?? "browser");
+			if (ostt) return  ostt.optionsObject();
+			ostt = new OptionsState(tg);
 
 			ostt.setUseClientSet(await DB.getUseClientSet());
 			ostt.setClientSummaries(await DB.getClientSummaries());
@@ -97,7 +103,16 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			}
 
 			console.log("background.ts:", ostt);
+			ostt.save();
+			optionsStates.set(id ?? "browser", ostt);
 			return ostt.optionsObject();
+		case "accountNameInput": {
+			console.log("background.ts: accountNameInput");
+			if (s.tab?.id === undefined) throw new Error("bad");
+			const id = await otbs.key(s.tab.id);
+			if (id === null) throw new Error("bad");
+			optionsStates.get(id)?.setAccountName(m.value);
+			return; }
 	}
 }
 

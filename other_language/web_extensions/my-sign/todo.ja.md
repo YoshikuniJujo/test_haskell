@@ -328,8 +328,19 @@ TODO
 	+ [ ] OptionsStateはOpitonObjectを更新する
 * [ ] OptionsStateのバックアップやリストアのところを作る
 	+ [x] Mapを作る
+	+ [ ] idからOptionsObjectを作る処理を関数化する
 	+ [x] background.tsの起動時に要素を追加する
-	+ [ ] OptionsBeginでMapに要素がなければ追加する
+		- [x] storage.sessionにあればOptionsObjectを復元する
+		- [ ] なければOptionsObjectを作る <- この処理が必要かどうか検討する
+	+ [x] Mapの要素をidで検索
+	+ [x] OptionsBeginでMapに要素(OptionsStateのインスタンス)があれば
+		- [x] OptionsObjectをoptions.tsに返す
+	+ [x] OptionsBeginでMapに要素がなければ追加する
+		- [x] OptionsObjectを作り
+		- [x] それをOptionsStateに記録し
+		- [x] storate.sessionにバックアップを取り
+		- [x] options.ts側に返す
+		- [x] OptionsStateをMapに記録する
 * [ ] 設定画面の実装の変更(続き)
 	+ [ ] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期

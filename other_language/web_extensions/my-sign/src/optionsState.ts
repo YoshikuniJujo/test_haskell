@@ -68,6 +68,12 @@ export class OptionsState
 		newClientMode(this.#optionsObject);
 	}
 
+	async setAccountName(an: string)
+	{
+		this.#optionsObject.accountName = an;
+		this.save();
+	}
+
 	async write(cmd: string, ky: string, vl: string)
 	{
 		switch(cmd)
