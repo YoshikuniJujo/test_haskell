@@ -41,7 +41,7 @@ const optionsStates: Map<string, OptionsState> = new Map();
 	(await otbs.keys()).forEach(async k => {
 		const os = new OptionsState(optionsTabTag(k));
 		await os.restore();
-		optionsStates.set(k, os);
+		await optionsStates.set(k, os);
 	});
 	Log.write(`BACKGROUND: optionsStates: ${optionsStates}`);
 
@@ -91,6 +91,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt = optionsStates.get(id ?? "browser");
 			if (ostt) return  ostt.optionsObject();
 			ostt = new OptionsState(tg);
+
+			if (await ostt.restore()) return ostt.optionsObject();
 
 			ostt.setUseClientSet(await DB.getUseClientSet());
 			ostt.setClientSummaries(await DB.getClientSummaries());

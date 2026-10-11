@@ -22,12 +22,17 @@ export class OptionsState
 
 	async restore()
 	{
-		this.#optionsObject =
-			(await browser.storage.session.get(this.#key))[this.#key];
+		const obj = (await browser.storage.session.get(this.#key))[this.#key];
+		console.log("optionsState.ts: restore():", this.#optionsObject);
+		if (obj) {
+			this.#optionsObject = obj;
+			return true; }
+		else  return false;
 	}
 
 	async save()
 	{
+		console.log("optonsState.ts: save():", this.#optionsObject);
 		await browser.storage.session.set({
 			[this.#key]: this.#optionsObject
 		});
@@ -71,7 +76,7 @@ export class OptionsState
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;
-		this.save();
+		await this.save();
 	}
 
 	async write(cmd: string, ky: string, vl: string)
