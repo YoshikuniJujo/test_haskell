@@ -589,12 +589,6 @@ type GenerateMessage =
 
 browser.runtime.onConnect.addListener(async p => {
 	console.log("background.ts: onConnect:", p);
-	p.onMessage.addListener(m => {
-		const m2 = m as GenerateMessage;
-		// FOR DEVELOPMENT. REMOVE IT!
-		console.log("background.ts: port:", m2.password);
-		p.disconnect();
-	});
 	if (p.sender?.tab?.id === undefined) throw new Error("bad");
 	const id = await otbs.key(p.sender.tab.id);
 	if (!id) throw new Error("bad");
@@ -604,4 +598,13 @@ browser.runtime.onConnect.addListener(async p => {
 	console.log(ostt);
 	console.log(ostt.optionsObject());
 	console.log(ostt.optionsObject().accountName);
+	p.onMessage.addListener(async m => {
+		const m2 = m as GenerateMessage;
+		// FOR DEVELOPMENT. REMOVE IT!
+		// console.log("background.ts: port:", m2.password);
+		const esk = await EncryptedSecretKey.generate(
+			ostt.optionsObject().accountName, m2.password );
+		DB.addKeyPair(esk.toObject_563e7e39d4());
+		p.disconnect();
+	});
 });

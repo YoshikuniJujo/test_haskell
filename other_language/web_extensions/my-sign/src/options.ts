@@ -154,15 +154,11 @@ form.addEventListener("submit", async event => {
 
 	const pswd = encodePassword(password.value);
 
-	port.postMessage({ method: "generate", password: pswd });
-
-	const esk = await EncryptedSecretKey.generate(accName.value, pswd);
-	password.value = "";
-	confirm.value = "";
-
-	DB.addKeyPair(esk.toObject_563e7e39d4());
-
-	await loadPublicKeys();
+	try {	password.value = "";
+		confirm.value = "";
+		port.postMessage({ method: "generate", password: pswd });
+		await loadPublicKeys(); }
+	finally { pswd.fill(0); }
 });
 
 showPassword.addEventListener("change", () => {

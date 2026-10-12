@@ -341,14 +341,15 @@ TODO
 		- [x] storate.sessionにバックアップを取り
 		- [x] options.ts側に返す
 		- [x] OptionsStateをMapに記録する
-* [ ] generateボタンの実装を修正
+* [x] generateボタンの実装を修正
 	+ [x] パスワードの送信
 		- [x] stringからuint8Arrayに変換する
 		- [x] port接続
 		- [x] 送信
 		- [x] 受信
-	+ [ ] 鍵ペアをbackgroundで生成する
-	+ [ ] 鍵ペアをbackgroundで登録する
+	+ [x] 鍵ペアをbackgroundで生成する
+	+ [x] 鍵ペアをbackgroundで登録する
+* [ ] 鍵ペアを作ったときにアカウントリストをupdateする
 * [ ] 設定画面の実装の変更(続き)
 	+ [ ] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期
