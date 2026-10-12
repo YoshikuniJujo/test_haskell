@@ -139,7 +139,7 @@ form.addEventListener("submit", async event => {
 
 	console.log("options.ts: SUBMIT");
 
-	browser.runtime.connect();
+	const port = browser.runtime.connect();
 
 	if (password.value !== confirm.value) {
 		console.log(confirm.validity.valid);
@@ -152,9 +152,11 @@ form.addEventListener("submit", async event => {
 
 	confirm.setCustomValidity("");
 
-	const esk = await EncryptedSecretKey.generate(
-		accName.value,
-		encodePassword(password.value) );
+	const pswd = encodePassword(password.value);
+
+	port.postMessage({ method: "generate", password: pswd });
+
+	const esk = await EncryptedSecretKey.generate(accName.value, pswd);
 	password.value = "";
 	confirm.value = "";
 

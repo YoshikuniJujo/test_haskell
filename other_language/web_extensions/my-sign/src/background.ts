@@ -584,8 +584,17 @@ getOptionsTabTag(tid: number): Promise<OptionsTabTag | null>
 	else return optionsTabTag(id);
 }
 
+type GenerateMessage =
+	| { method: "generate", password: Uint8Array }
+
 browser.runtime.onConnect.addListener(async p => {
 	console.log("background.ts: onConnect:", p);
+	p.onMessage.addListener(m => {
+		const m2 = m as GenerateMessage;
+		// FOR DEVELOPMENT. REMOVE IT!
+		console.log("background.ts: port:", m2.password);
+		p.disconnect();
+	});
 	if (p.sender?.tab?.id === undefined) throw new Error("bad");
 	const id = await otbs.key(p.sender.tab.id);
 	if (!id) throw new Error("bad");
@@ -595,5 +604,4 @@ browser.runtime.onConnect.addListener(async p => {
 	console.log(ostt);
 	console.log(ostt.optionsObject());
 	console.log(ostt.optionsObject().accountName);
-	p.disconnect();
 });

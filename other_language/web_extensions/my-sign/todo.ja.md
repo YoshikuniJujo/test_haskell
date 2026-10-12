@@ -342,11 +342,11 @@ TODO
 		- [x] options.ts側に返す
 		- [x] OptionsStateをMapに記録する
 * [ ] generateボタンの実装を修正
-	+ [ ] パスワードの送信
-		- [ ] stringからuint8Arrayに変換する
+	+ [x] パスワードの送信
+		- [x] stringからuint8Arrayに変換する
 		- [x] port接続
-		- [ ] 送信
-		- [ ] 受信
+		- [x] 送信
+		- [x] 受信
 	+ [ ] 鍵ペアをbackgroundで生成する
 	+ [ ] 鍵ペアをbackgroundで登録する
 * [ ] 設定画面の実装の変更(続き)
