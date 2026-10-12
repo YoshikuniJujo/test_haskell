@@ -139,6 +139,8 @@ form.addEventListener("submit", async event => {
 
 	console.log("options.ts: SUBMIT");
 
+	browser.runtime.connect();
+
 	if (password.value !== confirm.value) {
 		console.log(confirm.validity.valid);
 		confirm.setCustomValidity("Password do not match.");

@@ -326,9 +326,9 @@ TODO
 	+ [x] input eventでbackgroundにメッセージを送る
 	+ [ ] backgroundはメッセージを受け取りOptionsStateを操作する
 	+ [ ] OptionsStateはOpitonObjectを更新する
-* [ ] OptionsStateのバックアップやリストアのところを作る
+* [x] OptionsStateのバックアップやリストアのところを作る
 	+ [x] Mapを作る
-	+ [ ] idからOptionsObjectを作る処理を関数化する
+	+ [x] idからOptionsObjectを作る処理を関数化する (今のところやらない)
 	+ [x] background.tsの起動時に要素を追加する
 		- [x] storage.sessionにあればOptionsObjectを復元する
 		- [ ] なければOptionsObjectを作る <- この処理が必要かどうか検討する
@@ -341,6 +341,14 @@ TODO
 		- [x] storate.sessionにバックアップを取り
 		- [x] options.ts側に返す
 		- [x] OptionsStateをMapに記録する
+* [ ] generateボタンの実装を修正
+	+ [ ] パスワードの送信
+		- [ ] stringからuint8Arrayに変換する
+		- [x] port接続
+		- [ ] 送信
+		- [ ] 受信
+	+ [ ] 鍵ペアをbackgroundで生成する
+	+ [ ] 鍵ペアをbackgroundで登録する
 * [ ] 設定画面の実装の変更(続き)
 	+ [ ] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期

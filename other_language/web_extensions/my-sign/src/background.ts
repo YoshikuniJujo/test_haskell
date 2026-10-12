@@ -583,3 +583,17 @@ getOptionsTabTag(tid: number): Promise<OptionsTabTag | null>
 	if (id === null) return null;
 	else return optionsTabTag(id);
 }
+
+browser.runtime.onConnect.addListener(async p => {
+	console.log("background.ts: onConnect:", p);
+	if (p.sender?.tab?.id === undefined) throw new Error("bad");
+	const id = await otbs.key(p.sender.tab.id);
+	if (!id) throw new Error("bad");
+	const ostt = optionsStates.get(id);
+	if (!ostt) throw new Error("bad");
+	console.log(id);
+	console.log(ostt);
+	console.log(ostt.optionsObject());
+	console.log(ostt.optionsObject().accountName);
+	p.disconnect();
+});
