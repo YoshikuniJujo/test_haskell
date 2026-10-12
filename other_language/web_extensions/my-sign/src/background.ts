@@ -606,5 +606,6 @@ browser.runtime.onConnect.addListener(async p => {
 			ostt.optionsObject().accountName, m2.password );
 		DB.addKeyPair(esk.toObject_563e7e39d4());
 		p.disconnect();
+		ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
 	});
 });
