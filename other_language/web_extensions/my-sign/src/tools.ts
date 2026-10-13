@@ -21,7 +21,7 @@ fromHex(hex: string): Uint8Array
 export function
 isUuid(value: string): boolean
 {
-	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+	return /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(value);
 }
 
 export function

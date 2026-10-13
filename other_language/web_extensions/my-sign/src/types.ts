@@ -47,7 +47,7 @@ export type UUID = { type: "UUID", value: string };
 export function
 uuid(s: string): UUID
 {
-	if (isUuid(s)) throw new Error("Not UUID");
+	if (!isUuid(s)) throw new Error("Not UUID");
 	return { type: "UUID", value: s };
 }
 
@@ -88,7 +88,7 @@ optionsTabTag(id: string): OptionsTabTag
 			if (isUuid(id)) return { openType: "uuid", id: id };
 			else if (isUrl(id)) return { openType: "url", id: id };
 			else throw new Error(
-				"optionsTabTag: Invalid options id" );
+				`optionsTabTag: Invalid options id: ${id}` );
 	}
 }
 
