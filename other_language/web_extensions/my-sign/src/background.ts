@@ -62,6 +62,7 @@ browser.runtime.onMessage.addListener( (m, s) => {
 
 type OptionsMethod =
 	| { class: "Options", method: "optionsBegin" }
+	| { class: "Options", method: "optionsObject" }
 	| { class: "Options", method: "accountNameInput"; value: string }
 
 async function
@@ -69,7 +70,15 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 {
 	console.log("background.ts: OPTIONS METHOD:", m);
 	switch(m.method) {
-		case "optionsBegin":
+		case "optionsObject":
+			console.log("background.ts: optionsMethod: optionsObject: HERE");
+			if (s.tab?.id === undefined) throw new Error("bad");
+			const id = await otbs.key(s.tab.id);
+			const ostt = optionsStates.get(id ?? "browser");
+			if (!ostt) throw new Error("bad");
+			console.log("background.ts: optionsObject:", ostt);
+			return ostt.optionsObject();
+		case "optionsBegin": {
 			console.log("background.ts: optionsMethod:", m, s);
 			if (s.tab?.id === undefined) throw new Error("bad");
 			const id = await otbs.key(s.tab.id);
@@ -107,7 +116,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts:", ostt);
 			ostt.save();
 			optionsStates.set(id ?? "browser", ostt);
-			return ostt.optionsObject();
+			return ostt.optionsObject(); }
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			if (s.tab?.id === undefined) throw new Error("bad");
@@ -605,7 +614,8 @@ browser.runtime.onConnect.addListener(async p => {
 		const esk = await EncryptedSecretKey.generate(
 			ostt.optionsObject().accountName, m2.password );
 		DB.addKeyPair(esk.toObject_563e7e39d4());
-		p.disconnect();
 		ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
+		p.postMessage({ method: "generateDone" });
+		p.disconnect();
 	});
 });

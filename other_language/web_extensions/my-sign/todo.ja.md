@@ -349,7 +349,7 @@ TODO
 		- [x] 受信
 	+ [x] 鍵ペアをbackgroundで生成する
 	+ [x] 鍵ペアをbackgroundで登録する
-* [ ] 鍵ペアを作ったときにアカウントリストをupdateする
+* [x] 鍵ペアを作ったときにアカウントリストをupdateする
 * [ ] 設定画面の実装の変更(続き)
 	+ [ ] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期

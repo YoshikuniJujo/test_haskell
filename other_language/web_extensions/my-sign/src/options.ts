@@ -134,6 +134,17 @@ confirm.addEventListener("input", () => {
 	else passwordError.hidden = true;
 });
 
+type GenerateResponseMessage =
+	| { method: "generateDone" }
+
+function
+isGenerateResponseMessage(m: unknown): m is GenerateResponseMessage {
+	return typeof m === "object"
+		&& m !== null
+		&& "method" in m
+		&& m.method === "generateDone";
+}
+
 form.addEventListener("submit", async event => {
 	event.preventDefault();
 
@@ -157,6 +168,20 @@ form.addEventListener("submit", async event => {
 	try {	password.value = "";
 		confirm.value = "";
 		port.postMessage({ method: "generate", password: pswd });
+		port.onMessage.addListener(async m => {
+			console.log("options.ts: GENERATE:", m);
+			if (!isGenerateResponseMessage(m)) throw new Error("bad");
+			switch (m.method) {
+				case "generateDone":
+					console.log("options.ts: generateDone");
+					const obj = await browser.runtime.sendMessage({
+						class: "Options",
+						method: "optionsObject" });
+					console.log("options.ts: GENERATE:", obj);
+					loadOptions(obj);
+					break;
+			}
+		});
 		await loadPublicKeys(); }
 	finally { pswd.fill(0); }
 });
