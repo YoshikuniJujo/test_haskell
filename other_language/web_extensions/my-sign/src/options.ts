@@ -235,10 +235,16 @@ isGenerateResponseMessage(m: unknown): m is GenerateResponseMessage {
 
 // Input Element
 
-const inputElementList: [HTMLInputElement, string][] = [
+type ValueElement = {
+	addEventListener: HTMLElement["addEventListener"];
+	value: string;
+};
+
+const inputElementList: [ValueElement, string][] = [
 	[clientNameD, "clientNameInput"],
 	[urlPatternD, "clientUrlPatternInput"],
 	[backgroundColor16, "backgroundColorInput"],
+	[currentKeyD, "currentKeyInput"],
 	[accName, "accountNameInput"] ]
 
 inputElementList.forEach(([e, m]) => {

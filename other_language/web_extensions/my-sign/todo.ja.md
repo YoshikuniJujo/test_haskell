@@ -350,7 +350,7 @@ TODO
 	+ [x] 鍵ペアをbackgroundで登録する
 * [x] 鍵ペアを作ったときにアカウントリストをupdateする
 * [ ] OptionsStateを使う形に修正する
-	+ [ ] Client Detail
+	+ [x] Client Detail
 		- [x] client name
 		- [x] senderからOptionsStateのインスタンスを
 			検索する関数を作成する
@@ -363,7 +363,7 @@ TODO
 		- [x] Color
 		- [x] Opacity
 		- [x] Open settings by clicking the account display
-		- [ ] Public Key
+		- [x] Public Key
 * [ ] ボタンの修正
 	+ [ ] Reloadボタンの作成
 	+ [ ] 順番を変える。Reload/Apply/Cancel/OK

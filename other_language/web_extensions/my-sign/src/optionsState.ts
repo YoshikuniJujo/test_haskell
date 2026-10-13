@@ -133,6 +133,12 @@ export class OptionsState
 		await this.save();
 	}
 
+	async currentKeyInput(ck: string)
+	{
+		this.#optionsObject.currentKey = ck;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;

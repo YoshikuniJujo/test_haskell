@@ -74,6 +74,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "backgroundColorInput"; value: string }
 	| { class: "Options"; method: "opacityInput"; value: number }
 	| { class: "Options"; method: "openSettingsByClickChanged"; checked: boolean }
+	| { class: "Options"; method: "currentKeyInput"; value: string }
 	| { class: "Options"; method: "accountNameInput"; value: string }
 
 async function
@@ -171,6 +172,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "openSettingsByClickChanged": {
 			(await optionsStateFromSender(s))
 				.openSettingsByClickChanged(m.checked);
+			return; }
+		case "currentKeyInput": {
+			console.log("background.ts: currentKeyInput:", m);
+			(await optionsStateFromSender(s)).currentKeyInput(m.value);
 			return; }
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
