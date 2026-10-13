@@ -366,6 +366,8 @@ TODO
 		- [x] Public Key
 * [ ] ボタンの修正
 	+ [ ] delete
+		- [x] backgroundにメッセージを送る
+		- [ ] 処理をbackgroundに移していく
 	+ [ ] apply
 	+ [ ] cancel
 	+ [ ] submit
