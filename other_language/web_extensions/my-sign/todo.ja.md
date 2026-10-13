@@ -358,7 +358,7 @@ TODO
 		- [x] Use priority for Client selection
 		- [x] Priority
 		- [x] Display account
-		- [ ] Horizontal position
+		- [x] Horizontal position
 		- [ ] Vertical position
 		- [ ] Color
 		- [ ] Opacity

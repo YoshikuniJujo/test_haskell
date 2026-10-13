@@ -103,6 +103,12 @@ export class OptionsState
 		await this.save();
 	}
 
+	async horizontalPositionInput(x: number)
+	{
+		this.#optionsObject.positionX = x;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;

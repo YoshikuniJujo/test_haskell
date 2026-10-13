@@ -241,7 +241,8 @@ inputElementList.forEach(([e, m]) => {
 			class: "Options", method: m, value: e.value }); }); });
 
 const inputElementNumberList: [HTMLInputElement, string][] = [
-	[priority, "priorityInput"]
+	[priority, "priorityInput"],
+	[positionX, "horizontalPositionInput"]
 ]
 
 inputElementNumberList.forEach(([e, m]) => {

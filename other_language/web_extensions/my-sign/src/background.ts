@@ -69,6 +69,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "usePriorityChanged"; checked: boolean }
 	| { class: "Options"; method: "priorityInput"; value: number }
 	| { class: "Options"; method: "displayAccountChanged"; checked: boolean }
+	| { class: "Options"; method: "horizontalPositionInput"; value: number }
 	| { class: "Options"; method: "accountNameInput"; value: string }
 
 async function
@@ -148,6 +149,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const os = await optionsStateFromSender(s);
 			os.displayAccountChanged(m.checked);
 			return os.optionsObject(); }
+		case "horizontalPositionInput": {
+			(await optionsStateFromSender(s))
+				.horizontalPositionInput(m.value);
+			return; }
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			(await optionsStateFromSender(s)).setAccountName(m.value);
