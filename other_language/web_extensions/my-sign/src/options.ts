@@ -107,6 +107,12 @@ newClient.addEventListener("click", async () => {
 
 // Client Detail
 
+clientNameD.addEventListener("input", () => {
+	browser.runtime.sendMessage({
+		class: "Options",
+		method: "clientNameInput",
+		value: clientNameD.value }); });
+
 usePriority.addEventListener("change", () => {
 	priorityLabel.hidden = !usePriority.checked;
 });

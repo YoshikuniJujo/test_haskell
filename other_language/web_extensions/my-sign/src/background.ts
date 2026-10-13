@@ -64,6 +64,7 @@ type OptionsMethod =
 	| { class: "Options", method: "optionsObject" }
 	| { class: "Options", method: "optionsBegin" }
 	| { class: "Options", method: "newClient" }
+	| { class: "Options"; method: "clientNameInput"; value: string }
 	| { class: "Options", method: "accountNameInput"; value: string }
 
 async function
@@ -73,11 +74,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 	switch(m.method) {
 		case "optionsObject": {
 			console.log("background.ts: optionsMethod: optionsObject: HERE");
-			if (s.tab?.id === undefined) throw new Error("bad");
-			const id = await otbs.key(s.tab.id);
-			const ostt = optionsStates.get(id ?? "browser");
-			if (!ostt) throw new Error("bad");
-			console.log("background.ts: optionsObject:", ostt);
+			const ostt = await optionsStateFromSender(s);
 			return ostt.optionsObject(); }
 		case "optionsBegin": {
 			console.log("background.ts: optionsMethod:", m, s);
@@ -119,10 +116,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			optionsStates.set(id ?? "browser", ostt);
 			return ostt.optionsObject(); }
 		case "newClient": {
-			if (s.tab?.id === undefined) throw new Error("bad");
-			const id = await otbs.key(s.tab.id);
-			if (!id) throw new Error("bad");
-			const ostt = optionsStates.get(id);
+			const ostt = await optionsStateFromSender(s);
 			if (!ostt) throw new Error("bad");
 			ostt.setClientUuid(uuid(crypto.randomUUID()));
 			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
@@ -130,14 +124,27 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.save();
 			return ostt.optionsObject();
 		}
+		case "clientNameInput": {
+			console.log("background.ts: clientNameINput:", m.value);
+			(await optionsStateFromSender(s)).setClientName(m.value);
+			return;
+		}
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
-			if (s.tab?.id === undefined) throw new Error("bad");
-			const id = await otbs.key(s.tab.id);
-			if (id === null) throw new Error("bad");
-			optionsStates.get(id)?.setAccountName(m.value);
+			(await optionsStateFromSender(s)).setAccountName(m.value);
 			return; }
 	}
+}
+
+async function
+optionsStateFromSender(s: browser.runtime.MessageSender): Promise<OptionsState>
+{
+	if (s.tab?.id === undefined) throw new Error("bad");
+	const id = await otbs.key(s.tab.id);
+	if (id === null) throw new Error("bad");
+	const os = optionsStates.get(id);
+	if (os === undefined) throw new Error("bad");
+	return os;
 }
 
 type GlobalMethod =

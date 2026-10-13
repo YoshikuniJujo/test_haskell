@@ -73,6 +73,12 @@ export class OptionsState
 		newClientMode(this.#optionsObject);
 	}
 
+	async setClientName(cn: string)
+	{
+		this.#optionsObject.clientName = cn;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;

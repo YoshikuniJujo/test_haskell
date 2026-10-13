@@ -349,6 +349,25 @@ TODO
 	+ [x] 鍵ペアをbackgroundで生成する
 	+ [x] 鍵ペアをbackgroundで登録する
 * [x] 鍵ペアを作ったときにアカウントリストをupdateする
+* [ ] OptionsStateを使う形に修正する
+	+ [ ] Client Detail
+		- [x] client name
+		- [x] senderからOptionsStateのインスタンスを
+			検索する関数を作成する
+		- [ ] client URL pattern
+		- [ ] Use priority for Client selection
+		- [ ] Priority
+		- [ ] Display account
+		- [ ] Horizontal position
+		- [ ] Vertical position
+		- [ ] Color
+		- [ ] Opacity
+		- [ ] Open settings by clicking the account display
+		- [ ] Public Key
+* [ ] ボタンの修正
+	+ [ ] Reloadボタンの作成
+	+ [ ] 順番を変える。Reload/Apply/Cancel/OK
+* [ ] 開発用のボタンを削除する
 * [ ] 設定画面の実装の変更(続き)
 	+ [x] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期
