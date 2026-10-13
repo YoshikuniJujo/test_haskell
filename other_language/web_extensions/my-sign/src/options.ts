@@ -251,7 +251,8 @@ inputElementList.forEach(([e, m]) => {
 const inputElementNumberList: [HTMLInputElement, string][] = [
 	[priority, "priorityInput"],
 	[positionX, "horizontalPositionInput"],
-	[positionY, "verticalPositionInput"]
+	[positionY, "verticalPositionInput"],
+	[backgroundOpacity, "opacityInput"]
 ]
 
 inputElementNumberList.forEach(([e, m]) => {

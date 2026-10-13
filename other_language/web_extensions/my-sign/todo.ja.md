@@ -361,7 +361,7 @@ TODO
 		- [x] Horizontal position
 		- [x] Vertical position
 		- [x] Color
-		- [ ] Opacity
+		- [x] Opacity
 		- [ ] Open settings by clicking the account display
 		- [ ] Public Key
 * [ ] ボタンの修正

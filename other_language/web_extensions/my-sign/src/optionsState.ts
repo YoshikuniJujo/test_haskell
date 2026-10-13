@@ -121,6 +121,12 @@ export class OptionsState
 		await this.save();
 	}
 
+	async opacityInput(o: number)
+	{
+		this.#optionsObject.backgroundOpacity = o;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;

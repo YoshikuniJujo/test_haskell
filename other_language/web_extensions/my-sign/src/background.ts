@@ -72,6 +72,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "horizontalPositionInput"; value: number }
 	| { class: "Options"; method: "verticalPositionInput"; value: number }
 	| { class: "Options"; method: "backgroundColorInput"; value: string }
+	| { class: "Options"; method: "opacityInput"; value: number }
 	| { class: "Options"; method: "accountNameInput"; value: string }
 
 async function
@@ -162,8 +163,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "backgroundColorInput": {
 			const os = await optionsStateFromSender(s);
 			os.backgroundColorInput(m.value);
-			return os.optionsObject();
-		}
+			return os.optionsObject(); }
+		case "opacityInput": {
+			(await optionsStateFromSender(s)).opacityInput(m.value);
+			return; }
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			(await optionsStateFromSender(s)).setAccountName(m.value);
