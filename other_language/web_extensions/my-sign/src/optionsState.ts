@@ -145,11 +145,10 @@ export class OptionsState
 		await this.save();
 	}
 
-	async write(cmd: string, ky: string, vl: string)
+	clientUuid(): UUID
 	{
-		switch(cmd)
-		{
-		}
+		if (this.#optionsObject.clientUuid === null) throw new Error("bad");
+		return this.#optionsObject.clientUuid
 	}
 }
 

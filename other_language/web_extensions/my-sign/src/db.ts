@@ -1,6 +1,7 @@
 import type {
 	Client, ClientSummary, EditingClient,
-	Account, PublicKeyOption } from "./types.js"
+	Account, PublicKeyOption, UUID } from "./types.js"
+import { fromUuid } from "./types.js"
 import { unit } from "./data/unit.js"
 import { toHex } from "./tools.js"
 
@@ -86,13 +87,13 @@ putClient(client: Client)
 }
 
 export async function
-deleteClient(uuid: string)
+deleteClient(uuid: UUID)
 {
 	const db = await open();
 
 	return new Promise((rs, rj) => {
 		const tx = db.transaction(CLIENTS, "readwrite");
-		tx.objectStore(CLIENTS).delete(uuid);
+		tx.objectStore(CLIENTS).delete(fromUuid(uuid));
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
 	});

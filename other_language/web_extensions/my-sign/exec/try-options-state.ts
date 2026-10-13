@@ -26,11 +26,3 @@ const storage = new StorageSessionMock<object>();
 const state = new OptionsState(optionsTabTag("browser"), storage);
 
 console.log(state);
-
-await state.write("set", "accountName", "Ali");
-
-await state.write("set", "accountName", "Alice");
-
-const r = state.write("generateAccount", "password", "hogepiyo");
-
-console.log(r);

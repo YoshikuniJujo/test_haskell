@@ -133,11 +133,12 @@ openSettingsByClick.addEventListener("change", () => {
 });
 
 deleteClient.addEventListener("click", async () => {
-	browser.runtime.sendMessage({
+	await browser.runtime.sendMessage({
 		class: "Options", method: "deleteClient" });
 
 	if (!clientDetail.dataset.clientUuid) throw new Error("badFoo");
-	await DB.deleteClient(clientDetail.dataset.clientUuid);
+	await DB.deleteClient(uuid(clientDetail.dataset.clientUuid));
+
 	await loadClients();
 	await browser.runtime.sendMessage({ method: "clientChanged" });
 

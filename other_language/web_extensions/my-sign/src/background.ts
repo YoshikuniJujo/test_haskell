@@ -180,6 +180,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return; }
 		case "deleteClient": {
 			console.log("background.ts: deleteClient:", m);
+//			DB.deleteClient((await optionsStateFromSender(s)).clientUuid());
 			return; }
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
