@@ -278,7 +278,7 @@ TODO
 * [x] loadPublicKeysのcloneNodeを消す
 * [x] select内のpublicKeyの読み込みについて考える
 * [x] editingClientを消す
-* [ ] 設定画面の実装の変更(続き、途中)
+* [x] 設定画面の実装の変更(続き、途中)
 	+ [x] OptionsObjectを引数に取り、設定画面のほうを修正して同期させる関数を定義する(続き)
 		- [x] optionsObjectToClientDetail関数を定義
 		- [x] clients
@@ -293,9 +293,9 @@ TODO
 	+ [x] clients
 		- [x] All Clearボタンの処理を書く
 		- [x] Restoreボタンの処理を書く
-	+ [ ] options.tsをざっくりと読み細かいところを修正 (途中)
+	+ [x] options.tsをざっくりと読み細かいところを修正 (途中)
 		- [x] GET ELEMENT
-		- [ ] INITIALIZATION
+		- [x] INITIALIZATION
 			* [x] backgroundにメッセージを送る
 			* [x] openNewClientから処理を消していく
 				+ [x] clientDetail.dataset.clientUuid
@@ -310,8 +310,8 @@ TODO
 			* [x] openNewClient()を削除
 			* [x] background側でObjectOptions型の値を作り返す
 			* [x] loadOptionsに上の値をあたえる
-			* [ ] 今までの初期化で不要なものを消す
-			* [ ] その他
+			* [x] 今までの初期化で不要なものを消す
+			* [x] その他
 	+ [x] isUUID()を定義
 	+ [x] isUrl()を定義
 	+ [x] type OptionsTab = { openType: string, id: string }といった型を定義する
@@ -319,13 +319,12 @@ TODO
 	+ [x] InputTabsインスタンスを使って、
 		sender tab IDからOptionsTabを生成する関数を書く
 	+ [x] browser options tabをInputTab管理下にするコードを移動させる
-* [ ] OptionsStateを実装していく
+* [x] OptionsStateを実装していく(途中)
 	+ [x] openType == "url"の場合のhiddenとerrorの設定を関数にまとめる
-	+ [ ] その他
-* [ ] アカウント名のところをbackground側とのやりとりをするようにする
+* [x] アカウント名のところをbackground側とのやりとりをするようにする
 	+ [x] input eventでbackgroundにメッセージを送る
-	+ [ ] backgroundはメッセージを受け取りOptionsStateを操作する
-	+ [ ] OptionsStateはOpitonObjectを更新する
+	+ [x] backgroundはメッセージを受け取りOptionsStateを操作する
+	+ [x] OptionsStateはOpitonObjectを更新する
 * [x] OptionsStateのバックアップやリストアのところを作る
 	+ [x] Mapを作る
 	+ [x] idからOptionsObjectを作る処理を関数化する (今のところやらない)
@@ -355,7 +354,9 @@ TODO
 	+ [ ] 設定画面の同期
 	+ [ ] optionsTabId()を定義
 	+ [ ] options.tsをざっくりと読み細かいところを修正 (続き)
-		- [ ] ADD EVENT LISTENER
+		- [ ] ADD EVENT LISTENER - Client
+		- [ ] ADD EVENT LISTENER - Account
+		- [ ] ADD EVENT LISTENER - Others
 		- [ ] FOR DEVELOPMENT
 		- [ ] TYPES
 		- [ ] FUNCTIONS

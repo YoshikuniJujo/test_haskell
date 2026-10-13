@@ -25,6 +25,9 @@ import * as Bech32 from "./codec/bech32.js";
 // * GET ELEMENT
 // * INITIALIZATION
 // * ADD EVENT LISTENER
+//	+ Client
+//	+ Account
+//	+ Others
 // * FOR DEVELOPMENT
 // * TYPES
 // * FUNCTIONS
@@ -80,11 +83,10 @@ const restore = getElement("#restore");
 let optionsObject: OptionsObject = defaultOptionsObject();
 
 (async () => {
-	const object2 = await browser.runtime.sendMessage({
+	const obj = await browser.runtime.sendMessage({
 		class: "Options", method: "optionsBegin" });
-	console.log("options.ts: INITIALIZATION:", object2);
-	optionsObject = object2;
-	await loadOptions(object2);
+	optionsObject = obj;
+	await loadOptions(obj);
 
 	// LOG WRITE
 	browser.runtime.sendMessage({ method: "addLogTab" });
@@ -94,13 +96,7 @@ let optionsObject: OptionsObject = defaultOptionsObject();
 // ------------------------------------------------------------------------
 // ADD EVENT LISTENER
 
-accName.addEventListener("input", async () => {
-	browser.runtime.sendMessage({
-		class: "Options",
-		method: "accountNameInput", value: accName.value }); });
-
-useClientSet.addEventListener("change", async () =>
-	{ await DB.putUseClientSet(useClientSet.checked); })
+// Client
 
 newClient.addEventListener("click", async () => {
 	const obj = optionsObject;
@@ -115,6 +111,59 @@ backgroundColor.addEventListener("input", () => {
 	backgroundColor16.value = backgroundColor.value;
 });
 
+usePriority.addEventListener("change", () => {
+	priorityLabel.hidden = !usePriority.checked;
+});
+
+displayAccount.addEventListener("change", () => {
+	accDisplaySettings.hidden = !displayAccount.checked;
+});
+
+clientFormD.addEventListener("submit", async event => {
+	event.preventDefault();
+
+	const b = await applyClient();
+
+	if (b) {
+		clientDetail.hidden = true;
+		clientsElm.hidden = false;
+		newClient.hidden = false; } });
+
+document.addEventListener("keydown", event => {
+	if (event.key === "Escape" && !clientDetail.hidden)
+		cancelEditClient.click(); });
+
+applyEditClient.addEventListener("click", () => { applyClient(); });
+
+cancelEditClient.addEventListener("click", () => {
+	clientDetail.hidden = true;
+	clientsElm.hidden = false;
+	newClient.hidden = false; });
+
+deleteClient.addEventListener("click", async () => {
+	if (!clientDetail.dataset.clientUuid) throw new Error("badFoo");
+	await DB.deleteClient(clientDetail.dataset.clientUuid);
+	await loadClients();
+	await browser.runtime.sendMessage({
+		method: "clientChanged"
+	});
+	clientDetail.hidden = true;
+	clientsElm.hidden = false;
+	newClient.hidden = false; });
+
+// Account
+
+accName.addEventListener("input", async () => {
+	browser.runtime.sendMessage({
+		class: "Options",
+		method: "accountNameInput", value: accName.value }); });
+
+showPassword.addEventListener("change", () => {
+	const type = showPassword.checked ? "text" : "password";
+	password.type = type;
+	confirm.type = type;
+});
+
 confirm.addEventListener("input", () => {
 	confirm.setCustomValidity(
 		password.value === confirm.value
@@ -123,17 +172,6 @@ confirm.addEventListener("input", () => {
 	if (password.value !== confirm.value) passwordError.hidden = false;
 	else passwordError.hidden = true;
 });
-
-type GenerateResponseMessage =
-	| { method: "generateDone" }
-
-function
-isGenerateResponseMessage(m: unknown): m is GenerateResponseMessage {
-	return typeof m === "object"
-		&& m !== null
-		&& "method" in m
-		&& m.method === "generateDone";
-}
 
 form.addEventListener("submit", async event => {
 	event.preventDefault();
@@ -176,92 +214,21 @@ form.addEventListener("submit", async event => {
 	finally { pswd.fill(0); }
 });
 
-showPassword.addEventListener("change", () => {
-	const type = showPassword.checked ? "text" : "password";
-	password.type = type;
-	confirm.type = type;
-});
+type GenerateResponseMessage =
+	| { method: "generateDone" }
 
-usePriority.addEventListener("change", () => {
-	priorityLabel.hidden = !usePriority.checked;
-});
-
-displayAccount.addEventListener("change", () => {
-	accDisplaySettings.hidden = !displayAccount.checked;
-});
-
-async function
-applyClient()
-{
-	try {
-		new URLPattern(urlPatternD.value);
-		detailError.textContent = "";
-	}
-	catch (e) {
-		if (!(e instanceof Error)) throw e;
-		detailError.textContent = e.message;
-		return;
-	}
-
-	const pr = priority.valueAsNumber;
-
-	if (!clientDetail.dataset.clientUuid) throw new Error("badC");
-	await DB.putClient({
-		uuid: clientDetail.dataset.clientUuid,
-		name: clientNameD.value,
-		displayAccount: displayAccount.checked,
-		publicKey: fromHex(currentKeyD.value),
-		positionX: positionX.valueAsNumber,
-		positionY: positionY.valueAsNumber,
-		backgroundColor: backgroundColor16.value,
-		backgroundOpacity: backgroundOpacity.valueAsNumber,
-		priority: pr,
-		urlPattern: urlPatternD.value,
-		openSettingsByClick: openSettingsByClick.checked
-	});
-	await loadClients();
-
-	await browser.runtime.sendMessage({
-		method: "clientChanged"
-	});
-
-	const r = await browser.runtime.sendMessage({ method: "clientSubmited" });
-	if (!r) detailError.textContent = "The client does not match the original URL.";
-
-	return r;
+function
+isGenerateResponseMessage(m: unknown): m is GenerateResponseMessage {
+	return typeof m === "object"
+		&& m !== null
+		&& "method" in m
+		&& m.method === "generateDone";
 }
 
-clientFormD.addEventListener("submit", async event => {
-	event.preventDefault();
+// Others
 
-	const b = await applyClient();
-
-	if (b) {
-		clientDetail.hidden = true;
-		clientsElm.hidden = false;
-		newClient.hidden = false; } });
-
-document.addEventListener("keydown", event => {
-	if (event.key === "Escape" && !clientDetail.hidden)
-		cancelEditClient.click(); });
-
-applyEditClient.addEventListener("click", () => { applyClient(); });
-
-cancelEditClient.addEventListener("click", () => {
-	clientDetail.hidden = true;
-	clientsElm.hidden = false;
-	newClient.hidden = false; });
-
-deleteClient.addEventListener("click", async () => {
-	if (!clientDetail.dataset.clientUuid) throw new Error("badFoo");
-	await DB.deleteClient(clientDetail.dataset.clientUuid);
-	await loadClients();
-	await browser.runtime.sendMessage({
-		method: "clientChanged"
-	});
-	clientDetail.hidden = true;
-	clientsElm.hidden = false;
-	newClient.hidden = false; });
+useClientSet.addEventListener("change", async () =>
+	{ await DB.putUseClientSet(useClientSet.checked); })
 
 openInTab.addEventListener("click", () => {
 	browser.runtime.sendMessage({ method: "openOptionsInTab" });
@@ -531,4 +498,45 @@ function
 encodePassword(pswd: string): Uint8Array
 {
 	return new TextEncoder().encode(pswd.normalize("NFKC"));
+}
+
+async function
+applyClient()
+{
+	try {
+		new URLPattern(urlPatternD.value);
+		detailError.textContent = "";
+	}
+	catch (e) {
+		if (!(e instanceof Error)) throw e;
+		detailError.textContent = e.message;
+		return;
+	}
+
+	const pr = priority.valueAsNumber;
+
+	if (!clientDetail.dataset.clientUuid) throw new Error("badC");
+	await DB.putClient({
+		uuid: clientDetail.dataset.clientUuid,
+		name: clientNameD.value,
+		displayAccount: displayAccount.checked,
+		publicKey: fromHex(currentKeyD.value),
+		positionX: positionX.valueAsNumber,
+		positionY: positionY.valueAsNumber,
+		backgroundColor: backgroundColor16.value,
+		backgroundOpacity: backgroundOpacity.valueAsNumber,
+		priority: pr,
+		urlPattern: urlPatternD.value,
+		openSettingsByClick: openSettingsByClick.checked
+	});
+	await loadClients();
+
+	await browser.runtime.sendMessage({
+		method: "clientChanged"
+	});
+
+	const r = await browser.runtime.sendMessage({ method: "clientSubmited" });
+	if (!r) detailError.textContent = "The client does not match the original URL.";
+
+	return r;
 }
