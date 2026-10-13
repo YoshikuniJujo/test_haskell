@@ -91,6 +91,12 @@ export class OptionsState
 		await this.save();
 	}
 
+	async priorityInput(p: number)
+	{
+		this.#optionsObject.priority = p;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;

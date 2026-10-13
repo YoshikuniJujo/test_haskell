@@ -356,7 +356,7 @@ TODO
 			検索する関数を作成する
 		- [x] client URL pattern
 		- [x] Use priority for Client selection
-		- [ ] Priority
+		- [x] Priority
 		- [ ] Display account
 		- [ ] Horizontal position
 		- [ ] Vertical position

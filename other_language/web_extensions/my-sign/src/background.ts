@@ -67,6 +67,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "clientNameInput"; value: string }
 	| { class: "Options"; method: "clientUrlPatternInput"; value: string }
 	| { class: "Options"; method: "usePriorityChanged"; checked: boolean }
+	| { class: "Options"; method: "priorityInput"; value: number }
 	| { class: "Options"; method: "accountNameInput"; value: string }
 
 async function
@@ -138,6 +139,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const os = await optionsStateFromSender(s);
 			os.usePriorityChanged(m.checked);
 			return os.optionsObject(); }
+		case "priorityInput": {
+			console.log("background.ts: priorityInput:", m.value);
+			(await optionsStateFromSender(s)).priorityInput(m.value);
+			return; }
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			(await optionsStateFromSender(s)).setAccountName(m.value);

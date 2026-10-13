@@ -235,6 +235,16 @@ inputElementList.forEach(([e, m]) => {
 		browser.runtime.sendMessage({
 			class: "Options", method: m, value: e.value }); }); });
 
+const inputElementNumberList: [HTMLInputElement, string][] = [
+	[priority, "priorityInput"]
+]
+
+inputElementNumberList.forEach(([e, m]) => {
+	e.addEventListener("input", () => {
+		browser.runtime.sendMessage({
+			class: "Options", method: m,
+			value: e.valueAsNumber }); }); });
+
 // Others
 
 useClientSet.addEventListener("change", async () =>
