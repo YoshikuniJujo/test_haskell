@@ -107,10 +107,6 @@ newClient.addEventListener("click", async () => {
 
 // Client Detail
 
-backgroundColor.addEventListener("input", () => {
-	backgroundColor16.value = backgroundColor.value;
-});
-
 usePriority.addEventListener("change", () => {
 	priorityLabel.hidden = !usePriority.checked;
 });
@@ -119,9 +115,9 @@ displayAccount.addEventListener("change", () => {
 	accDisplaySettings.hidden = !displayAccount.checked;
 });
 
-document.addEventListener("keydown", event => {
-	if (event.key === "Escape" && !clientDetail.hidden)
-		cancelEditClient.click(); });
+backgroundColor.addEventListener("input", () => {
+	backgroundColor16.value = backgroundColor.value;
+});
 
 deleteClient.addEventListener("click", async () => {
 	if (!clientDetail.dataset.clientUuid) throw new Error("badFoo");
@@ -150,6 +146,10 @@ clientFormD.addEventListener("submit", async event => {
 		clientDetail.hidden = true;
 		clientsElm.hidden = false;
 		newClient.hidden = false; } });
+
+document.addEventListener("keydown", event => {
+	if (event.key === "Escape" && !clientDetail.hidden)
+		cancelEditClient.click(); });
 
 // Account
 
