@@ -354,7 +354,8 @@ TODO
 	+ [ ] 設定画面の同期
 	+ [ ] optionsTabId()を定義
 	+ [ ] options.tsをざっくりと読み細かいところを修正 (続き)
-		- [ ] ADD EVENT LISTENER - Client
+		- [x] ADD EVENT LISTENER - Client List
+		- [ ] ADD EVENT LISTENER - Client Detail
 		- [ ] ADD EVENT LISTENER - Account
 		- [ ] ADD EVENT LISTENER - Others
 		- [ ] FOR DEVELOPMENT

@@ -61,8 +61,9 @@ browser.runtime.onMessage.addListener( (m, s) => {
 });
 
 type OptionsMethod =
-	| { class: "Options", method: "optionsBegin" }
 	| { class: "Options", method: "optionsObject" }
+	| { class: "Options", method: "optionsBegin" }
+	| { class: "Options", method: "newClient" }
 	| { class: "Options", method: "accountNameInput"; value: string }
 
 async function
@@ -70,14 +71,14 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 {
 	console.log("background.ts: OPTIONS METHOD:", m);
 	switch(m.method) {
-		case "optionsObject":
+		case "optionsObject": {
 			console.log("background.ts: optionsMethod: optionsObject: HERE");
 			if (s.tab?.id === undefined) throw new Error("bad");
 			const id = await otbs.key(s.tab.id);
 			const ostt = optionsStates.get(id ?? "browser");
 			if (!ostt) throw new Error("bad");
 			console.log("background.ts: optionsObject:", ostt);
-			return ostt.optionsObject();
+			return ostt.optionsObject(); }
 		case "optionsBegin": {
 			console.log("background.ts: optionsMethod:", m, s);
 			if (s.tab?.id === undefined) throw new Error("bad");
@@ -117,6 +118,18 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.save();
 			optionsStates.set(id ?? "browser", ostt);
 			return ostt.optionsObject(); }
+		case "newClient": {
+			if (s.tab?.id === undefined) throw new Error("bad");
+			const id = await otbs.key(s.tab.id);
+			if (!id) throw new Error("bad");
+			const ostt = optionsStates.get(id);
+			if (!ostt) throw new Error("bad");
+			ostt.setClientUuid(uuid(crypto.randomUUID()));
+			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
+			ostt.newClientMode();
+			ostt.save();
+			return ostt.optionsObject();
+		}
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			if (s.tab?.id === undefined) throw new Error("bad");

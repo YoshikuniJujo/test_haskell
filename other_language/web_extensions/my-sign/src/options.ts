@@ -25,7 +25,8 @@ import * as Bech32 from "./codec/bech32.js";
 // * GET ELEMENT
 // * INITIALIZATION
 // * ADD EVENT LISTENER
-//	+ Client
+//	+ Client List
+//	+ Client Detail
 //	+ Account
 //	+ Others
 // * FOR DEVELOPMENT
@@ -96,16 +97,15 @@ let optionsObject: OptionsObject = defaultOptionsObject();
 // ------------------------------------------------------------------------
 // ADD EVENT LISTENER
 
-// Client
+// Client List
 
 newClient.addEventListener("click", async () => {
-	const obj = optionsObject;
-	obj.clientUuid = uuid(crypto.randomUUID());
-	newClientMode(obj);
-	const pks = await DB.getPublicKeyOptions();
-	obj.currentKeyOptions = pks;
+	const obj = await browser.runtime.sendMessage(
+		{ class: "Options", method: "newClient" });
 	await loadOptions(obj);
 });
+
+// Client Detail
 
 backgroundColor.addEventListener("input", () => {
 	backgroundColor16.value = backgroundColor.value;
@@ -119,26 +119,9 @@ displayAccount.addEventListener("change", () => {
 	accDisplaySettings.hidden = !displayAccount.checked;
 });
 
-clientFormD.addEventListener("submit", async event => {
-	event.preventDefault();
-
-	const b = await applyClient();
-
-	if (b) {
-		clientDetail.hidden = true;
-		clientsElm.hidden = false;
-		newClient.hidden = false; } });
-
 document.addEventListener("keydown", event => {
 	if (event.key === "Escape" && !clientDetail.hidden)
 		cancelEditClient.click(); });
-
-applyEditClient.addEventListener("click", () => { applyClient(); });
-
-cancelEditClient.addEventListener("click", () => {
-	clientDetail.hidden = true;
-	clientsElm.hidden = false;
-	newClient.hidden = false; });
 
 deleteClient.addEventListener("click", async () => {
 	if (!clientDetail.dataset.clientUuid) throw new Error("badFoo");
@@ -150,6 +133,23 @@ deleteClient.addEventListener("click", async () => {
 	clientDetail.hidden = true;
 	clientsElm.hidden = false;
 	newClient.hidden = false; });
+
+applyEditClient.addEventListener("click", () => { applyClient(); });
+
+cancelEditClient.addEventListener("click", () => {
+	clientDetail.hidden = true;
+	clientsElm.hidden = false;
+	newClient.hidden = false; });
+
+clientFormD.addEventListener("submit", async event => {
+	event.preventDefault();
+
+	const b = await applyClient();
+
+	if (b) {
+		clientDetail.hidden = true;
+		clientsElm.hidden = false;
+		newClient.hidden = false; } });
 
 // Account
 
