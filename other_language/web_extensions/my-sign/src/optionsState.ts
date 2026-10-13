@@ -109,6 +109,12 @@ export class OptionsState
 		await this.save();
 	}
 
+	async verticalPositionInput(y: number)
+	{
+		this.#optionsObject.positionY = y;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;

@@ -359,7 +359,7 @@ TODO
 		- [x] Priority
 		- [x] Display account
 		- [x] Horizontal position
-		- [ ] Vertical position
+		- [x] Vertical position
 		- [ ] Color
 		- [ ] Opacity
 		- [ ] Open settings by clicking the account display
