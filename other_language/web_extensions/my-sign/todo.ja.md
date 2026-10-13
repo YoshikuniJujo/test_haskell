@@ -357,7 +357,7 @@ TODO
 		- [x] client URL pattern
 		- [x] Use priority for Client selection
 		- [x] Priority
-		- [ ] Display account
+		- [x] Display account
 		- [ ] Horizontal position
 		- [ ] Vertical position
 		- [ ] Color

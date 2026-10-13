@@ -114,8 +114,13 @@ usePriority.addEventListener("change", async () => {
 		checked: usePriority.checked });
 	await loadOptions(obj); });
 
-displayAccount.addEventListener("change", () => {
-	accDisplaySettings.hidden = !displayAccount.checked;
+displayAccount.addEventListener("change", async () => {
+	const obj = await browser.runtime.sendMessage({
+		class: "Options", method: "displayAccountChanged",
+		checked: displayAccount.checked });
+	await loadOptions(obj);
+
+//	accDisplaySettings.hidden = !displayAccount.checked;
 });
 
 backgroundColor.addEventListener("input", () => {

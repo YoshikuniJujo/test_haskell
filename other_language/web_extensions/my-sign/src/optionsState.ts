@@ -97,6 +97,12 @@ export class OptionsState
 		await this.save();
 	}
 
+	async displayAccountChanged(da: boolean)
+	{
+		this.#optionsObject.displayAccount = da;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;
