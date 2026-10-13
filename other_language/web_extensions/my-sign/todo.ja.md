@@ -360,7 +360,7 @@ TODO
 		- [x] Display account
 		- [x] Horizontal position
 		- [x] Vertical position
-		- [ ] Color
+		- [x] Color
 		- [ ] Opacity
 		- [ ] Open settings by clicking the account display
 		- [ ] Public Key

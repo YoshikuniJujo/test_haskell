@@ -115,6 +115,12 @@ export class OptionsState
 		await this.save();
 	}
 
+	async backgroundColorInput(bc: string)
+	{
+		this.#optionsObject.backgroundColor = bc;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;

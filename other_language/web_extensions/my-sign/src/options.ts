@@ -123,8 +123,15 @@ displayAccount.addEventListener("change", async () => {
 //	accDisplaySettings.hidden = !displayAccount.checked;
 });
 
-backgroundColor.addEventListener("input", () => {
-	backgroundColor16.value = backgroundColor.value;
+backgroundColor.addEventListener("input", async () => {
+
+	const obj = await browser.runtime.sendMessage({
+		class: "Options", method: "backgroundColorInput",
+		value: backgroundColor.value });
+	await loadOptions(obj);
+
+//	backgroundColor16.value = backgroundColor.value;
+//	backgroundColor16.dispatchEvent(new Event("input", { bubbles: true }));
 });
 
 deleteClient.addEventListener("click", async () => {
@@ -233,6 +240,7 @@ isGenerateResponseMessage(m: unknown): m is GenerateResponseMessage {
 const inputElementList: [HTMLInputElement, string][] = [
 	[clientNameD, "clientNameInput"],
 	[urlPatternD, "clientUrlPatternInput"],
+	[backgroundColor16, "backgroundColorInput"],
 	[accName, "accountNameInput"] ]
 
 inputElementList.forEach(([e, m]) => {
