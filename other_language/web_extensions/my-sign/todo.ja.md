@@ -365,6 +365,10 @@ TODO
 		- [x] Open settings by clicking the account display
 		- [x] Public Key
 * [ ] ボタンの修正
+	+ [ ] delete
+	+ [ ] apply
+	+ [ ] cancel
+	+ [ ] submit
 	+ [ ] Reloadボタンの作成
 	+ [ ] 順番を変える。Reload/Apply/Cancel/OK
 	+ [ ] openType == "url"のときReload/Apply/Cancelボタンをhiddenにする

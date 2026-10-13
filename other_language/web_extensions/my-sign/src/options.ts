@@ -156,6 +156,10 @@ cancelEditClient.addEventListener("click", () => {
 	clientsElm.hidden = false;
 	newClient.hidden = false; });
 
+document.addEventListener("keydown", event => {
+	if (event.key === "Escape" && !clientDetail.hidden)
+		cancelEditClient.click(); });
+
 clientFormD.addEventListener("submit", async event => {
 	event.preventDefault();
 
@@ -165,10 +169,6 @@ clientFormD.addEventListener("submit", async event => {
 		clientDetail.hidden = true;
 		clientsElm.hidden = false;
 		newClient.hidden = false; } });
-
-document.addEventListener("keydown", event => {
-	if (event.key === "Escape" && !clientDetail.hidden)
-		cancelEditClient.click(); });
 
 // Account
 
