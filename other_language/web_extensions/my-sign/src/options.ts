@@ -441,6 +441,11 @@ loadClientsFromSummaries(clientSummaries: ClientSummary[])
 		row.textContent = client.name + " " + client.urlPattern;
 
 		row.addEventListener("click", async () => {
+			browser.runtime.sendMessage({
+				class: "Options",
+				method: "openClientDetail",
+				value: client.uuid });
+
 			const clnt = await DB.getClient(client.uuid.value);
 			clientDetail.dataset.clientUuid = client.uuid.value;
 

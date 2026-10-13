@@ -7,7 +7,7 @@ import * as Bech32 from "./codec/bech32.js";
 
 import { addToArrayMap, forEachValues } from "./mapArray.js";
 
-import type { Client, ClientSummary, OptionsTabTag } from "./types.js";
+import type { Client, ClientSummary, OptionsTabTag, UUID } from "./types.js";
 
 import { isUrl } from "./tools.js";
 import { optionsTabTag, uuid } from "./types.js";
@@ -63,6 +63,7 @@ browser.runtime.onMessage.addListener( (m, s) => {
 type OptionsMethod =
 	| { class: "Options"; method: "optionsObject" }
 	| { class: "Options"; method: "optionsBegin" }
+	| { class: "Options"; method: "openClientDetail"; value: UUID }
 	| { class: "Options"; method: "newClient" }
 	| { class: "Options"; method: "clientNameInput"; value: string }
 	| { class: "Options"; method: "clientUrlPatternInput"; value: string }
@@ -126,6 +127,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.save();
 			optionsStates.set(id ?? "browser", ostt);
 			return ostt.optionsObject(); }
+		case "openClientDetail": {
+			console.log("background.ts: openClientDetail:", m);
+			return;
+		}
 		case "newClient": {
 			const ostt = await optionsStateFromSender(s);
 			if (!ostt) throw new Error("bad");
