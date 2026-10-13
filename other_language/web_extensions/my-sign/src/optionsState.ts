@@ -85,6 +85,12 @@ export class OptionsState
 		await this.save();
 	}
 
+	async usePriorityChanged(up: boolean)
+	{
+		this.#optionsObject.usePriority = up;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;

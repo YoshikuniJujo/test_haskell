@@ -355,7 +355,7 @@ TODO
 		- [x] senderからOptionsStateのインスタンスを
 			検索する関数を作成する
 		- [x] client URL pattern
-		- [ ] Use priority for Client selection
+		- [x] Use priority for Client selection
 		- [ ] Priority
 		- [ ] Display account
 		- [ ] Horizontal position

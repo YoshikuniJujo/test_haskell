@@ -108,9 +108,11 @@ newClient.addEventListener("click", async () => {
 
 // Client Detail
 
-usePriority.addEventListener("change", () => {
-	priorityLabel.hidden = !usePriority.checked;
-});
+usePriority.addEventListener("change", async () => {
+	const obj = await browser.runtime.sendMessage({
+		class: "Options", method: "usePriorityChanged",
+		checked: usePriority.checked });
+	await loadOptions(obj); });
 
 displayAccount.addEventListener("change", () => {
 	accDisplaySettings.hidden = !displayAccount.checked;

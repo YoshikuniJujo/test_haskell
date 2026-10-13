@@ -61,12 +61,13 @@ browser.runtime.onMessage.addListener( (m, s) => {
 });
 
 type OptionsMethod =
-	| { class: "Options", method: "optionsObject" }
-	| { class: "Options", method: "optionsBegin" }
-	| { class: "Options", method: "newClient" }
+	| { class: "Options"; method: "optionsObject" }
+	| { class: "Options"; method: "optionsBegin" }
+	| { class: "Options"; method: "newClient" }
 	| { class: "Options"; method: "clientNameInput"; value: string }
 	| { class: "Options"; method: "clientUrlPatternInput"; value: string }
-	| { class: "Options", method: "accountNameInput"; value: string }
+	| { class: "Options"; method: "usePriorityChanged"; checked: boolean }
+	| { class: "Options"; method: "accountNameInput"; value: string }
 
 async function
 optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
@@ -132,6 +133,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			(await optionsStateFromSender(s))
 				.setClientUrlPattern(m.value);
 			return; }
+		case "usePriorityChanged": {
+			console.log("background.ts: usePriorityChanged:", m.checked);
+			const os = await optionsStateFromSender(s);
+			os.usePriorityChanged(m.checked);
+			return os.optionsObject(); }
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			(await optionsStateFromSender(s)).setAccountName(m.value);
