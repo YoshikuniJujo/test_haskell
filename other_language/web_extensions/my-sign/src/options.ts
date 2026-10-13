@@ -76,22 +76,12 @@ const restore = getElement("#restore");
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
-let openType: string | null, id: string | null;
-
-if (location.search === "") { openType = "browser"; id = "browser"; }
-else {	const params = new URLSearchParams(location.search);
-	openType = params.get("openType"); id = params.get("id"); }
-if (openType === null || id === null)
-	throw new Error("no openType or no id");
-if (openType === "browser") browserFooter.hidden = false;
-
 // FOR DEVELOPMENT. REMOVE IT
 let optionsObject: OptionsObject = defaultOptionsObject();
 
 (async () => {
 	const object2 = await browser.runtime.sendMessage({
-		class: "Options",
-		type: openType, instance: id, method: "optionsBegin" });
+		class: "Options", method: "optionsBegin" });
 	console.log("options.ts: INITIALIZATION:", object2);
 	optionsObject = object2;
 	await loadOptions(object2);
@@ -235,21 +225,21 @@ applyClient()
 		method: "clientChanged"
 	});
 
-	if (openType === "url") {
-		const r = await browser.runtime.sendMessage(
-			{ method: "clientSubmited", id: id } );
-		if (!r) optionsError.textContent = "The client does not match the original URL.";
-	}
+	const r = await browser.runtime.sendMessage({ method: "clientSubmited" });
+	if (!r) detailError.textContent = "The client does not match the original URL.";
+
+	return r;
 }
 
 clientFormD.addEventListener("submit", async event => {
 	event.preventDefault();
 
-	await applyClient();
+	const b = await applyClient();
 
-	clientDetail.hidden = true;
-	clientsElm.hidden = false;
-	newClient.hidden = false; });
+	if (b) {
+		clientDetail.hidden = true;
+		clientsElm.hidden = false;
+		newClient.hidden = false; } });
 
 document.addEventListener("keydown", event => {
 	if (event.key === "Escape" && !clientDetail.hidden)

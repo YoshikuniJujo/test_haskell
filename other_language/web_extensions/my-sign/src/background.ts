@@ -194,7 +194,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				ot = await browser.tabs.create({
 					active: false,
 					url: browser.runtime.getURL(
-						"options.html?openType=set&id=set")
+						"options.html")
 				});
 				if (!s.tab) throw new Error("bad");
 				if (!s.tab.id) throw new Error("bad");
@@ -205,7 +205,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				ot = await browser.tabs.create({
 					active: false,
 					url: browser.runtime.getURL(
-						"options.html?openType=uuid&id=" + encodeURIComponent(cl.uuid) )
+						"options.html" )
 				});
 				if (!s.tab) throw new Error("bad");
 				if (!s.tab.id) throw new Error("bad");
@@ -226,8 +226,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			console.log("background: openOptionsInTab");
 			const ot2 = await browser.tabs.create({
 				active: false,
-				url: browser.runtime.getURL(
-					"options.html?openType=tab&id=tab")
+				url: browser.runtime.getURL("options.html")
 			});
 			if (s.tab?.id === undefined) throw new Error("bad");
 			if (ot2.id === undefined) throw new Error("bad");
@@ -248,8 +247,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				console.log("c is:", c);
 				const ot = await browser.tabs.create({
 					active: false,
-					url: browser.runtime.getURL(
-						"options.html?openType=url&id=" + encodeURIComponent(m.clientUrl) )
+					url: browser.runtime.getURL("options.html")
 				});
 				console.log(ot);
 				console.log("getPublicKey", m.clientUrl, s.tab.id, ot.id)
@@ -261,14 +259,19 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			return;
 		case "clientSubmited":
 			console.log("background: clientSubmited");
-			const clnt = await getClient(m.id);
+			if (!s.tab) throw new Error("bad");
+			if (s.tab.id === undefined) throw new Error("bad");
+			const mid = await otbs.key(s.tab.id);
+			if (mid === null) throw new Error("bad");
+			const tag = optionsTabTag(mid);
+			console.log("background.ts: clientSubmited: tag =", tag);
+			if (tag.openType !== "url") return true;
+			const clnt = await getClient(mid);
 			console.log("background: clientSubmited:", clnt);
 			if (clnt !== null) {
-				if (!s.tab) throw new Error("bad");
-				if (s.tab.id === undefined) throw new Error("bad");
-				const sts = await otbs.complete(m.id, s.tab.id);
+				const sts = await otbs.complete(mid, s.tab.id);
 				for (const st of sts)
-					await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: m.id });
+					await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: mid });
 				const st0 = sts[0]
 				if (st0 !== undefined)
 					await browser.tabs.update(st0, { active: true });
@@ -398,8 +401,7 @@ getPublicKey(url: string, tid: number)
 
 	const ot = await browser.tabs.create({
 		active: false,
-		url: browser.runtime.getURL(
-			"options.html?openType=url&id=" + encodeURIComponent(url) )
+		url: browser.runtime.getURL("options.html")
 	});
 	console.log(ot);
 	console.log("getPublicKey", url, tid, ot.id)

@@ -351,7 +351,7 @@ TODO
 	+ [x] 鍵ペアをbackgroundで登録する
 * [x] 鍵ペアを作ったときにアカウントリストをupdateする
 * [ ] 設定画面の実装の変更(続き)
-	+ [ ] openTypeやidをoptions.tsから消去する
+	+ [x] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期
 	+ [ ] optionsTabId()を定義
 	+ [ ] options.tsをざっくりと読み細かいところを修正 (続き)
