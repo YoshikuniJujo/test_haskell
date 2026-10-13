@@ -65,6 +65,7 @@ type OptionsMethod =
 	| { class: "Options", method: "optionsBegin" }
 	| { class: "Options", method: "newClient" }
 	| { class: "Options"; method: "clientNameInput"; value: string }
+	| { class: "Options"; method: "clientUrlPatternInput"; value: string }
 	| { class: "Options", method: "accountNameInput"; value: string }
 
 async function
@@ -122,13 +123,15 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
 			ostt.newClientMode();
 			ostt.save();
-			return ostt.optionsObject();
-		}
+			return ostt.optionsObject(); }
 		case "clientNameInput": {
 			console.log("background.ts: clientNameINput:", m.value);
 			(await optionsStateFromSender(s)).setClientName(m.value);
-			return;
-		}
+			return; }
+		case "clientUrlPatternInput": {
+			(await optionsStateFromSender(s))
+				.setClientUrlPattern(m.value);
+			return; }
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			(await optionsStateFromSender(s)).setAccountName(m.value);

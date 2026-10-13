@@ -79,6 +79,12 @@ export class OptionsState
 		await this.save();
 	}
 
+	async setClientUrlPattern(cup: string)
+	{
+		this.#optionsObject.urlPattern = cup;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;

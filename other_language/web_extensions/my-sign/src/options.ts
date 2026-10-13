@@ -28,6 +28,7 @@ import * as Bech32 from "./codec/bech32.js";
 //	+ Client List
 //	+ Client Detail
 //	+ Account
+//	+ Input Element
 //	+ Others
 // * FOR DEVELOPMENT
 // * TYPES
@@ -107,12 +108,6 @@ newClient.addEventListener("click", async () => {
 
 // Client Detail
 
-clientNameD.addEventListener("input", () => {
-	browser.runtime.sendMessage({
-		class: "Options",
-		method: "clientNameInput",
-		value: clientNameD.value }); });
-
 usePriority.addEventListener("change", () => {
 	priorityLabel.hidden = !usePriority.checked;
 });
@@ -158,11 +153,6 @@ document.addEventListener("keydown", event => {
 		cancelEditClient.click(); });
 
 // Account
-
-accName.addEventListener("input", async () => {
-	browser.runtime.sendMessage({
-		class: "Options",
-		method: "accountNameInput", value: accName.value }); });
 
 showPassword.addEventListener("change", () => {
 	const type = showPassword.checked ? "text" : "password";
@@ -230,6 +220,18 @@ isGenerateResponseMessage(m: unknown): m is GenerateResponseMessage {
 		&& "method" in m
 		&& m.method === "generateDone";
 }
+
+// Input Element
+
+const inputElementList: [HTMLInputElement, string][] = [
+	[clientNameD, "clientNameInput"],
+	[urlPatternD, "clientUrlPatternInput"],
+	[accName, "accountNameInput"] ]
+
+inputElementList.forEach(([e, m]) => {
+	e.addEventListener("input", () => {
+		browser.runtime.sendMessage({
+			class: "Options", method: m, value: e.value }); }); });
 
 // Others
 
