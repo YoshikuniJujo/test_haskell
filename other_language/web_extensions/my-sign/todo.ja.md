@@ -367,6 +367,7 @@ TODO
 * [ ] ボタンの修正
 	+ [ ] Reloadボタンの作成
 	+ [ ] 順番を変える。Reload/Apply/Cancel/OK
+	+ [ ] openType == "url"のときReload/Apply/Cancelボタンをhiddenにする
 * [ ] 開発用のボタンを削除する
 * [ ] 設定画面の実装の変更(続き)
 	+ [x] openTypeやidをoptions.tsから消去する

@@ -143,7 +143,13 @@ deleteClient.addEventListener("click", async () => {
 	clientsElm.hidden = false;
 	newClient.hidden = false; });
 
-applyEditClient.addEventListener("click", () => { applyClient(); });
+applyEditClient.addEventListener("click", () => {
+	if (!clientFormD.checkValidity()) {
+		clientFormD.reportValidity();
+		return;
+	}
+	applyClient();
+});
 
 cancelEditClient.addEventListener("click", () => {
 	clientDetail.hidden = true;
