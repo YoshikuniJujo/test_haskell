@@ -118,20 +118,18 @@ displayAccount.addEventListener("change", async () => {
 	const obj = await browser.runtime.sendMessage({
 		class: "Options", method: "displayAccountChanged",
 		checked: displayAccount.checked });
-	await loadOptions(obj);
-
-//	accDisplaySettings.hidden = !displayAccount.checked;
-});
+	await loadOptions(obj); });
 
 backgroundColor.addEventListener("input", async () => {
-
 	const obj = await browser.runtime.sendMessage({
 		class: "Options", method: "backgroundColorInput",
 		value: backgroundColor.value });
-	await loadOptions(obj);
+	await loadOptions(obj); });
 
-//	backgroundColor16.value = backgroundColor.value;
-//	backgroundColor16.dispatchEvent(new Event("input", { bubbles: true }));
+openSettingsByClick.addEventListener("change", () => {
+	browser.runtime.sendMessage({
+		class: "Options", method: "openSettingsByClickChanged",
+		checked: openSettingsByClick.checked });
 });
 
 deleteClient.addEventListener("click", async () => {

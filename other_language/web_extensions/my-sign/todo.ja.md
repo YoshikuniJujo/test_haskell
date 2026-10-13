@@ -362,7 +362,7 @@ TODO
 		- [x] Vertical position
 		- [x] Color
 		- [x] Opacity
-		- [ ] Open settings by clicking the account display
+		- [x] Open settings by clicking the account display
 		- [ ] Public Key
 * [ ] ボタンの修正
 	+ [ ] Reloadボタンの作成

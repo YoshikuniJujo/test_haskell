@@ -127,6 +127,12 @@ export class OptionsState
 		await this.save();
 	}
 
+	async openSettingsByClickChanged(osbc: boolean)
+	{
+		this.#optionsObject.openSettingsByClick = osbc;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;
