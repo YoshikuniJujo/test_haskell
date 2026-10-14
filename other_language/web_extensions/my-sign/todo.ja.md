@@ -381,9 +381,11 @@ TODO
 	+ [ ] Reloadボタンの作成
 	+ [ ] 順番を変える。Reload/Apply/Cancel/OK
 	+ [ ] openType == "url"のときReload/Apply/Cancelボタンをhiddenにする
+* [x] optionsObjectからshowPasswordを削除する
+* [x] optionsObjectからpasswordErrorHiddenを削除する
 * [x] クライアントリストを名前順に並べる
 * [x] アカウントリストを名前順に並べる
-* [ ] 開発用のボタンを削除する
+* [x] 開発用のボタンを削除する
 * [ ] 設定画面の実装の変更(続き)
 	+ [x] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期

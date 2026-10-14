@@ -75,11 +75,6 @@ const logOutput = getElement("#log-output");
 const browserFooter = getElement<HTMLElement>("#browser-footer");
 const openInTab = getElement<HTMLElement>("#open-in-tab");
 
-// FOR DEVELOPMENT. REMOVE IT
-const backup = getElement("#backup");
-const allClear = getElement("#all-clear");
-const restore = getElement("#restore");
-
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -160,17 +155,20 @@ clientFormD.addEventListener("submit", async event => {
 
 showPassword.addEventListener("change", () => {
 	const type = showPassword.checked ? "text" : "password";
-	password.type = type;
-	confirm.type = type; });
+	password.type = type; confirm.type = type; });
 
-confirm.addEventListener("input", () => {
+password.addEventListener("input", checkPassword);
+confirm.addEventListener("input", checkPassword);
+
+function
+checkPassword()
+{
 	confirm.setCustomValidity(
 		password.value === confirm.value
-			? ""
-			: "Passwords do not match." );
+			? "" : "Passwords do not match." );
 	if (password.value !== confirm.value) passwordError.hidden = false;
 	else passwordError.hidden = true;
-});
+}
 
 form.addEventListener("submit", async event => {
 	event.preventDefault();
@@ -266,67 +264,6 @@ openInTab.addEventListener("click", () => {
 });
 
 // ------------------------------------------------------------------------
-// FOR DEVELOPMENT
-
-backup.addEventListener("click", async () => {
-	const clnts2: ClientSummary[] = Array.from(clientsElm.children, child => {
-		if (!(child instanceof HTMLElement)) throw new Error("badBar");
-		const nm = child.dataset.name ?? "";
-		const up = child.dataset.urlPattern ?? "";
-		return {
-			type: "ClientSummary",
-			uuid: { type: "UUID", value: child.id },
-			name: nm, urlPattern: up }; });
-
-	const crrKyOpts: PublicKeyOption[] = Array.from(currentKeyD.children, child => {
-		if (!(child instanceof HTMLOptionElement)) throw new Error("badBaz");
-		if (!child.dataset.name) throw new Error("badHoge");
-		console.log("options.ts: BACKUP: public key value =", child.value);
-		console.log("options.ts: BACKUP: public key value =", child.dataset.name);
-		return {
-			type: "PublicKeyOption",
-			publicKey: child.value,
-			name: child.dataset.name } });
-
-	optionsObject.accountName = accName.value;
-	optionsObject.showPassword = showPassword.checked;
-	optionsObject.passwordErrorHidden = passwordError.hidden === true;
-
-	optionsObject.clientsHidden = clientsElm.hidden === true;
-	optionsObject.newClientButtonHidden = newClient.hidden === true;
-	optionsObject.deleteClientButtonHidden = deleteClient.hidden === true;
-	optionsObject.clientDetailHidden = clientDetail.hidden === true;
-
-	optionsObject.clients = clnts2;
-
-	optionsObject.clientUuid = uuidNull(clientDetail.dataset.clientUuid ?? null);
-	optionsObject.clientName = clientNameD.value;
-	optionsObject.urlPattern = urlPatternD.value;
-	optionsObject.usePriority = usePriority.checked;
-	optionsObject.priority = priority.valueAsNumber;
-	optionsObject.displayAccount = displayAccount.checked;
-	optionsObject.positionX = positionX.valueAsNumber;
-	optionsObject.positionY = positionY.valueAsNumber;
-	optionsObject.backgroundColor = backgroundColor.value;
-	optionsObject.backgroundOpacity = backgroundOpacity.valueAsNumber;
-	optionsObject.openSettingsByClick = openSettingsByClick.checked;
-	optionsObject.currentKey = currentKeyD.value;
-	optionsObject.currentKeyOptions = crrKyOpts;
-	optionsObject.detailError = detailError.textContent;
-
-	optionsObject.optionsError = optionsError.textContent;
-	optionsObject.useClientSet = useClientSet.checked;
-
-	console.log("BACKUP:", optionsObject);
-});
-
-allClear.addEventListener("click", () => {
-	loadOptions(defaultOptionsObject()); });
-
-restore.addEventListener("click", () => {
-	loadOptions(optionsObject); });
-
-// ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
 	console.log("options.js", m, s);
@@ -372,8 +309,6 @@ function
 loadOptions(obj: OptionsObject)
 {
 	accName.value = obj.accountName;
-	showPassword.checked = obj.showPassword;
-	passwordError.hidden = obj.passwordErrorHidden;
 
 	clientsElm.hidden = obj.clientsHidden;
 	newClient.hidden = obj.newClientButtonHidden;

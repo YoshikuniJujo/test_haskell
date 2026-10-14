@@ -2,8 +2,6 @@ import type { ClientSummary, PublicKeyOption, UUID } from "./types.js";
 
 export type OptionsObject = {
 	accountName: string,
-	showPassword: boolean,
-	passwordErrorHidden: boolean,
 
 	clientsHidden: boolean,
 	newClientButtonHidden: boolean,
@@ -36,8 +34,6 @@ export function defaultOptionsObject(): OptionsObject
 {
 	return {
 		accountName: "",
-		showPassword: false,
-		passwordErrorHidden: true,
 
 		clientsHidden: false,
 		newClientButtonHidden: false,
