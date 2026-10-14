@@ -129,11 +129,23 @@ getPublicKeyOptions(): Promise<PublicKeyOption[]>
 		const tx = db.transaction(SECRET_KEYS, "readonly");
 		const store = tx.objectStore(SECRET_KEYS);
 		const req = store.getAll();
+		/*
+		const rslt = req.result;
+		const srslt = [...rslt].sort(
+			(a, b) => a.name.localeCompare(b.name)
+		);
+		*/
 
-		req.onsuccess = () => rs(req.result.map(k => ({
-			type: "PublicKeyOption",
-			publicKey: toHex(k.publicKey),
-			name: k.name })));
+		req.onsuccess = () => {
+			const rslt = req.result;
+			const srslt = [...rslt].sort(
+				(a, b) => a.name.localeCompare(b.name)
+			);
+			rs(srslt.map(k => ({
+				type: "PublicKeyOption",
+				publicKey: toHex(k.publicKey),
+				name: k.name })));
+		}
 		req.onerror = () => rj(req.error);
 	});
 }
@@ -163,7 +175,11 @@ getClientSummaries(): Promise<ClientSummary[]>
 
 		req.onsuccess = () => {
 			const rslts : Client[] = req.result;
-			rs(rslts.map(r => {
+			console.log(rslts);
+			const srslts = [...rslts].sort(
+				(a, b) => a.name?.localeCompare(b.name)
+			);
+			rs(srslts.map(r => {
 				return {
 					type: "ClientSummary",
 					uuid: { type: "UUID", value: r.uuid },

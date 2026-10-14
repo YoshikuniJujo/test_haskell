@@ -381,8 +381,8 @@ TODO
 	+ [ ] Reloadボタンの作成
 	+ [ ] 順番を変える。Reload/Apply/Cancel/OK
 	+ [ ] openType == "url"のときReload/Apply/Cancelボタンをhiddenにする
-* [ ] クライアントリストを名前順に並べる
-* [ ] アカウントリストを名前順に並べる
+* [x] クライアントリストを名前順に並べる
+* [x] アカウントリストを名前順に並べる
 * [ ] 開発用のボタンを削除する
 * [ ] 設定画面の実装の変更(続き)
 	+ [x] openTypeやidをoptions.tsから消去する
@@ -507,3 +507,4 @@ TODO
 	+ queueMicrotaskではNG
 	+ setTimeout(..., 0)はOK
 * [x] アカウント表示領域の文字の透過度を背景の透過度に合わせる
+* [ ] openType === "url"のときタブを閉じられたら赤字でメッセージを出す
