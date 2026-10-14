@@ -376,8 +376,8 @@ TODO
 				+ [x] まとめる
 			* [x] 必要ならタブ管理により閉じる部分
 			* [x] 名前等含めリファクタリングする
-	+ [ ] cancel
-	+ [ ] submit
+	+ [x] cancel
+	+ [x] submit
 	+ [ ] Reloadボタンの作成
 	+ [ ] 順番を変える。Reload/Apply/Cancel/OK
 	+ [ ] openType == "url"のときReload/Apply/Cancelボタンをhiddenにする

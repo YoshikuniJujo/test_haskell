@@ -81,6 +81,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "applyClient"; }
 	| { class: "Options"; method: "isClientMatched"; }
 	| { class: "Options"; method: "clientSubmited"; }
+	| { class: "Options"; method: "clientListMode"; }
 	| { class: "Options"; method: "accountNameInput"; value: string }
 
 async function
@@ -253,6 +254,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			if (s.tab.id === undefined) throw new Error("bad32");
 			await browser.tabs.remove(s.tab.id);
 			return;
+		case "clientListMode": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.clientListMode();
+			return ostt.optionsObject(); }
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			(await optionsStateFromSender(s)).setAccountName(m.value);

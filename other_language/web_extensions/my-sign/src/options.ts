@@ -145,9 +145,7 @@ applyEditClient.addEventListener("click", () => {
 	applyClient(); });
 
 cancelEditClient.addEventListener("click", () => {
-	clientDetail.hidden = true;
-	clientsElm.hidden = false;
-	newClient.hidden = false; });
+	sendMethodAndLoad("clientListMode"); });
 
 document.addEventListener("keydown", event => {
 	if (event.key === "Escape" && !clientDetail.hidden)
@@ -155,21 +153,15 @@ document.addEventListener("keydown", event => {
 
 clientFormD.addEventListener("submit", async event => {
 	event.preventDefault();
-
 	const b = await applyClient();
-
-	if (b) {
-		clientDetail.hidden = true;
-		clientsElm.hidden = false;
-		newClient.hidden = false; } });
+	if (b) sendMethodAndLoad("clientListMode"); });
 
 // Account
 
 showPassword.addEventListener("change", () => {
 	const type = showPassword.checked ? "text" : "password";
 	password.type = type;
-	confirm.type = type;
-});
+	confirm.type = type; });
 
 confirm.addEventListener("input", () => {
 	confirm.setCustomValidity(
