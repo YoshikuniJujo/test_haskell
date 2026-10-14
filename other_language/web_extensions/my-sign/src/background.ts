@@ -77,6 +77,8 @@ type OptionsMethod =
 	| { class: "Options"; method: "openSettingsByClickChanged"; checked: boolean }
 	| { class: "Options"; method: "currentKeyInput"; value: string }
 	| { class: "Options"; method: "deleteClient"; }
+	| { class: "Options"; method: "checkUrlPattern"; }
+	| { class: "Options"; method: "applyClient"; }
 	| { class: "Options"; method: "accountNameInput"; value: string }
 
 async function
@@ -198,6 +200,15 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.clientListMode();
 			await broadcast({ method: "clientChanged" });
 			return ostt.optionsObject(); }
+		case "checkUrlPattern": {
+			console.log("background.ts: checkUrlPattern", m);
+			const ostt = await optionsStateFromSender(s);
+			return ostt.checkUrlPattern();
+		}
+		case "applyClient": {
+			console.log("background.ts: applyClient:", m);
+			return;
+		}
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			(await optionsStateFromSender(s)).setAccountName(m.value);

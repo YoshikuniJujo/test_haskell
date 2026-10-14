@@ -5,7 +5,7 @@ export type Client = {
 	name: string, urlPattern: string,
 	publicKey: Uint8Array,
 	priority: number,
-	openSettingsByClick: boolean
+	openSettingsByClick: boolean,
 	backgroundColor: string, backgroundOpacity: number,
 	positionX: number, positionY: number,
 	displayAccount: boolean }
@@ -94,3 +94,14 @@ optionsTabTag(id: string): OptionsTabTag
 
 export type PublicKeyOption =
 	{ type: "PublicKeyOption", publicKey: string, name: string }
+
+export type Result =
+	| { result: "success" } | { result: "error"; message: string }
+
+export type Error = { result: "error"; message: string }
+
+export function
+isError(r: Result): r is Error
+{
+	return r.result === "error"
+}

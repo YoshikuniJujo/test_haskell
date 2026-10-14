@@ -1,11 +1,12 @@
 import type { Storage } from "./storage.js";
 import type { OptionsObject } from "./optionsObject.js";
 import type {
-	UUID, EditingClient, ClientSummary, OptionsTabTag, PublicKeyOption }
+	UUID, Client, EditingClient, ClientSummary,
+	OptionsTabTag, PublicKeyOption, Result }
 	from "./types.js";
-import { uuid } from "./types.js";
+import { uuid, fromUuid } from "./types.js";
 import { defaultOptionsObject, newClientMode, clientListMode } from "./optionsObject.js";
-import { toHex } from "./tools.js";
+import { toHex, fromHex } from "./tools.js";
 
 const KEY_BASE = "8450604e-6f98-49bf-a5a9-724346528a0a";
 
@@ -185,6 +186,35 @@ export class OptionsState
 		this.#optionsObject.optionsError = "";
 		await this.save();
 		return this.#optionsObject;
+	}
+	
+	checkUrlPattern(): Result
+	{
+		try {
+			new URLPattern(this.#optionsObject.urlPattern);
+			return { result: "success" }; }
+		catch (e) {
+			if (!(e instanceof Error)) throw e;
+			return { result: "error", message: e.message }; }
+	}
+
+	makeClient(): Client
+	{
+		const obj = this.#optionsObject;
+		if (obj.clientUuid === null) throw new Error("bad");
+		if (obj.currentKey === null) throw new Error("bad");
+		return {
+			uuid: fromUuid(obj.clientUuid),
+			name: obj.clientName,
+			urlPattern: obj.urlPattern,
+			priority: obj.priority,
+			displayAccount: obj.displayAccount,
+			positionX: obj.positionX, positionY: obj.positionY,
+			backgroundColor: obj.backgroundColor,
+			backgroundOpacity: obj.backgroundOpacity,
+			openSettingsByClick: obj.openSettingsByClick,
+			publicKey: fromHex(obj.currentKey),
+		};
 	}
 
 	clientUuid(): UUID

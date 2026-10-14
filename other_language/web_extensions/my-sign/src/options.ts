@@ -8,10 +8,12 @@
 import type { OptionsObject } from "./optionsObject.js";
 import type {
 	Client, ClientSummary, EditingClient,
-	UUID, OptionsInputMessages, PublicKeyOption
+	UUID, OptionsInputMessages, PublicKeyOption, Result
 	} from "./types.js";
 import { defaultOptionsObject, newClientMode } from "./optionsObject.js";
-import { defaultEditingClient, uuid, fromUuid, uuidNull } from "./types.js";
+import {
+	defaultEditingClient, uuid, fromUuid, uuidNull,
+	isError } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import { Log } from "./log2.js"
 import { getElement, scrollToBottom } from "./domTools.js";
@@ -139,10 +141,8 @@ deleteClient.addEventListener("click", async () => {
 
 applyEditClient.addEventListener("click", () => {
 	if (!clientFormD.checkValidity()) {
-		clientFormD.reportValidity();
-		return; }
-	applyClient();
-});
+		clientFormD.reportValidity(); return; }
+	applyClient(); });
 
 cancelEditClient.addEventListener("click", () => {
 	clientDetail.hidden = true;
@@ -536,15 +536,14 @@ encodePassword(pswd: string): Uint8Array
 async function
 applyClient()
 {
-	try {
-		new URLPattern(urlPatternD.value);
-		detailError.textContent = "";
-	}
-	catch (e) {
-		if (!(e instanceof Error)) throw e;
-		detailError.textContent = e.message;
-		return;
-	}
+	const rslt: Result = await browser.runtime.sendMessage({
+		class: "Options", method: "checkUrlPattern" });
+
+	if (isError(rslt)) { detailError.textContent = rslt.message; return; }
+
+	await browser.runtime.sendMessage({
+		class: "Options", method: "applyClient"
+	});
 
 	const pr = priority.valueAsNumber;
 
@@ -562,11 +561,10 @@ applyClient()
 		urlPattern: urlPatternD.value,
 		openSettingsByClick: openSettingsByClick.checked
 	});
+
 	await loadClients();
 
-	await browser.runtime.sendMessage({
-		method: "clientChanged"
-	});
+	await browser.runtime.sendMessage({ method: "clientChanged" });
 
 	const r = await browser.runtime.sendMessage({ method: "clientSubmited" });
 	if (!r) detailError.textContent = "The client does not match the original URL.";
