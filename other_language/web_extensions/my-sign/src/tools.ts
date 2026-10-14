@@ -29,3 +29,9 @@ isUrl(s: string)
 {
 	try { new URL(s); return true; } catch { return false; }
 }
+
+export function
+encodePassword(pswd: string): Uint8Array
+{
+	return new TextEncoder().encode(pswd.normalize("NFKC"));
+}

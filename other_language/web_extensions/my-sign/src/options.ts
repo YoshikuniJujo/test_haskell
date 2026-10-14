@@ -18,7 +18,6 @@ import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import { Log } from "./log2.js"
 import { getElement, scrollToBottom } from "./domTools.js";
 import { toHex, fromHex } from "./tools.js";
-import * as DB from "./db.js"
 import * as Bech32 from "./codec/bech32.js";
 
 // ------------------------------------------------------------------------
@@ -147,6 +146,16 @@ clientFormD.addEventListener("submit", async event => {
 	const b = await applyClient();
 	if (b) sendMethodAndLoad("clientListMode"); });
 
+async function
+applyClient()
+{
+	const rslt = await sendMethod("checkUrlPattern");
+	if (isError(rslt)) {
+		detailError.textContent = rslt.message; return false; }
+	await sendMethodAndLoad("applyClient");
+	await sendMethod("clientSubmited"); return true;
+}
+
 // Account
 
 showPassword.addEventListener("change", () => {
@@ -168,26 +177,13 @@ checkPassword()
 
 form.addEventListener("submit", async event => {
 	event.preventDefault();
-
-	console.log("options.ts: SUBMIT");
-
 	const port = browser.runtime.connect();
-
 	if (password.value !== confirm.value) {
-		console.log(confirm.validity.valid);
+		passwordError.hidden = false;
 		confirm.setCustomValidity("Password do not match.");
-		console.log(confirm.validity.valid);
-		confirm.reportValidity();
-		passwordError.textContent = "Passwords do not match.";
-		return;
-	}
-
-	confirm.setCustomValidity("");
-
+		confirm.reportValidity(); return; }
 	const pswd = encodePassword(password.value);
-
-	try {	password.value = "";
-		confirm.value = "";
+	try {	password.value = ""; confirm.value = "";
 		port.postMessage({ method: "generate", password: pswd });
 		port.onMessage.addListener(async m => {
 			console.log("options.ts: GENERATE:", m);
@@ -200,11 +196,9 @@ form.addEventListener("submit", async event => {
 						method: "optionsObject" });
 					console.log("options.ts: GENERATE:", obj);
 					loadOptions(obj);
-					break;
-			}
-		});
-		await loadPublicKeys(); }
+					break; } }); }
 	finally { pswd.fill(0); }
+	sendMethodAndLoad("currentKeyOptions");
 });
 
 type GenerateResponseMessage =
@@ -253,7 +247,7 @@ inputElementNumberList.forEach(([e, m]) => {
 // Others
 
 useClientSet.addEventListener("change", async () =>
-	{ await DB.putUseClientSet(useClientSet.checked); })
+	{ sendMethodChecked("useClientSetChanged", useClientSet.checked); })
 
 openInTab.addEventListener("click", () => {
 	browser.runtime.sendMessage({ method: "openOptionsInTab" });
@@ -270,6 +264,11 @@ browser.runtime.onMessage.addListener((m, s) => {
 				logOutput.textContent = await Log.toString();
 				scrollToBottom(logOutput);
 				return; })();
+		case "useClientSetChanged":
+			console.log(
+				"options.ts: useClientSetChanged:", useClientSet.checked);
+			useClientSet.checked = m.checked;
+			return;
 		default: return;
 	}
 });
@@ -319,25 +318,6 @@ loadOptions(obj: OptionsObject)
 	browserFooter.hidden = obj.openInTabButtonHidden;
 	optionsError.textContent = obj.optionsError;
 	useClientSet.checked = obj.useClientSet;
-}
-
-async function
-loadPublicKeys()
-{
-	const keys = await DB.getPublicKeyOptions();
-	loadPublicKeyFrom(keys);
-}
-
-async function
-loadClients()
-{
-	const clients = await DB.getClients();
-	const clientSummaries: ClientSummary[] = Array.from(clients, cl => {
-		return {
-			type: "ClientSummary",
-			uuid: { type: "UUID", value: cl.uuid },
-			name: cl.name, urlPattern: cl.urlPattern }; });
-	loadClientsFromSummaries(clientSummaries);
 }
 
 function
@@ -411,30 +391,6 @@ optionsObjectToClientDetail(obj: OptionsObject): ClientDetail | null
 }
 
 function
-fromEditingClient(ec: EditingClient, pkos: PublicKeyOption[]): ClientDetail
-{
-	if (!ec.uuid) throw new Error("badFooBar: no ec.uuid");
-	return {
-		uuid: uuid(ec.uuid),
-		name: ec.name,
-		urlPattern: ec.urlPattern,
-		publicKey: ec.publicKey ? toHex(ec.publicKey) : "",
-		publicKeyOptions: pkos,
-		usePriority: ec.priority !== null,
-		priority: ec.priority,
-		priorityLabelHidden: ec.priority === null,
-		displayAccount: ec.displayAccount,
-		accountDisplaySettingsHidden: !ec.displayAccount,
-		positionX: ec.positionX,
-		positionY: ec.positionY,
-		backgroundColor: ec.backgroundColor,
-		backgroundColor16: ec.backgroundColor,
-		backgroundOpacity: ec.backgroundOpacity,
-		openSettingsByClick: ec.openSettingsByClick
-	};
-}
-
-function
 loadPublicKeyFrom(pkos: PublicKeyOption[])
 {
 	currentKeyD.replaceChildren();
@@ -450,16 +406,6 @@ loadPublicKeyFrom(pkos: PublicKeyOption[])
 	}
 }
 
-async function
-applyClient()
-{
-	const rslt = await sendMethod("checkUrlPattern");
-	if (isError(rslt)) {
-		detailError.textContent = rslt.message; return false; }
-	await sendMethodAndLoad("applyClient");
-	await sendMethod("clientSubmited"); return true;
-}
-
 function
 encodePassword(pswd: string): Uint8Array
 {
@@ -470,6 +416,13 @@ function
 sendMethod(mtd: string)
 {
 	return browser.runtime.sendMessage({ class: "Options", method: mtd });
+}
+
+function
+sendMethodChecked(mtd: string, ckd: boolean)
+{
+	return browser.runtime.sendMessage({
+		class: "Options", method: mtd, checked: ckd });
 }
 
 async function

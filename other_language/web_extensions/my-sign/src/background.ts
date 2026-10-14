@@ -30,7 +30,7 @@ const optionsStates: Map<string, OptionsState> = new Map();
 
 (async () => {
 	const ots = [...(await otbs.keyInputTabs())]
-		.filter(([key]) => key !== "browser")
+//		.filter(([key]) => key !== "browser")
 		.map(([, value]) => value);
 	Log.write(`Options tabs: ${ots}`);
 
@@ -82,7 +82,9 @@ type OptionsMethod =
 	| { class: "Options"; method: "isClientMatched"; }
 	| { class: "Options"; method: "clientSubmited"; }
 	| { class: "Options"; method: "clientListMode"; }
-	| { class: "Options"; method: "accountNameInput"; value: string }
+	| { class: "Options"; method: "accountNameInput"; value: string; }
+	| { class: "Options"; method: "currentKeyOptions"; }
+	| { class: "Options"; method: "useClientSetChanged"; checked: boolean; }
 
 async function
 optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
@@ -262,6 +264,19 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: accountNameInput");
 			(await optionsStateFromSender(s)).setAccountName(m.value);
 			return; }
+		case "currentKeyOptions": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
+			return ostt.optionsObject(); }
+		case "useClientSetChanged": {
+			await DB.putUseClientSet(m.checked);
+			const ostt = await optionsStateFromSender(s);
+			ostt.useClientSetChanged(m.checked);
+			broadcastOptions({
+				method: "useClientSetChanged",
+				checked: m.checked });
+			return ostt.optionsObject();
+		}
 	}
 }
 
@@ -625,10 +640,26 @@ async function
 broadcast(m: object)
 {
 	const tabs = await browser.tabs.query({});
-	for (const tab of tabs) {
-		if (tab.id === undefined) continue;
+	await broadcastTabs(tabs.map(t => {
+		if (t.id === undefined) throw new Error("bad");
+		return t.id
+	}), m);
+}
+
+async function
+broadcastOptions(m: object)
+{
+	const tabs = await otbs.tabs();
+	await broadcastTabs(tabs, m);
+}
+
+async function
+broadcastTabs(tabs: number[], m: object)
+{
+	for (const id of tabs) {
+		if (id === undefined) continue;
 		try {
-			await browser.tabs.sendMessage(tab.id, m);
+			await browser.tabs.sendMessage(id, m);
 		}
 		catch (e) { console.log("broadcast", e) }
 	}

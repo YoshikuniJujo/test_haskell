@@ -227,6 +227,12 @@ export class OptionsState
 	{
 		return this.#optionsObject.urlPattern;
 	}
+
+	async useClientSetChanged(us: boolean)
+	{
+		this.#optionsObject.useClientSet = us;
+		await this.save();
+	}
 }
 
 async function
