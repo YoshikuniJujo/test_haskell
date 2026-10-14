@@ -78,13 +78,9 @@ const openInTab = getElement<HTMLElement>("#open-in-tab");
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
-// FOR DEVELOPMENT. REMOVE IT
-let optionsObject: OptionsObject = defaultOptionsObject();
-
 (async () => {
 	const obj = await browser.runtime.sendMessage({
 		class: "Options", method: "optionsBegin" });
-	optionsObject = obj;
 	await loadOptions(obj);
 
 	// LOG WRITE
