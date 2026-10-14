@@ -222,6 +222,11 @@ export class OptionsState
 		if (this.#optionsObject.clientUuid === null) throw new Error("bad");
 		return this.#optionsObject.clientUuid;
 	}
+
+	urlPattern(): string
+	{
+		return this.#optionsObject.urlPattern;
+	}
 }
 
 async function

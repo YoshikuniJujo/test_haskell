@@ -92,7 +92,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return ostt.optionsObject(); }
 		case "optionsBegin": {
 			console.log("background.ts: optionsMethod:", m, s);
-			if (s.tab?.id === undefined) throw new Error("bad");
+			if (s.tab?.id === undefined) throw new Error("bad1");
 			const id = await otbs.key(s.tab.id);
 			let tg;
 			if (id === null) {
@@ -142,7 +142,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return obj; }
 		case "newClient": {
 			const ostt = await optionsStateFromSender(s);
-			if (!ostt) throw new Error("bad");
+			if (!ostt) throw new Error("bad2");
 			ostt.setClientUuid(uuid(crypto.randomUUID()));
 			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
 			ostt.newClientMode();
@@ -223,11 +223,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 async function
 optionsStateFromSender(s: browser.runtime.MessageSender): Promise<OptionsState>
 {
-	if (s.tab?.id === undefined) throw new Error("bad");
+	if (s.tab?.id === undefined) throw new Error("bad3");
 	const id = await otbs.key(s.tab.id);
-	if (id === null) throw new Error("bad");
+	if (id === null) throw new Error("bad4");
 	const os = optionsStates.get(id);
-	if (os === undefined) throw new Error("bad");
+	if (os === undefined) throw new Error("bad5");
 	return os;
 }
 
@@ -243,7 +243,7 @@ type GlobalMethod =
 	| { method: "testOptionsSender" }
 	| { method: "openOptionsInTab" }
 	| { method: "prepareClient", clientUrl: string }
-	| { method: "clientSubmited", id: string }
+	| { method: "clientSubmited", urlPattern: string, id: string }
 	| { method: "addLogTab" }
 	| { method: "getClientsDev" }
 
@@ -265,20 +265,20 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 	console.log("message received", m);
 	switch (m.method) {
 		case "accountDisplayInfo":
-			if (!s.url) throw new Error("bad");
+			if (!s.url) throw new Error("bad6");
 			return getAccountMethod(s.url);
 		case "publicKey":
-			if (!s.tab) throw new Error("bad");
-			if (s.tab.id === undefined) throw new Error("bad");
-			if (!s.url) throw new Error("bad");
+			if (!s.tab) throw new Error("bad7");
+			if (s.tab.id === undefined) throw new Error("bad8");
+			if (!s.url) throw new Error("bad9");
 			return hex(await getPublicKey(s.url, s.tab.id));
 		case "prepareSymmetricKey":
-			if (!s.tab) throw new Error("bad");
-			if (s.tab.id === undefined) throw new Error("bad");
+			if (!s.tab) throw new Error("bad10");
+			if (s.tab.id === undefined) throw new Error("bad11");
 			return qPswd(m.pubKey, s.tab.id);
 		case "registerSymmetricKey":
-			if (!s.tab) throw new Error("bad");
-			if (s.tab.id === undefined) throw new Error("bad");
+			if (!s.tab) throw new Error("bad12");
+			if (s.tab.id === undefined) throw new Error("bad13");
 			return await rgSymkey(s.tab.id, m.pubKey);
 		case "signEvent": return signEvent(m.pubKey, m.event);
 		case "contentStarted":
@@ -290,7 +290,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 		case "openSettings": {
 			console.log("background: openSettings");
 			console.log(s.url);
-			if (!s.url) throw new Error("bad");
+			if (!s.url) throw new Error("bad14");
 			const cl = await getClient(s.url);
 			let ot;
 			let use;
@@ -300,9 +300,9 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 					url: browser.runtime.getURL(
 						"options.html")
 				});
-				if (!s.tab) throw new Error("bad");
-				if (!s.tab.id) throw new Error("bad");
-				if (!ot.id) throw new Error("bad");
+				if (!s.tab) throw new Error("bad15");
+				if (!s.tab.id) throw new Error("bad16");
+				if (!ot.id) throw new Error("bad17");
 				use = await otbs.assign("set", s.tab.id, ot.id)
 			}
 			else if (cl) {
@@ -311,15 +311,15 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 					url: browser.runtime.getURL(
 						"options.html" )
 				});
-				if (!s.tab) throw new Error("bad");
-				if (!s.tab.id) throw new Error("bad");
-				if (!ot.id) throw new Error("bad");
+				if (!s.tab) throw new Error("bad18");
+				if (!s.tab.id) throw new Error("bad19");
+				if (!ot.id) throw new Error("bad20");
 				use = await otbs.assign(cl.uuid, s.tab.id, ot.id)
 			}
 			console.log("openSettings:", use);
-			if (!ot) throw new Error("bad");
-			if (!ot.id) throw new Error("bad");
-			if (use === undefined) throw new Error("bad");
+			if (!ot) throw new Error("bad21");
+			if (!ot.id) throw new Error("bad22");
+			if (use === undefined) throw new Error("bad23");
 			if (use !== ot.id) {
 				await browser.tabs.remove(ot.id);
 			}
@@ -332,8 +332,8 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				active: false,
 				url: browser.runtime.getURL("options.html")
 			});
-			if (s.tab?.id === undefined) throw new Error("bad");
-			if (ot2.id === undefined) throw new Error("bad");
+			if (s.tab?.id === undefined) throw new Error("bad24");
+			if (ot2.id === undefined) throw new Error("bad25");
 			const use = await otbs.assign("tab", null, ot2.id)
 			if (use !== ot2.id) {
 				await browser.tabs.remove(ot2.id);
@@ -344,8 +344,8 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			console.log("background: prepareClient");
 			const c = await getClient(m.clientUrl);
 			console.log("background: getClient return: ", c);
-			if (!s.tab) throw new Error("bad");
-			if (s.tab.id === undefined) throw new Error("bad");
+			if (!s.tab) throw new Error("bad26");
+			if (s.tab.id === undefined) throw new Error("bad27");
 			if (c !== null) await browser.tabs.sendMessage(s.tab.id, { method: "clientReady", clientUrl: m.clientUrl });
 			else {
 				console.log("c is:", c);
@@ -355,7 +355,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				});
 				console.log(ot);
 				console.log("getPublicKey", m.clientUrl, s.tab.id, ot.id)
-				if (!ot.id) throw new Error("bad");
+				if (!ot.id) throw new Error("bad28");
 				const use = await otbs.assign(m.clientUrl, s.tab.id, ot.id);
 				if (use != ot.id) await browser.tabs.remove(ot.id);
 				await browser.tabs.update(use, { active: true }); }
@@ -363,24 +363,27 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			return;
 		case "clientSubmited":
 			console.log("background: clientSubmited");
-			if (!s.tab) throw new Error("bad");
-			if (s.tab.id === undefined) throw new Error("bad");
+			if (!s.tab) throw new Error("bad29");
+			if (s.tab.id === undefined) throw new Error("bad30");
 			const mid = await otbs.key(s.tab.id);
-			if (mid === null) throw new Error("bad");
+			if (mid === null) throw new Error("bad31");
 			const tag = optionsTabTag(mid);
 			console.log("background.ts: clientSubmited: tag =", tag);
 			if (tag.openType !== "url") return true;
+			const ostt = await optionsStateFromSender(s);
 
-			const clnt = await getClient(mid);
-			console.log("background: clientSubmited:", clnt);
-			if (clnt !== null) {
+//			const clnt = await getClient(mid, ostt.urlPattern);
+			const mtch = checkClient(mid, ostt.urlPattern());
+//			console.log("background: clientSubmited:", clnt);
+			if (mtch) {
+//			if (clnt !== null) {
 				const sts = await otbs.complete(mid, s.tab.id);
 				for (const st of sts)
 					await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: mid });
 				const st0 = sts[0]
 				if (st0 !== undefined)
 					await browser.tabs.update(st0, { active: true });
-				if (s.tab.id === undefined) throw new Error("bad");
+				if (s.tab.id === undefined) throw new Error("bad32");
 				await browser.tabs.remove(s.tab.id);
 				return true; }
 			else return false;
@@ -446,12 +449,12 @@ rgSymkey(tid: number, pbk: string)
 {
 	const acc2 = await getAccount(unhex(pbk));
 	const tid2 = (await itbs.keyInputTabs()).get(pbk);
-	if (tid !== tid2) throw new Error("bad");
+	if (tid !== tid2) throw new Error("bad33");
 	const port = browser.tabs.connect(tid, { name: "readPassword_ecd3f236f8" });
 	const { promise: pr, resolve: rs } = Promise.withResolvers<Uint8Array>();
 	port.onMessage.addListener(m => {
 		if (!("result" in m) || !(m.result instanceof Uint8Array))
-			throw new Error("bad");
+			throw new Error("bad34");
 		rs(m.result); });
 	const pswd3: Uint8Array = await pr;
 	try {
@@ -510,7 +513,7 @@ getPublicKey(url: string, tid: number)
 	});
 	console.log(ot);
 	console.log("getPublicKey", url, tid, ot.id)
-	if (!ot.id) throw new Error("bad");
+	if (!ot.id) throw new Error("bad35");
 	const use = await otbs.assign(url, tid, ot.id);
 	if (use != ot.id) await browser.tabs.remove(ot.id);
 	await browser.tabs.update(use, { active: true });
@@ -538,6 +541,13 @@ getClient(url: string): Promise<Client|null>
 	return null;
 }
 
+function
+checkClient(patstr: string, url: string): boolean
+{
+	const pat = new URLPattern(patstr);
+	return pat.test(url);
+}
+
 async function
 qPswd(pk: string, st: number)
 {
@@ -551,11 +561,11 @@ qPswd(pk: string, st: number)
 			"input.html?" +
 			"accountName=" + encodeURIComponent((await getAccount(unhex(pk))).name) +
 			"&publicKey=" + encodeURIComponent(pk) ) });
-	if (it.id === undefined) throw new Error("bad");
+	if (it.id === undefined) throw new Error("bad36");
 	const use = await itbs.assign(pk, st, it.id);
 	if (use != it.id) {
 //		console.log("TAB REMOVE 2", tid);
-		if (!it.id) throw new Error("bad");
+		if (!it.id) throw new Error("bad37");
 		await browser.tabs.remove(it.id);
 	}
 	await browser.tabs.update(use, { active: true });
@@ -705,11 +715,11 @@ type GenerateMessage =
 
 browser.runtime.onConnect.addListener(async p => {
 	console.log("background.ts: onConnect:", p);
-	if (p.sender?.tab?.id === undefined) throw new Error("bad");
+	if (p.sender?.tab?.id === undefined) throw new Error("bad38");
 	const id = await otbs.key(p.sender.tab.id);
-	if (!id) throw new Error("bad");
+	if (!id) throw new Error("bad39");
 	const ostt = optionsStates.get(id);
-	if (!ostt) throw new Error("bad");
+	if (!ostt) throw new Error("bad40");
 	console.log(id);
 	console.log(ostt);
 	console.log(ostt.optionsObject());
