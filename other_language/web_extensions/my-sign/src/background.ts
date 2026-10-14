@@ -10,7 +10,7 @@ import { addToArrayMap, forEachValues } from "./mapArray.js";
 import type { Client, ClientSummary, OptionsTabTag, UUID } from "./types.js";
 
 import { isUrl } from "./tools.js";
-import { optionsTabTag, uuid, fromUuid } from "./types.js";
+import { optionsTabTag, uuid, fromUuid, isError, error, success } from "./types.js";
 import { OptionsState } from "./optionsState.js";
 
 type Event = {
@@ -80,6 +80,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "checkUrlPattern"; }
 	| { class: "Options"; method: "applyClient"; }
 	| { class: "Options"; method: "isClientMatched"; }
+	| { class: "Options"; method: "clientSubmited"; }
 	| { class: "Options"; method: "accountNameInput"; value: string }
 
 async function
@@ -204,7 +205,25 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "checkUrlPattern": {
 			console.log("background.ts: checkUrlPattern", m);
 			const ostt = await optionsStateFromSender(s);
-			return ostt.checkUrlPattern();
+			const r = ostt.checkUrlPattern();
+			if (isError(r)) return r;
+		}
+		case "isClientMatched": {
+			if (s.tab?.id === undefined) throw new Error("bad1");
+			const mid = await otbs.key(s.tab.id);
+			if (mid === null) throw new Error("bad31");
+			const tag = optionsTabTag(mid);
+			if (tag.openType !== "url") return success();
+
+			console.log("background.ts: isClientMatched");
+			const ostt = await optionsStateFromSender(s);
+			const url = await otbs.key(s.tab.id);
+			const pat = ostt.urlPattern();
+			if (url === null) throw new Error("bad");
+			const b = checkClient(pat, url);
+			if (b) return success();
+			else return error(
+				"The client does not match the original URL." );
 		}
 		case "applyClient": {
 			console.log("background.ts: applyClient:", m);
@@ -214,15 +233,26 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			broadcast({ method: "clientChanged" });
 			return ostt.optionsObject();
 		}
-		case "isClientMatched": {
-			console.log("background.ts: isClientMatched");
+		case "clientSubmited":
+			console.log("background: clientSubmited");
+			if (!s.tab) throw new Error("bad29");
+			if (s.tab.id === undefined) throw new Error("bad30");
+			const mid = await otbs.key(s.tab.id);
+			if (mid === null) throw new Error("bad31");
+			const tag = optionsTabTag(mid);
+			console.log("background.ts: clientSubmited: tag =", tag);
+			if (tag.openType !== "url") return;
 			const ostt = await optionsStateFromSender(s);
-			if (s.tab?.id === undefined) throw new Error("bad1");
-			const url = await otbs.key(s.tab.id);
-			const pat = ostt.urlPattern();
-			if (url === null) throw new Error("bad");
-			return checkClient(pat, url);
-		}
+
+			const sts = await otbs.complete(mid, s.tab.id);
+			for (const st of sts)
+				await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: mid });
+			const st0 = sts[0]
+			if (st0 !== undefined)
+				await browser.tabs.update(st0, { active: true });
+			if (s.tab.id === undefined) throw new Error("bad32");
+			await browser.tabs.remove(s.tab.id);
+			return;
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			(await optionsStateFromSender(s)).setAccountName(m.value);
@@ -253,7 +283,6 @@ type GlobalMethod =
 	| { method: "testOptionsSender" }
 	| { method: "openOptionsInTab" }
 	| { method: "prepareClient", clientUrl: string }
-	| { method: "clientSubmited", urlPattern: string, id: string }
 	| { method: "addLogTab" }
 	| { method: "getClientsDev" }
 
@@ -371,32 +400,6 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				await browser.tabs.update(use, { active: true }); }
 
 			return;
-		case "clientSubmited":
-			console.log("background: clientSubmited");
-			if (!s.tab) throw new Error("bad29");
-			if (s.tab.id === undefined) throw new Error("bad30");
-			const mid = await otbs.key(s.tab.id);
-			if (mid === null) throw new Error("bad31");
-			const tag = optionsTabTag(mid);
-			console.log("background.ts: clientSubmited: tag =", tag);
-			if (tag.openType !== "url") return true;
-			const ostt = await optionsStateFromSender(s);
-
-//			const clnt = await getClient(mid, ostt.urlPattern);
-			const mtch = checkClient(mid, ostt.urlPattern());
-//			console.log("background: clientSubmited:", clnt);
-			if (mtch) {
-//			if (clnt !== null) {
-				const sts = await otbs.complete(mid, s.tab.id);
-				for (const st of sts)
-					await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: mid });
-				const st0 = sts[0]
-				if (st0 !== undefined)
-					await browser.tabs.update(st0, { active: true });
-				if (s.tab.id === undefined) throw new Error("bad32");
-				await browser.tabs.remove(s.tab.id);
-				return true; }
-			else return false;
 		case "addLogTab":
 			console.log("addLogTab");
 			if (s.tab?.id === undefined) throw backgroundError(

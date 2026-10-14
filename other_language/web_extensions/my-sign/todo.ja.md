@@ -368,12 +368,21 @@ TODO
 	+ [x] delete
 		- [x] backgroundにメッセージを送る
 		- [x] 処理をbackgroundに移していく
-	+ [ ] apply
+	+ [x] apply
+		- [x] backgroundに処理を移す
+		- [x] options.tsのapplyClient()をきれいにする
+			* [x] 前提条件の部分をまとめる
+				+ [x] isClientMatchedがResultを返すようにする
+				+ [x] まとめる
+			* [x] 必要ならタブ管理により閉じる部分
+			* [x] 名前等含めリファクタリングする
 	+ [ ] cancel
 	+ [ ] submit
 	+ [ ] Reloadボタンの作成
 	+ [ ] 順番を変える。Reload/Apply/Cancel/OK
 	+ [ ] openType == "url"のときReload/Apply/Cancelボタンをhiddenにする
+* [ ] クライアントリストを名前順に並べる
+* [ ] アカウントリストを名前順に並べる
 * [ ] 開発用のボタンを削除する
 * [ ] 設定画面の実装の変更(続き)
 	+ [x] openTypeやidをoptions.tsから消去する

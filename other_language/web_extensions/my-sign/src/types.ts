@@ -105,3 +105,15 @@ isError(r: Result): r is Error
 {
 	return r.result === "error"
 }
+
+export function
+success(): Result
+{
+	return { result: "success" };
+}
+
+export function
+error(msg: string): Result
+{
+	return { result: "error", message: msg };
+}

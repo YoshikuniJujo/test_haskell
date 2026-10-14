@@ -527,33 +527,30 @@ loadPublicKeyFrom(pkos: PublicKeyOption[])
 	}
 }
 
+async function
+applyClient()
+{
+	const rslt = await sendMethod("checkUrlPattern");
+	if (isError(rslt)) {
+		detailError.textContent = rslt.message; return false; }
+	await sendMethodAndLoad("applyClient");
+	await sendMethod("clientSubmited"); return true;
+}
+
 function
 encodePassword(pswd: string): Uint8Array
 {
 	return new TextEncoder().encode(pswd.normalize("NFKC"));
 }
 
-async function
-applyClient()
+function
+sendMethod(mtd: string)
 {
-	const rslt: Result = await browser.runtime.sendMessage({
-		class: "Options", method: "checkUrlPattern" });
-	if (isError(rslt)) { detailError.textContent = rslt.message; return; }
+	return browser.runtime.sendMessage({ class: "Options", method: mtd });
+}
 
-	const mtchd = await browser.runtime.sendMessage({
-		class: "Options", method: "isClientMatched" });
-	if (!mtchd) {
-		detailError.textContent =
-			"The client does not match the original URL.";
-		return; }
-
-	const obj = await browser.runtime.sendMessage({
-		class: "Options", method: "applyClient" });
-
-	await loadOptions(obj);
-
-	const r = await browser.runtime.sendMessage({ method: "clientSubmited" });
-	if (!r) detailError.textContent = "The client does not match the original URL.";
-
-	return r;
+async function
+sendMethodAndLoad(mtd: string)
+{
+	await loadOptions(await sendMethod(mtd));
 }
