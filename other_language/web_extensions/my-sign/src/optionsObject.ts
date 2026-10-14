@@ -27,6 +27,7 @@ export type OptionsObject = {
 	currentKeyOptions: PublicKeyOption[],
 	detailError: string,
 
+	openInTabButtonHidden: boolean,
 	optionsError: string,
 	useClientSet: boolean
 }
@@ -60,6 +61,7 @@ export function defaultOptionsObject(): OptionsObject
 		currentKeyOptions: [],
 		detailError: "",
 
+		openInTabButtonHidden: false,
 		optionsError: "",
 		useClientSet: false };
 }
@@ -81,5 +83,15 @@ clientDetailMode(obj: OptionsObject)
 	obj.clientsHidden = true;
 	obj.newClientButtonHidden = true;
 	obj.clientDetailHidden = false;
+	obj.optionsError = "";
+}
+
+export function
+clientListMode(obj: OptionsObject)
+{
+	obj.deleteClientButtonHidden = true;
+	obj.clientsHidden = false;
+	obj.newClientButtonHidden = false;
+	obj.clientDetailHidden = true;
 	obj.optionsError = "";
 }

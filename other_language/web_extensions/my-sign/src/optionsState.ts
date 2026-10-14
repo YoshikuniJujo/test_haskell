@@ -1,7 +1,11 @@
 import type { Storage } from "./storage.js";
 import type { OptionsObject } from "./optionsObject.js";
-import type { UUID, ClientSummary, OptionsTabTag, PublicKeyOption } from "./types.js";
-import { defaultOptionsObject, newClientMode } from "./optionsObject.js";
+import type {
+	UUID, EditingClient, ClientSummary, OptionsTabTag, PublicKeyOption }
+	from "./types.js";
+import { uuid } from "./types.js";
+import { defaultOptionsObject, newClientMode, clientListMode } from "./optionsObject.js";
+import { toHex } from "./tools.js";
 
 const KEY_BASE = "8450604e-6f98-49bf-a5a9-724346528a0a";
 
@@ -73,6 +77,11 @@ export class OptionsState
 		newClientMode(this.#optionsObject);
 	}
 
+	clientListMode()
+	{
+		clientListMode(this.#optionsObject);
+	}
+
 	async setClientName(cn: string)
 	{
 		this.#optionsObject.clientName = cn;
@@ -139,16 +148,49 @@ export class OptionsState
 		await this.save();
 	}
 
+	async setOpenInTabButtonHidden(oitb: boolean)
+	{
+		this.#optionsObject.openInTabButtonHidden = oitb;
+		await this.save();
+	}
+
 	async setAccountName(an: string)
 	{
 		this.#optionsObject.accountName = an;
 		await this.save();
 	}
 
+	async openClientDetail(ec: EditingClient, pkos: PublicKeyOption[])
+	{
+		if (ec.uuid === null) throw new Error(
+			"optionsState.ts: openClientDetail: no UUID");
+		this.#optionsObject.clientUuid = uuid(ec.uuid);
+		this.#optionsObject.clientName = ec.name;
+		this.#optionsObject.urlPattern = ec.urlPattern;
+		this.#optionsObject.currentKey =
+			ec.publicKey ? toHex(ec.publicKey) : "";
+		this.#optionsObject.currentKeyOptions = pkos;
+		this.#optionsObject.usePriority = ec.priority !== null;
+		this.#optionsObject.priority = ec.priority ?? 100;
+		this.#optionsObject.displayAccount = ec.displayAccount;
+		this.#optionsObject.positionX = ec.positionX;
+		this.#optionsObject.positionY = ec.positionY;
+		this.#optionsObject.backgroundColor = ec.backgroundColor;
+		this.#optionsObject.backgroundOpacity = ec.backgroundOpacity;
+		this.#optionsObject.openSettingsByClick = ec.openSettingsByClick;
+		this.#optionsObject.clientsHidden = true;
+		this.#optionsObject.newClientButtonHidden = true;
+		this.#optionsObject.clientDetailHidden = false;
+		this.#optionsObject.deleteClientButtonHidden = false;
+		this.#optionsObject.optionsError = "";
+		await this.save();
+		return this.#optionsObject;
+	}
+
 	clientUuid(): UUID
 	{
 		if (this.#optionsObject.clientUuid === null) throw new Error("bad");
-		return this.#optionsObject.clientUuid
+		return this.#optionsObject.clientUuid;
 	}
 }
 

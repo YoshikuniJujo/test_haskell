@@ -10,7 +10,7 @@ import { addToArrayMap, forEachValues } from "./mapArray.js";
 import type { Client, ClientSummary, OptionsTabTag, UUID } from "./types.js";
 
 import { isUrl } from "./tools.js";
-import { optionsTabTag, uuid } from "./types.js";
+import { optionsTabTag, uuid, fromUuid } from "./types.js";
 import { OptionsState } from "./optionsState.js";
 
 type Event = {
@@ -113,6 +113,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			if (await ostt.restore()) return ostt.optionsObject();
 
+			console.log(
+				"background.ts: optionsBegin: tg.openType =",
+				tg.openType );
+			ostt.setOpenInTabButtonHidden(tg.openType !== "browser");
 			ostt.setUseClientSet(await DB.getUseClientSet());
 			ostt.setClientSummaries(await DB.getClientSummaries());
 
@@ -128,9 +132,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			optionsStates.set(id ?? "browser", ostt);
 			return ostt.optionsObject(); }
 		case "openClientDetail": {
-			console.log("background.ts: openClientDetail:", m);
-			return;
-		}
+			console.log("background.ts: openClientDetail:", m.value);
+			const clnt = await DB.getClient(fromUuid(m.value));
+			const pks = await DB.getPublicKeyOptions();
+			const obj = (await optionsStateFromSender(s))
+				.openClientDetail(clnt, pks);
+			return obj; }
 		case "newClient": {
 			const ostt = await optionsStateFromSender(s);
 			if (!ostt) throw new Error("bad");
@@ -185,8 +192,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return; }
 		case "deleteClient": {
 			console.log("background.ts: deleteClient:", m);
-//			DB.deleteClient((await optionsStateFromSender(s)).clientUuid());
-			return; }
+			const ostt = await optionsStateFromSender(s);
+			await DB.deleteClient(ostt.clientUuid());
+			await ostt.setClientSummaries(await DB.getClientSummaries());
+			ostt.clientListMode();
+			await broadcast({ method: "clientChanged" });
+			return ostt.optionsObject(); }
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			(await optionsStateFromSender(s)).setAccountName(m.value);

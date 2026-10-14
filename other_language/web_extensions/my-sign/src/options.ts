@@ -71,7 +71,7 @@ const useClientSet = getElement<HTMLInputElement>("#use-client-set");
 
 const logOutput = getElement("#log-output");
 const browserFooter = getElement<HTMLElement>("#browser-footer");
-const openInTab = getElement("#open-in-tab");
+const openInTab = getElement<HTMLElement>("#open-in-tab");
 
 // FOR DEVELOPMENT. REMOVE IT
 const backup = getElement("#backup");
@@ -133,24 +133,14 @@ openSettingsByClick.addEventListener("change", () => {
 });
 
 deleteClient.addEventListener("click", async () => {
-	await browser.runtime.sendMessage({
+	const obj = await browser.runtime.sendMessage({
 		class: "Options", method: "deleteClient" });
-
-	if (!clientDetail.dataset.clientUuid) throw new Error("badFoo");
-	await DB.deleteClient(uuid(clientDetail.dataset.clientUuid));
-
-	await loadClients();
-	await browser.runtime.sendMessage({ method: "clientChanged" });
-
-	clientDetail.hidden = true;
-	clientsElm.hidden = false;
-	newClient.hidden = false; });
+	loadOptions(obj); });
 
 applyEditClient.addEventListener("click", () => {
 	if (!clientFormD.checkValidity()) {
 		clientFormD.reportValidity();
-		return;
-	}
+		return; }
 	applyClient();
 });
 
@@ -403,6 +393,7 @@ loadOptions(obj: OptionsObject)
 	const cd = optionsObjectToClientDetail(obj);
 	if (cd) clientDetailToForm(cd);
 
+	browserFooter.hidden = obj.openInTabButtonHidden;
 	optionsError.textContent = obj.optionsError;
 	useClientSet.checked = obj.useClientSet;
 }
@@ -441,23 +432,11 @@ loadClientsFromSummaries(clientSummaries: ClientSummary[])
 		row.textContent = client.name + " " + client.urlPattern;
 
 		row.addEventListener("click", async () => {
-			browser.runtime.sendMessage({
+			const obj = await browser.runtime.sendMessage({
 				class: "Options",
 				method: "openClientDetail",
 				value: client.uuid });
-
-			const clnt = await DB.getClient(client.uuid.value);
-			clientDetail.dataset.clientUuid = client.uuid.value;
-
-			clientsElm.hidden = true;
-			newClient.hidden = true;
-			clientDetail.hidden = false;
-			deleteClient.hidden = false;
-			optionsError.textContent = "";
-
-			const pks = await DB.getPublicKeyOptions();
-			const cd = fromEditingClient(clnt, pks);
-			clientDetailToForm(cd);
+			loadOptions(obj);
 		});
 		clientsElm.append(row);
 	}

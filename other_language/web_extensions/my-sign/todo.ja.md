@@ -349,7 +349,7 @@ TODO
 	+ [x] 鍵ペアをbackgroundで生成する
 	+ [x] 鍵ペアをbackgroundで登録する
 * [x] 鍵ペアを作ったときにアカウントリストをupdateする
-* [ ] OptionsStateを使う形に修正する
+* [x] OptionsStateを使う形に修正する
 	+ [x] Client Detail
 		- [x] client name
 		- [x] senderからOptionsStateのインスタンスを
@@ -365,9 +365,9 @@ TODO
 		- [x] Open settings by clicking the account display
 		- [x] Public Key
 * [ ] ボタンの修正
-	+ [ ] delete
+	+ [x] delete
 		- [x] backgroundにメッセージを送る
-		- [ ] 処理をbackgroundに移していく
+		- [x] 処理をbackgroundに移していく
 	+ [ ] apply
 	+ [ ] cancel
 	+ [ ] submit
