@@ -540,6 +540,13 @@ applyClient()
 		class: "Options", method: "checkUrlPattern" });
 	if (isError(rslt)) { detailError.textContent = rslt.message; return; }
 
+	const mtchd = await browser.runtime.sendMessage({
+		class: "Options", method: "isClientMatched" });
+	if (!mtchd) {
+		detailError.textContent =
+			"The client does not match the original URL.";
+		return; }
+
 	const obj = await browser.runtime.sendMessage({
 		class: "Options", method: "applyClient" });
 

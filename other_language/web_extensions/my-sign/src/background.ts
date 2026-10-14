@@ -79,6 +79,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "deleteClient"; }
 	| { class: "Options"; method: "checkUrlPattern"; }
 	| { class: "Options"; method: "applyClient"; }
+	| { class: "Options"; method: "isClientMatched"; }
 	| { class: "Options"; method: "accountNameInput"; value: string }
 
 async function
@@ -212,6 +213,15 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.setClientSummaries(await DB.getClientSummaries());
 			broadcast({ method: "clientChanged" });
 			return ostt.optionsObject();
+		}
+		case "isClientMatched": {
+			console.log("background.ts: isClientMatched");
+			const ostt = await optionsStateFromSender(s);
+			if (s.tab?.id === undefined) throw new Error("bad1");
+			const url = await otbs.key(s.tab.id);
+			const pat = ostt.urlPattern();
+			if (url === null) throw new Error("bad");
+			return checkClient(pat, url);
 		}
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
