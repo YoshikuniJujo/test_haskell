@@ -207,7 +207,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		}
 		case "applyClient": {
 			console.log("background.ts: applyClient:", m);
-			return;
+			const ostt = await optionsStateFromSender(s);
+			await DB.putClient(ostt.makeClient());
+			ostt.setClientSummaries(await DB.getClientSummaries());
+			broadcast({ method: "clientChanged" });
+			return ostt.optionsObject();
 		}
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
@@ -366,6 +370,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			const tag = optionsTabTag(mid);
 			console.log("background.ts: clientSubmited: tag =", tag);
 			if (tag.openType !== "url") return true;
+
 			const clnt = await getClient(mid);
 			console.log("background: clientSubmited:", clnt);
 			if (clnt !== null) {

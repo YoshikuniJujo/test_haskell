@@ -538,33 +538,12 @@ applyClient()
 {
 	const rslt: Result = await browser.runtime.sendMessage({
 		class: "Options", method: "checkUrlPattern" });
-
 	if (isError(rslt)) { detailError.textContent = rslt.message; return; }
 
-	await browser.runtime.sendMessage({
-		class: "Options", method: "applyClient"
-	});
+	const obj = await browser.runtime.sendMessage({
+		class: "Options", method: "applyClient" });
 
-	const pr = priority.valueAsNumber;
-
-	if (!clientDetail.dataset.clientUuid) throw new Error("badC");
-	await DB.putClient({
-		uuid: clientDetail.dataset.clientUuid,
-		name: clientNameD.value,
-		displayAccount: displayAccount.checked,
-		publicKey: fromHex(currentKeyD.value),
-		positionX: positionX.valueAsNumber,
-		positionY: positionY.valueAsNumber,
-		backgroundColor: backgroundColor16.value,
-		backgroundOpacity: backgroundOpacity.valueAsNumber,
-		priority: pr,
-		urlPattern: urlPatternD.value,
-		openSettingsByClick: openSettingsByClick.checked
-	});
-
-	await loadClients();
-
-	await browser.runtime.sendMessage({ method: "clientChanged" });
+	await loadOptions(obj);
 
 	const r = await browser.runtime.sendMessage({ method: "clientSubmited" });
 	if (!r) detailError.textContent = "The client does not match the original URL.";
