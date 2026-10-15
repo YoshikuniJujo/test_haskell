@@ -386,7 +386,7 @@ TODO
 * [x] クライアントリストを名前順に並べる
 * [x] アカウントリストを名前順に並べる
 * [x] 開発用のボタンを削除する
-* [ ] backgroundとoptionsの間の通信の設定を考える
+* [ ] backgroundとoptionsの間の通信の設計を考える
 * [ ] options.tsのformのsubmitの部分をきれいにする
 * [ ] 設定画面の実装の変更(続き)
 	+ [x] openTypeやidをoptions.tsから消去する
