@@ -264,7 +264,7 @@ browser.runtime.onMessage.addListener((m, s) => {
 				logOutput.textContent = await Log.toString();
 				scrollToBottom(logOutput);
 				return; })();
-		case "useClientSetChanged":
+		case "notifyUseClientSetChange":
 			console.log(
 				"options.ts: useClientSetChanged:", useClientSet.checked);
 			useClientSet.checked = m.checked;

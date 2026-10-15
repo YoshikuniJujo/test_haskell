@@ -30,7 +30,7 @@ const optionsStates: Map<string, OptionsState> = new Map();
 
 (async () => {
 	const ots = [...(await otbs.keyInputTabs())]
-//		.filter(([key]) => key !== "browser")
+		.filter(([key]) => key !== "browser")
 		.map(([, value]) => value);
 	Log.write(`Options tabs: ${ots}`);
 
@@ -273,7 +273,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			ostt.useClientSetChanged(m.checked);
 			broadcastOptions({
-				method: "useClientSetChanged",
+				method: "notifyUseClientSetChange",
 				checked: m.checked });
 			return ostt.optionsObject();
 		}
@@ -649,7 +649,9 @@ broadcast(m: object)
 async function
 broadcastOptions(m: object)
 {
-	const tabs = await otbs.tabs();
+	const tabs = [...(await otbs.keyInputTabs())]
+		.filter(([key]) => key !== "browser")
+		.map(([, value]) => value);
 	await broadcastTabs(tabs, m);
 }
 
@@ -658,10 +660,7 @@ broadcastTabs(tabs: number[], m: object)
 {
 	for (const id of tabs) {
 		if (id === undefined) continue;
-		try {
-			await browser.tabs.sendMessage(id, m);
-		}
-		catch (e) { console.log("broadcast", e) }
+		browser.tabs.sendMessage(id, m);
 	}
 }
 
