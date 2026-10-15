@@ -269,9 +269,15 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			await DB.putUseClientSet(m.checked);
 			const ostt = await optionsStateFromSender(s);
 			ostt.useClientSetChanged(m.checked);
+			browser.runtime.sendMessage({
+				class: "Options",
+				direction: "signal",
+				method: "update" });
+			/*
 			broadcastOptions({
 				method: "notifyUseClientSetChange",
 				checked: m.checked });
+				*/
 			return ostt.optionsObject();
 		}
 	}
