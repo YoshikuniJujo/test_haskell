@@ -378,14 +378,23 @@ TODO
 			* [x] 名前等含めリファクタリングする
 	+ [x] cancel
 	+ [x] submit
-	+ [ ] Reloadボタンの作成
-	+ [ ] 順番を変える。Reload/Apply/Cancel/OK
-	+ [ ] openType == "url"のときReload/Apply/Cancelボタンをhiddenにする
+	+ [ ] Revertボタンの作成
+	+ [ ] 順番を変える。Revert/Apply/Cancel/OK
+	+ [ ] openType == "url"のときRevert/Apply/Cancelボタンをhiddenにする
 * [x] optionsObjectからshowPasswordを削除する
 * [x] optionsObjectからpasswordErrorHiddenを削除する
 * [x] クライアントリストを名前順に並べる
 * [x] アカウントリストを名前順に並べる
 * [x] 開発用のボタンを削除する
+* [ ] Use Client Setボタンとクライアントリストとアカウントリストの同期
+	+ [x] 三者をデータベースから読み出す関数を作成
+	+ [ ] backgroundからupdateメッセージを送る(from: "background"とか)
+	+ [ ] updateメッセージを受け取り読み出して表示する
+* [ ] クライアント詳細画面を全体で1個だけにする
+	+ [ ] クライアント詳細
+* [ ] アカウント表示領域から開いた設定画面がクライアント詳細画面を開くようにする
+	+ [ ] クライアント詳細画面で同じものがあればそのタブをアクティブにする
+	+ [ ] その他
 * [ ] backgroundとoptionsの間の通信の設計を考える
 * [ ] options.tsのformのsubmitの部分をきれいにする
 * [ ] 設定画面の実装の変更(続き)

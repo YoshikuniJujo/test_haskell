@@ -87,6 +87,14 @@ type OptionsMethod =
 	| { class: "Options"; method: "useClientSetChanged"; checked: boolean; }
 
 async function
+loadCommonState(ostt: OptionsState): Promise<void>
+{
+	ostt.setClientSummaries(await DB.getClientSummaries());
+	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
+	ostt.setUseClientSet(await DB.getUseClientSet());
+}
+
+async function
 optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 {
 	console.log("background.ts: OPTIONS METHOD:", m);
@@ -101,40 +109,29 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const id = await otbs.key(s.tab.id);
 			let tg;
 			if (id === null) {
-				const use = await otbs.assign("browser", null, s.tab.id);
+				const use = await otbs.assign(
+					"browser", null, s.tab.id);
 				if (use !== s.tab.id)
 					await browser.tabs.remove(s.tab.id);
 				await browser.tabs.update(use, { active: true });
-				console.log("background.ts: optionsMethod:",
-					await otbs.keyInputTabs());
-				tg = optionsTabTag("browser");
-				console.log("background.ts: optionsMethod:", optionsStates.get("browser"));
-			} else {
-				tg = optionsTabTag(id);
-				console.log("background.ts: optionsMethod:", optionsStates.get(id));
-			}
+				tg = optionsTabTag("browser"); }
+			else tg = optionsTabTag(id);
 			let ostt;
-			ostt = optionsStates.get(id ?? "browser");
-			if (ostt) return  ostt.optionsObject();
-			ostt = new OptionsState(tg);
+			ostt = optionsStates.get(tg.id);
+			if (ostt) return ostt.optionsObject();
 
+			ostt = new OptionsState(tg);
 			if (await ostt.restore()) return ostt.optionsObject();
 
-			console.log(
-				"background.ts: optionsBegin: tg.openType =",
-				tg.openType );
 			ostt.setOpenInTabButtonHidden(tg.openType !== "browser");
-			ostt.setUseClientSet(await DB.getUseClientSet());
-			ostt.setClientSummaries(await DB.getClientSummaries());
+
+			await loadCommonState(ostt);
 
 			if (tg.openType === "url") {
 				ostt.setClientUuid(uuid(crypto.randomUUID()));
-				ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
 				ostt.newClientMode();
-				ostt.setUrlPattern(tg.id);
-			}
+				ostt.setUrlPattern(tg.id); }
 
-			console.log("background.ts:", ostt);
 			ostt.save();
 			optionsStates.set(id ?? "browser", ostt);
 			return ostt.optionsObject(); }
