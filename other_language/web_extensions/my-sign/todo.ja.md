@@ -389,6 +389,7 @@ TODO
 * [ ] Use Client Setボタンとクライアントリストとアカウントリストの同期
 	+ [x] 三者をデータベースから読み出す関数を作成
 	+ [ ] backgroundからupdateメッセージを送る(from: "background"とか)
+		- { class: "Options", direction: "signal", method: "updated" }
 	+ [ ] updateメッセージを受け取り読み出して表示する
 * [ ] クライアント詳細画面を全体で1個だけにする
 	+ [ ] クライアント詳細
