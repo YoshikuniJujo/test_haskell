@@ -60,6 +60,7 @@ const detailError = getElement<HTMLElement>("#detail-error");
 const deleteClient = getElement<HTMLElement>("#delete-client");
 const applyEditClient = getElement<HTMLButtonElement>("#apply-client");
 const cancelEditClient = getElement<HTMLButtonElement>("#cancel-edit-client");
+const revert = getElement<HTMLButtonElement>("#revert");
 
 const form = getElement("#generate-form");
 const accName = getElement<HTMLInputElement>("#account-name");
@@ -136,6 +137,9 @@ applyEditClient.addEventListener("click", () => {
 
 cancelEditClient.addEventListener("click", () => {
 	sendMethodAndLoad("clientListMode"); });
+
+revert.addEventListener("click", () => {
+	sendMethodAndLoad("revert"); });
 
 document.addEventListener("keydown", event => {
 	if (event.key === "Escape" && !clientDetail.hidden)

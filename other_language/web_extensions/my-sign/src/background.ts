@@ -82,6 +82,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "isClientMatched"; }
 	| { class: "Options"; method: "clientSubmited"; }
 	| { class: "Options"; method: "clientListMode"; }
+	| { class: "Options"; method: "revert";  value: UUID; }
 	| { class: "Options"; method: "accountNameInput"; value: string; }
 	| { class: "Options"; method: "currentKeyOptions"; }
 	| { class: "Options"; method: "useClientSetChanged"; checked: boolean; }
@@ -283,6 +284,14 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			ostt.clientListMode();
 			return ostt.optionsObject(); }
+		case "revert": {
+			const ostt = await optionsStateFromSender(s);
+			const clnt = await DB.getClient(fromUuid(ostt.clientUuid()));
+			const pks = await DB.getPublicKeyOptions();
+			ostt.openClientDetail(clnt, pks);
+			ostt.save();
+			return ostt.optionsObject();
+		}
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
 			(await optionsStateFromSender(s)).setAccountName(m.value);
