@@ -133,6 +133,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				ostt.newClientMode();
 				ostt.setUrlPattern(tg.id); }
 
+			if (tg.openType === "uuid" && id !== null) {
+				const clnt = await DB.getClient(id);
+				const pks = await DB.getPublicKeyOptions();
+				ostt.openClientDetail(clnt, pks);
+			}
+
 			ostt.save();
 			optionsStates.set(id ?? "browser", ostt);
 			return ostt.optionsObject(); }
@@ -368,10 +374,27 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			return pgVanished(s.tab.id);
 		case "clientChanged": return broadcast({ method: "clientChanged" });
 		case "openSettings": {
+			await initializeReady;
+
 			console.log("background: openSettings");
 			console.log(s.url);
 			if (!s.url) throw new Error("bad14");
 			const cl = await getClient(s.url);
+			if (cl) {
+
+				console.log("background.ts: OPEN TYPE UUID:", cl.uuid);
+				const ex = await findKey(optionsStates, st => st.doesClientDetailOpen(uuid(cl.uuid)));
+				if (ex) {
+					console.log(ex);
+					if (ex === undefined) throw new Error("bad");
+					const tb = await otbs.tab(ex);
+					console.log(tb);
+					if (tb === null) throw new Error("bad");
+					browser.tabs.update(tb, { active: true });
+					return; }
+
+			}
+
 			let ot;
 			let use;
 			if (await DB.getUseClientSet()) {
