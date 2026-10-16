@@ -416,13 +416,14 @@ TODO
 	+ [x] 順番を変える。Revert/Apply/Cancel/OK
 	+ [x] openType == "url"のときRevert/Apply/Cancelボタンをhiddenにする
 		- [x] revertButtonHidden, applyButtonHidden, cancelButtonHiddenをOptionsObjectに
+* [ ] TODOを見返し修正する
+* [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
 	+ これをするかどうか検討する
 * [ ] loadCommonStateのdb側とostt側とを、それぞれまとめるか考える
 	+ [ ] DB.getCommonState
 	+ [ ] ostt.setCommonState
 	+ [ ] loadCommonStateはostt.setCommonState(await DB.getCommonState)になる
-* [ ] TODOを見返し修正する
 * [ ] backgroundとoptionsの間の通信の設計を考える
 * [ ] options.tsのformのsubmitの部分をきれいにする
 * [ ] 設定画面の実装の変更(続き)

@@ -320,11 +320,13 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 async function
 optionsStateFromSender(s: browser.runtime.MessageSender): Promise<OptionsState>
 {
+	await initializeReady;
 	if (s.tab?.id === undefined) throw new Error("bad3");
 	const id = await otbs.key(s.tab.id);
 	if (id === null) throw new Error("bad4");
 	const os = optionsStates.get(id);
-	if (os === undefined) throw new Error("bad5");
+	if (os === undefined) throw new Error(
+		`optionsState for ${id} is not found` );
 	return os;
 }
 
