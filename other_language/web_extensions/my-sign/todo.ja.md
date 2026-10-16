@@ -364,7 +364,7 @@ TODO
 		- [x] Opacity
 		- [x] Open settings by clicking the account display
 		- [x] Public Key
-* [ ] ボタンの修正
+* [x] ボタンの修正 (途中)
 	+ [x] delete
 		- [x] backgroundにメッセージを送る
 		- [x] 処理をbackgroundに移していく
@@ -378,9 +378,6 @@ TODO
 			* [x] 名前等含めリファクタリングする
 	+ [x] cancel
 	+ [x] submit
-	+ [ ] Revertボタンの作成
-	+ [ ] 順番を変える。Revert/Apply/Cancel/OK
-	+ [ ] openType == "url"のときRevert/Apply/Cancelボタンをhiddenにする
 * [x] optionsObjectからshowPasswordを削除する
 * [x] optionsObjectからpasswordErrorHiddenを削除する
 * [x] クライアントリストを名前順に並べる
@@ -412,17 +409,22 @@ TODO
 * [ ] アカウント表示領域から開いた設定画面がクライアント詳細画面を開くようにする
 	+ [ ] クライアント詳細画面で同じものがあればそのタブをアクティブにする
 	+ [ ] その他
-* [ ] backgroundとoptionsの間の通信の設計を考える
+* [ ] ボタンの修正 (続き)
+	+ [ ] Revertボタンの作成
+	+ [ ] 順番を変える。Revert/Apply/Cancel/OK
+	+ [ ] openType == "url"のときRevert/Apply/Cancelボタンをhiddenにする
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
-* [ ] options.tsのformのsubmitの部分をきれいにする
+	+ これをするかどうか検討する
 * [ ] loadCommonStateのdb側とostt側とを、それぞれまとめるか考える
 	+ [ ] DB.getCommonState
 	+ [ ] ostt.setCommonState
 	+ [ ] loadCommonStateはostt.setCommonState(await DB.getCommonState)になる
 * [ ] TODOを見返し修正する
+* [ ] backgroundとoptionsの間の通信の設計を考える
+* [ ] options.tsのformのsubmitの部分をきれいにする
 * [ ] 設定画面の実装の変更(続き)
 	+ [x] openTypeやidをoptions.tsから消去する
-	+ [ ] 設定画面の同期
+	+ [x] 設定画面の同期
 	+ [ ] optionsTabId()を定義
 	+ [ ] options.tsをざっくりと読み細かいところを修正 (続き)
 		- [x] ADD EVENT LISTENER - Client List
@@ -432,8 +434,7 @@ TODO
 		- [ ] FOR DEVELOPMENT
 		- [ ] TYPES
 		- [ ] FUNCTIONS
-	+ [ ] OptionsState.tsを作っていく
-	+ [ ] TODOの検討
+	+ [x] OptionsState.tsを作っていく
 	+ [ ] type Clientとtype EditingClientを統一できるか検討する
 	+ [ ] background.ts再起動時のOptionsStateの復元
 	+ [ ] 新しく設定画面を開いたときのIndexedDBからのOptionsStateの生成
@@ -450,23 +451,17 @@ TODO
 * [x] クリック透過を設定可能にする
 * [ ] Client型のuuidをUUIDにする
 * [ ] logの処理について実装を再度検討する
-* [ ] portを使ったlogの処理をテストしてみる(portは使わないことにする)
-	+ [ ] 独立したタブである3通りについて試してみる
-	+ [ ] ブラウザの設定画面に組み込まれたものについて試してみる
-	+ [ ] focusか発火しない場合について試す
-		- [ ] 60秒後にcontent.jsからbackgroundにメッセージを送るようなコードを書く
-			* 上はアカウント表示領域のクリックに関連づければ良さそう
-		- [ ] 独立したタブを開いて60秒待つ
-* [ ] OptionsStateインスタンスをbackgroundが復元するところを書く
+* [x] portを使ったlogの処理をテストしてみる(portは使わないことにする)
+* [x] OptionsStateインスタンスをbackgroundが復元するところを書く
 * [ ] optionPageVanishedを修正 -> optionsPageVanished
 * [ ] optionsStateのaccountの部分を実際に使ってみる
-	+ [ ] 初期化メッセージを送ってきた設定画面についてOptionsStateインスタンスを生成する
-	+ [ ] 実際に写しを取ってみる
-	+ [ ] generateボタンを押すとbackground側にメソッドを送る
-	+ [ ] 実際に動くようにする
-	+ [ ] 古いほうの仕組みを消す
-	+ [ ] symmetric keyをキャッシュするようにする
-	+ [ ] 試す
+	+ [x] 初期化メッセージを送ってきた設定画面についてOptionsStateインスタンスを生成する
+	+ [x] 実際に写しを取ってみる
+	+ [x] generateボタンを押すとbackground側にメソッドを送る
+	+ [x] 実際に動くようにする
+	+ [x] 古いほうの仕組みを消す
+	+ [x] 試す
+* [ ] generateしたときにsymmetric keyをキャッシュするようにする
 * [ ] backgroundの受け取るメッセージをメソッドとして解釈するようにする(続き)
 	+ [ ] classがundefinedではない場合には、classの名前によってswitchして、それぞれの関数を呼ぶ
 * [ ] optionsStateのclientの部分についても同様に作る
@@ -475,19 +470,20 @@ TODO
 	+ [ ] background.js側を作成
 * [ ] ログ表示機能を設定画面に追加する(続き)
 	+ [ ] ログ表示領域をチェックボタンでon/offできるようにする
+	+ [ ] 7日でログは消すようにする
+	+ [ ] ユーザーがログを消せるようにする
 * [ ] options.jsの仕様を考える
 * [ ] options.jsから直接データベース処理をするのではなくbackgroundに依頼するようにする
-	+ [ ] 設定画面の「状態」を表すオブジェクトを設計する
-		- [ ] memo.ja.md上で
-		- [ ] コード上で
-	+ [ ] storage.session上の状態をinputなどで変化させる
-	+ [ ] storage.session上の状態から復元する
-	+ [ ] OKのときstorage.session上の状態からデータベースに書き込む
+	+ [x] 設定画面の「状態」を表すオブジェクトを設計する
+		- [x] memo.ja.md上で
+		- [x] コード上で
+	+ [x] storage.session上の状態をinputなどで変化させる
+	+ [x] storage.session上の状態から復元する
+	+ [x] OKのときstorage.session上の状態からデータベースに書き込む
 	+ [ ] Cancelではstorage.session上の状態を削除する
-	+ [ ] Deleteではデータベース上からエントリーを削除する
-	+ [ ] パスワード入力時の処理を記述
-	+ [ ] options.jsからデータベースをいじる処理を削除する
-	+ [ ] その他
+	+ [x] Deleteではデータベース上からエントリーを削除する
+	+ [x] パスワード入力時の処理を記述
+	+ [x] options.jsからデータベースをいじる処理を削除する
 * [ ] 未登録クライアントから誘導される設定画面タブの管理(続き)
 	+ [ ] Promiseで待ちに入るようにする
 	+ [ ] URLで呼ばれたときにはNew Client画面からCancelボタンをhiddenにする
@@ -502,11 +498,10 @@ TODO
 	+ [ ] 仕様を検討する
 	+ [ ] テスト
 	+ [ ] 残り
-* [ ] アカウント表示領域のクリックを設定可能にする(続き)
-	+ [ ] 設定によってクリックを透過させるかどうかを決める
-	+ [ ] 文字色を選べるようにする
-	+ [ ] 文字の不透明度を設定できるようにする
-	+ [ ] z-indexを設定できるようにする(advanced)
+* [x] アカウント表示領域のクリックを設定可能にする(続き)
+	+ [x] 設定によってクリックを透過させるかどうかを決める
+	+ [x] 文字色を選べるようにする
+	+ [x] 文字の不透明度を設定できるようにする
 * [ ] パスワード入力用タブの異常系のテストのために/others/try-sign.htmlを修正する
 	+ [ ] ボタンを押すとイベントに署名するようにする
 	+ [ ] コンテンツ部分を入力できるようにする
@@ -526,8 +521,9 @@ TODO
 * [ ] ncryptsecのエクスポート
 * [ ] ncryptsecのインポート
 * [ ] nsecのインポート
-* [ ] editingClientではなくeditingClientUuidとする
+* [x] editingClientではなくeditingClientUuidとする
 	+ 編集のときクライアント全体ではなく、そのUUIDだけモジュールスコープの変数に保持すればいい
+	+ この話は消えたかと思う
 * [ ] getPublicKeysWithNamesの再検討、必ずEncryptedSecretKeyインスタンスを介するようにする
 * [ ] フォームの内容をデータベースに書き込む時の検証について考える
 	+ とくにBech32.decode()のところ
@@ -535,9 +531,9 @@ TODO
 * [ ] InputTabsにあるverificationについて存在価値を検討する
 * [ ] 「ブラウザが開いた設定画面であることの確認」をするかしないか検討する
 * [ ] デフォルト色を設定可能にする
-* [ ] 設定画面に「タブで開く」ボタンをつける
+* [x] 設定画面に「タブで開く」ボタンをつける
 * [ ] let fooを使っているところを三項演算子で書き直す
-* [ ] Android版FirefoxでsignEventで
+* [x] Android版FirefoxでsignEventで
 	パスワード入力用画面を消したときにRabbitが操作できなくなるバグについて
 	原因を精査する
 	+ queueMicrotaskではNG
