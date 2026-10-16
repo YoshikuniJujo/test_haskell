@@ -28,7 +28,7 @@ const otbs = new InputTabs("options");
 
 const optionsStates: Map<string, OptionsState> = new Map();
 
-(async () => {
+const initializeReady = (async () => {
 	const ots = [...(await otbs.keyInputTabs())]
 		.filter(([key]) => key !== "browser")
 		.map(([, value]) => value);
@@ -38,11 +38,11 @@ const optionsStates: Map<string, OptionsState> = new Map();
 
 	Log.write(`Options Tabs:, ${await otbs.keys()}`);
 
-	(await otbs.keys()).forEach(async k => {
+	for (const k of await otbs.keys()) {
 		const os = new OptionsState(optionsTabTag(k));
 		await os.restore();
 		await optionsStates.set(k, os);
-	});
+	};
 	Log.write(`BACKGROUND: optionsStates: ${optionsStates}`);
 
 })();
@@ -138,6 +138,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return ostt.optionsObject(); }
 		case "openClientDetail": {
 			console.log("background.ts: openClientDetail:", m.value);
+			await initializeReady;
 			const ex = findKey(optionsStates, st => st.doesClientDetailOpen(m.value));
 			if (ex) {
 				console.log("background.ts: openClientDetail:", ex);
@@ -145,7 +146,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				console.log("background.ts: openClientDetail:", tid);
 				if (tid === null) throw new Error("bad");
 				browser.tabs.update(tid, { active: true });
-				return (await optionsStateFromSender(s)).optionsObject();
+				return null;
 			}
 
 			const clnt = await DB.getClient(fromUuid(m.value));

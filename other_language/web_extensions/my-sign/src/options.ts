@@ -324,6 +324,8 @@ loadOptions(obj: OptionsObject)
 	useClientSet.checked = obj.useClientSet;
 }
 
+let popoverTimer: ReturnType<typeof setTimeout> | undefined;
+
 function
 loadClientsFromSummaries(clientSummaries: ClientSummary[])
 {
@@ -343,7 +345,17 @@ loadClientsFromSummaries(clientSummaries: ClientSummary[])
 				class: "Options",
 				method: "openClientDetail",
 				value: client.uuid });
-			loadOptions(obj);
+			if (obj) loadOptions(obj);
+			else {
+				console.log("CLIENT ALREADY OPEN");
+				if (popoverTimer !== undefined)
+					clearTimeout(popoverTimer);
+				const msg = getElement<HTMLElement>("#client-is-already-open");
+				msg.showPopover()
+				popoverTimer = setTimeout(() => {
+					msg.hidePopover();
+				}, 5000);
+			}
 		});
 		clientsElm.append(row);
 	}
