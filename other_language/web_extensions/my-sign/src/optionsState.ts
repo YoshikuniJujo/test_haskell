@@ -233,6 +233,12 @@ export class OptionsState
 		this.#optionsObject.useClientSet = us;
 		await this.save();
 	}
+
+	doesClientDetailOpen(cu: UUID): boolean
+	{
+		return this.#optionsObject.clientUuid?.value === cu.value &&
+			!this.#optionsObject.clientDetailHidden;
+	}
 }
 
 async function

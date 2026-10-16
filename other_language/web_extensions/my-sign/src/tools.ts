@@ -35,3 +35,10 @@ encodePassword(pswd: string): Uint8Array
 {
 	return new TextEncoder().encode(pswd.normalize("NFKC"));
 }
+
+export function
+findKey<K, V>(map: Map<K, V>, p: (value: V) => boolean): K | undefined
+{
+	for (const [k, v] of map) if (p(v)) return k;
+	return undefined;
+}
