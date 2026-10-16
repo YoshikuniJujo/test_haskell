@@ -265,11 +265,6 @@ browser.runtime.onMessage.addListener((m, s) => {
 				logOutput.textContent = await Log.toString();
 				scrollToBottom(logOutput);
 				return; })();
-		case "notifyUseClientSetChange":
-			console.log(
-				"options.ts: useClientSetChanged:", useClientSet.checked);
-			useClientSet.checked = m.checked;
-			return;
 		case "update": (async () => {
 			console.log("options.ts: recieve UPDATE signal");
 			const obj = await browser.runtime.sendMessage({
