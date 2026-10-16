@@ -239,6 +239,13 @@ export class OptionsState
 		return this.#optionsObject.clientUuid?.value === cu.value &&
 			!this.#optionsObject.clientDetailHidden;
 	}
+
+	onlyOkButton()
+	{
+		this.#optionsObject.revertButtonHidden = true;
+		this.#optionsObject.applyButtonHidden = true;
+		this.#optionsObject.cancelButtonHidden = true;
+	}
 }
 
 async function

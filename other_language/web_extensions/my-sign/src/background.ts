@@ -132,6 +132,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			if (tg.openType === "url") {
 				ostt.setClientUuid(uuid(crypto.randomUUID()));
 				ostt.newClientMode();
+				ostt.onlyOkButton();
 				ostt.setUrlPattern(tg.id); }
 
 			if (tg.openType === "uuid" && id !== null) {

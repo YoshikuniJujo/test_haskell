@@ -6,7 +6,11 @@ export type OptionsObject = {
 	clientsHidden: boolean,
 	newClientButtonHidden: boolean,
 	deleteClientButtonHidden: boolean,
-	clientDetailHidden: boolean
+	clientDetailHidden: boolean,
+
+	revertButtonHidden: boolean,
+	applyButtonHidden: boolean,
+	cancelButtonHidden: boolean,
 
 	clients: ClientSummary[],
 
@@ -39,6 +43,10 @@ export function defaultOptionsObject(): OptionsObject
 		newClientButtonHidden: false,
 		deleteClientButtonHidden: true,
 		clientDetailHidden: true,
+
+		revertButtonHidden: false,
+		applyButtonHidden: false,
+		cancelButtonHidden: false,
 
 		clients: [],
 

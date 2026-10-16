@@ -411,10 +411,11 @@ TODO
 	+ [x] 既存の詳細画面があるか調べる
 	+ [x] クライアント詳細画面で同じものがあればそのタブをアクティブにする
 	+ [x] その他
-* [ ] ボタンの修正 (続き)
+* [x] ボタンの修正 (続き)
 	+ [x] Revertボタンの作成
 	+ [x] 順番を変える。Revert/Apply/Cancel/OK
-	+ [ ] openType == "url"のときRevert/Apply/Cancelボタンをhiddenにする
+	+ [x] openType == "url"のときRevert/Apply/Cancelボタンをhiddenにする
+		- [x] revertButtonHidden, applyButtonHidden, cancelButtonHiddenをOptionsObjectに
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
 	+ これをするかどうか検討する
 * [ ] loadCommonStateのdb側とostt側とを、それぞれまとめるか考える

@@ -81,6 +81,7 @@ const openInTab = getElement<HTMLElement>("#open-in-tab");
 (async () => {
 	const obj = await browser.runtime.sendMessage({
 		class: "Options", method: "optionsBegin" });
+	console.log("FOOBAR", obj);
 	await loadOptions(obj);
 
 	// LOG WRITE
@@ -316,7 +317,11 @@ loadOptions(obj: OptionsObject)
 	clientsElm.hidden = obj.clientsHidden;
 	newClient.hidden = obj.newClientButtonHidden;
 	deleteClient.hidden = obj.deleteClientButtonHidden;
-	clientDetail.hidden = obj.clientDetailHidden
+	clientDetail.hidden = obj.clientDetailHidden;
+
+	revert.hidden = obj.revertButtonHidden;
+	applyEditClient.hidden = obj.applyButtonHidden;
+	cancelEditClient.hidden = obj.cancelButtonHidden;
 
 	loadClientsFromSummaries(obj.clients);
 
