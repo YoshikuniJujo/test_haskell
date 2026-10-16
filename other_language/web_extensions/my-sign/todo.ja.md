@@ -386,17 +386,17 @@ TODO
 * [x] クライアントリストを名前順に並べる
 * [x] アカウントリストを名前順に並べる
 * [x] 開発用のボタンを削除する
-* [ ] Use Client Setボタンとクライアントリストとアカウントリストの同期
+* [x] Use Client Setボタンとクライアントリストとアカウントリストの同期
 	+ [x] 三者をデータベースから読み出す関数を作成
 	+ [x] backgroundからupdateメッセージを送る(from: "background"とか)
 		- { class: "Options", direction: "signal", method: "updated" }
 	+ [x] updateリクエストをoptions.tsからbackground.tsに送る
 	+ [x] updateメッセージを受け取り読み出して表示する
-	+ [ ] 他の場所でもbackgroundからupdateメッセージを送る
+	+ [x] 他の場所でもbackgroundからupdateメッセージを送る
 		- [x] クライアントの作成(Apply/OK)
-		- [ ] クライアントの変更(Apply/OK)
+		- [x] クライアントの変更(Apply/OK)
 		- [x] クライアントの削除(Delete)
-		- [ ] アカウントの作成(Generate)
+		- [x] アカウントの作成(Generate)
 * [ ] notifyUseSetClientChangeを削除する
 * [ ] クライアント詳細画面を全体で1個だけにする
 	+ [ ] クライアント詳細

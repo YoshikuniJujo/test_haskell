@@ -792,5 +792,9 @@ browser.runtime.onConnect.addListener(async p => {
 		ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
 		p.postMessage({ method: "generateDone" });
 		p.disconnect();
+		browser.runtime.sendMessage({
+			class: "Options",
+			direction: "signal",
+			method: "update" });
 	});
 });
