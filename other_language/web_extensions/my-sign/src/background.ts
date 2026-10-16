@@ -201,6 +201,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			await DB.deleteClient(ostt.clientUuid());
 			await ostt.setClientSummaries(await DB.getClientSummaries());
 			ostt.clientListMode();
+			browser.runtime.sendMessage({
+				class: "Options",
+				direction: "signal",
+				method: "update" });
 			await broadcast({ method: "clientChanged" });
 			return ostt.optionsObject(); }
 		case "checkUrlPattern": {
@@ -231,6 +235,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			await DB.putClient(ostt.makeClient());
 			ostt.setClientSummaries(await DB.getClientSummaries());
+			browser.runtime.sendMessage({
+				class: "Options",
+				direction: "signal",
+				method: "update" });
 			broadcast({ method: "clientChanged" });
 			return ostt.optionsObject();
 		}
@@ -274,11 +282,6 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				class: "Options",
 				direction: "signal",
 				method: "update" });
-			/*
-			broadcastOptions({
-				method: "notifyUseClientSetChange",
-				checked: m.checked });
-				*/
 			return ostt.optionsObject(); }
 		case "loadCommonState": {
 			const ostt = await optionsStateFromSender(s);

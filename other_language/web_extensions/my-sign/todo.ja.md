@@ -393,10 +393,11 @@ TODO
 	+ [x] updateリクエストをoptions.tsからbackground.tsに送る
 	+ [x] updateメッセージを受け取り読み出して表示する
 	+ [ ] 他の場所でもbackgroundからupdateメッセージを送る
-		- [ ] クライアントの作成(Apply/OK)
+		- [x] クライアントの作成(Apply/OK)
 		- [ ] クライアントの変更(Apply/OK)
-		- [ ] クライアントの削除(Delete)
+		- [x] クライアントの削除(Delete)
 		- [ ] アカウントの作成(Generate)
+* [ ] notifyUseSetClientChangeを削除する
 * [ ] クライアント詳細画面を全体で1個だけにする
 	+ [ ] クライアント詳細
 * [ ] アカウント表示領域から開いた設定画面がクライアント詳細画面を開くようにする
