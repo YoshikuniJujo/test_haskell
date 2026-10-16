@@ -9,7 +9,7 @@ import { addToArrayMap, forEachValues } from "./mapArray.js";
 
 import type { Client, ClientSummary, OptionsTabTag, UUID } from "./types.js";
 
-import { isUrl } from "./tools.js";
+import { isUrl, findKey } from "./tools.js";
 import { optionsTabTag, uuid, fromUuid, isError, error, success } from "./types.js";
 import { OptionsState } from "./optionsState.js";
 
@@ -138,6 +138,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return ostt.optionsObject(); }
 		case "openClientDetail": {
 			console.log("background.ts: openClientDetail:", m.value);
+			const ex = findKey(optionsStates, st => st.doesClientDetailOpen(m.value));
+			console.log("background.ts: openClientDetail:", ex);
+
 			const clnt = await DB.getClient(fromUuid(m.value));
 			const pks = await DB.getPublicKeyOptions();
 			const obj = (await optionsStateFromSender(s))
