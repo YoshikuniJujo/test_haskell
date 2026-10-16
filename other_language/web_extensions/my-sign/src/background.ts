@@ -139,7 +139,14 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "openClientDetail": {
 			console.log("background.ts: openClientDetail:", m.value);
 			const ex = findKey(optionsStates, st => st.doesClientDetailOpen(m.value));
-			console.log("background.ts: openClientDetail:", ex);
+			if (ex) {
+				console.log("background.ts: openClientDetail:", ex);
+				const tid = await otbs.tab(ex);
+				console.log("background.ts: openClientDetail:", tid);
+				if (tid === null) throw new Error("bad");
+				browser.tabs.update(tid, { active: true });
+				return (await optionsStateFromSender(s)).optionsObject();
+			}
 
 			const clnt = await DB.getClient(fromUuid(m.value));
 			const pks = await DB.getPublicKeyOptions();

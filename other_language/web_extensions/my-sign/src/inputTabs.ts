@@ -124,6 +124,12 @@ export class InputTabs {
 		return null;
 	}
 
+	async tab(key: string): Promise<number | null>
+	{
+		const assns = await this.#getAssignments();
+		return (assns[key]?.inputTab) ?? null;
+	}
+
 }
 
 function
