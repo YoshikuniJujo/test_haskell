@@ -256,7 +256,8 @@ openInTab.addEventListener("click", () => {
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
-	console.log("options.js", m, s);
+	console.log("options.js: onMessage:", m, s);
+	if (m.class !== "Options" || m.direction !== "signal") return;
 	switch(m.method) {
 		case "logUpdated":
 			(async () => {
@@ -269,6 +270,14 @@ browser.runtime.onMessage.addListener((m, s) => {
 				"options.ts: useClientSetChanged:", useClientSet.checked);
 			useClientSet.checked = m.checked;
 			return;
+		case "update": (async () => {
+			console.log("options.ts: recieve UPDATE signal");
+			const obj = await browser.runtime.sendMessage({
+				class: "Options",
+				direction: "request",
+				method: "loadCommonState" });
+			loadOptions(obj);
+			return; })();
 		default: return;
 	}
 });

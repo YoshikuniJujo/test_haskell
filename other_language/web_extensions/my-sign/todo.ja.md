@@ -388,16 +388,28 @@ TODO
 * [x] 開発用のボタンを削除する
 * [ ] Use Client Setボタンとクライアントリストとアカウントリストの同期
 	+ [x] 三者をデータベースから読み出す関数を作成
-	+ [ ] backgroundからupdateメッセージを送る(from: "background"とか)
+	+ [x] backgroundからupdateメッセージを送る(from: "background"とか)
 		- { class: "Options", direction: "signal", method: "updated" }
-	+ [ ] updateメッセージを受け取り読み出して表示する
+	+ [x] updateリクエストをoptions.tsからbackground.tsに送る
+	+ [x] updateメッセージを受け取り読み出して表示する
+	+ [ ] 他の場所でもbackgroundからupdateメッセージを送る
+		- [ ] クライアントの作成(Apply/OK)
+		- [ ] クライアントの変更(Apply/OK)
+		- [ ] クライアントの削除(Delete)
+		- [ ] アカウントの作成(Generate)
 * [ ] クライアント詳細画面を全体で1個だけにする
 	+ [ ] クライアント詳細
 * [ ] アカウント表示領域から開いた設定画面がクライアント詳細画面を開くようにする
 	+ [ ] クライアント詳細画面で同じものがあればそのタブをアクティブにする
 	+ [ ] その他
 * [ ] backgroundとoptionsの間の通信の設計を考える
+* [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
 * [ ] options.tsのformのsubmitの部分をきれいにする
+* [ ] loadCommonStateのdb側とostt側とを、それぞれまとめるか考える
+	+ [ ] DB.getCommonState
+	+ [ ] ostt.setCommonState
+	+ [ ] loadCommonStateはostt.setCommonState(await DB.getCommonState)になる
+* [ ] TODOを見返し修正する
 * [ ] 設定画面の実装の変更(続き)
 	+ [x] openTypeやidをoptions.tsから消去する
 	+ [ ] 設定画面の同期

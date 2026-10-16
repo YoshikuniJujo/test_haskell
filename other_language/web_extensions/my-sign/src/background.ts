@@ -85,6 +85,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "accountNameInput"; value: string; }
 	| { class: "Options"; method: "currentKeyOptions"; }
 	| { class: "Options"; method: "useClientSetChanged"; checked: boolean; }
+	| { class: "Options"; method: "loadCommonState"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -278,8 +279,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				method: "notifyUseClientSetChange",
 				checked: m.checked });
 				*/
-			return ostt.optionsObject();
-		}
+			return ostt.optionsObject(); }
+		case "loadCommonState": {
+			const ostt = await optionsStateFromSender(s);
+			await loadCommonState(ostt);
+			return ostt.optionsObject(); }
 	}
 }
 
