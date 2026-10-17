@@ -421,12 +421,16 @@ TODO
 * [ ] Set機能の追加
 	+ [ ] DBの修正
 		- [ ] clientテーブルをclientとsetClientテーブルとに分ける
+			* [x] clientsテーブルの名前をsetClientsテーブルに変更する
+			* [ ] 既存のデータベースからclientテーブルを作成する
+				+ UUID, 名前, URLPattern
 		- [ ] setテーブルを作る
 		- [ ] currentSetテーブルを作る
 		- [ ] default setひとつという形にする
 	+ [ ] DB側でsetを意識した作りにする
 	+ [ ] 利用する側でsetを意識した処理にする
 	+ [ ] 設定側でsetを意識した処理にする
+	+ [ ] DBから不要な項目を削除
 	+ [ ] setを変更する設定画面を作る
 	+ [ ] setを使用する場合にはaccount表示領域のクリックでそれを開く
 * [ ] TODOを見返し修正する

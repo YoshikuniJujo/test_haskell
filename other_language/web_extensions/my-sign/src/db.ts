@@ -6,10 +6,11 @@ import { unit } from "./data/unit.js"
 import { toHex } from "./tools.js"
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 const SECRET_KEYS = "secret-keys";
-const CLIENTS = "clients";
+const CLIENTS = "setClients";
+const OLD_CLIENTS = "clients";
 const USE_CLIENT_SET = "use-client-set";
 
 let dbPromise: Promise<IDBDatabase>;
@@ -21,19 +22,38 @@ open()
 
 	dbPromise = new Promise((rs, rj) => {
 		const req = indexedDB.open(DB_NAME, DB_VERSION);
-		req.onupgradeneeded = () => {
+		req.onupgradeneeded = (event) => {
 			const db = req.result;
+			const tx = req.transaction!;
 
 			if (!db.objectStoreNames.contains(SECRET_KEYS))
 				db.createObjectStore(
 					SECRET_KEYS, { keyPath: "publicKey" } );
 
-			if (!db.objectStoreNames.contains(CLIENTS))
+			if (!db.objectStoreNames.contains(OLD_CLIENTS))
 				db.createObjectStore(
-					CLIENTS, { keyPath: "uuid" } );
+					OLD_CLIENTS, { keyPath: "uuid" } );
 
 			if (!db.objectStoreNames.contains(USE_CLIENT_SET))
 				db.createObjectStore(USE_CLIENT_SET);
+
+
+			if (event.oldVersion < 3) {
+				const oldStore = tx.objectStore(OLD_CLIENTS);
+				const newStore = db.createObjectStore(
+					"setClients",
+					{ keyPath: "uuid" }
+				);
+
+				oldStore.getAll().onsuccess = (event) => {
+					const records = (event.target as IDBRequest).result;
+
+					for (const record of records) {
+						newStore.add(record);
+					}
+					db.deleteObjectStore(OLD_CLIENTS);
+				};
+			}
 		};
 
 		req.onsuccess = () => rs(req.result);
