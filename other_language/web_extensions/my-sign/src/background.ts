@@ -152,7 +152,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				console.log("background.ts: openClientDetail:", ex);
 				const tid = await otbs.tab(ex);
 				console.log("background.ts: openClientDetail:", tid);
-				if (tid === null) throw new Error("bad");
+				if (tid === null) throw new Error("badA");
 				browser.tabs.update(tid, { active: true });
 				return null;
 			}
@@ -243,7 +243,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			const url = await otbs.key(s.tab.id);
 			const pat = ostt.urlPattern();
-			if (url === null) throw new Error("bad");
+			if (url === null) throw new Error("badB");
 			const b = checkClient(pat, url);
 			if (b) return success();
 			else return error(
@@ -396,12 +396,15 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 
 				console.log("background.ts: OPEN TYPE UUID:", cl.uuid);
 				const ex = await findKey(optionsStates, st => st.doesClientDetailOpen(uuid(cl.uuid)));
+				console.log(ex);
 				if (ex) {
 					console.log(ex);
-					if (ex === undefined) throw new Error("bad");
+					if (ex === undefined) throw new Error("badC");
 					const tb = await otbs.tab(ex);
 					console.log(tb);
-					if (tb === null) throw new Error("bad");
+					console.log(otbs);
+					console.log(await otbs.keyInputTabs());
+					if (tb === null) throw new Error("badD");
 					browser.tabs.update(tb, { active: true });
 					return; }
 
@@ -697,7 +700,7 @@ broadcast(m: object)
 {
 	const tabs = await browser.tabs.query({});
 	await broadcastTabs(tabs.map(t => {
-		if (t.id === undefined) throw new Error("bad");
+		if (t.id === undefined) throw new Error("badE");
 		return t.id
 	}), m);
 }
@@ -760,6 +763,7 @@ pgVanished(vt: number)
 	console.log("HERE");
 	for (const d of s.cancelled) for (const s of d.sources) {
 		console.log(s);
+		console.log("background.ts: send optionPageVanished");
 		await browser.tabs.sendMessage(
 			s, { method: "optionPageVanished", isUrl: isUrl(d.pubKey), clientUrl: d.pubKey });
 	}

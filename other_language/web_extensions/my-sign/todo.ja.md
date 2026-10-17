@@ -416,7 +416,9 @@ TODO
 	+ [x] 順番を変える。Revert/Apply/Cancel/OK
 	+ [x] openType == "url"のときRevert/Apply/Cancelボタンをhiddenにする
 		- [x] revertButtonHidden, applyButtonHidden, cancelButtonHiddenをOptionsObjectに
+* [ ] 設定画面が閉じたときにoptionsStatesから削除する処理が必要
 * [ ] TODOを見返し修正する
+
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
 	+ これをするかどうか検討する
@@ -458,7 +460,7 @@ TODO
 * [x] portを使ったlogの処理をテストしてみる(portは使わないことにする)
 * [x] OptionsStateインスタンスをbackgroundが復元するところを書く
 * [ ] optionPageVanishedを修正 -> optionsPageVanished
-* [ ] optionsStateのaccountの部分を実際に使ってみる
+* [x] optionsStateのaccountの部分を実際に使ってみる
 	+ [x] 初期化メッセージを送ってきた設定画面についてOptionsStateインスタンスを生成する
 	+ [x] 実際に写しを取ってみる
 	+ [x] generateボタンを押すとbackground側にメソッドを送る
@@ -477,28 +479,28 @@ TODO
 	+ [ ] 7日でログは消すようにする
 	+ [ ] ユーザーがログを消せるようにする
 * [ ] options.jsの仕様を考える
-* [ ] options.jsから直接データベース処理をするのではなくbackgroundに依頼するようにする
+* [x] options.jsから直接データベース処理をするのではなくbackgroundに依頼するようにする
 	+ [x] 設定画面の「状態」を表すオブジェクトを設計する
 		- [x] memo.ja.md上で
 		- [x] コード上で
 	+ [x] storage.session上の状態をinputなどで変化させる
 	+ [x] storage.session上の状態から復元する
 	+ [x] OKのときstorage.session上の状態からデータベースに書き込む
-	+ [ ] Cancelではstorage.session上の状態を削除する
+	+ [x] Cancelではstorage.session上の状態を削除する (必要ないかもしれない)
 	+ [x] Deleteではデータベース上からエントリーを削除する
 	+ [x] パスワード入力時の処理を記述
 	+ [x] options.jsからデータベースをいじる処理を削除する
 * [ ] 未登録クライアントから誘導される設定画面タブの管理(続き)
-	+ [ ] Promiseで待ちに入るようにする
-	+ [ ] URLで呼ばれたときにはNew Client画面からCancelボタンをhiddenにする
-	+ [ ] OKが押されたら失敗か成功かテストする
-		- [ ] 失敗ならメッセージを送る(メッセージの返り値か)
-		- [ ] 失敗の場合ユーザーに対してエラーメッセージを表示する
-		- [ ] エラーメッセージはユーザーが入力を始めたら消えるようにする
-		- [ ] 成功ならInputTabs.completeとしタブを閉じる
-	+ [ ] InputTabs.tabClosed
-		- [ ] タブか閉じたことを検出しそれがURLなら元ページにエラーを送る
-		- [ ] エラーを受け取った「元ページ」はpromiseをrejectする
+	+ [x] Promiseで待ちに入るようにする
+	+ [x] URLで呼ばれたときにはNew Client画面からCancelボタンをhiddenにする
+	+ [x] OKが押されたら失敗か成功かテストする
+		- [x] 失敗ならメッセージを送る(メッセージの返り値か)
+		- [x] 失敗の場合ユーザーに対してエラーメッセージを表示する
+		- [x] エラーメッセージはユーザーが入力を始めたら消えるようにする
+		- [x] 成功ならInputTabs.completeとしタブを閉じる
+	+ [x] InputTabs.tabClosed
+		- [x] タブか閉じたことを検出しそれがURLなら元ページにエラーを送る
+		- [x] エラーを受け取った「元ページ」はpromiseをrejectする
 	+ [ ] 仕様を検討する
 	+ [ ] テスト
 	+ [ ] 残り
@@ -544,3 +546,4 @@ TODO
 	+ setTimeout(..., 0)はOK
 * [x] アカウント表示領域の文字の透過度を背景の透過度に合わせる
 * [ ] openType === "url"のときタブを閉じられたら赤字でメッセージを出す
+* [ ] signEventでも設定画面を開くように(するかどうか検討)する

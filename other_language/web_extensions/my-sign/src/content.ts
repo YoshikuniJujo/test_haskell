@@ -29,7 +29,7 @@ let account: AccountDisplayInfo | null = null;
 
 console.log("content.ts: before (async () => {");
 
-(async () => {
+const ready = (async () => {
 	console.log("content.ts: before contentStarted");
 	await browser.runtime.sendMessage({ method: "contentStarted" });
 
@@ -74,6 +74,27 @@ console.log("content.ts: before (async () => {");
 	} else {
 		div.hidden = true; }
 })();
+
+const optionsError = document.createElement("div");
+// optionsError.hidden = true;
+optionsError.setAttribute("popover", "manual");
+
+document.body.append(optionsError);
+let popoverTimer: ReturnType<typeof setTimeout> | undefined;
+
+function showPopover(msg: string): void {
+//	if (popoverTimer !== undefined)
+//		clearTimeout(popoverTimer);
+
+	optionsError.textContent = msg;
+	optionsError.showPopover();
+//	optionsError.hidden = false;
+
+//	popoverTimer = setTimeout(() => {
+//		optionsError.hidePopover();
+//		popoverTimer = undefined;
+//	}, 5000);
+}
 
 console.log("content.ts: after (async () => { ... })();");
 
@@ -219,10 +240,14 @@ browser.runtime.onMessage.addListener(async (m: Message) => { switch (m.method) 
 	case "optionPageVanished":
 		console.log("content: clientPageVanished");
 		console.log(m);
-		if (m.isUrl)
+		if (m.isUrl) {
+			showPopover("My Sign: The options page was closed. Please reload this page to continue.");
 			forEachValues(waitingForClient,
 				m.clientUrl, (wtr: RequestWaitingForPassword) => wtr.reject(new Error ("options page vanished")));
+		}
 		break;
+	default:
+		console.log("content.ts: recieve message:", m);
 } });
 
 window.wrappedJSObject.nostr =
@@ -240,8 +265,10 @@ setAccountPosition(account: AccountDisplayInfo)
 		div.style.top = `${top}px`
 }
 
-window.addEventListener("resize", () => {
-	if (!account) throw new Error("bad1");
+window.addEventListener("resize", async () => {
+	await ready;
+//	if (!account) throw new Error("bad1");
+	if (!account) return;
 	if (!div.hidden) setAccountPosition(account);
 	if (error.matches(":popover-open")) setErrorPosition();
 });
