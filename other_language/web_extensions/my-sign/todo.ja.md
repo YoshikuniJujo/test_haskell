@@ -416,9 +416,20 @@ TODO
 	+ [x] 順番を変える。Revert/Apply/Cancel/OK
 	+ [x] openType == "url"のときRevert/Apply/Cancelボタンをhiddenにする
 		- [x] revertButtonHidden, applyButtonHidden, cancelButtonHiddenをOptionsObjectに
-* [ ] 設定画面が閉じたときにoptionsStatesから削除する処理が必要
+* [x] 設定画面が閉じたときにoptionsStatesから削除する処理が必要
+	+ [x] そうではなくて使用側で無視するようにした
+* [ ] Set機能の追加
+	+ [ ] DBの修正
+		- [ ] clientテーブルをclientとsetClientテーブルとに分ける
+		- [ ] setテーブルを作る
+		- [ ] currentSetテーブルを作る
+		- [ ] default setひとつという形にする
+	+ [ ] DB側でsetを意識した作りにする
+	+ [ ] 利用する側でsetを意識した処理にする
+	+ [ ] 設定側でsetを意識した処理にする
+	+ [ ] setを変更する設定画面を作る
+	+ [ ] setを使用する場合にはaccount表示領域のクリックでそれを開く
 * [ ] TODOを見返し修正する
-
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
 	+ これをするかどうか検討する
@@ -514,7 +525,6 @@ TODO
 * [ ] パスワード入力用タブの異常系
 	+ [ ] 同じタブから3回パスワードを送る
 	+ [ ] 異なるタブから3つのアカウントを開く
-* [ ] Set機能の追加
 * [ ] 設定画面のタブ管理について確認する(3)
 	+ [ ] アカウント表示画面から開いた設定画面(set不使用時)
 		- [ ] OKで閉じたら元の画面にもどって、そのタブを消す

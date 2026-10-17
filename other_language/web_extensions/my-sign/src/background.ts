@@ -152,9 +152,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				console.log("background.ts: openClientDetail:", ex);
 				const tid = await otbs.tab(ex);
 				console.log("background.ts: openClientDetail:", tid);
-				if (tid === null) throw new Error("badA");
-				browser.tabs.update(tid, { active: true });
-				return null;
+				if (tid !== null) {
+					browser.tabs.update(tid, { active: true });
+					return null; }
 			}
 
 			const clnt = await DB.getClient(fromUuid(m.value));
@@ -401,12 +401,14 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 					console.log(ex);
 					if (ex === undefined) throw new Error("badC");
 					const tb = await otbs.tab(ex);
-					console.log(tb);
-					console.log(otbs);
-					console.log(await otbs.keyInputTabs());
-					if (tb === null) throw new Error("badD");
-					browser.tabs.update(tb, { active: true });
-					return; }
+					if (tb) {
+						console.log(tb);
+						console.log(otbs);
+						console.log(await otbs.keyInputTabs());
+						if (tb === null) throw new Error("badD");
+						browser.tabs.update(tb, { active: true });
+						return; }
+				}
 
 			}
 
