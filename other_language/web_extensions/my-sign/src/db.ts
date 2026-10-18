@@ -8,7 +8,7 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 const SECRET_KEYS = "secret-keys";
 const CLIENTS = "setClients";
@@ -21,6 +21,8 @@ function
 open()
 {
 	if (dbPromise) return dbPromise;
+
+	console.log("db.ts: open");
 
 	dbPromise = new Promise((rs, rj) => {
 		const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -54,6 +56,24 @@ open()
 						newStore.add(record);
 					}
 					db.deleteObjectStore(OLD_CLIENTS);
+				};
+			}
+
+			if (event.oldVersion < 4) {
+				db.deleteObjectStore(OLD_CLIENTS);
+				console.log("db.ts: TO VERSION 4");
+				const setClients = tx.objectStore("setClients");
+				const newStore = db.createObjectStore(
+					"clients", { keyPath: "uuid" });
+				setClients.getAll().onsuccess = event => {
+					const records = (event.target as IDBRequest).result;
+					for (const record of records) {
+						newStore.add({
+							uuid: record.uuid,
+							name: record.name,
+							urlPattern: record.urlPattern
+						});
+					}
 				};
 			}
 		};
