@@ -26,20 +26,17 @@ open()
 
 	dbPromise = new Promise((rs, rj) => {
 		const req = indexedDB.open(DB_NAME, DB_VERSION);
-		req.onupgradeneeded = (event) => {
+		req.onupgradeneeded = event => {
 			const db = req.result;
 			const tx = req.transaction!;
 
-			if (!db.objectStoreNames.contains(SECRET_KEYS))
+			if (event.oldVersion < 1) {
 				db.createObjectStore(
 					SECRET_KEYS, { keyPath: "publicKey" } );
-
-			if (!db.objectStoreNames.contains(OLD_CLIENTS))
 				db.createObjectStore(
 					OLD_CLIENTS, { keyPath: "uuid" } );
-
-			if (!db.objectStoreNames.contains(USE_CLIENT_SET))
-				db.createObjectStore(USE_CLIENT_SET);
+				db.createObjectStore(
+					USE_CLIENT_SET, { keyPath: "id" } ); }
 
 
 			if (event.oldVersion < 3) {

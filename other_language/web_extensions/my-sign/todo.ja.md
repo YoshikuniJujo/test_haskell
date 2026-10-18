@@ -418,6 +418,7 @@ TODO
 		- [x] revertButtonHidden, applyButtonHidden, cancelButtonHiddenをOptionsObjectに
 * [x] 設定画面が閉じたときにoptionsStatesから削除する処理が必要
 	+ [x] そうではなくて使用側で無視するようにした
+* [ ] データベースを全消去したあと、全タブをreloadする
 * [ ] Set機能の追加
 	+ [ ] DBの修正
 		- [x] clientテーブルをclientとsetClientテーブルとに分ける
