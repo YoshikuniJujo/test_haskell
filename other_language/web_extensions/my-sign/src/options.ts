@@ -20,6 +20,8 @@ import { getElement, scrollToBottom } from "./domTools.js";
 import { toHex, fromHex } from "./tools.js";
 import * as Bech32 from "./codec/bech32.js";
 
+declare const __DEV__: boolean;
+
 // ------------------------------------------------------------------------
 // CONTENTS
 //
@@ -75,6 +77,9 @@ const logOutput = getElement("#log-output");
 const browserFooter = getElement<HTMLElement>("#browser-footer");
 const openInTab = getElement<HTMLElement>("#open-in-tab");
 
+const forDebug = getElement<HTMLElement>("#for-debug");
+const resetDatabaseButton = getElement <HTMLInputElement>("#reset-database");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -88,6 +93,8 @@ const openInTab = getElement<HTMLElement>("#open-in-tab");
 	browser.runtime.sendMessage({ method: "addLogTab" });
 	logOutput.textContent = await Log.toString();
 	scrollToBottom(logOutput); })();
+
+if (__DEV__) forDebug.hidden = false;
 
 // ------------------------------------------------------------------------
 // ADD EVENT LISTENER
@@ -258,6 +265,11 @@ openInTab.addEventListener("click", () => {
 	browser.runtime.sendMessage({ method: "openOptionsInTab" });
 });
 
+if (__DEV__)
+	resetDatabaseButton.addEventListener("click", () => {
+		browser.runtime.sendMessage({ method: "resetDatabase" });
+	});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
@@ -426,7 +438,7 @@ loadPublicKeyFrom(pkos: PublicKeyOption[])
 		option.dataset.name = pk.name;
 
 		const npub = Bech32.encode("npub", fromHex(pk.publicKey));
-		option.textContent = pk.name + " " + npub.slice(0, 21) + "...";
+		option.textContent = pk.name + " " + npub.slice(0, 21) + "..." + npub.slice(-6);
 		currentKeyD.append(option);
 	}
 }

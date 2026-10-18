@@ -44,6 +44,7 @@ const ready = (async () => {
 		background: "rgba(0, 128, 0, 0.5)",
 		color: "white",
 		whiteSpace: "nowrap"
+//		whiteSpace: "pre-line"
 	});
 
 	console.log("content.ts: HERE");
@@ -55,7 +56,7 @@ const ready = (async () => {
 	console.log("*** content.ts: account =", account);
 
 	if (account !== null) {
-		div.textContent = account.name + " " + account.publicKey.slice(0, 15) + "...";
+		div.textContent = account.name + " " + account.publicKey.slice(0, 11) + "..." + account.publicKey.slice(-6);
 
 		setAccountPosition(account);
 		console.log(account.backgroundColor);

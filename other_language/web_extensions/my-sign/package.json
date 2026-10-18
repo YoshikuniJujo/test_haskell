@@ -5,13 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prebuild": "npx tsc",
-    "build": "node scripts/build.js",
-    "prerun": "npm run build",
+    "prebuild-dev": "npx tsc",
+    "build-dev": "node scripts/build.js --dev",
+    "prerun": "npm run build-dev",
     "run": "node scripts/run.js",
     "run-keep": "node scripts/run-keep.js",
     "find-android": "node scripts/find-android.js",
-    "prestart-android": "npm run build",
+    "prestart-android": "npm run build-dev",
     "start-android": "node scripts/start-android.js"
   },
   "keywords": [],

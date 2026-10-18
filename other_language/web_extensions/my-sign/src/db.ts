@@ -5,6 +5,8 @@ import { fromUuid } from "./types.js"
 import { unit } from "./data/unit.js"
 import { toHex } from "./tools.js"
 
+declare const __DEV__: boolean;
+
 const DB_NAME = "my-sign";
 const DB_VERSION = 3;
 
@@ -13,7 +15,7 @@ const CLIENTS = "setClients";
 const OLD_CLIENTS = "clients";
 const USE_CLIENT_SET = "use-client-set";
 
-let dbPromise: Promise<IDBDatabase>;
+let dbPromise: Promise<IDBDatabase> | undefined;
 
 function
 open()
@@ -261,5 +263,36 @@ putUseClientSet(b: boolean)
 		tx.objectStore(USE_CLIENT_SET).put(b, unit);
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
+	});
+}
+
+export async function
+resetDatabase()
+{
+	if (!__DEV__) throw new Error("Development build only");
+
+	const db = await open();
+	db.close();
+	dbPromise = undefined
+
+	await new Promise<void>((rs, rj) => {
+
+		const request = indexedDB.deleteDatabase("my-sign");
+		console.log("db.ts: resetDatabase run");
+
+		request.onsuccess = () => {
+			console.log("Database deleted");
+			rs();
+		};
+
+		request.onerror = () => {
+			console.error("Database deletion failed", request.error);
+			rj(request.error);
+		};
+
+		request.onblocked = () => {
+			console.warn("Database deletion is blocked");
+		};
+
 	});
 }

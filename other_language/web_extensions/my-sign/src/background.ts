@@ -344,6 +344,7 @@ type GlobalMethod =
 	| { method: "prepareClient", clientUrl: string }
 	| { method: "addLogTab" }
 	| { method: "getClientsDev" }
+	| { method: "resetDatabase" }
 
 	/*
 type Client = {
@@ -492,6 +493,10 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			const clnts = await DB.getClients();
 			console.log("background.ts: getClientsDev:", clnts);
 			return clientsSummary(clnts);
+		case "resetDatabase":
+			console.log("RESET DATABASE");
+			await DB.resetDatabase();
+			return;
 	}
 }
 
