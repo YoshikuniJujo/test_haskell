@@ -429,11 +429,15 @@ TODO
 			* [x] clientsテーブルの名前をsetClientsテーブルに変更する
 			* [x] 既存のデータベースからclientテーブルを作成する
 				+ UUID, 名前, URLPattern
-		- [ ] Databaseのバージョンのupdateのところを整理する
 		- [ ] setテーブルを作る
 		- [ ] currentSetテーブルを作る
 		- [ ] default setひとつという形にする
 	+ [ ] DB側でsetを意識した作りにする
+		- [x] putClient
+		- [ ] celeteClient
+		- [ ] getClients
+		- [ ] getClientSummaries
+		- [ ] getClient
 	+ [ ] 利用する側でsetを意識した処理にする
 	+ [ ] 設定側でsetを意識した処理にする
 	+ [ ] DBから不要な項目を削除

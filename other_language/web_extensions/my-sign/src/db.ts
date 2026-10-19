@@ -111,8 +111,12 @@ putClient(client: Client)
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(SET_CLIENTS, "readwrite");
+		const tx = db.transaction([SET_CLIENTS, NEW_CLIENTS], "readwrite");
 		tx.objectStore(SET_CLIENTS).put(client);
+		tx.objectStore(NEW_CLIENTS).put({
+			uuid: client.uuid,
+			name: client.name,
+			urlPattern: client.urlPattern });
 
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);

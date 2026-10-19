@@ -23,6 +23,8 @@ type Event = {
 console.log("background.js");
 Log.write("BACKGROUND BEGIN");
 
+const contentTabs = new Set<number>();
+
 const itbs = new InputTabs("input");
 const otbs = new InputTabs("options");
 
@@ -384,6 +386,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			if (!s.tab) throw new Error("background.ts: contentStarted: bad1");
 			if (s.tab.id === undefined) throw new Error(
 				"background.ts: contentStarted: bad2");
+			contentTabs.add(s.tab.id);
 			return pgVanished(s.tab.id);
 		case "clientChanged": return broadcast({ method: "clientChanged" });
 		case "openSettings": {
@@ -517,7 +520,10 @@ clientsSummary(cls: Client[]): ClientSummary[]
 		urlPattern: cl.urlPattern }; });
 }
 
-browser.tabs.onRemoved.addListener(pgVanished);
+browser.tabs.onRemoved.addListener(tid => {
+	contentTabs.delete(tid);
+	pgVanished(tid);
+});
 
 const waitForClientChanged = new Map();
 
@@ -712,10 +718,11 @@ getAccount(pbk: Uint8Array)
 async function
 broadcast(m: object)
 {
-	const tabs = await browser.tabs.query({});
-	await broadcastTabs(tabs.map(t => {
-		if (t.id === undefined) throw new Error("badE");
-		return t.id
+//	const tabs = await browser.tabs.query({});
+	const tabs = [...contentTabs];
+	await broadcastTabs(tabs.map(tid => {
+		if (tid === undefined) throw new Error("badE");
+		return tid
 	}), m);
 }
 
