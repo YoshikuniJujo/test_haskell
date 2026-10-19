@@ -200,10 +200,37 @@ getClients(): Promise<Client[]>
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(SET_CLIENTS, "readonly");
-		const req = tx.objectStore(SET_CLIENTS).getAll();
+		const tx = db.transaction(
+			[SET_CLIENTS, NEW_CLIENTS], "readonly");
+		const req = tx.objectStore(NEW_CLIENTS).getAll();
 
-		req.onsuccess = () => rs(req.result);
+		req.onsuccess = () => {
+			const rslts: Client[] = [];
+			console.log(req.result);
+			for (const r of req.result) {
+				const req2 = tx.objectStore(SET_CLIENTS).get(r.uuid);
+				req2.onsuccess = () => {
+					const r2 = req2.result;
+					rslts.push({
+						uuid: r.uuid,
+						name: r.name,
+						urlPattern: r.urlPattern,
+						publicKey: r2.publicKey,
+						priority: r2.priority,
+						openSettingsByClick: r2.openSettingsByClick,
+						backgroundColor: r2.backgroundColor,
+						backgroundOpacity: r2.backgroundOpacity,
+						positionX: r2.positionX,
+						positionY: r2.positionY,
+						displayAccount: r2.displayAccount
+					});
+				};
+				console.log("db.ts: getClients:", rslts);
+				tx.oncomplete = () => {
+					rs(rslts);
+				}
+			}
+		}
 		req.onerror = () => rj(req.error);
 	});
 }

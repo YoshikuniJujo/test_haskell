@@ -432,10 +432,10 @@ TODO
 		- [ ] setテーブルを作る
 		- [ ] currentSetテーブルを作る
 		- [ ] default setひとつという形にする
-	+ [ ] DB側でsetを意識した作りにする
+	+ [x] DB側でsetを意識した作りにする
 		- [x] putClient
 		- [x] deleteClient
-		- [ ] getClients
+		- [x] getClients
 		- [x] getClientSummaries
 		- [x] getClient
 	+ [ ] 利用する側でsetを意識した処理にする
