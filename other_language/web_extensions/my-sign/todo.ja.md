@@ -434,7 +434,7 @@ TODO
 		- [ ] default setひとつという形にする
 	+ [ ] DB側でsetを意識した作りにする
 		- [x] putClient
-		- [ ] deleteClient
+		- [x] deleteClient
 		- [ ] getClients
 		- [x] getClientSummaries
 		- [ ] getClient

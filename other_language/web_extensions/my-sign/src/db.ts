@@ -134,8 +134,10 @@ deleteClient(uuid: UUID)
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(SET_CLIENTS, "readwrite");
+		const tx = db.transaction(
+			[SET_CLIENTS, NEW_CLIENTS], "readwrite" );
 		tx.objectStore(SET_CLIENTS).delete(fromUuid(uuid));
+		tx.objectStore(NEW_CLIENTS).delete(fromUuid(uuid));
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
 	});
