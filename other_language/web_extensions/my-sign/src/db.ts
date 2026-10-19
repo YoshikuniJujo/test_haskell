@@ -11,8 +11,9 @@ const DB_NAME = "my-sign";
 const DB_VERSION = 4;
 
 const SECRET_KEYS = "secret-keys";
-const CLIENTS = "setClients";
+const SET_CLIENTS = "setClients";
 const OLD_CLIENTS = "clients";
+const NEW_CLIENTS = "clients";
 const USE_CLIENT_SET = "use-client-set";
 
 let dbPromise: Promise<IDBDatabase> | undefined;
@@ -52,7 +53,7 @@ updatev2v3(db: IDBDatabase, tx: IDBTransaction)
 	db.createObjectStore(USE_CLIENT_SET);
 
 	const oldCls = tx.objectStore(OLD_CLIENTS);
-	const newCls = db.createObjectStore("setClients", { keyPath: "uuid" });
+	const newCls = db.createObjectStore(SET_CLIENTS, { keyPath: "uuid" });
 
 	oldCls.getAll().onsuccess = ev => {
 		const rs = (ev.target as IDBRequest).result;
@@ -64,8 +65,8 @@ updatev2v3(db: IDBDatabase, tx: IDBTransaction)
 function
 updatev3v4(db: IDBDatabase, tx: IDBTransaction)
 {
-	const setClients = tx.objectStore("setClients");
-	const newSt = db.createObjectStore("clients", { keyPath: "uuid" });
+	const setClients = tx.objectStore(SET_CLIENTS);
+	const newSt = db.createObjectStore(NEW_CLIENTS, { keyPath: "uuid" });
 
 	setClients.getAll().onsuccess = ev => {
 		const rs = (ev.target as IDBRequest).result;
@@ -110,8 +111,8 @@ putClient(client: Client)
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(CLIENTS, "readwrite");
-		tx.objectStore(CLIENTS).put(client);
+		const tx = db.transaction(SET_CLIENTS, "readwrite");
+		tx.objectStore(SET_CLIENTS).put(client);
 
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
@@ -124,8 +125,8 @@ deleteClient(uuid: UUID)
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(CLIENTS, "readwrite");
-		tx.objectStore(CLIENTS).delete(fromUuid(uuid));
+		const tx = db.transaction(SET_CLIENTS, "readwrite");
+		tx.objectStore(SET_CLIENTS).delete(fromUuid(uuid));
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
 	});
@@ -188,8 +189,8 @@ getClients(): Promise<Client[]>
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(CLIENTS, "readonly");
-		const req = tx.objectStore(CLIENTS).getAll();
+		const tx = db.transaction(SET_CLIENTS, "readonly");
+		const req = tx.objectStore(SET_CLIENTS).getAll();
 
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
@@ -202,8 +203,8 @@ getClientSummaries(): Promise<ClientSummary[]>
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(CLIENTS, "readonly");
-		const req = tx.objectStore(CLIENTS).getAll();
+		const tx = db.transaction(SET_CLIENTS, "readonly");
+		const req = tx.objectStore(SET_CLIENTS).getAll();
 
 		req.onsuccess = () => {
 			const rslts : Client[] = req.result;
@@ -226,8 +227,8 @@ getClient(uuid: string): Promise<EditingClient>
 	const db = await open()
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(CLIENTS, "readonly");
-		const req = tx.objectStore(CLIENTS).get(uuid);
+		const tx = db.transaction(SET_CLIENTS, "readonly");
+		const req = tx.objectStore(SET_CLIENTS).get(uuid);
 
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
