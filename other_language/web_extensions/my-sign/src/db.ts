@@ -207,8 +207,8 @@ getClientSummaries(): Promise<ClientSummary[]>
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(SET_CLIENTS, "readonly");
-		const req = tx.objectStore(SET_CLIENTS).getAll();
+		const tx = db.transaction(NEW_CLIENTS, "readonly");
+		const req = tx.objectStore(NEW_CLIENTS).getAll();
 
 		req.onsuccess = () => {
 			const rslts : Client[] = req.result;
