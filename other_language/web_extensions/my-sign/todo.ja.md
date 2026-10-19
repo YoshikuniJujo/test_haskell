@@ -429,10 +429,10 @@ TODO
 			* [x] clientsテーブルの名前をsetClientsテーブルに変更する
 			* [x] 既存のデータベースからclientテーブルを作成する
 				+ UUID, 名前, URLPattern
-		- [ ] setClients -> setClientsOld
-			* [ ] データの移行
-			* [ ] setClientsの削除
-			* [ ] 読み書きにsetClientsOldを使うようにする
+		- [x] setClients -> setClientsTmp
+			* [x] データの移行
+			* [x] setClientsの削除
+			* [x] 読み書きにsetClientsTmpを使うようにする
 		- [ ] setテーブルを作る
 		- [ ] currentSetテーブルを作る
 		- [ ] setClients

@@ -8,10 +8,12 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 const SECRET_KEYS = "secret-keys";
-const SET_CLIENTS = "setClients";
+const OLD_SET_CLIENTS = "setClients";
+const TMP_SET_CLIENTS = "setClientsTmp";
+const SET_CLIENTS = TMP_SET_CLIENTS;
 const OLD_CLIENTS = "clients";
 const NEW_CLIENTS = "clients";
 const USE_CLIENT_SET = "use-client-set";
@@ -33,7 +35,9 @@ open()
 			else if (ev.oldVersion < 2) updatev1v2(db, tx);
 			else if (ev.oldVersion < 3) updatev2v3(db, tx);
 			else if (ev.oldVersion < 4) updatev3v4(db, tx);
-			else if (ev.oldVersion < 5) updatev4v5(db, tx); };
+			else if (ev.oldVersion < 5) updatev4v5(db, tx);
+			else if (ev.oldVersion < 6) updatev5v6(db, tx);
+		};
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
 	});
@@ -60,7 +64,7 @@ function
 updatev2v3(db: IDBDatabase, tx: IDBTransaction)
 {
 	const oldCls = tx.objectStore(OLD_CLIENTS);
-	const newCls = db.createObjectStore(SET_CLIENTS, { keyPath: "uuid" });
+	const newCls = db.createObjectStore(OLD_SET_CLIENTS, { keyPath: "uuid" });
 
 	oldCls.getAll().onsuccess = ev => {
 		const rs = (ev.target as IDBRequest).result;
@@ -72,7 +76,7 @@ updatev2v3(db: IDBDatabase, tx: IDBTransaction)
 function
 updatev3v4(db: IDBDatabase, tx: IDBTransaction)
 {
-	const setClients = tx.objectStore(SET_CLIENTS);
+	const setClients = tx.objectStore(OLD_SET_CLIENTS);
 	const newSt = db.createObjectStore(NEW_CLIENTS, { keyPath: "uuid" });
 
 	setClients.getAll().onsuccess = ev => {
@@ -87,7 +91,7 @@ updatev3v4(db: IDBDatabase, tx: IDBTransaction)
 function
 updatev4v5(db: IDBDatabase, tx: IDBTransaction)
 {
-	const setClients = tx.objectStore(SET_CLIENTS);
+	const setClients = tx.objectStore(OLD_SET_CLIENTS);
 	setClients.getAll().onsuccess = ev => {
 		const rs = (ev.target as IDBRequest).result;
 		for (const r of rs) {
@@ -95,7 +99,24 @@ updatev4v5(db: IDBDatabase, tx: IDBTransaction)
 			delete r.urlPattern;
 			setClients.put(r);
 		}
+		updatev5v6(db, tx);
 	}
+}
+
+function
+updatev5v6(db: IDBDatabase, tx: IDBTransaction)
+{
+	const oldStore = tx.objectStore(OLD_SET_CLIENTS);
+	const newStore = db.createObjectStore(TMP_SET_CLIENTS, {
+		keyPath: "uuid"
+	});
+
+	const req = oldStore.getAll();
+
+	req.onsuccess = () => {
+		for (const r of req.result) newStore.add(r);
+		db.deleteObjectStore(OLD_SET_CLIENTS);
+	};
 }
 
 export async function
