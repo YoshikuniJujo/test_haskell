@@ -44,14 +44,19 @@ updatev0v1(db: IDBDatabase, tx: IDBTransaction)
 {
 	db.createObjectStore(SECRET_KEYS, { keyPath: "publicKey" });
 	db.createObjectStore(OLD_CLIENTS, { keyPath: "uuid" });
+	updatev1v2(db, tx);
+}
+
+function
+updatev1v2(db: IDBDatabase, tx: IDBTransaction)
+{
+	db.createObjectStore(USE_CLIENT_SET);
 	updatev2v3(db, tx);
 }
 
 function
 updatev2v3(db: IDBDatabase, tx: IDBTransaction)
 {
-	db.createObjectStore(USE_CLIENT_SET);
-
 	const oldCls = tx.objectStore(OLD_CLIENTS);
 	const newCls = db.createObjectStore(SET_CLIENTS, { keyPath: "uuid" });
 
