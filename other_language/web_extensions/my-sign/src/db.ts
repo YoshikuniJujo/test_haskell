@@ -22,64 +22,57 @@ open()
 {
 	if (dbPromise) return dbPromise;
 
-	console.log("db.ts: open");
-
 	dbPromise = new Promise((rs, rj) => {
 		const req = indexedDB.open(DB_NAME, DB_VERSION);
-		req.onupgradeneeded = event => {
+
+		req.onupgradeneeded = ev => {
 			const db = req.result;
 			const tx = req.transaction!;
-
-			if (event.oldVersion < 1) {
-				db.createObjectStore(
-					SECRET_KEYS, { keyPath: "publicKey" } );
-				db.createObjectStore(
-					OLD_CLIENTS, { keyPath: "uuid" } );
-				db.createObjectStore(
-					USE_CLIENT_SET, { keyPath: "id" } ); }
-
-
-			if (event.oldVersion < 3) {
-				const oldStore = tx.objectStore(OLD_CLIENTS);
-				const newStore = db.createObjectStore(
-					"setClients",
-					{ keyPath: "uuid" }
-				);
-
-				oldStore.getAll().onsuccess = (event) => {
-					const records = (event.target as IDBRequest).result;
-
-					for (const record of records) {
-						newStore.add(record);
-					}
-					db.deleteObjectStore(OLD_CLIENTS);
-				};
-			}
-
-			if (event.oldVersion < 4) {
-				db.deleteObjectStore(OLD_CLIENTS);
-				console.log("db.ts: TO VERSION 4");
-				const setClients = tx.objectStore("setClients");
-				const newStore = db.createObjectStore(
-					"clients", { keyPath: "uuid" });
-				setClients.getAll().onsuccess = event => {
-					const records = (event.target as IDBRequest).result;
-					for (const record of records) {
-						newStore.add({
-							uuid: record.uuid,
-							name: record.name,
-							urlPattern: record.urlPattern
-						});
-					}
-				};
-			}
-		};
-
+			if (ev.oldVersion < 1) updatev0v1(db, tx);
+			else if (ev.oldVersion < 3) updatev2v3(db, tx);
+			else if (ev.oldVersion < 4) updatev3v4(db, tx); };
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
 	});
 
 	return dbPromise;
+}
+
+function
+updatev0v1(db: IDBDatabase, tx: IDBTransaction)
+{
+	db.createObjectStore(SECRET_KEYS, { keyPath: "publicKey" });
+	db.createObjectStore(OLD_CLIENTS, { keyPath: "uuid" });
+	updatev2v3(db, tx);
+}
+
+function
+updatev2v3(db: IDBDatabase, tx: IDBTransaction)
+{
+	db.createObjectStore(USE_CLIENT_SET);
+
+	const oldCls = tx.objectStore(OLD_CLIENTS);
+	const newCls = db.createObjectStore("setClients", { keyPath: "uuid" });
+
+	oldCls.getAll().onsuccess = ev => {
+		const rs = (ev.target as IDBRequest).result;
+		for (const r of rs) newCls.add(r);
+		db.deleteObjectStore(OLD_CLIENTS);
+		updatev3v4(db, tx); };
+}
+
+function
+updatev3v4(db: IDBDatabase, tx: IDBTransaction)
+{
+	const setClients = tx.objectStore("setClients");
+	const newSt = db.createObjectStore("clients", { keyPath: "uuid" });
+
+	setClients.getAll().onsuccess = ev => {
+		const rs = (ev.target as IDBRequest).result;
+		for (const r of rs) {
+			newSt.add({
+				uuid: r.uuid, name: r.name,
+				urlPattern: r.urlPattern }); } };
 }
 
 export async function
