@@ -429,15 +429,26 @@ TODO
 			* [x] clientsテーブルの名前をsetClientsテーブルに変更する
 			* [x] 既存のデータベースからclientテーブルを作成する
 				+ UUID, 名前, URLPattern
+		- [ ] setClients -> setClientsOld
+			* [ ] データの移行
+			* [ ] setClientsの削除
+			* [ ] 読み書きにsetClientsOldを使うようにする
 		- [ ] setテーブルを作る
 		- [ ] currentSetテーブルを作る
+		- [ ] setClients
 		- [ ] default setひとつという形にする
-	+ [x] DB側でsetを意識した作りにする
+	+ [x] DB側でsetClientとclientを分離した作りにする
 		- [x] putClient
 		- [x] deleteClient
 		- [x] getClients
 		- [x] getClientSummaries
 		- [x] getClient
+	+ [ ] DB側でsetを意識した作りにする
+		- [ ] putClient
+		- [ ] deleteClient
+		- [ ] getClients
+		- [ ] getClientSummaries
+		- [ ] getClient
 	+ [ ] 利用する側でsetを意識した処理にする
 	+ [ ] 設定側でsetを意識した処理にする
 	+ [ ] DBから不要な項目を削除
