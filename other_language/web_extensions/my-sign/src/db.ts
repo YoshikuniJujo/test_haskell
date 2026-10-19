@@ -1,5 +1,5 @@
 import type {
-	Client, ClientSummary, EditingClient,
+	Client, ClientSummary, ClientSummaryRaw, EditingClient,
 	Account, PublicKeyOption, UUID } from "./types.js"
 import { fromUuid } from "./types.js"
 import { unit } from "./data/unit.js"
@@ -238,10 +238,32 @@ getClient(uuid: string): Promise<EditingClient>
 	const db = await open()
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction(SET_CLIENTS, "readonly");
+		const tx = db.transaction(
+			[SET_CLIENTS, NEW_CLIENTS], "readonly");
 		const req = tx.objectStore(SET_CLIENTS).get(uuid);
+		const req2 = tx.objectStore(NEW_CLIENTS).get(uuid);
 
-		req.onsuccess = () => rs(req.result);
+		req.onsuccess = () => {
+			req2.onsuccess = () => {
+				const r = req.result;
+				const r2 = req2.result
+				rs({
+					uuid: r2.uuid,
+					name: r2.name,
+					urlPattern: r2.urlPattern,
+					publicKey: r.publicKey,
+					priority: r.priority,
+					openSettingsByClick:
+						r.openSettingsByClick,
+					backgroundColor: r.backgroundColor,
+					backgroundOpacity:
+						r.backgroundOpacity,
+					positionX: r.positionX,
+					positionY: r.positionY,
+					displayAccount: r.displayAccount
+				});
+			}
+		}
 		req.onerror = () => rj(req.error);
 	});
 }

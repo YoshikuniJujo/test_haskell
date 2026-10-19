@@ -437,7 +437,7 @@ TODO
 		- [x] deleteClient
 		- [ ] getClients
 		- [x] getClientSummaries
-		- [ ] getClient
+		- [x] getClient
 	+ [ ] 利用する側でsetを意識した処理にする
 	+ [ ] 設定側でsetを意識した処理にする
 	+ [ ] DBから不要な項目を削除
