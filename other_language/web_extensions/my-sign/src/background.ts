@@ -496,6 +496,13 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 		case "resetDatabase":
 			console.log("RESET DATABASE");
 			await DB.resetDatabase();
+			const tabs = await browser.tabs.query({});
+			tabs.forEach(tab => {
+				if (tab.id === undefined) return;
+				browser.tabs.reload(tab.id).catch(error => {
+					console.warn("Failed to reload tab:", tab.id, error);
+				});
+			});
 			return;
 	}
 }
