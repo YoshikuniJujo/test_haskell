@@ -8,7 +8,7 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 const SECRET_KEYS = "secret-keys";
 const SET_CLIENTS = "setClients";
@@ -30,8 +30,10 @@ open()
 			const db = req.result;
 			const tx = req.transaction!;
 			if (ev.oldVersion < 1) updatev0v1(db, tx);
+			else if (ev.oldVersion < 2) updatev1v2(db, tx);
 			else if (ev.oldVersion < 3) updatev2v3(db, tx);
-			else if (ev.oldVersion < 4) updatev3v4(db, tx); };
+			else if (ev.oldVersion < 4) updatev3v4(db, tx);
+			else if (ev.oldVersion < 5) updatev4v5(db, tx); };
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
 	});
@@ -78,7 +80,22 @@ updatev3v4(db: IDBDatabase, tx: IDBTransaction)
 		for (const r of rs) {
 			newSt.add({
 				uuid: r.uuid, name: r.name,
-				urlPattern: r.urlPattern }); } };
+				urlPattern: r.urlPattern }); }
+		updatev4v5(db, tx); };
+}
+
+function
+updatev4v5(db: IDBDatabase, tx: IDBTransaction)
+{
+	const setClients = tx.objectStore(SET_CLIENTS);
+	setClients.getAll().onsuccess = ev => {
+		const rs = (ev.target as IDBRequest).result;
+		for (const r of rs) {
+			delete r.name;
+			delete r.urlPattern;
+			setClients.put(r);
+		}
+	}
 }
 
 export async function
@@ -211,6 +228,9 @@ getClients(): Promise<Client[]>
 				const req2 = tx.objectStore(SET_CLIENTS).get(r.uuid);
 				req2.onsuccess = () => {
 					const r2 = req2.result;
+					if (r2 === undefined) {
+						rj(new Error("never occur"));
+						return; }
 					rslts.push({
 						uuid: r.uuid,
 						name: r.name,
@@ -225,11 +245,10 @@ getClients(): Promise<Client[]>
 						displayAccount: r2.displayAccount
 					});
 				};
+				req2.onerror = () => rj(req2.error);
 				console.log("db.ts: getClients:", rslts);
-				tx.oncomplete = () => {
-					rs(rslts);
-				}
 			}
+			tx.oncomplete = () => { rs(rslts); }
 		}
 		req.onerror = () => rj(req.error);
 	});
@@ -269,11 +288,30 @@ getClient(uuid: string): Promise<EditingClient>
 			[SET_CLIENTS, NEW_CLIENTS], "readonly");
 		const req = tx.objectStore(SET_CLIENTS).get(uuid);
 		const req2 = tx.objectStore(NEW_CLIENTS).get(uuid);
+		let r: Client | undefined;
+		let r2: ClientSummaryRaw | undefined;
+		let done1 = false;
+		let done2 = false;
 
 		req.onsuccess = () => {
-			req2.onsuccess = () => {
-				const r = req.result;
-				const r2 = req2.result
+			r = req.result;
+			done1 = true;
+			finish();
+		}
+
+		req2.onsuccess = () => {
+			r2 = req2.result;
+			done2 = true;
+			finish();
+		}
+
+		function finish() {
+			if (!done1 || !done2) return;
+			if (r === undefined || r2 === undefined) {
+				rj(new Error(`no such client: ${uuid}`));
+				return;
+			}
+
 				rs({
 					uuid: r2.uuid,
 					name: r2.name,
@@ -289,9 +327,9 @@ getClient(uuid: string): Promise<EditingClient>
 					positionY: r.positionY,
 					displayAccount: r.displayAccount
 				});
-			}
 		}
 		req.onerror = () => rj(req.error);
+		req2.onerror = () => rj(req2.error);
 	});
 }
 
