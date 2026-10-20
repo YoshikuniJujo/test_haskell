@@ -8,12 +8,11 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 12;
+const DB_VERSION = 13;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
 const TMP_SET_CLIENTS = "setClientsTmp";
-const SET_CLIENTS = TMP_SET_CLIENTS;
 const NEW_SET_CLIENTS = "set-clients";
 const OLD_CLIENTS = "clients";
 const NEW_CLIENTS = "clients";
@@ -47,6 +46,7 @@ open()
 			else if (ev.oldVersion < 10) updatev9v10(db, tx);
 			else if (ev.oldVersion < 11) updatev10v11(db, tx);
 			else if (ev.oldVersion < 12) updatev11v12(db, tx);
+			else if (ev.oldVersion < 13) updatev12v13(db, tx);
 		};
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
@@ -192,6 +192,13 @@ function
 updatev11v12(db: IDBDatabase, tx: IDBTransaction)
 {
 	tx.objectStore(NEW_SET_CLIENTS).createIndex("setUuid", "setUuid");
+	updatev12v13(db, tx);
+}
+
+function
+updatev12v13(db: IDBDatabase, tx: IDBTransaction)
+{
+	db.deleteObjectStore(TMP_SET_CLIENTS);
 }
 
 export async function
@@ -373,52 +380,6 @@ getClients(): Promise<Client[]>
 		req0.onerror = () => rj(req0.error);
 	});
 }
-
-/*
-export async function
-getClients(): Promise<Client[]>
-{
-	const db = await open();
-	console.log("db.ts: OBJECT STORES:", db.objectStoreNames);
-
-	return new Promise((rs, rj) => {
-		const tx = db.transaction(
-			[SET_CLIENTS, NEW_CLIENTS], "readonly");
-		const req = tx.objectStore(NEW_CLIENTS).getAll();
-
-		req.onsuccess = () => {
-			const rslts: Client[] = [];
-			console.log(req.result);
-			for (const r of req.result) {
-				const req2 = tx.objectStore(SET_CLIENTS).get(r.uuid);
-				req2.onsuccess = () => {
-					const r2 = req2.result;
-					if (r2 === undefined) {
-						rj(new Error("never occur"));
-						return; }
-					rslts.push({
-						uuid: r.uuid,
-						name: r.name,
-						urlPattern: r.urlPattern,
-						publicKey: r2.publicKey,
-						priority: r2.priority,
-						openSettingsByClick: r2.openSettingsByClick,
-						backgroundColor: r2.backgroundColor,
-						backgroundOpacity: r2.backgroundOpacity,
-						positionX: r2.positionX,
-						positionY: r2.positionY,
-						displayAccount: r2.displayAccount
-					});
-				};
-				req2.onerror = () => rj(req2.error);
-			}
-			tx.oncomplete = () => { rs(rslts); }
-			console.log("db.ts: getClients:", rslts);
-		}
-		req.onerror = () => rj(req.error);
-	});
-}
-*/
 
 export async function
 getClientSummaries(): Promise<ClientSummary[]>

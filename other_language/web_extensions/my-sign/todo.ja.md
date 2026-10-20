@@ -424,7 +424,7 @@ TODO
 	+ [x] v2 -> v3を関数化する
 	+ [x] v3 -> v4を関数化する
 * [ ] Set機能の追加
-	+ [ ] DBの修正
+	+ [x] DBの修正
 		- [x] clientテーブルをclientとsetClientテーブルとに分ける
 			* [x] clientsテーブルの名前をsetClientsテーブルに変更する
 			* [x] 既存のデータベースからclientテーブルを作成する
@@ -448,28 +448,28 @@ TODO
 		- [x] 関数mkSetClientを定義する (:: SetClientOld -> SetClient)
 		- [x] setClientsTmpテーブルからset-clientsテーブルにコピーする
 			* setUuidにはcurrent-setの値を使う
-		- [ ] setClientsTmpテーブルからset-clientsテーブルを使うようにする
+		- [x] setClientsTmpテーブルからset-clientsテーブルを使うようにする
 			* setUuidについては必要な部分を実装する
-		- [ ] setClientsTmpテーブルを削除する
-		- [ ] default setひとつという形にする
+		- [x] setClientsTmpテーブルを削除する
+		- [x] default setひとつという形にする
 	+ [x] DB側でsetClientとclientを分離した作りにする
 		- [x] putClient
 		- [x] deleteClient
 		- [x] getClients
 		- [x] getClientSummaries
 		- [x] getClient
-	+ [ ] DB側でsetを意識した作りにする
-		- [ ] putClient
-		- [ ] deleteClient
-		- [ ] getClients
-		- [ ] getClientSummaries
-		- [ ] getClient
-	+ [ ] 利用する側でsetを意識した処理にする
+	+ [x] DB側でsetを意識した作りにする
+		- [x] putClient
+		- [x] deleteClient
+		- [x] getClients
+		- [x] getClientSummaries
+		- [x] getClient
+	+ [x] 利用する側でsetを意識した処理にする
+	+ [ ] setを設定する画面を作る
 	+ [ ] 設定側でsetを意識した処理にする
 	+ [ ] DBから不要な項目を削除
 		- [x] setClientテーブルから名前とURLPatternを削除する
 		- [ ] その他
-	+ [ ] setを変更する設定画面を作る
 	+ [ ] setを使用する場合にはaccount表示領域のクリックでそれを開く
 * [ ] TODOを見返し修正する
 * [ ] log用にタブを登録する処理を削除する
