@@ -72,3 +72,19 @@ label {
 	font-style: italic;
 	outline: none;
 }
+
+.set-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.set-row label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.set-row button {
+	margin-left: auto;
+}

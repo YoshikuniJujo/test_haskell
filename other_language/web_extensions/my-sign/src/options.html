@@ -10,6 +10,25 @@
 	<body>
 		<h1>My Sign</h1>
 
+		<div id="set" class="set-row" hidden>
+			<div id="set-list"></div>
+			<div>
+				<label>
+				<input type="radio" id="select" name="select-or" value="select" checked>
+				Select
+				</label>
+			</div>
+			<div>
+				<label>
+				<input type="radio" id="select-and-edit" name="select-or" value="select-and-edit">
+				Select &amp; Edit
+				</label>
+			</div>
+			<button id="new-set">New Set</button>
+		</div>
+
+		<div id="not-set">
+
 		<h2>Client</h2>
 
 		<div id="clients"></div>
@@ -138,6 +157,8 @@
 			<hr>
 			<h3>For Debug</h3>
 			<button id="reset-database">Reset Database</button>
+		</div>
+
 		</div>
 
 		<div id="client-is-already-open" popover="manual">
