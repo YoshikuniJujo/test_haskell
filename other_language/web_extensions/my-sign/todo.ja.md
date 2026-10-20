@@ -435,9 +435,9 @@ TODO
 			* [x] 読み書きにsetClientsTmpを使うようにする
 		- [x] setsテーブルを作る
 		- [x] currentSetテーブルを作る
-		- [ ] currentSetテーブルへのput関数を作る
-		- [ ] setsテーブルへのput関数を作る
-		- [ ] データベースの更新処理のところでcurrentSetとsetsへ値を追加する
+		- [x] currentSetテーブルへのput関数を作る
+		- [x] setsテーブルへのput関数を作る
+		- [x] データベースの更新処理のところでcurrentSetとsetsへ値を追加する
 		- [ ] set-clientsテーブルを複合主キーで作る
 		- [ ] setClientsTmpテーブルからset-clientsテーブルにコピーする
 			* setUuidにはcurrent-setの値を使う

@@ -8,7 +8,7 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 8;
+const DB_VERSION = 9;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
@@ -42,6 +42,7 @@ open()
 			else if (ev.oldVersion < 6) updatev5v6(db, tx);
 			else if (ev.oldVersion < 7) updatev6v7(db, tx);
 			else if (ev.oldVersion < 8) updatev7v8(db, tx);
+			else if (ev.oldVersion < 9) updatev8v9(db, tx);
 		};
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
@@ -137,6 +138,13 @@ function
 updatev7v8(db: IDBDatabase, tx: IDBTransaction)
 {
 	db.createObjectStore(CURRENT_SET);
+	updatev8v9(db, tx);
+}
+
+function
+updatev8v9(db: IDBDatabase, tx: IDBTransaction)
+{
+	initializeSet(tx);
 }
 
 export async function
@@ -446,4 +454,72 @@ resetDatabase()
 		};
 
 	});
+}
+
+async function
+putSet(set: ClientSet)
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction("client-set", "readwrite");
+		putSetRaw(tx, set);
+		tx.oncomplete = rs;
+		tx.onerror = () => rj(tx.error); });
+}
+
+export async function
+getCurrentSet(): Promise<string>
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction("current-set", "readonly");
+		const req = tx.objectStore("current-set").get(unit);
+		tx.oncomplete = () => rs(req.result);
+		tx.onerror = () => rj(tx.error); });
+}
+
+export async function
+putCurrentSet(uuid: string)
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction("current-set", "readwrite");
+		putCurrentSetRaw(tx, uuid);
+		tx.oncomplete = rs;
+		tx.onerror = () => rj(tx.error); });
+}
+
+export async function
+getSet(uuid: string)
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction("sets", "readonly");
+		const req = tx.objectStore("sets").get(uuid);
+		tx.oncomplete = () => rs(req.result);
+		tx.onerror = () => rj(tx.error); });
+}
+
+function
+initializeSet(tx: IDBTransaction)
+{
+	const uuid = crypto.randomUUID();
+	putSetRaw(tx, { uuid: uuid, name: "default" });
+	putCurrentSetRaw(tx, uuid);
+}
+
+function
+putSetRaw(tx: IDBTransaction, set: ClientSet)
+{
+	tx.objectStore("sets").put(set);
+}
+
+function
+putCurrentSetRaw(tx: IDBTransaction, uuid: string)
+{
+	tx.objectStore("current-set").put(uuid, unit);
 }

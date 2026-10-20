@@ -31,6 +31,11 @@ const otbs = new InputTabs("options");
 const optionsStates: Map<string, OptionsState> = new Map();
 
 const initializeReady = (async () => {
+
+	const cst = await DB.getCurrentSet();
+	console.log("background.ts: CURRENT SET:", cst);
+	console.log("background.ts: CURRENT SET:", await DB.getSet(cst));
+
 	const ots = [...(await otbs.keyInputTabs())]
 		.filter(([key]) => key !== "browser")
 		.map(([, value]) => value);
