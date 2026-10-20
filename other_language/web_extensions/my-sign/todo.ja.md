@@ -434,8 +434,16 @@ TODO
 			* [x] setClientsの削除
 			* [x] 読み書きにsetClientsTmpを使うようにする
 		- [x] setsテーブルを作る
-		- [ ] currentSetテーブルを作る
-		- [ ] setClients
+		- [x] currentSetテーブルを作る
+		- [ ] currentSetテーブルへのput関数を作る
+		- [ ] setsテーブルへのput関数を作る
+		- [ ] データベースの更新処理のところでcurrentSetとsetsへ値を追加する
+		- [ ] set-clientsテーブルを複合主キーで作る
+		- [ ] setClientsTmpテーブルからset-clientsテーブルにコピーする
+			* setUuidにはcurrent-setの値を使う
+		- [ ] setClientsTmpテーブルからset-clientsテーブルを使うようにする
+			* setUuidについては必要な部分を実装する
+		- [ ] setClientsTmpテーブルを削除する
 		- [ ] default setひとつという形にする
 	+ [x] DB側でsetClientとclientを分離した作りにする
 		- [x] putClient
