@@ -433,7 +433,7 @@ TODO
 			* [x] データの移行
 			* [x] setClientsの削除
 			* [x] 読み書きにsetClientsTmpを使うようにする
-		- [ ] setテーブルを作る
+		- [x] setsテーブルを作る
 		- [ ] currentSetテーブルを作る
 		- [ ] setClients
 		- [ ] default setひとつという形にする

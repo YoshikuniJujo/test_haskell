@@ -8,7 +8,7 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 6;
+const DB_VERSION = 7;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
@@ -17,6 +17,8 @@ const SET_CLIENTS = TMP_SET_CLIENTS;
 const OLD_CLIENTS = "clients";
 const NEW_CLIENTS = "clients";
 const USE_CLIENT_SET = "use-client-set";
+
+interface ClientSet { uuid: string; name: string; }
 
 let dbPromise: Promise<IDBDatabase> | undefined;
 
@@ -37,6 +39,7 @@ open()
 			else if (ev.oldVersion < 4) updatev3v4(db, tx);
 			else if (ev.oldVersion < 5) updatev4v5(db, tx);
 			else if (ev.oldVersion < 6) updatev5v6(db, tx);
+			else if (ev.oldVersion < 7) updatev6v7(db, tx);
 		};
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
@@ -117,6 +120,14 @@ updatev5v6(db: IDBDatabase, tx: IDBTransaction)
 		for (const r of req.result) newStore.add(r);
 		db.deleteObjectStore(OLD_SET_CLIENTS);
 	};
+
+	updatev6v7(db, tx);
+}
+
+function
+updatev6v7(db: IDBDatabase, tx: IDBTransaction)
+{
+	db.createObjectStore("sets", { keyPath: "uuid" });
 }
 
 export async function
@@ -236,6 +247,7 @@ export async function
 getClients(): Promise<Client[]>
 {
 	const db = await open();
+	console.log("db.ts: OBJECT STORES:", db.objectStoreNames);
 
 	return new Promise((rs, rj) => {
 		const tx = db.transaction(
@@ -267,9 +279,9 @@ getClients(): Promise<Client[]>
 					});
 				};
 				req2.onerror = () => rj(req2.error);
-				console.log("db.ts: getClients:", rslts);
 			}
 			tx.oncomplete = () => { rs(rslts); }
+			console.log("db.ts: getClients:", rslts);
 		}
 		req.onerror = () => rj(req.error);
 	});
