@@ -194,7 +194,8 @@ putClient(client: Client)
 
 	return new Promise((rs, rj) => {
 		const tx = db.transaction([SET_CLIENTS, NEW_CLIENTS], "readwrite");
-		tx.objectStore(SET_CLIENTS).put(client);
+		const { name, urlPattern, ...setClient } = client;
+		tx.objectStore(SET_CLIENTS).put(setClient);
 		tx.objectStore(NEW_CLIENTS).put({
 			uuid: client.uuid,
 			name: client.name,

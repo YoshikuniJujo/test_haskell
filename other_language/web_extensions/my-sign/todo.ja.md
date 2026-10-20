@@ -439,7 +439,13 @@ TODO
 		- [x] setsテーブルへのput関数を作る
 		- [x] データベースの更新処理のところでcurrentSetとsetsへ値を追加する
 		- [x] set-clientsテーブルを複合主キーで作る
+		- [x] 既存のデータベースのsetClientsTmpからname, urlPatternを消しているか確認
+			* [x] 消していなければversionをupして消す <- 消してあった
+		- [x] putClientでname, urlPatternを消す
+		- [ ] setClientTmpのエントリーであるオブジェクトの型を調べる
+		- [ ] 型SetClientを定義する
 		- [ ] 関数putSetClientを定義する
+		- [ ] 関数mkSetClientを定義する
 		- [ ] setClientsTmpテーブルからset-clientsテーブルにコピーする
 			* setUuidにはcurrent-setの値を使う
 		- [ ] setClientsTmpテーブルからset-clientsテーブルを使うようにする
