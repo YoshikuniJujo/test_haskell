@@ -535,3 +535,22 @@ putCurrentSetRaw(tx: IDBTransaction, uuid: string)
 {
 	tx.objectStore("current-set").put(uuid, unit);
 }
+
+type SetClient = {
+	setUuid: string,
+	clientUuid: string,
+	publicKey: Uint8Array,
+	priority: number,
+	openSettingsByClick: boolean,
+	backgroundColor: string, backgroundOpacity: number,
+	positionX: number, positionY: number,
+	displayAccount: boolean }
+
+type SetClientOld = {
+	uuid: string,
+	publicKey: Uint8Array,
+	priority: number,
+	openSettingsByClick: boolean,
+	backgroundColor: string, backgroundOpacity: number,
+	positionX: number, positionY: number,
+	displayAccount: boolean }

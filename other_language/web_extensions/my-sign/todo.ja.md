@@ -442,10 +442,10 @@ TODO
 		- [x] 既存のデータベースのsetClientsTmpからname, urlPatternを消しているか確認
 			* [x] 消していなければversionをupして消す <- 消してあった
 		- [x] putClientでname, urlPatternを消す
-		- [ ] setClientTmpのエントリーであるオブジェクトの型を調べる
-		- [ ] 型SetClientを定義する
-		- [ ] 関数putSetClientを定義する
-		- [ ] 関数mkSetClientを定義する
+		- [x] setClientTmpのエントリーであるオブジェクトの型を調べる
+		- [x] 型SetClientを定義する
+		- [ ] 関数putSetClientを定義する (:: SetClient -> IO ())
+		- [ ] 関数mkSetClientを定義する (:: SetClientOld -> SetClient)
 		- [ ] setClientsTmpテーブルからset-clientsテーブルにコピーする
 			* setUuidにはcurrent-setの値を使う
 		- [ ] setClientsTmpテーブルからset-clientsテーブルを使うようにする
