@@ -444,9 +444,9 @@ TODO
 		- [x] putClientでname, urlPatternを消す
 		- [x] setClientTmpのエントリーであるオブジェクトの型を調べる
 		- [x] 型SetClientを定義する
-		- [ ] 関数putSetClientを定義する (:: SetClient -> IO ())
+		- [x] 関数putSetClientを定義する (:: SetClient -> IO ())
 		- [x] 関数mkSetClientを定義する (:: SetClientOld -> SetClient)
-		- [ ] setClientsTmpテーブルからset-clientsテーブルにコピーする
+		- [x] setClientsTmpテーブルからset-clientsテーブルにコピーする
 			* setUuidにはcurrent-setの値を使う
 		- [ ] setClientsTmpテーブルからset-clientsテーブルを使うようにする
 			* setUuidについては必要な部分を実装する

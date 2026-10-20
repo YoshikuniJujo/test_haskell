@@ -8,7 +8,7 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 10;
+const DB_VERSION = 11;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
@@ -45,6 +45,7 @@ open()
 			else if (ev.oldVersion < 8) updatev7v8(db, tx);
 			else if (ev.oldVersion < 9) updatev8v9(db, tx);
 			else if (ev.oldVersion < 10) updatev9v10(db, tx);
+			else if (ev.oldVersion < 11) updatev10v11(db, tx);
 		};
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
@@ -156,6 +157,23 @@ updatev9v10(db: IDBDatabase, tx: IDBTransaction)
 	db.createObjectStore(NEW_SET_CLIENTS, {
 		keyPath: ["setUuid", "clientUuid"]
 	});
+	updatev10v11(db, tx);
+}
+
+function
+updatev10v11(db: IDBDatabase, tx: IDBTransaction)
+{
+	getAllSetClientsOldRaw(tx).onsuccess = ev => {
+		const req = getCurrentSetRaw(tx);
+		req.onsuccess = () => {
+			const cs = req.result;
+			if (cs === undefined) { tx.abort(); return; }
+			const rs = (ev.target as IDBRequest).result;
+			for (const r of rs) {
+				putSetClientRaw(tx, mkSetClient(cs, r));
+			}
+		};
+	}
 }
 
 export async function
@@ -504,6 +522,12 @@ getCurrentSet(): Promise<string | undefined>
 		tx.onerror = () => rj(tx.error); });
 }
 
+function
+getCurrentSetRaw(tx: IDBTransaction): IDBRequest<string | undefined>
+{
+	return tx.objectStore("current-set").get(unit);
+}
+
 export async function
 putCurrentSet(uuid: string)
 {
@@ -568,4 +592,27 @@ mkSetClient(setUuid: string, old: SetClientOld): SetClient
 		backgroundOpacity: old.backgroundOpacity,
 		positionX: old.positionX, positionY: old.positionY,
 		displayAccount: old.displayAccount };
+}
+
+export async function
+putSetClient(setClient: SetClient)
+{
+	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(NEW_SET_CLIENTS, "readwrite");
+		putSetClientRaw(tx, setClient);
+		tx.oncomplete = rs;
+		tx.onerror = () => rj(tx.error); });
+}
+
+function
+putSetClientRaw(tx: IDBTransaction, setClient: SetClient)
+{
+	tx.objectStore(NEW_SET_CLIENTS).put(setClient);
+}
+
+function
+getAllSetClientsOldRaw(tx: IDBTransaction): IDBRequest<SetClientOld[]>
+{
+	return tx.objectStore(TMP_SET_CLIENTS).getAll();
 }
