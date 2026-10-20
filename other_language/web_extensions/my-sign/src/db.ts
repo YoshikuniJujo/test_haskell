@@ -554,3 +554,18 @@ type SetClientOld = {
 	backgroundColor: string, backgroundOpacity: number,
 	positionX: number, positionY: number,
 	displayAccount: boolean }
+
+function
+mkSetClient(setUuid: string, old: SetClientOld): SetClient
+{
+	return {
+		setUuid: setUuid,
+		clientUuid: old.uuid,
+		publicKey: old.publicKey,
+		priority: old.priority,
+		openSettingsByClick: old.openSettingsByClick,
+		backgroundColor: old.backgroundColor,
+		backgroundOpacity: old.backgroundOpacity,
+		positionX: old.positionX, positionY: old.positionY,
+		displayAccount: old.displayAccount };
+}

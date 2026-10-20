@@ -445,7 +445,7 @@ TODO
 		- [x] setClientTmpのエントリーであるオブジェクトの型を調べる
 		- [x] 型SetClientを定義する
 		- [ ] 関数putSetClientを定義する (:: SetClient -> IO ())
-		- [ ] 関数mkSetClientを定義する (:: SetClientOld -> SetClient)
+		- [x] 関数mkSetClientを定義する (:: SetClientOld -> SetClient)
 		- [ ] setClientsTmpテーブルからset-clientsテーブルにコピーする
 			* setUuidにはcurrent-setの値を使う
 		- [ ] setClientsTmpテーブルからset-clientsテーブルを使うようにする
