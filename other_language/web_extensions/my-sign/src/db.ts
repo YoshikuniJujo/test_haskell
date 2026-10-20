@@ -8,12 +8,13 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 9;
+const DB_VERSION = 10;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
 const TMP_SET_CLIENTS = "setClientsTmp";
 const SET_CLIENTS = TMP_SET_CLIENTS;
+const NEW_SET_CLIENTS = "set-clients";
 const OLD_CLIENTS = "clients";
 const NEW_CLIENTS = "clients";
 const USE_CLIENT_SET = "use-client-set";
@@ -43,6 +44,7 @@ open()
 			else if (ev.oldVersion < 7) updatev6v7(db, tx);
 			else if (ev.oldVersion < 8) updatev7v8(db, tx);
 			else if (ev.oldVersion < 9) updatev8v9(db, tx);
+			else if (ev.oldVersion < 10) updatev9v10(db, tx);
 		};
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
@@ -145,6 +147,15 @@ function
 updatev8v9(db: IDBDatabase, tx: IDBTransaction)
 {
 	initializeSet(tx);
+	updatev9v10(db, tx);
+}
+
+function
+updatev9v10(db: IDBDatabase, tx: IDBTransaction)
+{
+	db.createObjectStore(NEW_SET_CLIENTS, {
+		keyPath: ["setUuid", "clientUuid"]
+	});
 }
 
 export async function

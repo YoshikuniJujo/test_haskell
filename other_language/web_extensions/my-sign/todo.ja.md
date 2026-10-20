@@ -438,7 +438,8 @@ TODO
 		- [x] currentSetテーブルへのput関数を作る
 		- [x] setsテーブルへのput関数を作る
 		- [x] データベースの更新処理のところでcurrentSetとsetsへ値を追加する
-		- [ ] set-clientsテーブルを複合主キーで作る
+		- [x] set-clientsテーブルを複合主キーで作る
+		- [ ] 関数putSetClientを定義する
 		- [ ] setClientsTmpテーブルからset-clientsテーブルにコピーする
 			* setUuidにはcurrent-setの値を使う
 		- [ ] setClientsTmpテーブルからset-clientsテーブルを使うようにする
