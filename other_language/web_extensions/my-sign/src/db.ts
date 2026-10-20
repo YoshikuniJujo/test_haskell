@@ -8,7 +8,7 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 11;
+const DB_VERSION = 12;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
@@ -46,6 +46,7 @@ open()
 			else if (ev.oldVersion < 9) updatev8v9(db, tx);
 			else if (ev.oldVersion < 10) updatev9v10(db, tx);
 			else if (ev.oldVersion < 11) updatev10v11(db, tx);
+			else if (ev.oldVersion < 12) updatev11v12(db, tx);
 		};
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
@@ -123,11 +124,14 @@ updatev5v6(db: IDBDatabase, tx: IDBTransaction)
 	const req = oldStore.getAll();
 
 	req.onsuccess = () => {
-		for (const r of req.result) newStore.add(r);
+		for (const r of req.result) {
+			console.log("db.ts: updatev5v6:", r);
+			newStore.add(r);
+		}
 		db.deleteObjectStore(OLD_SET_CLIENTS);
+		updatev6v7(db, tx);
 	};
 
-	updatev6v7(db, tx);
 }
 
 function
@@ -164,16 +168,30 @@ function
 updatev10v11(db: IDBDatabase, tx: IDBTransaction)
 {
 	getAllSetClientsOldRaw(tx).onsuccess = ev => {
+		const old = (ev.target as IDBRequest).result
+		console.log("old set-clients:", old);
+
 		const req = getCurrentSetRaw(tx);
 		req.onsuccess = () => {
 			const cs = req.result;
+			console.log("db.ts: updatev10v11:", cs);
 			if (cs === undefined) { tx.abort(); return; }
 			const rs = (ev.target as IDBRequest).result;
+			console.log("db.ts:", rs);
 			for (const r of rs) {
-				putSetClientRaw(tx, mkSetClient(cs, r));
+				const sc = mkSetClient(cs, r);
+				console.log("migrating:", sc);
+				putSetClientRaw(tx, sc);
 			}
 		};
 	}
+	updatev11v12(db, tx);
+}
+
+function
+updatev11v12(db: IDBDatabase, tx: IDBTransaction)
+{
+	tx.objectStore(NEW_SET_CLIENTS).createIndex("setUuid", "setUuid");
 }
 
 export async function
@@ -211,13 +229,19 @@ putClient(client: Client)
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction([SET_CLIENTS, NEW_CLIENTS], "readwrite");
+		const tx = db.transaction(
+			[CURRENT_SET, NEW_SET_CLIENTS, NEW_CLIENTS], "readwrite");
 		const { name, urlPattern, ...setClient } = client;
-		tx.objectStore(SET_CLIENTS).put(setClient);
-		tx.objectStore(NEW_CLIENTS).put({
-			uuid: client.uuid,
-			name: client.name,
-			urlPattern: client.urlPattern });
+		const req = getCurrentSetRaw(tx);
+		
+		req.onsuccess = () => {
+			if (req.result === undefined) { tx.abort(); return; }
+			tx.objectStore(NEW_SET_CLIENTS)
+				.put(mkSetClient(req.result, setClient));
+			tx.objectStore(NEW_CLIENTS).put({
+				uuid: client.uuid,
+				name: client.name,
+				urlPattern: client.urlPattern }); }
 
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
@@ -231,9 +255,15 @@ deleteClient(uuid: UUID)
 
 	return new Promise((rs, rj) => {
 		const tx = db.transaction(
-			[SET_CLIENTS, NEW_CLIENTS], "readwrite" );
-		tx.objectStore(SET_CLIENTS).delete(fromUuid(uuid));
-		tx.objectStore(NEW_CLIENTS).delete(fromUuid(uuid));
+			[CURRENT_SET, NEW_SET_CLIENTS, NEW_CLIENTS], "readwrite" );
+		const req = getCurrentSetRaw(tx);
+
+		req.onsuccess = () => {
+			const cs = req.result;
+			if (cs === undefined) { tx.abort(); return; }
+			tx.objectStore(NEW_SET_CLIENTS).delete([cs, fromUuid(uuid)]);
+			tx.objectStore(NEW_CLIENTS).delete(fromUuid(uuid));
+		}
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
 	});
@@ -294,6 +324,61 @@ export async function
 getClients(): Promise<Client[]>
 {
 	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(
+			[CURRENT_SET, NEW_SET_CLIENTS, NEW_CLIENTS], "readonly");
+		const req0 = getCurrentSetRaw(tx);
+		const rslts: Client[] = [];
+
+		req0.onsuccess = () => {
+			const cs = req0.result
+			console.log("db.ts: cs:", cs);
+			if (cs == undefined) { tx.abort(); return; }
+			const req = getAllSetClientsBySetUuidRaw(tx, cs);
+			req.onsuccess = () => {
+				const scs = req.result;
+				console.log("db.ts: scs:", scs);
+				for (const sc of scs) {
+					const req2 = tx.objectStore(NEW_CLIENTS).get(sc.clientUuid);
+					req2.onsuccess = () => {
+						const c = req2.result;
+						console.log("db.ts: req2.result:", c);
+						if (c == undefined) { tx.abort(); return; }
+						rslts.push({
+							uuid: c.uuid,
+							name: c.name,
+							urlPattern: c.urlPattern,
+							publicKey: sc.publicKey,
+							priority: sc.priority,
+							openSettingsByClick: sc.openSettingsByClick,
+							backgroundColor: sc.backgroundColor,
+							backgroundOpacity: sc.backgroundOpacity,
+							positionX: sc.positionX,
+							positionY: sc.positionY,
+							displayAccount: sc.displayAccount
+						});
+					};
+					req2.onerror = () => rj(req2.error);
+				}
+			};
+			req.onerror = () => rj(req.error);
+		};
+		tx.oncomplete = () => {
+			console.log("db.ts: getClients:", rslts);
+			rs(rslts); }
+		tx.onabort = () => rj(
+			tx.error ?? new Error("Transaction aborted"));
+		tx.onerror = () => rj(
+			tx.error ?? new Error("Transaction failed"));
+		req0.onerror = () => rj(req0.error);
+	});
+}
+
+/*
+export async function
+getClients(): Promise<Client[]>
+{
+	const db = await open();
 	console.log("db.ts: OBJECT STORES:", db.objectStoreNames);
 
 	return new Promise((rs, rj) => {
@@ -333,6 +418,7 @@ getClients(): Promise<Client[]>
 		req.onerror = () => rj(req.error);
 	});
 }
+*/
 
 export async function
 getClientSummaries(): Promise<ClientSummary[]>
@@ -365,18 +451,23 @@ getClient(uuid: string): Promise<EditingClient>
 
 	return new Promise((rs, rj) => {
 		const tx = db.transaction(
-			[SET_CLIENTS, NEW_CLIENTS], "readonly");
-		const req = tx.objectStore(SET_CLIENTS).get(uuid);
+			[CURRENT_SET, NEW_SET_CLIENTS, NEW_CLIENTS], "readonly");
+		const req0 = getCurrentSetRaw(tx);
 		const req2 = tx.objectStore(NEW_CLIENTS).get(uuid);
 		let r: Client | undefined;
 		let r2: ClientSummaryRaw | undefined;
 		let done1 = false;
 		let done2 = false;
 
-		req.onsuccess = () => {
-			r = req.result;
-			done1 = true;
-			finish();
+		req0.onsuccess = () => {
+			const cs = req0.result;
+			if (cs === undefined) { tx.abort(); return; }
+			const req = tx.objectStore(NEW_SET_CLIENTS).get([cs, uuid]);
+			req.onsuccess = () => {
+				r = req.result;
+				done1 = true;
+				finish();
+			}
 		}
 
 		req2.onsuccess = () => {
@@ -408,8 +499,12 @@ getClient(uuid: string): Promise<EditingClient>
 					displayAccount: r.displayAccount
 				});
 		}
-		req.onerror = () => rj(req.error);
+		req0.onerror = () => rj(req0.error);
 		req2.onerror = () => rj(req2.error);
+		tx.onabort = () => rj(
+			tx.error ?? new Error("Transaction aborted"));
+		tx.onerror = () => rj(
+			tx.error ?? new Error("Transaction failed"));
 	});
 }
 
@@ -615,4 +710,13 @@ function
 getAllSetClientsOldRaw(tx: IDBTransaction): IDBRequest<SetClientOld[]>
 {
 	return tx.objectStore(TMP_SET_CLIENTS).getAll();
+}
+
+function
+getAllSetClientsBySetUuidRaw(
+	tx: IDBTransaction,
+	setUuid: string ): IDBRequest<SetClient[]>
+{
+	return tx.objectStore(NEW_SET_CLIENTS)
+		.index("setUuid").getAll(IDBKeyRange.only(setUuid));
 }
