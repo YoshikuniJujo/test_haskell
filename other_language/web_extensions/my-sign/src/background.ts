@@ -34,6 +34,7 @@ const initializeReady = (async () => {
 
 	const cst = await DB.getCurrentSet();
 	console.log("background.ts: CURRENT SET:", cst);
+	if (cst === undefined) throw new Error("background.ts: no current set");
 	console.log("background.ts: CURRENT SET:", await DB.getSet(cst));
 
 	const ots = [...(await otbs.keyInputTabs())]

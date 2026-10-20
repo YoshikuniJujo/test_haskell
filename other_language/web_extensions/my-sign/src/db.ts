@@ -456,20 +456,32 @@ resetDatabase()
 	});
 }
 
-async function
+export async function
+getSet(uuid: string)
+{
+	const db = await open();
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction("sets", "readonly");
+		const req = tx.objectStore("sets").get(uuid);
+		tx.oncomplete = () => rs(req.result);
+		tx.onerror = () => rj(tx.error); });
+}
+
+export async function
 putSet(set: ClientSet)
 {
 	const db = await open();
 
 	return new Promise((rs, rj) => {
-		const tx = db.transaction("client-set", "readwrite");
+		const tx = db.transaction("sets", "readwrite");
 		putSetRaw(tx, set);
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error); });
 }
 
 export async function
-getCurrentSet(): Promise<string>
+getCurrentSet(): Promise<string | undefined>
 {
 	const db = await open();
 
@@ -489,18 +501,6 @@ putCurrentSet(uuid: string)
 		const tx = db.transaction("current-set", "readwrite");
 		putCurrentSetRaw(tx, uuid);
 		tx.oncomplete = rs;
-		tx.onerror = () => rj(tx.error); });
-}
-
-export async function
-getSet(uuid: string)
-{
-	const db = await open();
-
-	return new Promise((rs, rj) => {
-		const tx = db.transaction("sets", "readonly");
-		const req = tx.objectStore("sets").get(uuid);
-		tx.oncomplete = () => rs(req.result);
 		tx.onerror = () => rj(tx.error); });
 }
 
