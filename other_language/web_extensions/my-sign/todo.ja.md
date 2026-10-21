@@ -492,16 +492,16 @@ TODO
 		- [x] 現在のSet以外を薄く表示
 		- [x] ラジオボタンの内容を実装
 		- [x] 選択肢をクリックしたときの処理を実装
-	+ [ ] Setにないクライアントの設定画面を出す
+	+ [x] Setにないクライアントの設定画面を出す
 		- newClientと似た処理にするが次のものを初期設定済みとする
 			* クライアントUUID
 			* クライアント名
 			* URLPattern
 		- [x] new clientの処理を関数化
-		- [ ] new clientの処理のうちuuidを生成する処理を関数外に出す
-		- [ ] new clientとurl clientとnot-set clientに共通の関数を作る
-		- [ ] new clientとurl clientにその関数を使う
-		- [ ] not-set clientを作るのにその関数を使う
+		- [x] new clientの処理のうちuuidを生成する処理を関数外に出す
+		- [x] new clientとurl clientとnot-set clientに共通の関数を作る
+		- [x] new clientとurl clientにその関数を使う
+		- [x] not-set clientを作るのにその関数を使う
 	+ [ ] 設定側でsetを意識した処理にする
 		- [ ] setを使っている場合にはDeleteだけでなくDelete From Current Setボタンも
 		- [ ] Deleteの処理をsetを使っている場合には「使われていないもの」だけ削除とする

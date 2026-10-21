@@ -150,11 +150,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			await loadCommonState(ostt);
 
+			optionsStates.set(id ?? "browser", ostt);
 			if (tg.openType === "url") {
-				ostt.setClientUuid(uuid(crypto.randomUUID()));
-				ostt.newClientMode();
+				await newClient(s, uuid(crypto.randomUUID()), tg.id, undefined);
 				ostt.onlyOkButton();
-				ostt.setUrlPattern(tg.id); }
+			}
 
 			if (tg.openType === "uuid" && id !== null) {
 				const clnt = await DB.getClient(id);
@@ -168,7 +168,6 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.setCurrentSetUuid(cs);
 
 			ostt.save();
-			optionsStates.set(id ?? "browser", ostt);
 			return ostt.optionsObject(); }
 		case "openClientDetail": {
 			console.log("background.ts: openClientDetail:", m.value);
@@ -183,14 +182,23 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					return null; }
 			}
 
-			const clnt = await DB.getClient(fromUuid(m.value));
-			const pks = await DB.getPublicKeyOptions();
-			const obj = (await optionsStateFromSender(s))
-				.openClientDetail(clnt, pks);
-			return obj; }
-		case "newClient": return newClient(s);
+			try {
+				const clnt = await DB.getClient(fromUuid(m.value));
+				const pks = await DB.getPublicKeyOptions();
+				const obj = (await optionsStateFromSender(s))
+					.openClientDetail(clnt, pks);
+				return obj;
+			}
+			catch (e) {
+				console.log(e);
+				const clnt = await DB.getClientSummary(fromUuid(m.value));
+				const obj = await newClient(s, m.value, clnt.urlPattern, clnt.name)
+				return obj; }
+		}
+		case "newClient":
+			return newClient(s, uuid(crypto.randomUUID()), undefined, undefined);
 		case "clientNameInput": {
-			console.log("background.ts: clientNameINput:", m.value);
+			console.log("background.ts: clientNameInput:", m.value);
 			(await optionsStateFromSender(s)).setClientName(m.value);
 			return; }
 		case "clientUrlPatternInput": {
@@ -384,13 +392,17 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 }
 
 async function
-newClient(s: browser.runtime.MessageSender)
+newClient(
+	s: browser.runtime.MessageSender, uuid: UUID,
+	urlPattern: string | undefined, name: string | undefined )
 {
 	const ostt = await optionsStateFromSender(s);
 	if (!ostt) throw new Error("bad2");
-	ostt.setClientUuid(uuid(crypto.randomUUID()));
+	ostt.setClientUuid(uuid);
 	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
 	ostt.newClientMode();
+	if (urlPattern !== undefined) ostt.setUrlPattern(urlPattern);
+	if (name !== undefined) ostt.setClientName(name);
 	ostt.save();
 	return ostt.optionsObject();
 }

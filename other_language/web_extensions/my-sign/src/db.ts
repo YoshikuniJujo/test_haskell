@@ -404,6 +404,20 @@ getClientSummaries(): Promise<ClientSummary[]>
 }
 
 export async function
+getClientSummary(uuid: string): Promise<ClientSummary>
+{
+	const db = await open()
+
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(NEW_CLIENTS, "readonly");
+		const req = tx.objectStore(NEW_CLIENTS).get(uuid);
+		req.onsuccess = () => {
+			rs(req.result);
+		};
+	});
+}
+
+export async function
 getClient(uuid: string): Promise<EditingClient>
 {
 	const db = await open()
