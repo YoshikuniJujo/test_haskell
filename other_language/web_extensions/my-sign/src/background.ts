@@ -160,6 +160,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			}
 
 			ostt.setClientSetList(sts);
+			const cs = await DB.getCurrentSet();
+			if (cs === undefined) throw new Error("bad");
+			ostt.setCurrentSetUuid(cs);
 
 			ostt.save();
 			optionsStates.set(id ?? "browser", ostt);

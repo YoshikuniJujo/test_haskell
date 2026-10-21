@@ -48,7 +48,8 @@ export type OptionsObject = {
 	useClientSet: boolean,
 	selectSetMode: boolean,
 	selectSetOr: SelectSetOr,
-	clientSetList: ClientSet[]
+	clientSetList: ClientSet[],
+	currentSetUuid: string,
 
 	newSetName: string
 }
@@ -90,6 +91,7 @@ export function defaultOptionsObject(): OptionsObject
 		selectSetMode: false,
 		selectSetOr: { selectSetOr: "Select" },
 		clientSetList: [],
+		currentSetUuid: "",
 
 		newSetName: ""
 	};

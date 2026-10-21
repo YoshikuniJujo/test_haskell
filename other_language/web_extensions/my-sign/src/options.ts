@@ -396,9 +396,12 @@ loadOptions(obj: OptionsObject)
 
 	setList.replaceChildren();
 	for (const st of obj.clientSetList) {
+		console.log("options.ts: loadOptions: SET:", st.uuid);
+		console.log("options.ts: loadOptions: CURRENT SET:", obj.currentSetUuid);
 		const row = document.createElement("button");
 		row.className = "set";
 		row.textContent = st.name;
+		row.classList.toggle("inactive", st.uuid !== obj.currentSetUuid);
 		row.addEventListener("click", async () => {
 			console.log("options.ts: set clicked:", st);
 			const obj = await browser.runtime.sendMessage({

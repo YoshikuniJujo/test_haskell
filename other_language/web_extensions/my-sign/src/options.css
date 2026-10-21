@@ -114,3 +114,7 @@ label {
 	gap: 8px;
 	margin-left: auto;
 }
+
+.set.inactive {
+	opacity: 0.5;
+}

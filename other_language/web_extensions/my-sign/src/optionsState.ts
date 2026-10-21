@@ -268,6 +268,12 @@ export class OptionsState
 		return this.#optionsObject.newSetName;
 	}
 
+	async setCurrentSetUuid(csu: string)
+	{
+		this.#optionsObject.currentSetUuid = csu;
+		await this.save();
+	}
+
 	doesClientDetailOpen(cu: UUID): boolean
 	{
 		return this.#optionsObject.clientUuid?.value === cu.value &&
