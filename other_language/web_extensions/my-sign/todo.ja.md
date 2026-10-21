@@ -466,7 +466,7 @@ TODO
 		- [x] getClient
 	+ [x] 利用する側でsetを意識した処理にする
 	+ [ ] setを設定する画面を作る
-		- [ ] 画面の移行だけを実装
+		- [x] 画面の移行だけを実装
 			* [x] use client set時だけ見えるSelect Setボタンを追加
 				+ [x] HTMLに追加
 				+ [x] loadOptionsでhiddenを管理する
@@ -490,8 +490,8 @@ TODO
 			* [x] options.tsからメッセージを送信
 			* [x] background.tsからデータベースに登録
 		- [x] 現在のSet以外を薄く表示
-		- [ ] ラジオボタンの内容を実装
-		- [ ] 選択肢をクリックしたときの処理を実装
+		- [x] ラジオボタンの内容を実装
+		- [x] 選択肢をクリックしたときの処理を実装
 	+ [ ] 設定側でsetを意識した処理にする
 		- [ ] setを使っている場合にはDeleteだけでなくDelete From Current Setボタンも
 		- [ ] Deleteの処理をsetを使っている場合には「使われていないもの」だけ削除とする

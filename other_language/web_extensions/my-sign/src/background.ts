@@ -98,7 +98,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "selectSetMode"; }
 	| { class: "Options"; method: "select"; }
 	| { class: "Options"; method: "select-and-edit"; }
-	| { class: "Options"; method: "selectSet"; }
+	| { class: "Options"; method: "selectSet"; value: string; }
 	| { class: "Options"; method: "newSet"; }
 	| { class: "Options"; method: "newSetNameInput"; value: string; }
 	| { class: "Options"; method: "loadCommonState"; }
@@ -349,11 +349,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.setSelectAndEdit(true);
 			return ostt.optionsObject(); }
 		case "selectSet": {
-			console.log("background.ts: SELECT SET");
+			console.log("background.ts: SELECT SET:", m.value);
 			const ostt = await optionsStateFromSender(s);
 			const sso = ostt.getSelectOr();
 			console.log("background.ts: SELECT SET:", sso);
 			console.log("background.ts: SELECT SET:", selectOrToString(sso));
+			DB.putCurrentSet(m.value);
 			if (selectOrToString(sso) === "select-and-edit")
 				ostt.selectSetMode(false);
 			return ostt.optionsObject(); }
