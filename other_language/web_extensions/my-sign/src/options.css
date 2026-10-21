@@ -68,13 +68,12 @@ label {
 }
 
 .set {
-	dislay: block;
-	font-size: 1.5em;
+	display: block;
+	font-size: 1.8em;
 	width: 100%;
 	padding: 0;
 	border: 0;
 	background: none;
-	front: inherit;
 	text-align: left;
 	cursor: pointer;
 }
@@ -89,6 +88,7 @@ label {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	width: 100%;
 }
 
 .set-row label {
@@ -98,5 +98,19 @@ label {
 }
 
 .set-row button {
+	margin-left: auto;
+}
+
+.new-set label {
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+#new-set-form {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	margin-left: auto;
 }

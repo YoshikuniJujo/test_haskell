@@ -87,6 +87,7 @@ const setField = getElement<HTMLElement>("#set");
 const notSetField = getElement<HTMLElement>("#not-set");
 const selectOr = document.querySelectorAll<HTMLInputElement>(
 	'input[name="select-or"]' );
+const newSetForm = getElement<HTMLElement>("#new-set-form");
 const newSet = getElement<HTMLInputElement>("#new-set");
 const setList = getElement<HTMLElement>("#set-list");
 
@@ -385,7 +386,7 @@ loadOptions(obj: OptionsObject)
 	if (selectSetOr === null) throw new Error("bad");
 	selectSetOr.checked = true;
 	console.log("options.ts: SELECT OR:", selectOrToString(obj.selectSetOr));
-	newSet.hidden = selectOrToString(obj.selectSetOr) !== "select-and-edit"
+	newSetForm.hidden = selectOrToString(obj.selectSetOr) !== "select-and-edit"
 
 	setList.replaceChildren();
 	for (const st of obj.clientSetList) {

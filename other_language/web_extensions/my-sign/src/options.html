@@ -13,19 +13,23 @@
 		<div id="set" hidden>
 			<div id="set-list"></div>
 			<div class="set-row">
-			<div>
-				<label>
-				<input type="radio" id="select" name="select-or" value="select" checked>
-				Select
-				</label>
-			</div>
-			<div>
-				<label>
-				<input type="radio" id="select-and-edit" name="select-or" value="select-and-edit">
-				Select &amp; Edit
-				</label>
-			</div>
-			<button id="new-set" hidden>New Set</button>
+				<div>
+					<label>
+					<input type="radio" id="select" name="select-or" value="select" checked>
+					Select
+					</label>
+				</div>
+				<div>
+					<label>
+					<input type="radio" id="select-and-edit" name="select-or" value="select-and-edit">
+					Select &amp; Edit
+					</label>
+				</div>
+				<div id="new-set-form" class="new-set" hidden>
+					<label for="new-set-name">Set Name:</label>
+					<input type="text" id="new-set-name">
+					<button id="new-set">New Set</button>
+				</div>
 			</div>
 		</div>
 
