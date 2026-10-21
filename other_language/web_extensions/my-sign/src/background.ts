@@ -494,6 +494,13 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			if (s.tab.id === undefined) throw new Error(
 				"background.ts: contentStarted: bad2");
 			contentTabs.add(s.tab.id);
+
+			const { contentTabs: cts = new Set<number>() } = await browser.storage.session.get("contentTabs");
+			cts.add(s.tab.id);
+			await browser.storage.session.set({ contentTabs: cts });
+			console.log("background.ts: CONTENT STARTED:", cts, contentTabs)
+
+
 			return pgVanished(s.tab.id);
 		case "clientChanged": return broadcast({ method: "clientChanged" });
 		case "openSettings": {
@@ -629,7 +636,12 @@ clientsSummary(cls: Client[]): ClientSummary[]
 		urlPattern: cl.urlPattern }; });
 }
 
-browser.tabs.onRemoved.addListener(tid => {
+browser.tabs.onRemoved.addListener(async tid => {
+
+	const { contentTabs: cts = new Set<number>() } = await browser.storage.session.get("contentTabs");
+	cts.delete(tid);
+	await browser.storage.session.set({ contentTabs: cts });
+
 	contentTabs.delete(tid);
 	pgVanished(tid);
 });
@@ -828,7 +840,9 @@ async function
 broadcast(m: object)
 {
 //	const tabs = await browser.tabs.query({});
+	const { contentTabs: cts = new Set<number>() } = await browser.storage.session.get("contentTabs");
 	const tabs = [...contentTabs];
+//	const tabs = [...cts];
 	await broadcastTabs(tabs.map(tid => {
 		if (tid === undefined) throw new Error("badE");
 		return tid
