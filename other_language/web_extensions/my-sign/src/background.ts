@@ -188,14 +188,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const obj = (await optionsStateFromSender(s))
 				.openClientDetail(clnt, pks);
 			return obj; }
-		case "newClient": {
-			const ostt = await optionsStateFromSender(s);
-			if (!ostt) throw new Error("bad2");
-			ostt.setClientUuid(uuid(crypto.randomUUID()));
-			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
-			ostt.newClientMode();
-			ostt.save();
-			return ostt.optionsObject(); }
+		case "newClient": return newClient(s);
 		case "clientNameInput": {
 			console.log("background.ts: clientNameINput:", m.value);
 			(await optionsStateFromSender(s)).setClientName(m.value);
@@ -388,6 +381,18 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			await loadCommonState(ostt);
 			return ostt.optionsObject(); }
 	}
+}
+
+async function
+newClient(s: browser.runtime.MessageSender)
+{
+	const ostt = await optionsStateFromSender(s);
+	if (!ostt) throw new Error("bad2");
+	ostt.setClientUuid(uuid(crypto.randomUUID()));
+	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
+	ostt.newClientMode();
+	ostt.save();
+	return ostt.optionsObject();
 }
 
 async function

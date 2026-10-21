@@ -497,6 +497,8 @@ TODO
 			* クライアントUUID
 			* クライアント名
 			* URLPattern
+		- [x] new clientの処理を関数化
+		- [ ] new clientの処理のうちuuidを生成する処理を関数外に出す
 		- [ ] new clientとurl clientとnot-set clientに共通の関数を作る
 		- [ ] new clientとurl clientにその関数を使う
 		- [ ] not-set clientを作るのにその関数を使う
