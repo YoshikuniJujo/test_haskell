@@ -497,6 +497,9 @@ TODO
 			* クライアントUUID
 			* クライアント名
 			* URLPattern
+		- [ ] new clientとurl clientとnot-set clientに共通の関数を作る
+		- [ ] new clientとurl clientにその関数を使う
+		- [ ] not-set clientを作るのにその関数を使う
 	+ [ ] 設定側でsetを意識した処理にする
 		- [ ] setを使っている場合にはDeleteだけでなくDelete From Current Setボタンも
 		- [ ] Deleteの処理をsetを使っている場合には「使われていないもの」だけ削除とする
