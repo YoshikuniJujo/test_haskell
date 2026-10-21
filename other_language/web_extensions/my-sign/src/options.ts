@@ -34,6 +34,7 @@ declare const __DEV__: boolean;
 //	+ Client Detail
 //	+ Account
 //	+ Input Element
+//	+ Client Set
 //	+ Others
 // * FOR DEVELOPMENT
 // * TYPES
@@ -88,6 +89,7 @@ const notSetField = getElement<HTMLElement>("#not-set");
 const selectOr = document.querySelectorAll<HTMLInputElement>(
 	'input[name="select-or"]' );
 const newSetForm = getElement<HTMLElement>("#new-set-form");
+const newSetName = getElement<HTMLInputElement>("#new-set-name");
 const newSet = getElement<HTMLInputElement>("#new-set");
 const setList = getElement<HTMLElement>("#set-list");
 
@@ -247,7 +249,8 @@ const inputElementList: [ValueElement, string][] = [
 	[urlPatternD, "clientUrlPatternInput"],
 	[backgroundColor16, "backgroundColorInput"],
 	[currentKeyD, "currentKeyInput"],
-	[accName, "accountNameInput"] ]
+	[accName, "accountNameInput"],
+	[newSetName, "newSetNameInput"] ]
 
 inputElementList.forEach(([e, m]) => {
 	e.addEventListener("input", () => {
@@ -284,7 +287,10 @@ selectOr.forEach(r =>
 	})
 );
 
-// selectOr.querySelectorAll<HTMLInputElement>(
+newSet.addEventListener("click", async () => {
+	const obj = await sendMethod("newSet");
+	loadOptions(obj);
+});
 
 // Others
 
@@ -403,6 +409,8 @@ loadOptions(obj: OptionsObject)
 		});
 		setList.append(row);
 	}
+
+	newSetName.value = obj.newSetName;
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;

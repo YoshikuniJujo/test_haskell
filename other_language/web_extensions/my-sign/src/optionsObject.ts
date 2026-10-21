@@ -49,6 +49,8 @@ export type OptionsObject = {
 	selectSetMode: boolean,
 	selectSetOr: SelectSetOr,
 	clientSetList: ClientSet[]
+
+	newSetName: string
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -87,7 +89,9 @@ export function defaultOptionsObject(): OptionsObject
 		useClientSet: false,
 		selectSetMode: false,
 		selectSetOr: { selectSetOr: "Select" },
-		clientSetList: []
+		clientSetList: [],
+
+		newSetName: ""
 	};
 }
 

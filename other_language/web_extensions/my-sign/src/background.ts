@@ -99,6 +99,8 @@ type OptionsMethod =
 	| { class: "Options"; method: "select"; }
 	| { class: "Options"; method: "select-and-edit"; }
 	| { class: "Options"; method: "selectSet"; }
+	| { class: "Options"; method: "newSet"; }
+	| { class: "Options"; method: "newSetNameInput"; value: string; }
 	| { class: "Options"; method: "loadCommonState"; }
 
 async function
@@ -107,6 +109,7 @@ loadCommonState(ostt: OptionsState): Promise<void>
 	ostt.setClientSummaries(await DB.getClientSummaries());
 	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
 	ostt.setUseClientSet(await DB.getUseClientSet());
+	ostt.setClientSetList(await DB.getSetList());
 }
 
 async function
@@ -342,7 +345,6 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			ostt.setSelectAndEdit(true);
 			return ostt.optionsObject(); }
-
 		case "selectSet": {
 			console.log("background.ts: SELECT SET");
 			const ostt = await optionsStateFromSender(s);
@@ -352,7 +354,24 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			if (selectOrToString(sso) === "select-and-edit")
 				ostt.selectSetMode(false);
 			return ostt.optionsObject(); }
+		case "newSet": {
+			console.log("background.ts: NEW SET");
+			const uuid = crypto.randomUUID();
+			const ostt = await optionsStateFromSender(s);
+			const name = ostt.getNewSetName();
+			DB.putSet({ uuid: uuid, name: name });
+			browser.runtime.sendMessage({
+				class: "Options",
+				direction: "signal",
+				method: "update" });
+			return ostt.optionsObject(); }
+		case "newSetNameInput": {
+			console.log("background.ts: NEW SET NAME INPUT");
+			const ostt = await optionsStateFromSender(s);
+			ostt.newSetNameInput(m.value);
+			return ostt.optionsObject(); }
 		case "loadCommonState": {
+			console.log("background.ts: LOAD COMMON STATE");
 			const ostt = await optionsStateFromSender(s);
 			await loadCommonState(ostt);
 			return ostt.optionsObject(); }

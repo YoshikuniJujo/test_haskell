@@ -257,6 +257,17 @@ export class OptionsState
 		return this.#optionsObject.selectSetOr;
 	}
 
+	async newSetNameInput(nsn: string)
+	{
+		this.#optionsObject.newSetName = nsn;
+		await this.save();
+	}
+
+	getNewSetName()
+	{
+		return this.#optionsObject.newSetName;
+	}
+
 	doesClientDetailOpen(cu: UUID): boolean
 	{
 		return this.#optionsObject.clientUuid?.value === cu.value &&
