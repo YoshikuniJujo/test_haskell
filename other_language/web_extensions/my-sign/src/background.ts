@@ -358,6 +358,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return ostt.optionsObject(); }
 		case "selectSet": {
 			console.log("background.ts: SELECT SET:", m.value);
+			if (s.tab?.id === undefined) throw new Error("bad");
+			const id = await otbs.key(s.tab.id);
+			if (id === null) throw new Error("bad");
+			const tag = optionsTabTag(id);
 			const ostt = await optionsStateFromSender(s);
 			const sso = ostt.getSelectOr();
 			console.log("background.ts: SELECT SET:", sso);
@@ -370,6 +374,16 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				direction: "signal",
 				method: "update" });
 			await broadcast({ method: "clientChanged" });
+
+			if (tag.openType == "set") {
+				console.log("background.ts: SELECT SET: OPEN TYPE: set");
+				const sts = await otbs.complete(tag.id, s.tab.id);
+				const st0 = sts[0];
+				if (st0 !== undefined)
+					await browser.tabs.update(st0, { active: true });
+				await browser.tabs.remove(s.tab.id);
+			}
+
 			return ostt.optionsObject(); }
 		case "newSet": {
 			console.log("background.ts: NEW SET");
