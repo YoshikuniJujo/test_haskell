@@ -382,6 +382,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				if (st0 !== undefined)
 					await browser.tabs.update(st0, { active: true });
 				await browser.tabs.remove(s.tab.id);
+				loadCommonState(ostt);
 			}
 
 			return ostt.optionsObject(); }
