@@ -357,6 +357,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			DB.putCurrentSet(m.value);
 			if (selectOrToString(sso) === "select-and-edit")
 				ostt.selectSetMode(false);
+			browser.runtime.sendMessage({
+				class: "Options",
+				direction: "signal",
+				method: "update" });
+			await broadcast({ method: "clientChanged" });
 			return ostt.optionsObject(); }
 		case "newSet": {
 			console.log("background.ts: NEW SET");
