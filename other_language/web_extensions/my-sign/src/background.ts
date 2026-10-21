@@ -12,6 +12,7 @@ import type { Client, ClientSummary, OptionsTabTag, UUID } from "./types.js";
 import { isUrl, findKey } from "./tools.js";
 import { optionsTabTag, uuid, fromUuid, isError, error, success } from "./types.js";
 import { OptionsState } from "./optionsState.js";
+import { selectOrToString } from "./optionsObject.js";
 
 type Event = {
 	created_at: number,
@@ -97,6 +98,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "selectSetMode"; }
 	| { class: "Options"; method: "select"; }
 	| { class: "Options"; method: "select-and-edit"; }
+	| { class: "Options"; method: "selectSet"; }
 	| { class: "Options"; method: "loadCommonState"; }
 
 async function
@@ -118,6 +120,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return ostt.optionsObject(); }
 		case "optionsBegin": {
 			console.log("background.ts: optionsMethod:", m, s);
+			const sts = await DB.getSetList();
+			console.log("background.ts: optionsBegin:", sts);
 			if (s.tab?.id === undefined) throw new Error("bad1");
 			const id = await otbs.key(s.tab.id);
 			let tg;
@@ -151,6 +155,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				const pks = await DB.getPublicKeyOptions();
 				ostt.openClientDetail(clnt, pks);
 			}
+
+			ostt.setClientSetList(sts);
 
 			ostt.save();
 			optionsStates.set(id ?? "browser", ostt);
@@ -324,7 +330,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "selectSetMode": {
 			console.log("background.ts: SELECT SET MODE");
 			const ostt = await optionsStateFromSender(s);
-			ostt.selectSetMode();
+			ostt.selectSetMode(true);
 			return ostt.optionsObject(); }
 		case "select": {
 			console.log("background.ts: SELECT MODE");
@@ -335,6 +341,16 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: SELECT AND EDIT MODE");
 			const ostt = await optionsStateFromSender(s);
 			ostt.setSelectAndEdit(true);
+			return ostt.optionsObject(); }
+
+		case "selectSet": {
+			console.log("background.ts: SELECT SET");
+			const ostt = await optionsStateFromSender(s);
+			const sso = ostt.getSelectOr();
+			console.log("background.ts: SELECT SET:", sso);
+			console.log("background.ts: SELECT SET:", selectOrToString(sso));
+			if (selectOrToString(sso) === "select-and-edit")
+				ostt.selectSetMode(false);
 			return ostt.optionsObject(); }
 		case "loadCommonState": {
 			const ostt = await optionsStateFromSender(s);

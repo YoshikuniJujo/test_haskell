@@ -1,5 +1,7 @@
 import { isUuid, isUrl } from "./tools.js";
 
+export interface ClientSet { uuid: string; name: string; }
+
 export type Client = {
 	uuid: string,
 	name: string, urlPattern: string,

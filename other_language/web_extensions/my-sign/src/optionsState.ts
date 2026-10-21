@@ -1,7 +1,7 @@
 import type { Storage } from "./storage.js";
 import type { OptionsObject } from "./optionsObject.js";
 import type {
-	UUID, Client, EditingClient, ClientSummary,
+	UUID, Client, EditingClient, ClientSummary, ClientSet,
 	OptionsTabTag, PublicKeyOption, Result }
 	from "./types.js";
 import { uuid, fromUuid } from "./types.js";
@@ -234,9 +234,15 @@ export class OptionsState
 		await this.save();
 	}
 
-	selectSetMode()
+	selectSetMode(ssm: boolean)
 	{
-		this.#optionsObject.selectSetMode = true;
+		this.#optionsObject.selectSetMode = ssm;
+	}
+
+	setClientSetList(csl: ClientSet[])
+	{
+		this.#optionsObject.clientSetList = csl;
+		this.save();
 	}
 
 	setSelectAndEdit(sae: boolean)
@@ -244,6 +250,11 @@ export class OptionsState
 		if (sae) this.#optionsObject.selectSetOr =
 			{ selectSetOr: "SelectAndEdit" }
 		else this.#optionsObject.selectSetOr = { selectSetOr: "Select" }
+	}
+
+	getSelectOr()
+	{
+		return this.#optionsObject.selectSetOr;
 	}
 
 	doesClientDetailOpen(cu: UUID): boolean

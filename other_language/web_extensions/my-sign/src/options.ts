@@ -88,6 +88,7 @@ const notSetField = getElement<HTMLElement>("#not-set");
 const selectOr = document.querySelectorAll<HTMLInputElement>(
 	'input[name="select-or"]' );
 const newSet = getElement<HTMLInputElement>("#new-set");
+const setList = getElement<HTMLElement>("#set-list");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -385,6 +386,22 @@ loadOptions(obj: OptionsObject)
 	selectSetOr.checked = true;
 	console.log("options.ts: SELECT OR:", selectOrToString(obj.selectSetOr));
 	newSet.hidden = selectOrToString(obj.selectSetOr) !== "select-and-edit"
+
+	setList.replaceChildren();
+	for (const st of obj.clientSetList) {
+		const row = document.createElement("button");
+		row.className = "set";
+		row.textContent = st.name;
+		row.addEventListener("click", async () => {
+			console.log("options.ts: set clicked:", st);
+			const obj = await browser.runtime.sendMessage({
+				class: "Options",
+				method: "selectSet",
+				value: st.uuid });
+			loadOptions(obj);
+		});
+		setList.append(row);
+	}
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;

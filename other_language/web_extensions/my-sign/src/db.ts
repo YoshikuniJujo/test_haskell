@@ -1,5 +1,5 @@
 import type {
-	Client, ClientSummary, ClientSummaryRaw, EditingClient,
+	ClientSet, Client, ClientSummary, ClientSummaryRaw, EditingClient,
 	Account, PublicKeyOption, UUID } from "./types.js"
 import { fromUuid } from "./types.js"
 import { unit } from "./data/unit.js"
@@ -18,8 +18,6 @@ const OLD_CLIENTS = "clients";
 const NEW_CLIENTS = "clients";
 const USE_CLIENT_SET = "use-client-set";
 const CURRENT_SET = "current-set";
-
-interface ClientSet { uuid: string; name: string; }
 
 let dbPromise: Promise<IDBDatabase> | undefined;
 
@@ -550,6 +548,17 @@ getSet(uuid: string)
 	return new Promise((rs, rj) => {
 		const tx = db.transaction("sets", "readonly");
 		const req = tx.objectStore("sets").get(uuid);
+		tx.oncomplete = () => rs(req.result);
+		tx.onerror = () => rj(tx.error); });
+}
+
+export async function
+getSetList(): Promise<ClientSet[]>
+{
+	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction("sets", "readonly");
+		const req = tx.objectStore("sets").getAll();
 		tx.oncomplete = () => rs(req.result);
 		tx.onerror = () => rj(tx.error); });
 }

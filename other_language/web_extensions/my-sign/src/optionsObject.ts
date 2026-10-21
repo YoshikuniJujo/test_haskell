@@ -1,4 +1,5 @@
-import type { ClientSummary, PublicKeyOption, UUID } from "./types.js";
+import type {
+	ClientSet, ClientSummary, PublicKeyOption, UUID } from "./types.js";
 
 export type SelectSetOr =
 	| { selectSetOr: "Select" }
@@ -46,7 +47,8 @@ export type OptionsObject = {
 	optionsError: string,
 	useClientSet: boolean,
 	selectSetMode: boolean,
-	selectSetOr: SelectSetOr
+	selectSetOr: SelectSetOr,
+	clientSetList: ClientSet[]
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -84,7 +86,8 @@ export function defaultOptionsObject(): OptionsObject
 		optionsError: "",
 		useClientSet: false,
 		selectSetMode: false,
-		selectSetOr: { selectSetOr: "Select" }
+		selectSetOr: { selectSetOr: "Select" },
+		clientSetList: []
 	};
 }
 

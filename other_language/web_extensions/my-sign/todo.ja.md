@@ -474,8 +474,16 @@ TODO
 				+ [x] Select Setボタンで設定画面に対するbroadcastを発火させる
 			* [x] OptionsStateにset領域とnot-set領域のhiddenを追加
 			* [x] Select Setボタンでセット選択画面に移行
-			* [ ] ラジオボタンの内容の一部を実装
-			* [ ] ラジオボタンがSelect & Editのときには
+			* [x] セットのリストを表示
+				+ [x] DB.getSetListを定義
+				+ [x] 型ClientSetをtypes.tsに移動
+				+ [x] OptionsObjectに追加
+				+ [x] OptionsStateで追加する処理を定義
+				+ [x] initializeのときにデータベースから読み込む
+				+ [x] loadOptionsで表示
+			* [x] セットのリストの要素からメッセージを送る
+			* [x] ラジオボタンの内容の一部を実装
+			* [x] ラジオボタンがSelect & Editのときには
 				選択により設定画面がもどるようにする
 		- [ ] New Setボタンの内容を実装
 		- [ ] ラジオボタンの内容を実装
