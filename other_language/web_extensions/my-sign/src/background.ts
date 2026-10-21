@@ -95,6 +95,8 @@ type OptionsMethod =
 	| { class: "Options"; method: "currentKeyOptions"; }
 	| { class: "Options"; method: "useClientSetChanged"; checked: boolean; }
 	| { class: "Options"; method: "selectSetMode"; }
+	| { class: "Options"; method: "select"; }
+	| { class: "Options"; method: "select-and-edit"; }
 	| { class: "Options"; method: "loadCommonState"; }
 
 async function
@@ -323,6 +325,16 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: SELECT SET MODE");
 			const ostt = await optionsStateFromSender(s);
 			ostt.selectSetMode();
+			return ostt.optionsObject(); }
+		case "select": {
+			console.log("background.ts: SELECT MODE");
+			const ostt = await optionsStateFromSender(s);
+			ostt.setSelectAndEdit(false);
+			return ostt.optionsObject(); }
+		case "select-and-edit": {
+			console.log("background.ts: SELECT AND EDIT MODE");
+			const ostt = await optionsStateFromSender(s);
+			ostt.setSelectAndEdit(true);
 			return ostt.optionsObject(); }
 		case "loadCommonState": {
 			const ostt = await optionsStateFromSender(s);

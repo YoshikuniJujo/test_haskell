@@ -239,6 +239,13 @@ export class OptionsState
 		this.#optionsObject.selectSetMode = true;
 	}
 
+	setSelectAndEdit(sae: boolean)
+	{
+		if (sae) this.#optionsObject.selectSetOr =
+			{ selectSetOr: "SelectAndEdit" }
+		else this.#optionsObject.selectSetOr = { selectSetOr: "Select" }
+	}
+
 	doesClientDetailOpen(cu: UUID): boolean
 	{
 		return this.#optionsObject.clientUuid?.value === cu.value &&

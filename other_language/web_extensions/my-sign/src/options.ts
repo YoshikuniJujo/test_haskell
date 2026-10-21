@@ -10,7 +10,9 @@ import type {
 	Client, ClientSummary, EditingClient,
 	UUID, OptionsInputMessages, PublicKeyOption, Result
 	} from "./types.js";
-import { defaultOptionsObject, newClientMode } from "./optionsObject.js";
+import {
+	defaultOptionsObject, newClientMode, selectOrToString
+	} from "./optionsObject.js";
 import {
 	defaultEditingClient, uuid, fromUuid, uuidNull,
 	isError } from "./types.js";
@@ -78,11 +80,14 @@ const browserFooter = getElement<HTMLElement>("#browser-footer");
 const openInTab = getElement<HTMLElement>("#open-in-tab");
 
 const forDebug = getElement<HTMLElement>("#for-debug");
-const resetDatabaseButton = getElement <HTMLInputElement>("#reset-database");
+const resetDatabaseButton = getElement<HTMLInputElement>("#reset-database");
 
 const selectSet = getElement<HTMLInputElement>("#select-set");
 const setField = getElement<HTMLElement>("#set");
 const notSetField = getElement<HTMLElement>("#not-set");
+const selectOr = document.querySelectorAll<HTMLInputElement>(
+	'input[name="select-or"]' );
+const newSet = getElement<HTMLInputElement>("#new-set");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -140,7 +145,7 @@ openSettingsByClick.addEventListener("change", () => {
 deleteClient.addEventListener("click", async () => {
 	const obj = await browser.runtime.sendMessage({
 		class: "Options", method: "deleteClient" });
-	loadOptions(obj); });
+	await loadOptions(obj); });
 
 applyEditClient.addEventListener("click", () => {
 	if (!clientFormD.checkValidity()) {
@@ -211,7 +216,7 @@ form.addEventListener("submit", async event => {
 						class: "Options",
 						method: "optionsObject" });
 					console.log("options.ts: GENERATE:", obj);
-					loadOptions(obj);
+					await loadOptions(obj);
 					break; } }); }
 	finally { pswd.fill(0); }
 	sendMethodAndLoad("currentKeyOptions");
@@ -264,8 +269,20 @@ inputElementNumberList.forEach(([e, m]) => {
 
 selectSet.addEventListener("click", async () => {
 	const obj = await sendMethod("selectSetMode");
-	if (obj !== undefined) loadOptions(obj);
+	if (obj !== undefined) await loadOptions(obj);
 });
+
+selectOr.forEach(r =>
+	r.addEventListener("change", async () => {
+		if(r.checked) {
+			console.log("options.ts: selectOr: check", r.value);
+			const obj = await sendMethod(r.value);
+			await loadOptions(obj);
+		}
+	})
+);
+
+// selectOr.querySelectorAll<HTMLInputElement>(
 
 // Others
 
@@ -361,6 +378,13 @@ loadOptions(obj: OptionsObject)
 
 	setField.hidden = !obj.selectSetMode;
 	notSetField.hidden = obj.selectSetMode;
+
+	const selectSetOr = getElement<HTMLInputElement>(
+		"#" + selectOrToString(obj.selectSetOr) );
+	if (selectSetOr === null) throw new Error("bad");
+	selectSetOr.checked = true;
+	console.log("options.ts: SELECT OR:", selectOrToString(obj.selectSetOr));
+	newSet.hidden = selectOrToString(obj.selectSetOr) !== "select-and-edit"
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;

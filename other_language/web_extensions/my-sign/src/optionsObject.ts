@@ -1,5 +1,18 @@
 import type { ClientSummary, PublicKeyOption, UUID } from "./types.js";
 
+export type SelectSetOr =
+	| { selectSetOr: "Select" }
+	| { selectSetOr: "SelectAndEdit" }
+
+export function
+selectOrToString(sso: SelectSetOr): string
+{
+	switch(sso.selectSetOr) {
+		case "Select": return "select";
+		case "SelectAndEdit": return "select-and-edit";
+	}
+}
+
 export type OptionsObject = {
 	accountName: string,
 
@@ -32,7 +45,8 @@ export type OptionsObject = {
 	openInTabButtonHidden: boolean,
 	optionsError: string,
 	useClientSet: boolean,
-	selectSetMode: boolean
+	selectSetMode: boolean,
+	selectSetOr: SelectSetOr
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -69,7 +83,8 @@ export function defaultOptionsObject(): OptionsObject
 		openInTabButtonHidden: false,
 		optionsError: "",
 		useClientSet: false,
-		selectSetMode: false
+		selectSetMode: false,
+		selectSetOr: { selectSetOr: "Select" }
 	};
 }
 
