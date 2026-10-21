@@ -80,6 +80,8 @@ const openInTab = getElement<HTMLElement>("#open-in-tab");
 const forDebug = getElement<HTMLElement>("#for-debug");
 const resetDatabaseButton = getElement <HTMLInputElement>("#reset-database");
 
+const selectSet = getElement<HTMLInputElement>("#select-set");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -258,8 +260,11 @@ inputElementNumberList.forEach(([e, m]) => {
 
 // Others
 
-useClientSet.addEventListener("change", async () =>
-	{ sendMethodChecked("useClientSetChanged", useClientSet.checked); })
+useClientSet.addEventListener("change", async () => {
+	const obj = await sendMethodChecked(
+		"useClientSetChanged", useClientSet.checked );
+	if (obj !== undefined) loadOptions(obj);
+})
 
 openInTab.addEventListener("click", () => {
 	browser.runtime.sendMessage({ method: "openOptionsInTab" });
@@ -343,6 +348,7 @@ loadOptions(obj: OptionsObject)
 	browserFooter.hidden = obj.openInTabButtonHidden;
 	optionsError.textContent = obj.optionsError;
 	useClientSet.checked = obj.useClientSet;
+	selectSet.hidden = !obj.useClientSet;
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;
@@ -456,7 +462,7 @@ sendMethod(mtd: string)
 }
 
 function
-sendMethodChecked(mtd: string, ckd: boolean)
+sendMethodChecked(mtd: string, ckd: boolean): Promise<OptionsObject | undefined>
 {
 	return browser.runtime.sendMessage({
 		class: "Options", method: mtd, checked: ckd });

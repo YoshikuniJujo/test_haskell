@@ -466,7 +466,25 @@ TODO
 		- [x] getClient
 	+ [x] 利用する側でsetを意識した処理にする
 	+ [ ] setを設定する画面を作る
+		- [ ] 画面の移行だけを実装
+			* [x] use client set時だけ見えるSelect Setボタンを追加
+				+ [x] HTMLに追加
+				+ [x] loadOptionsでhiddenを管理する
+					- OptionsStateのUseClientSetの項目を利用する
+				+ [x] Select Setボタンで設定画面に対するbroadcastを発火させる
+			* [ ] OptionsStateにset領域とnot-set領域のhiddenを追加
+			* [ ] Select Setボタンでセット選択画面に移行
+			* [ ] ラジオボタンの内容の一部を実装
+			* [ ] ラジオボタンがSelect & Editのときには
+				選択により設定画面がもどるようにする
+		- [ ] New Setボタンの内容を実装
+		- [ ] ラジオボタンの内容を実装
+		- [ ] 選択肢をクリックしたときの処理を実装
 	+ [ ] 設定側でsetを意識した処理にする
+		- [ ] setを使っている場合にはDeleteだけでなくDelete From Current Setボタンも
+		- [ ] Deleteの処理をsetを使っている場合には「使われていないもの」だけ削除とする
+		- [ ] Delete From Current Setボタンの処理を実装
+		- [ ] クライアントリストで現在のセットで使われていないものを薄字にする
 	+ [ ] DBから不要な項目を削除
 		- [x] setClientテーブルから名前とURLPatternを削除する
 		- [ ] その他
