@@ -110,6 +110,9 @@ loadCommonState(ostt: OptionsState): Promise<void>
 	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
 	ostt.setUseClientSet(await DB.getUseClientSet());
 	ostt.setClientSetList(await DB.getSetList());
+	const cs = await DB.getCurrentSet();
+	if (cs === undefined) throw new Error("bad");
+	ostt.setCurrentSetUuid(cs);
 }
 
 async function
