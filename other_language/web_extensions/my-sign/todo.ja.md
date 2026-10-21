@@ -508,6 +508,7 @@ TODO
 	+ [ ] setを使用する場合にはaccount表示領域のクリックでそれを開く
 * [ ] priorityをsetClientsテーブルからclientsテーブルに移動する
 * [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
+* [ ] 設定項目をClient, Account, Client Profileの3項目に分ける
 * [ ] TODOを見返し修正する
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
