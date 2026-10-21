@@ -14,6 +14,8 @@ import { optionsTabTag, uuid, fromUuid, isError, error, success } from "./types.
 import { OptionsState } from "./optionsState.js";
 import { selectOrToString } from "./optionsObject.js";
 
+import { Mutex } from "./mutex.js";
+
 type Event = {
 	created_at: number,
 	kind: number,
@@ -24,6 +26,7 @@ type Event = {
 console.log("background.js");
 Log.write("BACKGROUND BEGIN");
 
+const contentTabsMutex = new Mutex;
 const contentTabs = new Set<number>();
 
 const itbs = new InputTabs("input");
@@ -495,10 +498,13 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				"background.ts: contentStarted: bad2");
 			contentTabs.add(s.tab.id);
 
-			const { contentTabs: cts = new Set<number>() } = await browser.storage.session.get("contentTabs");
-			cts.add(s.tab.id);
-			await browser.storage.session.set({ contentTabs: cts });
-			console.log("background.ts: CONTENT STARTED:", cts, contentTabs)
+			await contentTabsMutex.acquire();
+			try {
+				const { contentTabs: cts = new Set<number>() } = await browser.storage.session.get("contentTabs");
+				cts.add(s.tab.id);
+				await browser.storage.session.set({ contentTabs: cts });
+				console.log("background.ts: CONTENT STARTED:", cts, contentTabs) }
+			finally { contentTabsMutex.release(); }
 
 
 			return pgVanished(s.tab.id);
@@ -638,9 +644,12 @@ clientsSummary(cls: Client[]): ClientSummary[]
 
 browser.tabs.onRemoved.addListener(async tid => {
 
-	const { contentTabs: cts = new Set<number>() } = await browser.storage.session.get("contentTabs");
-	cts.delete(tid);
-	await browser.storage.session.set({ contentTabs: cts });
+	await contentTabsMutex.acquire();
+	try {
+		const { contentTabs: cts = new Set<number>() } = await browser.storage.session.get("contentTabs");
+		cts.delete(tid);
+		await browser.storage.session.set({ contentTabs: cts }); }
+	finally { contentTabsMutex.release(); }
 
 	contentTabs.delete(tid);
 	pgVanished(tid);
@@ -841,8 +850,8 @@ broadcast(m: object)
 {
 //	const tabs = await browser.tabs.query({});
 	const { contentTabs: cts = new Set<number>() } = await browser.storage.session.get("contentTabs");
-	const tabs = [...contentTabs];
-//	const tabs = [...cts];
+//	const tabs = [...contentTabs];
+	const tabs = [...cts];
 	await broadcastTabs(tabs.map(tid => {
 		if (tid === undefined) throw new Error("badE");
 		return tid
