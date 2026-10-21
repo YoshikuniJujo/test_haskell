@@ -31,7 +31,8 @@ export type OptionsObject = {
 
 	openInTabButtonHidden: boolean,
 	optionsError: string,
-	useClientSet: boolean
+	useClientSet: boolean,
+	selectSetMode: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -67,7 +68,9 @@ export function defaultOptionsObject(): OptionsObject
 
 		openInTabButtonHidden: false,
 		optionsError: "",
-		useClientSet: false };
+		useClientSet: false,
+		selectSetMode: false
+	};
 }
 
 export function

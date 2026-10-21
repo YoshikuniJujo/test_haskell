@@ -234,6 +234,11 @@ export class OptionsState
 		await this.save();
 	}
 
+	selectSetMode()
+	{
+		this.#optionsObject.selectSetMode = true;
+	}
+
 	doesClientDetailOpen(cu: UUID): boolean
 	{
 		return this.#optionsObject.clientUuid?.value === cu.value &&

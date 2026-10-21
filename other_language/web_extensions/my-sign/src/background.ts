@@ -94,6 +94,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "accountNameInput"; value: string; }
 	| { class: "Options"; method: "currentKeyOptions"; }
 	| { class: "Options"; method: "useClientSetChanged"; checked: boolean; }
+	| { class: "Options"; method: "selectSetMode"; }
 	| { class: "Options"; method: "loadCommonState"; }
 
 async function
@@ -317,6 +318,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				class: "Options",
 				direction: "signal",
 				method: "update" });
+			return ostt.optionsObject(); }
+		case "selectSetMode": {
+			console.log("background.ts: SELECT SET MODE");
+			const ostt = await optionsStateFromSender(s);
+			ostt.selectSetMode();
 			return ostt.optionsObject(); }
 		case "loadCommonState": {
 			const ostt = await optionsStateFromSender(s);

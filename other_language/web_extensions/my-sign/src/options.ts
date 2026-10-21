@@ -81,6 +81,8 @@ const forDebug = getElement<HTMLElement>("#for-debug");
 const resetDatabaseButton = getElement <HTMLInputElement>("#reset-database");
 
 const selectSet = getElement<HTMLInputElement>("#select-set");
+const setField = getElement<HTMLElement>("#set");
+const notSetField = getElement<HTMLElement>("#not-set");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -258,6 +260,13 @@ inputElementNumberList.forEach(([e, m]) => {
 			class: "Options", method: m,
 			value: e.valueAsNumber }); }); });
 
+// Client Set
+
+selectSet.addEventListener("click", async () => {
+	const obj = await sendMethod("selectSetMode");
+	if (obj !== undefined) loadOptions(obj);
+});
+
 // Others
 
 useClientSet.addEventListener("change", async () => {
@@ -349,6 +358,9 @@ loadOptions(obj: OptionsObject)
 	optionsError.textContent = obj.optionsError;
 	useClientSet.checked = obj.useClientSet;
 	selectSet.hidden = !obj.useClientSet;
+
+	setField.hidden = !obj.selectSetMode;
+	notSetField.hidden = obj.selectSetMode;
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;

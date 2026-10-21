@@ -472,8 +472,8 @@ TODO
 				+ [x] loadOptionsでhiddenを管理する
 					- OptionsStateのUseClientSetの項目を利用する
 				+ [x] Select Setボタンで設定画面に対するbroadcastを発火させる
-			* [ ] OptionsStateにset領域とnot-set領域のhiddenを追加
-			* [ ] Select Setボタンでセット選択画面に移行
+			* [x] OptionsStateにset領域とnot-set領域のhiddenを追加
+			* [x] Select Setボタンでセット選択画面に移行
 			* [ ] ラジオボタンの内容の一部を実装
 			* [ ] ラジオボタンがSelect & Editのときには
 				選択により設定画面がもどるようにする
