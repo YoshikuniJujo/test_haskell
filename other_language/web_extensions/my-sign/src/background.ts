@@ -501,9 +501,11 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 
 			console.log("background: openSettings");
 			console.log(s.url);
+			const ups = await DB.getUseClientSet();
+			console.log("background.ts: OPEN SETTINGS: USE CLIENT SET:", ups);
 			if (!s.url) throw new Error("bad14");
 			const cl = await getClient(s.url);
-			if (cl) {
+			if (!ups && cl) {
 
 				console.log("background.ts: OPEN TYPE UUID:", cl.uuid);
 				const ex = await findKey(optionsStates, st => st.doesClientDetailOpen(uuid(cl.uuid)));
