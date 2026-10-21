@@ -162,6 +162,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				ostt.openClientDetail(clnt, pks);
 			}
 
+			if (tg.openType == "set") {
+				ostt.selectSetMode(true);
+			}
+
 			ostt.setClientSetList(sts);
 			const cs = await DB.getCurrentSet();
 			if (cs === undefined) throw new Error("bad");

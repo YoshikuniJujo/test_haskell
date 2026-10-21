@@ -502,6 +502,8 @@ TODO
 		- [x] new clientとurl clientとnot-set clientに共通の関数を作る
 		- [x] new clientとurl clientにその関数を使う
 		- [x] not-set clientを作るのにその関数を使う
+	+ [x] アカウント表示領域からid = "set"で開くようにする
+	+ [ ] 選択をしたら元タブにもどり閉じる
 	+ [ ] 設定側でsetを意識した処理にする
 		- [ ] setを使っている場合にはDeleteだけでなくDelete From Current Setボタンも
 		- [ ] Deleteの処理をsetを使っている場合には「使われていないもの」だけ削除とする
