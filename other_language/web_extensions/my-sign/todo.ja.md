@@ -506,6 +506,7 @@ TODO
 	+ [x] 選択をしたら元タブにもどり閉じる
 	+ [x] 上記の時にちゃんとページのupdateをするようにする
 	+ [x] 既存のdetail画面があっても"set"のときは気にしないようにする
+	+ [ ] contentTabsをbrowser.storage.sessionにバックアップ、リストア
 	+ [ ] 設定側でsetを意識した処理にする
 		- [ ] setを使っている場合にはDeleteだけでなくDelete From Current Setボタンも
 		- [ ] Deleteの処理をsetを使っている場合には「使われていないもの」だけ削除とする
