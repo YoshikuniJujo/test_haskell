@@ -506,9 +506,9 @@ TODO
 	+ [x] 選択をしたら元タブにもどり閉じる
 	+ [x] 上記の時にちゃんとページのupdateをするようにする
 	+ [x] 既存のdetail画面があっても"set"のときは気にしないようにする
-	+ [ ] contentTabsをbrowser.storage.sessionにバックアップ、リストア
+	+ [x] contentTabsをbrowser.storage.sessionにバックアップ、リストア
 		- [x] storage.sessionを使う
-		- [ ] 排他制御
+		- [x] 排他制御
 	+ [ ] 設定側でsetを意識した処理にする
 		- [ ] setを使っている場合にはDeleteだけでなくDelete From Current Setボタンも
 		- [ ] Deleteの処理をsetを使っている場合には「使われていないもの」だけ削除とする
@@ -517,7 +517,7 @@ TODO
 	+ [ ] DBから不要な項目を削除
 		- [x] setClientテーブルから名前とURLPatternを削除する
 		- [ ] その他
-	+ [ ] setを使用する場合にはaccount表示領域のクリックでそれを開く
+	+ [x] setを使用する場合にはaccount表示領域のクリックでそれを開く
 * [ ] priorityをsetClientsテーブルからclientsテーブルに移動する
 * [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [ ] 設定項目をClient, Account, Client Profileの3項目に分ける
