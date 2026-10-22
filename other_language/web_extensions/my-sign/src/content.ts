@@ -6,8 +6,12 @@ document.documentElement.style.border = "5px solid green";
 
 const style = document.createElement("style");
 style.textContent = `
+.account-display {
+	opacity: var(--opacity);
+}
+
 .account-display.clickable:hover {
-	filter: brightness(1.2);
+	opacity: var(--hover-opacity);
 }
 `;
 document.head.append(style);
@@ -65,7 +69,8 @@ const ready = (async () => {
 			account.backgroundColor.green,
 			account.backgroundColor.blue ]
 		div.style.background = `rgb(${r} ${g} ${b})`;
-		div.style.opacity = `${account.backgroundOpacity}`;
+		div.style.setProperty("--opacity", String(account.backgroundOpacity));
+		div.style.setProperty("--hover-opacity", String(account.backgroundOpacity * 1.2));
 		div.style.pointerEvents =
 			account.openSettingsByClick ? "auto" : "none";
 		div.classList.toggle(
@@ -215,7 +220,8 @@ browser.runtime.onMessage.addListener(async (m: Message) => { switch (m.method) 
 			account.backgroundColor.green,
 			account.backgroundColor.blue ]
 		div.style.background = `rgb(${r} ${g} ${b})`;
-		div.style.opacity = `${account.backgroundOpacity}`;
+		div.style.setProperty("--opacity", String(account.backgroundOpacity));
+		div.style.setProperty("--hover-opacity", String(account.backgroundOpacity * 1.2));
 		div.style.pointerEvents =
 			account.openSettingsByClick ? "auto" : "none";
 		div.classList.toggle(
