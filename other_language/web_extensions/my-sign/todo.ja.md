@@ -518,11 +518,12 @@ TODO
 		- [x] setClientテーブルから名前とURLPatternを削除する
 		- [ ] その他
 	+ [x] setを使用する場合にはaccount表示領域のクリックでそれを開く
-* [ ] priorityをsetClientsテーブルからclientsテーブルに移動する
+* [x] priorityをsetClientsテーブルからclientsテーブルに移動する
 	+ [x] priorityをclientsテーブルにコピーする
 	+ [x] priorityがコピーされていることを確認する
 	+ [x] priorityについてclientsテーブルを参照するようにする
-	+ [ ] setClientsテーブルからpriorityを消す
+	+ [x] setClientsテーブルからpriorityを消す
+* [ ] clientsテーブルとset-clientsテーブルの要素を確認する
 * [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [ ] 設定項目をClient, Account, Client Profileの3項目に分ける
 * [ ] TODOを見返し修正する

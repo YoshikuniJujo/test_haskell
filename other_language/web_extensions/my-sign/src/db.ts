@@ -8,7 +8,7 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 14;
+const DB_VERSION = 15;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
@@ -46,6 +46,7 @@ open()
 			else if (ev.oldVersion < 12) updatev11v12(db, tx);
 			else if (ev.oldVersion < 13) updatev12v13(db, tx);
 			else if (ev.oldVersion < 14) updatev13v14(db, tx);
+			else if (ev.oldVersion < 15) updatev14v15(db, tx);
 			tx.oncomplete = () => {
 				console.log("migration transaction complete");
 			}
@@ -228,6 +229,18 @@ updatev13v14(db: IDBDatabase, tx: IDBTransaction)
 				};
 			};
 		}
+		updatev14v15(db, tx);
+	};
+}
+
+function
+updatev14v15(db: IDBDatabase, tx: IDBTransaction)
+{
+	const req = tx.objectStore("set-clients").getAll();
+	req.onsuccess = () => {
+		for (const sc of req.result) {
+			delete sc.priority;
+			tx.objectStore("set-clients").put(sc); }
 	};
 }
 
