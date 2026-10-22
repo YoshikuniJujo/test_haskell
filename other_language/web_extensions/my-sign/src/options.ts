@@ -62,6 +62,9 @@ const backgroundOpacity = getElement<HTMLInputElement>("#background-opacity");
 const openSettingsByClick = getElement<HTMLInputElement>("#open-settings-by-click");
 const currentKeyD = getElement<HTMLSelectElement>("#current-key-d");
 const detailError = getElement<HTMLElement>("#detail-error");
+
+const clientOk = getElement<HTMLButtonElement>("#send-client");
+
 const deleteClient = getElement<HTMLElement>("#delete-client");
 const applyEditClient = getElement<HTMLButtonElement>("#apply-client");
 const cancelEditClient = getElement<HTMLButtonElement>("#cancel-edit-client");
@@ -144,6 +147,10 @@ openSettingsByClick.addEventListener("change", () => {
 	browser.runtime.sendMessage({
 		class: "Options", method: "openSettingsByClickChanged",
 		checked: openSettingsByClick.checked });
+});
+
+clientOk.addEventListener("click", async () => {
+	sendMethod("clientOk");
 });
 
 deleteClient.addEventListener("click", async () => {

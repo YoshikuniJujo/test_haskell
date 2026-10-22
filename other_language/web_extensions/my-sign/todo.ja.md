@@ -523,6 +523,14 @@ TODO
 	+ [x] priorityがコピーされていることを確認する
 	+ [x] priorityについてclientsテーブルを参照するようにする
 	+ [x] setClientsテーブルからpriorityを消す
+* [ ] クライアントが存在しなかった場合、Profileが存在しなかった場合の設定画面のbackgroundを書く
+	+ [x] HTMLにボタンを追加
+	+ [x] options.tsからbackground.tsにメッセージを送る
+	+ [ ] メッセージを受け取ったらURLPatternがマッチするかをチェック
+	+ [ ] マッチしなければエラーメッセージを表示する
+	+ [ ] マッチしたらDBに保存して次の段階に進むが、ここは今のところ「そのまま」とする
+	+ [ ] 元々のOKを押すとprofile部分をメッセージとして送る
+	+ [ ] DBに保存してcompleteにして終了
 * [ ] clientsテーブルとset-clientsテーブルの要素を確認する
 * [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [ ] 設定項目をClient, Account, Client Profileの3項目に分ける
