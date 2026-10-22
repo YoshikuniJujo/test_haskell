@@ -526,6 +526,7 @@ TODO
 * [ ] clientsテーブルとset-clientsテーブルの要素を確認する
 * [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [ ] 設定項目をClient, Account, Client Profileの3項目に分ける
+* [ ] 「クライアンのprofileが存在しなかった場合」の処理を書く
 * [ ] TODOを見返し修正する
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
