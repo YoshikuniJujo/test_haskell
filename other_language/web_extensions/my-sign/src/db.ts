@@ -8,7 +8,7 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 13;
+const DB_VERSION = 14;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
@@ -45,6 +45,7 @@ open()
 			else if (ev.oldVersion < 11) updatev10v11(db, tx);
 			else if (ev.oldVersion < 12) updatev11v12(db, tx);
 			else if (ev.oldVersion < 13) updatev12v13(db, tx);
+			else if (ev.oldVersion < 14) updatev13v14(db, tx);
 		};
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
@@ -181,9 +182,9 @@ updatev10v11(db: IDBDatabase, tx: IDBTransaction)
 				console.log("migrating:", sc);
 				putSetClientRaw(tx, sc);
 			}
+			updatev11v12(db, tx);
 		};
 	}
-	updatev11v12(db, tx);
 }
 
 function
@@ -197,6 +198,27 @@ function
 updatev12v13(db: IDBDatabase, tx: IDBTransaction)
 {
 	db.deleteObjectStore(TMP_SET_CLIENTS);
+	updatev13v14(db, tx);
+}
+
+function
+updatev13v14(db: IDBDatabase, tx: IDBTransaction)
+{
+	console.log("updatev13v14");
+	const req = tx.objectStore("set-clients").getAll();
+	req.onsuccess = () => {
+		for (const sc of req.result) {
+			const clReq = tx.objectStore("clients").get(sc.clientUuid);
+			clReq.onsuccess = () => {
+				const cl = clReq.result;
+				if (cl === undefined) return;
+
+				console.log(cl, sc.priority);
+				cl.priority = sc.priority;
+				tx.objectStore("clients").put(cl);
+			};
+		}
+	};
 }
 
 export async function
