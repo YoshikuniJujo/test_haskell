@@ -46,6 +46,9 @@ open()
 			else if (ev.oldVersion < 12) updatev11v12(db, tx);
 			else if (ev.oldVersion < 13) updatev12v13(db, tx);
 			else if (ev.oldVersion < 14) updatev13v14(db, tx);
+			tx.oncomplete = () => {
+				console.log("migration transaction complete");
+			}
 		};
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
@@ -178,7 +181,7 @@ updatev10v11(db: IDBDatabase, tx: IDBTransaction)
 			const rs = (ev.target as IDBRequest).result;
 			console.log("db.ts:", rs);
 			for (const r of rs) {
-				const sc = mkSetClient(cs, r);
+				const sc = mkSetClientBefore(cs, r);
 				console.log("migrating:", sc);
 				putSetClientRaw(tx, sc);
 			}
@@ -215,7 +218,14 @@ updatev13v14(db: IDBDatabase, tx: IDBTransaction)
 
 				console.log(cl, sc.priority);
 				cl.priority = sc.priority;
-				tx.objectStore("clients").put(cl);
+				console.log("db.ts: UPDATE V13 V14:", cl);
+				const putReq = tx.objectStore("clients").put(cl);
+				putReq.onsuccess = () => {
+					console.log("put success", cl.uuid, cl.priority);
+				};
+				putReq.onerror = () => {
+					console.error("put error", putReq.error);
+				};
 			};
 		}
 	};
@@ -258,7 +268,7 @@ putClient(client: Client)
 	return new Promise((rs, rj) => {
 		const tx = db.transaction(
 			[CURRENT_SET, NEW_SET_CLIENTS, NEW_CLIENTS], "readwrite");
-		const { name, urlPattern, ...setClient } = client;
+		const { name, urlPattern, priority, ...setClient } = client;
 		const req = getCurrentSetRaw(tx);
 		
 		req.onsuccess = () => {
@@ -268,7 +278,8 @@ putClient(client: Client)
 			tx.objectStore(NEW_CLIENTS).put({
 				uuid: client.uuid,
 				name: client.name,
-				urlPattern: client.urlPattern }); }
+				urlPattern: client.urlPattern,
+				priority: client.priority }); }
 
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
@@ -375,8 +386,8 @@ getClients(): Promise<Client[]>
 							uuid: c.uuid,
 							name: c.name,
 							urlPattern: c.urlPattern,
+							priority: c.priority,
 							publicKey: sc.publicKey,
-							priority: sc.priority,
 							openSettingsByClick: sc.openSettingsByClick,
 							backgroundColor: sc.backgroundColor,
 							backgroundOpacity: sc.backgroundOpacity,
@@ -467,6 +478,7 @@ getClient(uuid: string): Promise<EditingClient>
 
 		req2.onsuccess = () => {
 			r2 = req2.result;
+			console.log("db.ts: REQ 2: RESULT:", r2);
 			done2 = true;
 			finish();
 		}
@@ -482,8 +494,8 @@ getClient(uuid: string): Promise<EditingClient>
 					uuid: r2.uuid,
 					name: r2.name,
 					urlPattern: r2.urlPattern,
+					priority: r2.priority,
 					publicKey: r.publicKey,
-					priority: r.priority,
 					openSettingsByClick:
 						r.openSettingsByClick,
 					backgroundColor: r.backgroundColor,
@@ -661,9 +673,27 @@ putCurrentSetRaw(tx: IDBTransaction, uuid: string)
 	tx.objectStore("current-set").put(uuid, unit);
 }
 
+type SetClientBefore = {
+	setUuid: string,
+	clientUuid: string,
+	publicKey: Uint8Array,
+	priority: number,
+	openSettingsByClick: boolean,
+	backgroundColor: string, backgroundOpacity: number,
+	positionX: number, positionY: number,
+	displayAccount: boolean }
+
 type SetClient = {
 	setUuid: string,
 	clientUuid: string,
+	publicKey: Uint8Array,
+	openSettingsByClick: boolean,
+	backgroundColor: string, backgroundOpacity: number,
+	positionX: number, positionY: number,
+	displayAccount: boolean }
+
+type SetClientOldBefore = {
+	uuid: string,
 	publicKey: Uint8Array,
 	priority: number,
 	openSettingsByClick: boolean,
@@ -674,11 +704,25 @@ type SetClient = {
 type SetClientOld = {
 	uuid: string,
 	publicKey: Uint8Array,
-	priority: number,
 	openSettingsByClick: boolean,
 	backgroundColor: string, backgroundOpacity: number,
 	positionX: number, positionY: number,
 	displayAccount: boolean }
+
+function
+mkSetClientBefore(setUuid: string, old: SetClientOldBefore): SetClientBefore
+{
+	return {
+		setUuid: setUuid,
+		clientUuid: old.uuid,
+		publicKey: old.publicKey,
+		priority: old.priority,
+		openSettingsByClick: old.openSettingsByClick,
+		backgroundColor: old.backgroundColor,
+		backgroundOpacity: old.backgroundOpacity,
+		positionX: old.positionX, positionY: old.positionY,
+		displayAccount: old.displayAccount };
+}
 
 function
 mkSetClient(setUuid: string, old: SetClientOld): SetClient
@@ -687,7 +731,6 @@ mkSetClient(setUuid: string, old: SetClientOld): SetClient
 		setUuid: setUuid,
 		clientUuid: old.uuid,
 		publicKey: old.publicKey,
-		priority: old.priority,
 		openSettingsByClick: old.openSettingsByClick,
 		backgroundColor: old.backgroundColor,
 		backgroundOpacity: old.backgroundOpacity,

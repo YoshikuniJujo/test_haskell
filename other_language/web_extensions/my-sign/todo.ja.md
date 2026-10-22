@@ -520,8 +520,8 @@ TODO
 	+ [x] setを使用する場合にはaccount表示領域のクリックでそれを開く
 * [ ] priorityをsetClientsテーブルからclientsテーブルに移動する
 	+ [x] priorityをclientsテーブルにコピーする
-	+ [ ] priorityがコピーされていることを確認する
-	+ [ ] priorityについてclientsテーブルを参照するようにする
+	+ [x] priorityがコピーされていることを確認する
+	+ [x] priorityについてclientsテーブルを参照するようにする
 	+ [ ] setClientsテーブルからpriorityを消す
 * [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [ ] 設定項目をClient, Account, Client Profileの3項目に分ける

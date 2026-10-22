@@ -15,8 +15,9 @@ export type Client = {
 export type ClientSummary =
 	{ type: "ClientSummary", uuid: UUID, name: string, urlPattern: string }
 
-export type ClientSummaryRaw =
-	{ type: "ClientSummaryRaw", uuid: string, name: string, urlPattern: string }
+export type ClientSummaryRaw = {
+	type: "ClientSummaryRaw", uuid: string,
+	name: string, urlPattern: string, priority: number }
 
 export type EditingClient = Omit<Client, "uuid" | "publicKey" | "priority"> & {
 	uuid: string | null,
