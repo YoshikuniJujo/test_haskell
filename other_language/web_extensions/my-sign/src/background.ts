@@ -88,6 +88,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "opacityInput"; value: number }
 	| { class: "Options"; method: "openSettingsByClickChanged"; checked: boolean }
 	| { class: "Options"; method: "currentKeyInput"; value: string }
+	| { class: "Options"; method: "clientOk"; }
 	| { class: "Options"; method: "deleteClient"; }
 	| { class: "Options"; method: "checkUrlPattern"; }
 	| { class: "Options"; method: "applyClient"; }
@@ -248,6 +249,20 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: currentKeyInput:", m);
 			(await optionsStateFromSender(s)).currentKeyInput(m.value);
 			return; }
+		case "clientOk": {
+			console.log("background.ts: clientOk", m);
+			if (s.tab?.id === undefined) throw new Error("bad30");
+			const mid = await otbs.key(s.tab.id);
+			if (mid === null) throw new Error("bad31");
+			const tag = optionsTabTag(mid);
+			console.log("background.ts: CLIENT OK: tag =", tag);
+			if (tag.openType !== "url") return;
+
+			const ostt = await optionsStateFromSender(s);
+			const r = ostt.checkUrlPattern();
+			console.log("background.ts: CLIENT OK: CHECK URL PATTERN:", r);
+			return;
+		}
 		case "deleteClient": {
 			console.log("background.ts: deleteClient:", m);
 			const ostt = await optionsStateFromSender(s);
