@@ -7,12 +7,12 @@ import * as Bech32 from "./codec/bech32.js";
 
 import { addToArrayMap, forEachValues } from "./mapArray.js";
 
-import type { Client, ClientSummary, OptionsTabTag, UUID } from "./types.js";
+import type { Client, ClientSummary, ClientResult, OptionsTabTag, UUID } from "./types.js";
 
 import { isUrl, findKey } from "./tools.js";
 import {
 	optionsTabTag, uuid, fromUuid, isError, error, success,
-	ClientSuccess, InvalidUrlPattern, UrlPatternMismatch } from "./types.js";
+	ClientSuccess, InvalidUrlPattern, UrlPatternMismatch, isClientError } from "./types.js";
 import { OptionsState } from "./optionsState.js";
 import { selectOrToString } from "./optionsObject.js";
 
@@ -280,10 +280,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			await broadcast({ method: "clientChanged" });
 			return ostt.optionsObject(); }
 		case "checkUrlPattern": {
-			console.log("background.ts: checkUrlPattern", m);
-			const ostt = await optionsStateFromSender(s);
-			const r = ostt.checkUrlPattern();
-			if (isError(r)) return InvalidUrlPattern;
+			const rslt = await checkUrlPattern(s);
+			if (isClientError(rslt)) return rslt;
 		}
 		case "isClientMatched": {
 			if (s.tab?.id === undefined) throw new Error("bad1");
@@ -1018,3 +1016,12 @@ browser.runtime.onConnect.addListener(async p => {
 			method: "update" });
 	});
 });
+
+async function
+checkUrlPattern(s: browser.runtime.MessageSender): Promise<ClientResult>
+{
+	const ostt = await optionsStateFromSender(s);
+	const r = ostt.checkUrlPattern();
+	if (isError(r)) return InvalidUrlPattern;
+	else return ClientSuccess
+}
