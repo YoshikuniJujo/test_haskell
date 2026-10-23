@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+		      content="width=device-width, initial-scale=1">
+		<title>My Sign</title>
+		<link rel="stylesheet" href="options.css">
+	</head>
+	<body>
+		<h1>My Sign</h1>
+
+		<div id="set" hidden>
+			<div id="set-list"></div>
+			<div class="set-row">
+				<div>
+					<label>
+					<input type="radio" id="select" name="select-or" value="select" checked>
+					Select
+					</label>
+				</div>
+				<div>
+					<label>
+					<input type="radio" id="select-and-edit" name="select-or" value="select-and-edit">
+					Select &amp; Edit
+					</label>
+				</div>
+				<div id="new-set-form" class="new-set" hidden>
+					<label for="new-set-name">Set Name:</label>
+					<input type="text" id="new-set-name">
+					<button id="new-set">New Set</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="not-set">
+
+		<h2>Client</h2>
+
+		<div id="clients"></div>
+		<button id="new-client">New client</button>
+
+		<div id="client-detail" hidden>
+			CLIENT DETAIL
+			<form id="client-form-d">
+				<label>
+					Client name
+					<input id="client-name-d" type="text" required>
+				</label>
+				<label>
+					Client URL Pattern
+					<input id="url-pattern-d" type="text" required>
+				</label>
+				<label>
+					<input id="use-priority" type="checkbox">
+					Use priority for Client selection
+				</label>
+				<label id="priority-label" hidden>
+					Priority
+					<input id="priority" type="number" min="0" step="1" value="100">
+					<small>Default: 100</small>
+				</label>
+
+				<button type="button" id ="send-client">Client OK</button>
+
+				<label>
+					<input type="checkbox" id="display-account">
+					Display account
+				</label>
+				<div id="account-display-settings">
+					<label>
+						Horizontal position
+						<input id="position-x" type="number"
+						       min="0" max="100" step="1" required>
+						%
+					</label>
+					<label>
+						Vertical position
+						<input id="position-y" type="number"
+						       min="0" max="100" step="1" required>
+						%
+					</label>
+					<label>
+						Color
+						<input id="background-color" type="color">
+						<input id="background-color-16"
+						       type="text"
+						       inputmode="text"
+						       autocomplete="off"
+						       pattern="#[0-9a-fA-F]{6}">
+					</label>
+					<label>
+						Opacity
+						<input id="background-opacity" type="number" min="0" max="1" step="0.01">
+					</label>
+					<label>
+						<input id="open-settings-by-click" type="checkbox">
+						Open settings by clicking the account display
+					</label>
+				</div>
+				<label>
+					Public key
+					<select id="current-key-d" size="8" required></select>
+				</label>
+				<p id="detail-error" role="alert" hidden>
+					Invalid URLPattern.
+				</p>
+				<div class="edit-client-buttons">
+					<button type="button" id="delete-client">Delete</button>
+					<div class="right-buttons">
+						<button type="button" id="revert">Revert</button>
+						<button type="button" id="apply-client">Apply</button>
+						<button type="button" id="cancel-edit-client">Cancel</button>
+						<button type="submit" id="add-client-d">OK</button>
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<hr>
+
+		<h2>Account</h2>
+
+		<form id="generate-form">
+			<label>
+				Account name
+				<input id="account-name" type="text" required>
+			</label>
+			<label>
+				Password
+				<input id="password" type="password" required>
+			</label>
+			<label>
+				Confirm password
+				<input id="password-confirm" type="password" required>
+			</label>
+			<label>
+				<input id="show-password" type="checkbox">
+				Show password
+			</label>
+			<div id="password-error" hidden>Passwords do not match.</div>
+			<button id="generate" type="submit">Generate</button>
+		</form>
+
+		<hr>
+
+		<div id="options-error" role="alert"></div>
+
+		<label>
+		<input type="checkbox" id="use-client-set">
+		Use Client Set
+		</label>
+
+		<button id="select-set" hidden>Select Set</button>
+
+		<section id="logs">
+			<h2>log</h2>
+			<pre id="log-output"></pre>
+		</section>
+
+		<div id="browser-footer" hidden>
+			<hr>
+
+			<div class="top-buttons">
+				<button id="open-in-tab" type="button">Open In Tab</button>
+			</div>
+		</div>
+
+		<div id="for-debug" hidden>
+			<hr>
+			<h3>For Debug</h3>
+			<button id="reset-database">Reset Database</button>
+		</div>
+
+		</div>
+
+		<div id="client-is-already-open" popover="manual">
+			This client is already open in another tab.
+		</div>
+
+		<script type="module" src="options.js"></script>
+	</body>
+</html>
