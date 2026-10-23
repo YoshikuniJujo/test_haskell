@@ -102,7 +102,12 @@
 					Public key
 					<select id="current-key-d" size="8" required></select>
 				</label>
-				<p id="detail-error" role="alert"></p>
+				<p id="detail-error" role="alert" hidden>
+					Invalid URLPattern
+				</p>
+				<p id="url-pattern-not-match-error" role="alert" hidden>
+					URL pattern does not match the target page.
+				</p>
 				<div class="edit-client-buttons">
 					<button type="button" id="delete-client">Delete</button>
 					<div class="right-buttons">

@@ -51,6 +51,10 @@ label {
 	color: #c00;
 }
 
+#url-pattern-not-match-error {
+	color: #c00;
+}
+
 #log-output {
 	max-height: 20em;
 	overflow-y: auto;

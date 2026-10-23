@@ -15,6 +15,7 @@ import {
 	} from "./optionsObject.js";
 import {
 	defaultEditingClient, uuid, fromUuid, uuidNull,
+	isClientError, isInvalidUrlPattern, isUrlPatternMismatch,
 	isError } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import { Log } from "./log2.js"
@@ -62,6 +63,7 @@ const backgroundOpacity = getElement<HTMLInputElement>("#background-opacity");
 const openSettingsByClick = getElement<HTMLInputElement>("#open-settings-by-click");
 const currentKeyD = getElement<HTMLSelectElement>("#current-key-d");
 const detailError = getElement<HTMLElement>("#detail-error");
+const urlPatternNotMatchError = getElement<HTMLElement>("#url-pattern-not-match-error");
 
 const clientOk = getElement<HTMLButtonElement>("#send-client");
 
@@ -173,6 +175,11 @@ document.addEventListener("keydown", event => {
 	if (event.key === "Escape" && !clientDetail.hidden)
 		cancelEditClient.click(); });
 
+document.addEventListener("input", event => {
+	detailError.hidden = true;
+	urlPatternNotMatchError.hidden = true;
+});
+
 clientFormD.addEventListener("submit", async event => {
 	event.preventDefault();
 	const b = await applyClient();
@@ -182,8 +189,15 @@ async function
 applyClient()
 {
 	const rslt = await sendMethod("checkUrlPattern");
+	if (isClientError(rslt)) {
+		if (isInvalidUrlPattern(rslt)) detailError.hidden = false;
+		if (isUrlPatternMismatch(rslt)) urlPatternNotMatchError.hidden = false;
+		return false;
+	}
+	/*
 	if (isError(rslt)) {
 		detailError.textContent = rslt.message; return false; }
+		*/
 	await sendMethodAndLoad("applyClient");
 	await sendMethod("clientSubmited"); return true;
 }

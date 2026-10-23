@@ -123,3 +123,35 @@ error(msg: string): Result
 {
 	return { result: "error", message: msg };
 }
+
+export type ClientResult =
+	| { type: "ClientResult"; tag: "ClientSuccess"; }
+	| { type: "ClientResult"; tag: "InvalidUrlPattern"; }
+	| { type: "ClientResult"; tag: "UrlPatternMismatch"; }
+
+export const ClientSuccess: ClientResult =
+	{ type: "ClientResult", tag: "ClientSuccess" }
+
+export const InvalidUrlPattern: ClientResult =
+	{ type: "ClientResult", tag: "InvalidUrlPattern" }
+
+export const UrlPatternMismatch: ClientResult =
+	{ type: "ClientResult", tag: "UrlPatternMismatch" }
+
+export function
+isClientError(e: ClientResult)
+{
+	return isInvalidUrlPattern(e) || isUrlPatternMismatch(e);
+}
+
+export function
+isInvalidUrlPattern(e: ClientResult)
+{
+	return e.tag === "InvalidUrlPattern";
+}
+
+export function
+isUrlPatternMismatch(e: ClientResult)
+{
+	return e.tag === "UrlPatternMismatch";
+}

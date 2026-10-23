@@ -10,7 +10,9 @@ import { addToArrayMap, forEachValues } from "./mapArray.js";
 import type { Client, ClientSummary, OptionsTabTag, UUID } from "./types.js";
 
 import { isUrl, findKey } from "./tools.js";
-import { optionsTabTag, uuid, fromUuid, isError, error, success } from "./types.js";
+import {
+	optionsTabTag, uuid, fromUuid, isError, error, success,
+	ClientSuccess, InvalidUrlPattern, UrlPatternMismatch } from "./types.js";
 import { OptionsState } from "./optionsState.js";
 import { selectOrToString } from "./optionsObject.js";
 
@@ -279,14 +281,14 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: checkUrlPattern", m);
 			const ostt = await optionsStateFromSender(s);
 			const r = ostt.checkUrlPattern();
-			if (isError(r)) return r;
+			if (isError(r)) return InvalidUrlPattern;
 		}
 		case "isClientMatched": {
 			if (s.tab?.id === undefined) throw new Error("bad1");
 			const mid = await otbs.key(s.tab.id);
 			if (mid === null) throw new Error("bad31");
 			const tag = optionsTabTag(mid);
-			if (tag.openType !== "url") return success();
+			if (tag.openType !== "url") return ClientSuccess;
 
 			console.log("background.ts: isClientMatched");
 			const ostt = await optionsStateFromSender(s);
@@ -294,9 +296,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const pat = ostt.urlPattern();
 			if (url === null) throw new Error("badB");
 			const b = checkClient(pat, url);
-			if (b) return success();
-			else return error(
-				"The client does not match the original URL." );
+			if (b) return ClientSuccess;
+			else return UrlPatternMismatch;
 		}
 		case "applyClient": {
 			console.log("background.ts: applyClient:", m);
