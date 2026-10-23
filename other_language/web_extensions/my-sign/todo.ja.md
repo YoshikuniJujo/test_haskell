@@ -523,6 +523,13 @@ TODO
 	+ [x] priorityがコピーされていることを確認する
 	+ [x] priorityについてclientsテーブルを参照するようにする
 	+ [x] setClientsテーブルからpriorityを消す
+* [ ] checkUrlPatternあたりを整理する
+	+ [ ] チェックをbackground.ts側にうつす
+		- [ ] background.ts側でチェックするようにする
+		- [ ] options.ts側でのチェックを消す
+		- [ ] エラーメッセージの表示を修正する
+			* [ ] background.ts側のエラーメッセージ
+			* [ ] loadOptionsでエラーについてもformに反映する
 * [ ] クライアントが存在しなかった場合、Profileが存在しなかった場合の設定画面のbackgroundを書く
 	+ [x] HTMLにボタンを追加
 	+ [x] options.tsからbackground.tsにメッセージを送る
