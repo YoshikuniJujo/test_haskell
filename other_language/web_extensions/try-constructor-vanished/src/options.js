@@ -7,7 +7,7 @@ testButton.addEventListener("click", async () => {
 		constructor: "Do I vanish?"
 	});
 
-	console.log("keys:", Object.keys(rslt));
-	console.log("has:", Object.hasOwn(rslt, "constructor"));
+	console.log("after: keys:", Object.keys(rslt));
+	console.log("after: has:", Object.hasOwn(rslt, "constructor"));
 	console.log("options.js: BUTTON RESULT:", rslt);
 });
