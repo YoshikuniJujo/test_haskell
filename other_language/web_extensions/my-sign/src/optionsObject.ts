@@ -42,6 +42,8 @@ export type OptionsObject = {
 	currentKey: string | null,
 	currentKeyOptions: PublicKeyOption[],
 	detailError: string,
+	detailErrorHidden: boolean,
+	urlPatternNotMatchErrorHidden: boolean,
 
 	openInTabButtonHidden: boolean,
 	optionsError: string,
@@ -84,6 +86,8 @@ export function defaultOptionsObject(): OptionsObject
 		currentKey: null,
 		currentKeyOptions: [],
 		detailError: "",
+		detailErrorHidden: true,
+		urlPatternNotMatchErrorHidden: true,
 
 		openInTabButtonHidden: false,
 		optionsError: "",

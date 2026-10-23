@@ -258,11 +258,13 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			if (mid === null) throw new Error("bad31");
 			const tag = optionsTabTag(mid);
 			console.log("background.ts: CLIENT OK: tag =", tag);
+			const ostt = await optionsStateFromSender(s);
+
 			if (tag.openType !== "url") return;
 
-			const ostt = await optionsStateFromSender(s);
 			const r = ostt.checkUrlPattern();
-			console.log("background.ts: CLIENT OK: CHECK URL PATTERN:", r);
+			console.log("background.ts: CLIENT OK: CHECK URL PATTERN:", r, isError(r));
+			if (isError(r)) return InvalidUrlPattern;
 			return;
 		}
 		case "deleteClient": {
@@ -305,8 +307,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			await DB.putClient(ostt.makeClient());
 			ostt.setClientSummaries(await DB.getClientSummaries());
 			browser.runtime.sendMessage({
-				class: "Options",
-				direction: "signal",
+				class: "Options", direction: "signal",
 				method: "update" });
 			broadcast({ method: "clientChanged" });
 			return ostt.optionsObject();

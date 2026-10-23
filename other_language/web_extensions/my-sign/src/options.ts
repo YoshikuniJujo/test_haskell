@@ -193,13 +193,11 @@ applyClient()
 		if (isInvalidUrlPattern(rslt)) detailError.hidden = false;
 		if (isUrlPatternMismatch(rslt)) urlPatternNotMatchError.hidden = false;
 		return false;
+	} else {
+		const obj = await sendMethod("applyClient");
+		await sendMethod("clientSubmited"); return true;
+		loadOptions(obj);
 	}
-	/*
-	if (isError(rslt)) {
-		detailError.textContent = rslt.message; return false; }
-		*/
-	await sendMethodAndLoad("applyClient");
-	await sendMethod("clientSubmited"); return true;
 }
 
 // Account
