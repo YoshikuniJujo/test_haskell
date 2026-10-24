@@ -282,23 +282,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "checkUrlPattern": {
 			const rslt = await checkUrlPattern(s);
 			if (isClientError(rslt)) return rslt;
-		}
-		case "isClientMatched": {
-			if (s.tab?.id === undefined) throw new Error("bad1");
-			const mid = await otbs.key(s.tab.id);
-			if (mid === null) throw new Error("bad31");
-			const tag = optionsTabTag(mid);
-			if (tag.openType !== "url") return ClientSuccess;
-
-			console.log("background.ts: isClientMatched");
-			const ostt = await optionsStateFromSender(s);
-			const url = await otbs.key(s.tab.id);
-			const pat = ostt.urlPattern();
-			if (url === null) throw new Error("badB");
-			const b = checkClient(pat, url);
-			if (b) return ClientSuccess;
-			else return UrlPatternMismatch;
-		}
+			else return isClientMatched(s); }
 		case "applyClient": {
 			console.log("background.ts: applyClient:", m);
 			const ostt = await optionsStateFromSender(s);
@@ -1024,4 +1008,20 @@ checkUrlPattern(s: browser.runtime.MessageSender): Promise<ClientResult>
 	const r = ostt.checkUrlPattern();
 	if (isError(r)) return InvalidUrlPattern;
 	else return ClientSuccess
+}
+
+async function
+isClientMatched(s: browser.runtime.MessageSender): Promise<ClientResult>
+{
+	if (s.tab?.id === undefined) throw new Error("bad1");
+	const mid = await otbs.key(s.tab.id);
+	if (mid === null) throw new Error("bad31");
+	const tag = optionsTabTag(mid);
+	if (tag.openType !== "url") return ClientSuccess;
+
+	const ostt = await optionsStateFromSender(s);
+	const url = await otbs.key(s.tab.id);
+	if (url === null) throw new Error("badB");
+	if (checkClient(ostt.urlPattern(), url)) return ClientSuccess;
+	else return UrlPatternMismatch;
 }
