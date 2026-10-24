@@ -18,6 +18,8 @@ import { selectOrToString } from "./optionsObject.js";
 
 import { Mutex } from "./mutex.js";
 
+import type { OptionsObject } from "./optionsObject.js";
+
 type Event = {
 	created_at: number,
 	kind: number,
@@ -283,17 +285,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const rslt = await checkUrlPattern(s);
 			if (isClientError(rslt)) return rslt;
 			else return isClientMatched(s); }
-		case "applyClient": {
-			console.log("background.ts: applyClient:", m);
-			const ostt = await optionsStateFromSender(s);
-			await DB.putClient(ostt.makeClient());
-			ostt.setClientSummaries(await DB.getClientSummaries());
-			browser.runtime.sendMessage({
-				class: "Options", direction: "signal",
-				method: "update" });
-			broadcast({ method: "clientChanged" });
-			return ostt.optionsObject();
-		}
+		case "applyClient": applyClient(s);
 		case "clientSubmited":
 			console.log("background: clientSubmited");
 			if (!s.tab) throw new Error("bad29");
@@ -1024,4 +1016,17 @@ isClientMatched(s: browser.runtime.MessageSender): Promise<ClientResult>
 	if (url === null) throw new Error("badB");
 	if (checkClient(ostt.urlPattern(), url)) return ClientSuccess;
 	else return UrlPatternMismatch;
+}
+
+async function
+applyClient(s: browser.runtime.MessageSender): Promise<OptionsObject>
+{
+			const ostt = await optionsStateFromSender(s);
+			await DB.putClient(ostt.makeClient());
+			ostt.setClientSummaries(await DB.getClientSummaries());
+			browser.runtime.sendMessage({
+				class: "Options", direction: "signal",
+				method: "update" });
+			broadcast({ method: "clientChanged" });
+			return ostt.optionsObject();
 }
