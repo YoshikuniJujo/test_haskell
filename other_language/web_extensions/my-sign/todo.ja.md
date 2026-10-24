@@ -523,6 +523,10 @@ TODO
 	+ [x] priorityがコピーされていることを確認する
 	+ [x] priorityについてclientsテーブルを参照するようにする
 	+ [x] setClientsテーブルからpriorityを消す
+* [ ] UUIDのOptionsページの仕様を修正する
+	+ [ ] UUIDと「URLのセット」の辞書を作る
+	+ [ ] 辞書があればそれに追加する
+	+ [ ] applyの時に、全部のURLをマッチさせられることを確認する
 * [ ] checkUrlPatternあたりを整理する
 	+ [ ] チェックをbackground.ts側にうつす
 		- [x] checkUrlPatternを関数化する
