@@ -38,6 +38,8 @@ const otbs = new InputTabs("options");
 
 const optionsStates: Map<string, OptionsState> = new Map();
 
+const clientUrl: Map<string, Set<string>> = new Map();
+
 const initializeReady = (async () => {
 
 	const cst = await DB.getCurrentSet();

@@ -524,8 +524,10 @@ TODO
 	+ [x] priorityについてclientsテーブルを参照するようにする
 	+ [x] setClientsテーブルからpriorityを消す
 * [ ] UUIDのOptionsページの仕様を修正する
-	+ [ ] UUIDと「URLのセット」の辞書を作る
-	+ [ ] 辞書があればそれに追加する
+	+ [x] UUIDと「URLのセット」の辞書を作る
+	+ [ ] background.tsのcase "openSettings"のところをリファクタリングする
+	+ [ ] 既存のクライアント詳細画面を開く処理をif(use set)に対するelseのところに入れる
+	+ [ ] UUIDで設定画面を開いたらそれに追加する
 	+ [ ] applyの時に、全部のURLをマッチさせられることを確認する
 * [ ] checkUrlPatternあたりを整理する
 	+ [ ] チェックをbackground.ts側にうつす
