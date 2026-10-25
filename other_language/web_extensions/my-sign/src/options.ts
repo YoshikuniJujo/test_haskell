@@ -195,8 +195,9 @@ applyClient()
 		return false;
 	} else {
 		const obj = await sendMethod("applyClient");
-		await sendMethod("clientSubmited"); return true;
+		await sendMethod("clientSubmited");
 		loadOptions(obj);
+		return true;
 	}
 }
 

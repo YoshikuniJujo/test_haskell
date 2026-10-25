@@ -38,7 +38,7 @@ const otbs = new InputTabs("options");
 
 const optionsStates: Map<string, OptionsState> = new Map();
 
-const clientUrl: Map<string, Set<string>> = new Map();
+const clientUrls: Map<string, Set<{ url: string, tabId: number}>> = new Map();
 
 const initializeReady = (async () => {
 
@@ -506,12 +506,21 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			await initializeReady;
 
 			console.log("background: openSettings");
+			console.log("background.ts: !!! OPEN SETTINGS !!!");
 			console.log(s.url);
 			const ups = await DB.getUseClientSet();
 			console.log("background.ts: OPEN SETTINGS: USE CLIENT SET:", ups);
 			if (!s.url) throw new Error("bad14");
 			const cl = await getClient(s.url);
-			if (!ups && cl) {
+			console.log("background.ts: OPEN SETTINGS: URL and CLIENT:", s.url, cl);
+
+			if (!ups && cl && s.tab?.id !== undefined) {
+
+				const urls = clientUrls.get(cl.uuid);
+				if (urls) urls.add({ url: s.url, tabId: s.tab.id});
+				else clientUrls.set(cl.uuid, new Set([{ url: s.url, tabId: s.tab.id}]));
+
+				console.log("background.ts: OPEN TYPE: clientUrls:", clientUrls);
 
 				console.log("background.ts: OPEN TYPE UUID:", cl.uuid);
 				const ex = await findKey(optionsStates, st => st.doesClientDetailOpen(uuid(cl.uuid)));
