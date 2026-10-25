@@ -535,7 +535,7 @@ TODO
 		- [x] checkUrlPatternを関数化する
 		- [x] isClientMatchedを関数化する
 		- [x] applyClientを関数化する
-		- [ ] clientSubmitedを関数化する
+		- [x] clientSubmitedを関数化する
 		- [ ] background.ts側でチェックするようにする
 		- [ ] options.ts側でのチェックを消す
 		- [ ] エラーメッセージの表示を修正する

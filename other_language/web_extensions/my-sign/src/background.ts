@@ -288,26 +288,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			if (isClientError(rslt)) return rslt;
 			else return isClientMatched(s); }
 		case "applyClient": applyClient(s);
-		case "clientSubmited":
-			console.log("background: clientSubmited");
-			if (!s.tab) throw new Error("bad29");
-			if (s.tab.id === undefined) throw new Error("bad30");
-			const mid = await otbs.key(s.tab.id);
-			if (mid === null) throw new Error("bad31");
-			const tag = optionsTabTag(mid);
-			console.log("background.ts: clientSubmited: tag =", tag);
-			if (tag.openType !== "url") return;
-			const ostt = await optionsStateFromSender(s);
-
-			const sts = await otbs.complete(mid, s.tab.id);
-			for (const st of sts)
-				await browser.tabs.sendMessage(st, { method: "clientReady", clientUrl: mid });
-			const st0 = sts[0]
-			if (st0 !== undefined)
-				await browser.tabs.update(st0, { active: true });
-			if (s.tab.id === undefined) throw new Error("bad32");
-			await browser.tabs.remove(s.tab.id);
-			return;
+		case "clientSubmited": clientSubmitted(s);
 		case "clientListMode": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.clientListMode();
@@ -1040,4 +1021,28 @@ applyClient(s: browser.runtime.MessageSender): Promise<OptionsObject>
 				method: "update" });
 			broadcast({ method: "clientChanged" });
 			return ostt.optionsObject();
+}
+
+async function
+clientSubmitted(s: browser.runtime.MessageSender)
+{
+	console.log("background: clientSubmited");
+	if (s.tab?.id === undefined) throw new Error("bad30");
+	const mid = await otbs.key(s.tab.id);
+	if (mid === null) throw new Error("bad31");
+	const tag = optionsTabTag(mid);
+	console.log("background.ts: clientSubmited: tag =", tag);
+	if (tag.openType !== "url") return;
+	const ostt = await optionsStateFromSender(s);
+
+	const sts = await otbs.complete(mid, s.tab.id);
+	for (const st of sts)
+		await browser.tabs.sendMessage(st, {
+			method: "clientReady", clientUrl: mid });
+	const st0 = sts[0]
+	if (st0 !== undefined)
+		await browser.tabs.update(st0, { active: true });
+	if (s.tab.id === undefined) throw new Error("bad32");
+	await browser.tabs.remove(s.tab.id);
+	return;
 }
