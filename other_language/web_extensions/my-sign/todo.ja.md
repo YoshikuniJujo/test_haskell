@@ -525,6 +525,7 @@ TODO
 	+ [x] setClientsテーブルからpriorityを消す
 * [ ] UUIDのOptionsページの仕様を修正する
 	+ [x] UUIDと「URLのセット」の辞書を作る
+	+ [ ] 関数removeOptionsSourceTab(tabId)を作る
 	+ [ ] background.tsのcase "openSettings"のところをリファクタリングする
 	+ [ ] 既存のクライアント詳細画面を開く処理をif(use set)に対するelseのところに入れる
 	+ [ ] UUIDで設定画面を開いたらそれに追加する
