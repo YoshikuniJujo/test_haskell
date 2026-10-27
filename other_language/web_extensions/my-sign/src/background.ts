@@ -97,7 +97,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "clientOk"; }
 	| { class: "Options"; method: "deleteClient"; }
 	| { class: "Options"; method: "checkUrlPattern"; }
-	| { class: "Options"; method: "applyClient"; }
+	| { class: "Options"; method: "applyClient"; boolean: boolean }
 	| { class: "Options"; method: "isClientMatched"; }
 	| { class: "Options"; method: "clientSubmited"; }
 	| { class: "Options"; method: "clientListMode"; }
@@ -297,7 +297,13 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				ostt.setUrlPatternNotMatchErrorHidden(false);
 				return ostt;
 			}
+			console.log("background.ts: BEFORE APPLY CLIENT");
 			applyClient(s);
+			if (m.boolean) {
+				ostt.clientListMode();
+				clientSubmitted(s);
+			}
+			return ostt;
 		}
 		case "clientSubmited": clientSubmitted(s);
 		case "clientListMode": {

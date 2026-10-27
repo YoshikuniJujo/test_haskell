@@ -539,7 +539,8 @@ TODO
 		- [x] OptionsStateにsetDetailErrorHiddenを定義する
 		- [x] OptionsStateにsetUrlPatternNotMatchErrorHiddenを定義する
 		- [x] background.ts側でチェックするようにする
-		- [ ] applyClientに引数を追加してApplyとOKを分けるようにする
+		- [x] applyClientに引数を追加してApplyとOKを分けるようにする
+		- [ ] loadClientSummariesあたりについて調べる
 		- [ ] options.ts側でのチェックを消す
 		- [ ] エラーメッセージの表示を修正する
 			* [ ] background.ts側のエラーメッセージ

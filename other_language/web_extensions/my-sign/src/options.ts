@@ -163,7 +163,7 @@ deleteClient.addEventListener("click", async () => {
 applyEditClient.addEventListener("click", () => {
 	if (!clientFormD.checkValidity()) {
 		clientFormD.reportValidity(); return; }
-	applyClient(); });
+	applyClient(false); });
 
 cancelEditClient.addEventListener("click", () => {
 	sendMethodAndLoad("clientListMode"); });
@@ -182,23 +182,27 @@ document.addEventListener("input", event => {
 
 clientFormD.addEventListener("submit", async event => {
 	event.preventDefault();
-	const b = await applyClient();
-	if (b) sendMethodAndLoad("clientListMode"); });
+	const b = await applyClient(true);
+});
 
 async function
-applyClient()
+applyClient(isOk: boolean)
 {
+//	/*
 	const rslt = await sendMethod("checkUrlPattern");
 	if (isClientError(rslt)) {
 		if (isInvalidUrlPattern(rslt)) detailError.hidden = false;
 		if (isUrlPatternMismatch(rslt)) urlPatternNotMatchError.hidden = false;
 		return false;
 	} else {
-		const obj = await sendMethod("applyClient");
+//	*/
+		const obj = await sendMethodWithBoolean("applyClient", isOk);
 		await sendMethod("clientSubmited");
 		loadOptions(obj);
+//		/*
 		return true;
 	}
+//	*/
 }
 
 // Account
@@ -547,6 +551,13 @@ function
 sendMethod(mtd: string)
 {
 	return browser.runtime.sendMessage({ class: "Options", method: mtd });
+}
+
+function
+sendMethodWithBoolean(mtd: string, b: boolean)
+{
+	return browser.runtime.sendMessage({
+		class: "Options", method: mtd, boolean: b });
 }
 
 function
