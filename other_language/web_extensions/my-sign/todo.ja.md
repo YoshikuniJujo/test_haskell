@@ -540,11 +540,15 @@ TODO
 		- [x] OptionsStateにsetUrlPatternNotMatchErrorHiddenを定義する
 		- [x] background.ts側でチェックするようにする
 		- [x] applyClientに引数を追加してApplyとOKを分けるようにする
-		- [ ] loadClientSummariesあたりについて調べる
-		- [ ] options.ts側でのチェックを消す
-		- [ ] エラーメッセージの表示を修正する
-			* [ ] background.ts側のエラーメッセージ
-			* [ ] loadOptionsでエラーについてもformに反映する
+		- [x] loadClientSummariesあたりについて調べる
+		- [x] options.ts側でのチェックを消す
+		- [x] エラーメッセージの表示を修正する
+			* [x] background.ts側のエラーメッセージ
+			* [x] loadOptionsでエラーについてもformに反映する
+		- [ ] エラーメッセージの消去をbackground.ts側に移す
+			* [ ] documment.addEventListenerでbackgroundにメッセージを送る
+			* [ ] background.ts側でエラーメッセージを消去
+			* [ ] options.ts側でloadOpitons()する
 * [ ] クライアントが存在しなかった場合、Profileが存在しなかった場合の設定画面のbackgroundを書く
 	+ [x] HTMLにボタンを追加
 	+ [x] options.tsからbackground.tsにメッセージを送る

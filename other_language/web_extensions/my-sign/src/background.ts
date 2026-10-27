@@ -288,14 +288,15 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			if (isClientError(rslt)) return rslt;
 			else return isClientMatched(s); }
 		case "applyClient": {
+			console.log("background.ts: case applyClient");
 			const ostt = await optionsStateFromSender(s);
 			if (isClientError(await checkUrlPattern(s))) {
 				ostt.setDetailErrorHidden(false);
-				return ostt;
+				return ostt.optionsObject();
 			}
 			if (isClientError(await isClientMatched(s))) {
 				ostt.setUrlPatternNotMatchErrorHidden(false);
-				return ostt;
+				return ostt.optionsObject();
 			}
 			console.log("background.ts: BEFORE APPLY CLIENT");
 			applyClient(s);
@@ -1030,6 +1031,7 @@ isClientMatched(s: browser.runtime.MessageSender): Promise<ClientResult>
 async function
 applyClient(s: browser.runtime.MessageSender): Promise<OptionsObject>
 {
+	console.log("APPLY CLIENT: begin");
 			const ostt = await optionsStateFromSender(s);
 			await DB.putClient(ostt.makeClient());
 			ostt.setClientSummaries(await DB.getClientSummaries());

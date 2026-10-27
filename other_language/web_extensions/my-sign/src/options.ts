@@ -188,21 +188,8 @@ clientFormD.addEventListener("submit", async event => {
 async function
 applyClient(isOk: boolean)
 {
-//	/*
-	const rslt = await sendMethod("checkUrlPattern");
-	if (isClientError(rslt)) {
-		if (isInvalidUrlPattern(rslt)) detailError.hidden = false;
-		if (isUrlPatternMismatch(rslt)) urlPatternNotMatchError.hidden = false;
-		return false;
-	} else {
-//	*/
-		const obj = await sendMethodWithBoolean("applyClient", isOk);
-		await sendMethod("clientSubmited");
-		loadOptions(obj);
-//		/*
-		return true;
-	}
-//	*/
+	const obj = await sendMethodWithBoolean("applyClient", isOk);
+	loadOptions(obj);
 }
 
 // Account

@@ -23,6 +23,7 @@ export class OptionsState
 		this.#storage = strg;
 		this.#key = `${KEY_BASE}:${tag.id}`;
 		this.#optionsObject = defaultOptionsObject();
+		console.log("OPTIONS STATE: CONSTRUCTOR: this.#optionsObject:", this.#optionsObject);
 	}
 
 	async restore()
