@@ -287,7 +287,18 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const rslt = await checkUrlPattern(s);
 			if (isClientError(rslt)) return rslt;
 			else return isClientMatched(s); }
-		case "applyClient": applyClient(s);
+		case "applyClient": {
+			const ostt = await optionsStateFromSender(s);
+			if (isClientError(await checkUrlPattern(s))) {
+				ostt.setDetailErrorHidden(false);
+				return ostt;
+			}
+			if (isClientError(await isClientMatched(s))) {
+				ostt.setUrlPatternNotMatchErrorHidden(false);
+				return ostt;
+			}
+			applyClient(s);
+		}
 		case "clientSubmited": clientSubmitted(s);
 		case "clientListMode": {
 			const ostt = await optionsStateFromSender(s);

@@ -536,7 +536,10 @@ TODO
 		- [x] isClientMatchedを関数化する
 		- [x] applyClientを関数化する
 		- [x] clientSubmitedを関数化する
-		- [ ] background.ts側でチェックするようにする
+		- [x] OptionsStateにsetDetailErrorHiddenを定義する
+		- [x] OptionsStateにsetUrlPatternNotMatchErrorHiddenを定義する
+		- [x] background.ts側でチェックするようにする
+		- [ ] applyClientに引数を追加してApplyとOKを分けるようにする
 		- [ ] options.ts側でのチェックを消す
 		- [ ] エラーメッセージの表示を修正する
 			* [ ] background.ts側のエラーメッセージ

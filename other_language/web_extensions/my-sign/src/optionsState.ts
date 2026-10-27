@@ -286,6 +286,16 @@ export class OptionsState
 		this.#optionsObject.applyButtonHidden = true;
 		this.#optionsObject.cancelButtonHidden = true;
 	}
+
+	setDetailErrorHidden(deh: boolean)
+	{
+		this.#optionsObject.detailErrorHidden = deh;
+	}
+
+	setUrlPatternNotMatchErrorHidden(upnmeh: boolean)
+	{
+		this.#optionsObject.urlPatternNotMatchErrorHidden = upnmeh;
+	}
 }
 
 async function

@@ -434,6 +434,9 @@ loadOptions(obj: OptionsObject)
 	}
 
 	newSetName.value = obj.newSetName;
+
+	detailError.hidden = obj.detailErrorHidden;
+	urlPatternNotMatchError.hidden = obj.urlPatternNotMatchErrorHidden;
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;
