@@ -530,8 +530,8 @@ TODO
 	+ [ ] 既存のクライアント詳細画面を開く処理をif(use set)に対するelseのところに入れる
 	+ [ ] UUIDで設定画面を開いたらそれに追加する
 	+ [ ] applyの時に、全部のURLをマッチさせられることを確認する
-* [ ] checkUrlPatternあたりを整理する
-	+ [ ] チェックをbackground.ts側にうつす
+* [x] checkUrlPatternあたりを整理する
+	+ [x] チェックをbackground.ts側にうつす
 		- [x] checkUrlPatternを関数化する
 		- [x] isClientMatchedを関数化する
 		- [x] applyClientを関数化する
@@ -545,10 +545,10 @@ TODO
 		- [x] エラーメッセージの表示を修正する
 			* [x] background.ts側のエラーメッセージ
 			* [x] loadOptionsでエラーについてもformに反映する
-		- [ ] エラーメッセージの消去をbackground.ts側に移す
-			* [ ] documment.addEventListenerでbackgroundにメッセージを送る
-			* [ ] background.ts側でエラーメッセージを消去
-			* [ ] options.ts側でloadOpitons()する
+		- [x] エラーメッセージの消去をbackground.ts側に移す
+			* [x] documment.addEventListenerでbackgroundにメッセージを送る
+			* [x] background.ts側でエラーメッセージを消去
+			* [x] options.ts側でloadOpitons()する
 * [ ] クライアントが存在しなかった場合、Profileが存在しなかった場合の設定画面のbackgroundを書く
 	+ [x] HTMLにボタンを追加
 	+ [x] options.tsからbackground.tsにメッセージを送る
