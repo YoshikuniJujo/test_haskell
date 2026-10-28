@@ -79,6 +79,7 @@ browser.runtime.onMessage.addListener( (m, s) => {
 });
 
 type OptionsMethod =
+	| { class: "Options"; method: "documentInput"; }
 	| { class: "Options"; method: "optionsObject" }
 	| { class: "Options"; method: "optionsBegin" }
 	| { class: "Options"; method: "openClientDetail"; value: UUID }
@@ -130,6 +131,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 {
 	console.log("background.ts: OPTIONS METHOD:", m);
 	switch(m.method) {
+		case "documentInput": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.setDetailErrorHidden(true);
+			ostt.setUrlPatternNotMatchErrorHidden(true);
+			return ostt.optionsObject();
+		}
 		case "optionsObject": {
 			console.log("background.ts: optionsMethod: optionsObject: HERE");
 			const ostt = await optionsStateFromSender(s);

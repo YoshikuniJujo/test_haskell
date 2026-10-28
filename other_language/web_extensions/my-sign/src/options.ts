@@ -176,9 +176,7 @@ document.addEventListener("keydown", event => {
 		cancelEditClient.click(); });
 
 document.addEventListener("input", event => {
-	detailError.hidden = true;
-	urlPatternNotMatchError.hidden = true;
-});
+	sendMethodAndLoad("documentInput"); });
 
 clientFormD.addEventListener("submit", async event => {
 	event.preventDefault();
