@@ -284,6 +284,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				return ostt.optionsObject();
 			}
 
+			DB.putClientNoProfile(await ostt.getClient());
+
 			return ostt.optionsObject();
 		}
 		case "deleteClient": {
