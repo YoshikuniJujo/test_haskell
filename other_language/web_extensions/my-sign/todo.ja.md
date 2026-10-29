@@ -557,7 +557,7 @@ TODO
 	+ [x] URLPatternがマッチするかをチェック
 	+ [x] マッチしなければエラーメッセージを表示する
 	+ [x] DBにclientをputする関数を追加する
-	+ [ ] OptionsStateからClientSummaryRawを取り出すメソッドを書く
+	+ [x] OptionsStateからClientSummaryRawを取り出すメソッドを書く
 	+ [ ] マッチしたらDBに保存して次の段階に進むが、ここは今のところ「そのまま」とする
 	+ [ ] 元々のOKを押すとprofile部分をメッセージとして送る
 	+ [ ] DBに保存してcompleteにして終了

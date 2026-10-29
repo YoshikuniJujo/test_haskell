@@ -1,8 +1,8 @@
 import type { Storage } from "./storage.js";
 import type { OptionsObject } from "./optionsObject.js";
 import type {
-	UUID, Client, EditingClient, ClientSummary, ClientSet,
-	OptionsTabTag, PublicKeyOption, Result }
+	UUID, Client, EditingClient, ClientSummary, ClientSummaryRaw,
+	ClientSet, OptionsTabTag, PublicKeyOption, Result }
 	from "./types.js";
 import { uuid, fromUuid } from "./types.js";
 import { defaultOptionsObject, newClientMode, clientListMode } from "./optionsObject.js";
@@ -216,6 +216,18 @@ export class OptionsState
 			openSettingsByClick: obj.openSettingsByClick,
 			publicKey: fromHex(obj.currentKey),
 		};
+	}
+
+	getClient(): ClientSummaryRaw
+	{
+		if (this.#optionsObject.clientUuid === null)
+			throw new Error("bad");
+		return {
+			type: "ClientSummaryRaw",
+			uuid: fromUuid(this.#optionsObject.clientUuid),
+			name: this.#optionsObject.clientName,
+			urlPattern: this.#optionsObject.urlPattern,
+			priority: this.#optionsObject.priority };
 	}
 
 	clientUuid(): UUID
