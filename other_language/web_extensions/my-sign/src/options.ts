@@ -152,7 +152,7 @@ openSettingsByClick.addEventListener("change", () => {
 });
 
 clientOk.addEventListener("click", async () => {
-	sendMethod("clientOk");
+	sendMethodAndLoad("clientOk");
 });
 
 deleteClient.addEventListener("click", async () => {

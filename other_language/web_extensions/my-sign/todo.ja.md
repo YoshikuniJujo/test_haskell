@@ -553,6 +553,7 @@ TODO
 	+ [x] HTMLにボタンを追加
 	+ [x] options.tsからbackground.tsにメッセージを送る
 	+ [x] メッセージを受け取ったらURLPatternの文法をチェック
+		- [x] エラーメッセージを表示
 	+ [ ] URLPatternがマッチするかをチェック
 	+ [ ] マッチしなければエラーメッセージを表示する
 	+ [ ] DBにclientをputする関数を追加する

@@ -271,12 +271,17 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: CLIENT OK: tag =", tag);
 			const ostt = await optionsStateFromSender(s);
 
-			if (tag.openType !== "url") return;
-
 			const r = ostt.checkUrlPattern();
 			console.log("background.ts: CLIENT OK: CHECK URL PATTERN:", r, isError(r));
-			if (isError(r)) return InvalidUrlPattern;
-			return;
+
+			if (isError(r)) {
+				ostt.setDetailErrorHidden(false);
+				return ostt.optionsObject();
+			}
+
+			if (tag.openType !== "url") return ostt.optionsObject();
+
+			return ostt.optionsObject();
 		}
 		case "deleteClient": {
 			console.log("background.ts: deleteClient:", m);
