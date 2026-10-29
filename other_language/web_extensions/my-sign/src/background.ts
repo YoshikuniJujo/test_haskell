@@ -279,7 +279,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				return ostt.optionsObject();
 			}
 
-			if (tag.openType !== "url") return ostt.optionsObject();
+			if (isClientError(await isClientMatched(s))) {
+				ostt.setUrlPatternNotMatchErrorHidden(false);
+				return ostt.optionsObject();
+			}
 
 			return ostt.optionsObject();
 		}
