@@ -452,7 +452,7 @@ getClientSummaries(): Promise<ClientSummary[]>
 export async function
 getClientSummary(uuid: string): Promise<ClientSummary>
 {
-	const db = await open()
+	const db = await open();
 
 	return new Promise((rs, rj) => {
 		const tx = db.transaction(NEW_CLIENTS, "readonly");
@@ -461,6 +461,17 @@ getClientSummary(uuid: string): Promise<ClientSummary>
 			rs(req.result);
 		};
 	});
+}
+
+export async function
+putClientNoProfile(clnt: ClientSummaryRaw)
+{
+	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction([NEW_CLIENTS], "readwrite");
+		tx.objectStore(NEW_CLIENTS).put(clnt);
+		tx.oncomplete = rs;
+		tx.onerror = () => rj(tx.error); });
 }
 
 export async function
