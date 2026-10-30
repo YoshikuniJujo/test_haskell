@@ -292,6 +292,14 @@ updatev15v16(db: IDBDatabase, tx: IDBTransaction)
 	}
 }
 
+export async function
+putPermission(p: Permission): Promise<void>
+{
+	const db = await open();
+	const tx = db.transaction("permissions", "readonly");
+	putPermissionRaw(tx, p);
+}
+
 function
 putPermissionRaw(tx: IDBTransaction, p: Permission): Promise<void>
 {
@@ -320,6 +328,14 @@ getAllPermissionsRaw(tx: IDBTransaction): Promise<Permission[]>
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
 	});
+}
+
+export async function
+getPermission(cu: string, pk: Uint8Array): Promise<Permission | undefined>
+{
+	const db = await open();
+	const tx = db.transaction("permissions", "readonly");
+	return getPermissionRaw(tx, cu, pk);
 }
 
 function
