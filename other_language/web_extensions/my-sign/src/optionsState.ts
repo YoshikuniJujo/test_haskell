@@ -2,7 +2,7 @@ import type { Storage } from "./storage.js";
 import type { OptionsObject } from "./optionsObject.js";
 import type {
 	UUID, Client, EditingClient, ClientSummary, ClientSummaryRaw,
-	ClientSet, OptionsTabTag, PublicKeyOption, Result }
+	ClientSet, OptionsTabTag, PublicKeyOption, Result, Profile }
 	from "./types.js";
 import { uuid, fromUuid } from "./types.js";
 import { defaultOptionsObject, newClientMode, clientListMode } from "./optionsObject.js";
@@ -228,6 +228,21 @@ export class OptionsState
 			name: this.#optionsObject.clientName,
 			urlPattern: this.#optionsObject.urlPattern,
 			priority: this.#optionsObject.priority };
+	}
+
+	getProfile(): Profile
+	{
+		const obj = this.#optionsObject;
+		if (obj.clientUuid === null) throw new Error("bad");
+		if (obj.currentKey === null) throw new Error("bad");
+		return {
+			uuid: fromUuid(obj.clientUuid),
+			publicKey: fromHex(obj.currentKey),
+			openSettingsByClick: obj.openSettingsByClick,
+			backgroundColor: obj.backgroundColor,
+			backgroundOpacity: obj.backgroundOpacity,
+			positionX: obj.positionX, positionY: obj.positionY,
+			displayAccount: obj.displayAccount };
 	}
 
 	clientUuid(): UUID
