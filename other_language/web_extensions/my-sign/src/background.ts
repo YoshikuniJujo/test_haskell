@@ -1050,7 +1050,8 @@ applyClient(s: browser.runtime.MessageSender): Promise<OptionsObject>
 {
 	console.log("APPLY CLIENT: begin");
 			const ostt = await optionsStateFromSender(s);
-			await DB.putClient(ostt.makeClient());
+//			await DB.putClient(ostt.makeClient());
+			await DB.putProfile(ostt.getProfile());
 			ostt.setClientSummaries(await DB.getClientSummaries());
 			browser.runtime.sendMessage({
 				class: "Options", direction: "signal",

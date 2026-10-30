@@ -549,7 +549,7 @@ TODO
 			* [x] documment.addEventListenerでbackgroundにメッセージを送る
 			* [x] background.ts側でエラーメッセージを消去
 			* [x] options.ts側でloadOpitons()する
-* [ ] クライアントが存在しなかった場合、Profileが存在しなかった場合の設定画面のbackgroundを書く
+* [x] クライアントが存在しなかった場合、Profileが存在しなかった場合の設定画面のbackgroundを書く
 	+ [x] HTMLにボタンを追加
 	+ [x] options.tsからbackground.tsにメッセージを送る
 	+ [x] メッセージを受け取ったらURLPatternの文法をチェック
@@ -562,8 +562,7 @@ TODO
 	+ [x] Profile型を定義する
 	+ [x] DBにProfileだけ保存する関数を追加する
 	+ [x] OptionsStateにprofileを取り出すメソッドを追加する
-	+ [ ] 元々のOKを押すとprofile部分だけをDBに保存する
-	+ [ ] completeにして終了
+	+ [x] 元々のOKを押すとprofile部分だけをDBに保存する
 * [ ] clientsテーブルとset-clientsテーブルの要素を確認する
 * [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [ ] 設定項目をClient, Account, Client Profileの3項目に分ける
