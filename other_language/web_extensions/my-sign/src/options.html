@@ -43,7 +43,7 @@
 		<div id="client-detail" hidden>
 			CLIENT DETAIL
 			<form id="client-form-d">
-				<div id="client-setting">
+				<div id="client-settings">
 				<label>
 					Client name
 					<input id="client-name-d" type="text" required>
@@ -105,13 +105,6 @@
 					Public key
 					<select id="current-key-d" size="8" required></select>
 				</label>
-				</div>
-				<p id="detail-error" role="alert" hidden>
-					Invalid URLPattern
-				</p>
-				<p id="url-pattern-not-match-error" role="alert" hidden>
-					URL pattern does not match the target page.
-				</p>
 				<div class="edit-client-buttons">
 					<button type="button" id="delete-client">Delete</button>
 					<div class="right-buttons">
@@ -121,6 +114,13 @@
 						<button type="submit" id="add-client-d">OK</button>
 					</div>
 				</div>
+				</div>
+				<p id="detail-error" role="alert" hidden>
+					Invalid URLPattern
+				</p>
+				<p id="url-pattern-not-match-error" role="alert" hidden>
+					URL pattern does not match the target page.
+				</p>
 			</form>
 		</div>
 

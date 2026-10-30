@@ -324,6 +324,18 @@ export class OptionsState
 	{
 		this.#optionsObject.urlPatternNotMatchErrorHidden = upnmeh;
 	}
+
+	clientSettingsMode()
+	{
+		this.#optionsObject.clientSettingsHidden = false;
+		this.#optionsObject.profileSettingsHidden = true;
+	}
+
+	profileSettingsMode()
+	{
+		this.#optionsObject.clientSettingsHidden = true;
+		this.#optionsObject.profileSettingsHidden = false;
+	}
 }
 
 async function

@@ -571,12 +571,12 @@ TODO
 * [x] optionsObjectに追加
 	+ [x] clientSettingsHidden
 	+ [x] profileSettingsHidden
-* [ ] optionsStateに追加
-	+ [ ] clientSettingsMode
-	+ [ ] profileSettingsMode
-* [ ] options.tsに追加
-	+ [ ] clientSettings.hidden
-	+ [ ] profileSettings.hidden
+* [x] optionsStateに追加
+	+ [x] clientSettingsMode
+	+ [x] profileSettingsMode
+* [x] options.tsに追加
+	+ [x] clientSettings.hidden
+	+ [x] profileSettings.hidden
 * [ ] clientsテーブルとset-clientsテーブルの要素を確認する
 * [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [ ] 設定項目をClient, Account, Client Profileの3項目に分ける

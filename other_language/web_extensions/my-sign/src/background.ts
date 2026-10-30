@@ -168,6 +168,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			await loadCommonState(ostt);
 
 			optionsStates.set(id ?? "browser", ostt);
+			ostt.clientSettingsMode();
 			if (tg.openType === "url") {
 				console.log(
 					"background.ts: OPTIONS BEGIN: URL:",
@@ -292,6 +293,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			DB.putClientNoProfile(await ostt.getClient());
 
+			ostt.profileSettingsMode();
 			return ostt.optionsObject();
 		}
 		case "deleteClient": {

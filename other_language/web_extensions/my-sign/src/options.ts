@@ -98,6 +98,9 @@ const newSetName = getElement<HTMLInputElement>("#new-set-name");
 const newSet = getElement<HTMLInputElement>("#new-set");
 const setList = getElement<HTMLElement>("#set-list");
 
+const clientSettings = getElement<HTMLElement>("#client-settings");
+const profileSettings = getElement<HTMLElement>("#profile-settings");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -426,6 +429,9 @@ loadOptions(obj: OptionsObject)
 
 	detailError.hidden = obj.detailErrorHidden;
 	urlPatternNotMatchError.hidden = obj.urlPatternNotMatchErrorHidden;
+
+	clientSettings.hidden = obj.clientSettingsHidden;
+	profileSettings.hidden = obj.profileSettingsHidden;
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;
