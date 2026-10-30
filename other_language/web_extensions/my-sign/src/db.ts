@@ -244,6 +244,14 @@ updatev14v15(db: IDBDatabase, tx: IDBTransaction)
 	};
 }
 
+function
+updatev15v16(db: IDBDatabase, tx: IDBTransaction)
+{
+	db.createObjectStore("permissions", {
+		keyPath: ["clientUuid", "publicKey"]
+	});
+}
+
 export async function
 addKeyPair(key: Account)
 {
