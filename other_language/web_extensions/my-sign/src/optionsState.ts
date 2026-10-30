@@ -2,9 +2,9 @@ import type { Storage } from "./storage.js";
 import type { OptionsObject } from "./optionsObject.js";
 import type {
 	UUID, Client, EditingClient, ClientSummary, ClientSummaryRaw,
-	ClientSet, OptionsTabTag, PublicKeyOption, Result, Profile }
+	ClientSet, OptionsTabTag, PublicKeyOption, Result, Profile, EditMode }
 	from "./types.js";
-import { uuid, fromUuid } from "./types.js";
+import { uuid, fromUuid, EditClientMode } from "./types.js";
 import { defaultOptionsObject, newClientMode, clientListMode } from "./optionsObject.js";
 import { toHex, fromHex } from "./tools.js";
 
@@ -186,6 +186,11 @@ export class OptionsState
 		this.#optionsObject.deleteClientButtonHidden = false;
 		this.#optionsObject.optionsError = "";
 		this.#optionsObject.editModeHidden = true;
+
+		if (this.#optionsObject.editMode === EditClientMode)
+			this.clientSettingsMode();
+		else	this.profileSettingsMode();
+
 		await this.save();
 		return this.#optionsObject;
 	}
@@ -336,6 +341,11 @@ export class OptionsState
 	{
 		this.#optionsObject.clientSettingsHidden = true;
 		this.#optionsObject.profileSettingsHidden = false;
+	}
+
+	setEditMode(em: EditMode)
+	{
+		this.#optionsObject.editMode = em;
 	}
 }
 

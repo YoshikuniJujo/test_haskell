@@ -1,5 +1,9 @@
 import type {
-	ClientSet, ClientSummary, PublicKeyOption, UUID } from "./types.js";
+	ClientSet, ClientSummary, PublicKeyOption, UUID,
+	EditMode
+} from "./types.js";
+
+import { EditClientMode, EditProfileMode } from "./types.js";
 
 export type SelectSetOr =
 	| { selectSetOr: "Select" }
@@ -57,7 +61,9 @@ export type OptionsObject = {
 
 	clientSettingsHidden: boolean,
 	profileSettingsHidden: boolean,
-	editModeHidden: boolean
+	editModeHidden: boolean,
+
+	editMode: EditMode
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -105,7 +111,8 @@ export function defaultOptionsObject(): OptionsObject
 
 		clientSettingsHidden: false,
 		profileSettingsHidden: false,
-		editModeHidden: false
+		editModeHidden: false,
+		editMode: EditProfileMode
 	};
 }
 
@@ -117,6 +124,7 @@ newClientMode(obj: OptionsObject)
 	obj.newClientButtonHidden = true;
 	obj.clientDetailHidden = false;
 	obj.optionsError = "";
+	obj.editModeHidden = true;
 }
 
 export function

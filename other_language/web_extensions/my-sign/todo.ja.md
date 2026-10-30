@@ -581,10 +581,10 @@ TODO
 	+ [x] ラジオボタンを消すための値をoptionsObjectに追加
 	+ [x] それをoptionsStateで使う
 	+ [x] loadOptionsで消すようにする
-* [ ] background側にラジオボタンの状態を意味する値を追加する
-	+ [ ] optionsObject
-	+ [ ] optionsSettings
-* [ ] ラジオボタンによりクリックの意味を変える
+* [x] background側にラジオボタンの状態を意味する値を追加する
+	+ [x] optionsObject
+	+ [x] optionsSettings
+* [x] ラジオボタンによりクリックの意味を変える
 * [ ] clientsテーブルとset-clientsテーブルの要素を確認する
 * [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [ ] 設定項目をClient, Account, Client Profileの3項目に分ける

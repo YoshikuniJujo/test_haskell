@@ -102,6 +102,10 @@ const clientSettings = getElement<HTMLElement>("#client-settings");
 const profileSettings = getElement<HTMLElement>("#profile-settings");
 const editMode = getElement<HTMLElement>("#edit-mode");
 
+const editModes =
+	document.querySelectorAll<HTMLInputElement>(
+		'input[name="edit-mode"]' );
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -130,6 +134,14 @@ newClient.addEventListener("click", async () => {
 });
 
 // Client Detail
+
+editModes.forEach(radio => {
+	radio.addEventListener('change', () => {
+		if (!radio.checked) return;
+		const mode = radio.value;
+		sendMethodWithValueString("editModeChanged", mode);
+	});
+});
 
 usePriority.addEventListener("change", async () => {
 	const obj = await browser.runtime.sendMessage({
@@ -551,6 +563,13 @@ sendMethodWithBoolean(mtd: string, b: boolean)
 {
 	return browser.runtime.sendMessage({
 		class: "Options", method: mtd, boolean: b });
+}
+
+function
+sendMethodWithValueString(mtd: string, v: string)
+{
+	return browser.runtime.sendMessage({
+		class: "Options", method: mtd, value: v });
 }
 
 function

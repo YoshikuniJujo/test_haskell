@@ -163,3 +163,10 @@ isUrlPatternMismatch(e: ClientResult)
 {
 	return e.tag === "UrlPatternMismatch";
 }
+
+export const EditClientMode: EditMode = { type: "EditMode", value: "Client" }
+export const EditProfileMode: EditMode = { type: "EditMode", value: "Profile" }
+
+export type EditMode =
+	| { type: "EditMode"; value: "Client"; }
+	| { type: "EditMode"; value: "Profile"; }

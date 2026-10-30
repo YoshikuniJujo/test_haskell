@@ -7,12 +7,15 @@ import * as Bech32 from "./codec/bech32.js";
 
 import { addToArrayMap, forEachValues } from "./mapArray.js";
 
-import type { Client, ClientSummary, ClientSummaryRaw, ClientResult, OptionsTabTag, UUID } from "./types.js";
+import type {
+	Client, ClientSummary, ClientSummaryRaw, ClientResult, OptionsTabTag, UUID } from "./types.js";
 
 import { isUrl, findKey } from "./tools.js";
 import {
 	optionsTabTag, uuid, fromUuid, isError, error, success,
-	ClientSuccess, InvalidUrlPattern, UrlPatternMismatch, isClientError } from "./types.js";
+	ClientSuccess, InvalidUrlPattern, UrlPatternMismatch, isClientError,
+	EditClientMode, EditProfileMode
+} from "./types.js";
 import { OptionsState } from "./optionsState.js";
 import { selectOrToString } from "./optionsObject.js";
 
@@ -113,6 +116,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "newSet"; }
 	| { class: "Options"; method: "newSetNameInput"; value: string; }
 	| { class: "Options"; method: "loadCommonState"; }
+	| { class: "Options"; method: "editModeChanged", value: string; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -174,9 +178,15 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					"background.ts: OPTIONS BEGIN: URL:",
 					await getClientNoProfile(tg.id) );
 				const c = await getClientNoProfile(tg.id);
-				if (c !== null)
+				if (c !== null) {
 					await newClient(s, uuid(c.uuid), c.urlPattern, c.name);
-				else await newClient(s, uuid(crypto.randomUUID()), tg.id, undefined);
+					// ostt.setEditMode(EditProfileMode);
+					ostt.profileSettingsMode();
+				} else {
+					await newClient(s, uuid(crypto.randomUUID()), tg.id, undefined);
+					// ostt.setEditMode(EditClientMode);
+					ostt.clientSettingsMode();
+				}
 				ostt.onlyOkButton();
 			}
 
@@ -427,6 +437,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			await loadCommonState(ostt);
 			return ostt.optionsObject(); }
+		case "editModeChanged": {
+			const ostt = await optionsStateFromSender(s);
+			console.log("background.ts: EDIT MODE CHANGED:", m.value);
+			if (m.value === "client") ostt.setEditMode(EditClientMode);
+			else ostt.setEditMode(EditProfileMode);
+		}
 	}
 }
 
