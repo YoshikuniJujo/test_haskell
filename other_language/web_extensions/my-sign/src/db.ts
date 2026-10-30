@@ -1,6 +1,6 @@
 import type {
 	ClientSet, Client, ClientSummary, ClientSummaryRaw, EditingClient,
-	Account, PublicKeyOption, UUID } from "./types.js"
+	Account, PublicKeyOption, UUID, Profile } from "./types.js"
 import { fromUuid } from "./types.js"
 import { unit } from "./data/unit.js"
 import { toHex } from "./tools.js"
@@ -297,6 +297,22 @@ putClient(client: Client)
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
 	});
+}
+
+export async function
+putProfile(p: Profile)
+{
+	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(
+			[CURRENT_SET, NEW_SET_CLIENTS], "readwrite");
+		const req = getCurrentSetRaw(tx);
+		req.onsuccess = () => {
+			if (req.result === undefined) { tx.abort(); return; }
+			tx.objectStore(NEW_SET_CLIENTS)
+				.put(mkSetClient(req.result, p)); }
+		tx.oncomplete = rs;
+		tx.onerror = () => rj(tx.error); });
 }
 
 export async function

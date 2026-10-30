@@ -559,9 +559,10 @@ TODO
 	+ [x] DBにclientをputする関数を追加する
 	+ [x] OptionsStateからClientSummaryRawを取り出すメソッドを書く
 	+ [x] マッチしたらDBに保存して次の段階に進むが、ここは今のところ「そのまま」とする
-	+ [ ] 元々のOKを押すとprofile部分をメッセージとして送る
-	+ [ ] DBに保存してcompleteにして終了
-		- [ ] client部分は保存しないようにする
+	+ [x] Profile型を定義する
+	+ [x] DBにProfileだけ保存する関数を追加する
+	+ [ ] 元々のOKを押すとprofile部分だけをDBな保存する
+	+ [ ] completeにして終了
 * [ ] clientsテーブルとset-clientsテーブルの要素を確認する
 * [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [ ] 設定項目をClient, Account, Client Profileの3項目に分ける

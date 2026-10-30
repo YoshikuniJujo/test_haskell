@@ -12,6 +12,14 @@ export type Client = {
 	positionX: number, positionY: number,
 	displayAccount: boolean }
 
+export type Profile = {
+	uuid: string,
+	publicKey: Uint8Array,
+	openSettingsByClick: boolean,
+	backgroundColor: string, backgroundOpacity: number,
+	positionX: number, positionY: number,
+	displayAccount: boolean }
+
 export type ClientSummary =
 	{ type: "ClientSummary", uuid: UUID, name: string, urlPattern: string }
 
