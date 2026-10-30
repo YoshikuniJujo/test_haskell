@@ -442,6 +442,19 @@ getClients(): Promise<Client[]>
 }
 
 export async function
+getAllClients(): Promise<ClientSummaryRaw[]>
+{
+	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction([NEW_CLIENTS], "readonly");
+		const req = tx.objectStore(NEW_CLIENTS).getAll();
+		tx.oncomplete = () => {
+			console.log("db.ts: getAllClients:", req.result);
+			rs(req.result); }
+		tx.onerror = () => rj(tx.error); });
+}
+
+export async function
 getClientSummaries(): Promise<ClientSummary[]>
 {
 	const db = await open();

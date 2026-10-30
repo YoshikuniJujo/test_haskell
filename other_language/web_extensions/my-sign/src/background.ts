@@ -7,7 +7,7 @@ import * as Bech32 from "./codec/bech32.js";
 
 import { addToArrayMap, forEachValues } from "./mapArray.js";
 
-import type { Client, ClientSummary, ClientResult, OptionsTabTag, UUID } from "./types.js";
+import type { Client, ClientSummary, ClientSummaryRaw, ClientResult, OptionsTabTag, UUID } from "./types.js";
 
 import { isUrl, findKey } from "./tools.js";
 import {
@@ -169,7 +169,13 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			optionsStates.set(id ?? "browser", ostt);
 			if (tg.openType === "url") {
-				await newClient(s, uuid(crypto.randomUUID()), tg.id, undefined);
+				console.log(
+					"background.ts: OPTIONS BEGIN: URL:",
+					await getClientNoProfile(tg.id) );
+				const c = await getClientNoProfile(tg.id);
+				if (c !== null)
+					await newClient(s, uuid(c.uuid), c.urlPattern, c.name);
+				else await newClient(s, uuid(crypto.randomUUID()), tg.id, undefined);
 				ostt.onlyOkButton();
 			}
 
@@ -607,12 +613,15 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 		case "prepareClient":
 			console.log("background: prepareClient");
 			const c = await getClient(m.clientUrl);
+			const c2 = await getClientNoProfile(m.clientUrl);
 			console.log("background: getClient return: ", c);
-			if (!s.tab) throw new Error("bad26");
-			if (s.tab.id === undefined) throw new Error("bad27");
+			if (s.tab?.id === undefined) throw new Error("bad27");
 			if (c !== null) await browser.tabs.sendMessage(s.tab.id, { method: "clientReady", clientUrl: m.clientUrl });
 			else {
 				console.log("c is:", c);
+				console.log(
+					"background.ts: PREPARE CLIENT:c2 is:",
+					c2 );
 				const ot = await browser.tabs.create({
 					active: false,
 					url: browser.runtime.getURL("options.html")
@@ -790,9 +799,25 @@ getPublicKey(url: string, tid: number)
 }
 
 async function
+getClientNoProfile(url: string): Promise<ClientSummaryRaw|null>
+{
+	console.log("background.ts: GET CLIENT: BEGIN:", url);
+	console.log("background.ts: GET CLIENT: ALL CLIENTS:",
+		    await DB.getAllClients());
+	const cs: ClientSummaryRaw[] = await DB.getAllClients();
+	cs.sort((a, b) => (b.priority ?? 100) - (a.priority ?? 100));
+	for (const c of cs) {
+		const pattern = new URLPattern(c.urlPattern);
+		if (pattern.test(url)) return c; }
+	return null;
+}
+
+async function
 getClient(url: string): Promise<Client|null>
 {
-	console.log("getClient begin", url);
+	console.log("background.ts: GET CLIENT: BEGIN:", url);
+	console.log("background.ts: GET CLIENT: ALL CLIENTS:",
+		    await DB.getAllClients());
 	const cs: Client[] = await DB.getClients();
 	cs.sort((a, b) => (b.priority ?? 100) - (a.priority ?? 100));
 	for (const c of cs) {
