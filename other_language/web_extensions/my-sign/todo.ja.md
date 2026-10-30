@@ -564,7 +564,7 @@ TODO
 	+ [x] OptionsStateにprofileを取り出すメソッドを追加する
 	+ [x] 元々のOKを押すとprofile部分だけをDBに保存する
 * [x] クライアントが存在し、Profileが存在しない場合の設定画面のbackgroundを書く
-* [x] クライアントの設定項目とProfileの設定項目とで分けて<div>でくくる
+* [x] クライアントの設定項目とProfileの設定項目とで分けて&lt;div&gt;でくくる
 * [x] optionsObjectに追加
 	+ [x] clientSettingsHidden
 	+ [x] profileSettingsHidden
@@ -598,11 +598,21 @@ TODO
 		- [x] 既存のクライアントとアカウントの全ペアについて最大限の権限を追加する
 	+ [x] データベースへの書き込み関数を定義する
 	+ [ ] 権限を定義するUIを作る
+		- [x] 1行を意味する型を作る - Permission
+		- [ ] HTMLにラジオボタンPermissionを追加する
+		- [ ] HTMLに表示用の領域を作る
+		- [ ] Permission[]から画面を表示する関数を書く
+		- [ ] ダミーのPermission[]で試す
+		- [ ] PermissionsをoptionsObjectに
+		- [ ] PermissionsをoptionsStateに
+		- [ ] Permissionsを読み込む処理を書く
+		- [ ] loadOptionsで表示する
 	+ [ ] Profileの送定のときに権限のないアカウントは表示しないようにする
 	+ [ ] 実際に公開鍵の取得や署名のときに権限を確認する
 		- [ ] 権限が足りないときにはエラーメッセージをrejectの引数として返す
 		- [ ] 画面にpopover機能で表示する
 * [ ] TODOを見返し修正する
+* [ ] Profileの編集領域にクライアント名とURLPatternを表示する
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
 	+ これをするかどうか検討する

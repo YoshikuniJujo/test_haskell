@@ -4,7 +4,7 @@ import type {
 	UUID, Client, EditingClient, ClientSummary, ClientSummaryRaw,
 	ClientSet, OptionsTabTag, PublicKeyOption, Result, Profile, EditMode }
 	from "./types.js";
-import { uuid, fromUuid, EditClientMode } from "./types.js";
+import { uuid, fromUuid, EditClientMode, editModeToString } from "./types.js";
 import { defaultOptionsObject, newClientMode, clientListMode } from "./optionsObject.js";
 import { toHex, fromHex } from "./tools.js";
 
@@ -187,9 +187,12 @@ export class OptionsState
 		this.#optionsObject.optionsError = "";
 		this.#optionsObject.editModeHidden = true;
 
-		if (this.#optionsObject.editMode === EditClientMode)
-			this.clientSettingsMode();
-		else	this.profileSettingsMode();
+		switch(editModeToString(this.#optionsObject.editMode)) {
+			case "Client": this.clientSettingsMode(); break;
+			case "Profile": this.profileSettingsMode(); break;
+			case "Permission": console.log("EDIT PERMISSION MODE"); break;
+			default: throw new Error("never occur"); break;
+		}
 
 		await this.save();
 		return this.#optionsObject;

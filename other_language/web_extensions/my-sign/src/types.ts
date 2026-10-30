@@ -166,10 +166,18 @@ isUrlPatternMismatch(e: ClientResult)
 
 export const EditClientMode: EditMode = { type: "EditMode", value: "Client" }
 export const EditProfileMode: EditMode = { type: "EditMode", value: "Profile" }
+export const EditPermissionMode: EditMode = { type: "EditMode", value: "Permission" }
+
+export function
+editModeToString(em: EditMode)
+{
+	return em.value;
+}
 
 export type EditMode =
 	| { type: "EditMode"; value: "Client"; }
 	| { type: "EditMode"; value: "Profile"; }
+	| { type: "EditMode"; value: "Permission"; }
 
 export function
 noPermission(cu: string, pk: Uint8Array): Permission
