@@ -53,7 +53,10 @@ export type OptionsObject = {
 	clientSetList: ClientSet[],
 	currentSetUuid: string,
 
-	newSetName: string
+	newSetName: string,
+
+	clientSettingsHidden: boolean,
+	profileSettingsHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -97,7 +100,10 @@ export function defaultOptionsObject(): OptionsObject
 		clientSetList: [],
 		currentSetUuid: "",
 
-		newSetName: ""
+		newSetName: "",
+
+		clientSettingsHidden: false,
+		profileSettingsHidden: false
 	};
 }
 
