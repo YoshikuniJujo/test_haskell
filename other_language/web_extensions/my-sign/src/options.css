@@ -122,3 +122,8 @@ label {
 .set.inactive {
 	opacity: 0.5;
 }
+
+#edit-mode {
+	display: flex;
+	gap: 1em;
+}

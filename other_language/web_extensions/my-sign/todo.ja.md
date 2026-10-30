@@ -564,9 +564,6 @@ TODO
 	+ [x] OptionsStateにprofileを取り出すメソッドを追加する
 	+ [x] 元々のOKを押すとprofile部分だけをDBに保存する
 * [x] クライアントが存在し、Profileが存在しない場合の設定画面のbackgroundを書く
-* [ ] クライアントリストの下にラジオボタンを配置する
-	+ [ ] Client
-	+ [ ] Profile
 * [x] クライアントの設定項目とProfileの設定項目とで分けて<div>でくくる
 * [x] optionsObjectに追加
 	+ [x] clientSettingsHidden
@@ -577,6 +574,14 @@ TODO
 * [x] options.tsに追加
 	+ [x] clientSettings.hidden
 	+ [x] profileSettings.hidden
+* [x] クライアントリストの下にラジオボタンを配置する
+	+ [x] Client
+	+ [x] Profile
+* [ ] ラジオボタンをクライアント詳細画面では消す
+* [ ] background側にラジオボタンの状態を意味する値を追加する
+	+ [ ] optionsObject
+	+ [ ] optionsSettings
+* [ ] ラジオボタンによりクリックの意味を変える
 * [ ] clientsテーブルとset-clientsテーブルの要素を確認する
 * [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [ ] 設定項目をClient, Account, Client Profileの3項目に分ける
