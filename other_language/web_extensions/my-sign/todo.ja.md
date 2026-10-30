@@ -577,7 +577,10 @@ TODO
 * [x] クライアントリストの下にラジオボタンを配置する
 	+ [x] Client
 	+ [x] Profile
-* [ ] ラジオボタンをクライアント詳細画面では消す
+* [x] ラジオボタンをクライアント詳細画面では消す
+	+ [x] ラジオボタンを消すための値をoptionsObjectに追加
+	+ [x] それをoptionsStateで使う
+	+ [x] loadOptionsで消すようにする
 * [ ] background側にラジオボタンの状態を意味する値を追加する
 	+ [ ] optionsObject
 	+ [ ] optionsSettings

@@ -56,7 +56,8 @@ export type OptionsObject = {
 	newSetName: string,
 
 	clientSettingsHidden: boolean,
-	profileSettingsHidden: boolean
+	profileSettingsHidden: boolean,
+	editModeHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -103,7 +104,8 @@ export function defaultOptionsObject(): OptionsObject
 		newSetName: "",
 
 		clientSettingsHidden: false,
-		profileSettingsHidden: false
+		profileSettingsHidden: false,
+		editModeHidden: false
 	};
 }
 
@@ -135,4 +137,5 @@ clientListMode(obj: OptionsObject)
 	obj.newClientButtonHidden = false;
 	obj.clientDetailHidden = true;
 	obj.optionsError = "";
+	obj.editModeHidden = false;
 }

@@ -100,6 +100,7 @@ const setList = getElement<HTMLElement>("#set-list");
 
 const clientSettings = getElement<HTMLElement>("#client-settings");
 const profileSettings = getElement<HTMLElement>("#profile-settings");
+const editMode = getElement<HTMLElement>("#edit-mode");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -432,6 +433,7 @@ loadOptions(obj: OptionsObject)
 
 	clientSettings.hidden = obj.clientSettingsHidden;
 	profileSettings.hidden = obj.profileSettingsHidden;
+	editMode.hidden = obj.editModeHidden;
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;

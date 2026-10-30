@@ -185,6 +185,7 @@ export class OptionsState
 		this.#optionsObject.clientDetailHidden = false;
 		this.#optionsObject.deleteClientButtonHidden = false;
 		this.#optionsObject.optionsError = "";
+		this.#optionsObject.editModeHidden = true;
 		await this.save();
 		return this.#optionsObject;
 	}
