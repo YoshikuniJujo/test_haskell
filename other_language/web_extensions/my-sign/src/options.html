@@ -43,6 +43,7 @@
 		<div id="client-detail" hidden>
 			CLIENT DETAIL
 			<form id="client-form-d">
+				<div id="client-setting">
 				<label>
 					Client name
 					<input id="client-name-d" type="text" required>
@@ -62,7 +63,9 @@
 				</label>
 
 				<button type="button" id ="send-client">Client OK</button>
+				</div>
 
+				<div id="profile-settings">
 				<label>
 					<input type="checkbox" id="display-account">
 					Display account
@@ -102,6 +105,7 @@
 					Public key
 					<select id="current-key-d" size="8" required></select>
 				</label>
+				</div>
 				<p id="detail-error" role="alert" hidden>
 					Invalid URLPattern
 				</p>
