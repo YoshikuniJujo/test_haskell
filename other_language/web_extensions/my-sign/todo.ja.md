@@ -423,7 +423,7 @@ TODO
 	+ [x] v0 -> v1を関数化する
 	+ [x] v2 -> v3を関数化する
 	+ [x] v3 -> v4を関数化する
-* [ ] Set機能の追加
+* [x] Set機能の追加
 	+ [x] DBの修正
 		- [x] clientテーブルをclientとsetClientテーブルとに分ける
 			* [x] clientsテーブルの名前をsetClientsテーブルに変更する
@@ -465,7 +465,7 @@ TODO
 		- [x] getClientSummaries
 		- [x] getClient
 	+ [x] 利用する側でsetを意識した処理にする
-	+ [ ] setを設定する画面を作る
+	+ [x] setを設定する画面を作る
 		- [x] 画面の移行だけを実装
 			* [x] use client set時だけ見えるSelect Setボタンを追加
 				+ [x] HTMLに追加
@@ -586,9 +586,10 @@ TODO
 	+ [x] optionsSettings
 * [x] ラジオボタンによりクリックの意味を変える
 * [ ] clientsテーブルとset-clientsテーブルの要素を確認する
-* [ ] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
-* [ ] 設定項目をClient, Account, Client Profileの3項目に分ける
-* [ ] 「クライアンのprofileが存在しなかった場合」の処理を書く
+* [x] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
+* [x] 設定項目をClient, Account, Client Profileの3項目に分ける
+* [x] 「クライアンのprofileが存在しなかった場合」の処理を書く
+* [ ] クライアントの権限テーブル
 * [ ] TODOを見返し修正する
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
@@ -693,7 +694,6 @@ TODO
 	+ [ ] ブラウザの設定画面
 	+ [ ] タブとして開いた設定画面
 	+ [ ] getPublicKeyのリカバリのための設定画面
-* [ ] クライアントの権限テーブル
 * [ ] ncryptsecのエクスポート
 * [ ] ncryptsecのインポート
 * [ ] nsecのインポート
