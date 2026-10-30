@@ -170,3 +170,36 @@ export const EditProfileMode: EditMode = { type: "EditMode", value: "Profile" }
 export type EditMode =
 	| { type: "EditMode"; value: "Client"; }
 	| { type: "EditMode"; value: "Profile"; }
+
+export function
+noPermission(cu: string, pk: string)
+{
+	return {
+		clientUuid: cu, publicKey: pk,
+		getPublicKey: false, sign: false,
+		encrypt: false, decrypt: false };
+}
+
+export function
+setPermissionGetPublicKey(p: Permission): Permission
+{
+	return {
+		clientUuid: p.clientUuid, publicKey: p.publicKey,
+		getPublicKey: true, sign: false,
+		encrypt: false, decrypt: false };
+}
+
+export function
+setPermissionSign(p: Permission): Permission
+{
+	return {
+		clientUuid: p.clientUuid, publicKey: p.publicKey,
+		getPublicKey: true, sign: true,
+		encrypt: true, decrypt: false };
+}
+
+export type Permission = {
+	clientUuid: string, publicKey: string,
+	getPublicKey: boolean, sign: boolean,
+	encrypt: boolean, decrypt: boolean
+};
