@@ -172,7 +172,7 @@ export type EditMode =
 	| { type: "EditMode"; value: "Profile"; }
 
 export function
-noPermission(cu: string, pk: string)
+noPermission(cu: string, pk: Uint8Array): Permission
 {
 	return {
 		clientUuid: cu, publicKey: pk,
@@ -199,7 +199,7 @@ setPermissionSign(p: Permission): Permission
 }
 
 export type Permission = {
-	clientUuid: string, publicKey: string,
+	clientUuid: string, publicKey: Uint8Array,
 	getPublicKey: boolean, sign: boolean,
 	encrypt: boolean, decrypt: boolean
 };

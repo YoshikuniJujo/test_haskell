@@ -1,14 +1,14 @@
 import type {
 	ClientSet, Client, ClientSummary, ClientSummaryRaw, EditingClient,
-	Account, PublicKeyOption, UUID, Profile } from "./types.js"
-import { fromUuid } from "./types.js"
+	Account, PublicKeyOption, UUID, Profile, Permission } from "./types.js"
+import { fromUuid, noPermission, setPermissionSign } from "./types.js"
 import { unit } from "./data/unit.js"
 import { toHex } from "./tools.js"
 
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 15;
+const DB_VERSION = 16;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
@@ -47,6 +47,7 @@ open()
 			else if (ev.oldVersion < 13) updatev12v13(db, tx);
 			else if (ev.oldVersion < 14) updatev13v14(db, tx);
 			else if (ev.oldVersion < 15) updatev14v15(db, tx);
+			else if (ev.oldVersion < 16) updatev15v16(db, tx);
 			tx.oncomplete = () => {
 				console.log("migration transaction complete");
 			}
@@ -241,14 +242,95 @@ updatev14v15(db: IDBDatabase, tx: IDBTransaction)
 		for (const sc of req.result) {
 			delete sc.priority;
 			tx.objectStore("set-clients").put(sc); }
+		updatev15v16(db, tx);
 	};
 }
 
 function
 updatev15v16(db: IDBDatabase, tx: IDBTransaction)
 {
+	console.log("db.ts: UPDATE V15 V16");
 	db.createObjectStore("permissions", {
 		keyPath: ["clientUuid", "publicKey"]
+	});
+
+	const clientsReq = tx.objectStore("clients").getAll();
+	const accountsReq = tx.objectStore("secret-keys").getAll();
+	let clients: ClientSummaryRaw[] = [];
+	let accounts: Account[] = [];
+	let doneClients = false;
+	let doneAccounts = false;
+
+	clientsReq.onsuccess = () => {
+		clients = clientsReq.result;
+		console.log("clients:", clients);
+		doneClients = true;
+		checkDone();
+	};
+
+	accountsReq.onsuccess = () => {
+		accounts = accountsReq.result;
+		console.log("accounts:", accounts);
+		doneAccounts = true;
+		checkDone();
+	};
+
+	function
+	checkDone()
+	{
+		if (!doneClients || !doneAccounts) return;
+
+		console.log("db.ts: UPDATE V15 V16: CHECK DONE:", clients, accounts);
+
+		for (const client of clients) {
+			for (const account of accounts) {
+				const np: Permission =
+					noPermission(client.uuid, account.publicKey);
+				putPermissionRaw(tx, setPermissionSign(np));
+			}
+		}
+	}
+}
+
+function
+putPermissionRaw(tx: IDBTransaction, p: Permission): Promise<void>
+{
+	return new Promise((rs, rj) => {
+		const store = tx.objectStore("permissions");
+		const req = store.put(p);
+		req.onsuccess = () => rs();
+		req.onerror = () => rj(req.error);
+	});
+}
+
+export async function
+getAllPermissions(): Promise<Permission[]>
+{
+	const db = await open();
+	const tx = db.transaction("permissions", "readonly");
+	return getAllPermissionsRaw(tx);
+}
+
+function
+getAllPermissionsRaw(tx: IDBTransaction): Promise<Permission[]>
+{
+	return new Promise((rs, rj) => {
+		const store = tx.objectStore("permissions");
+		const req = store.getAll();
+		req.onsuccess = () => rs(req.result);
+		req.onerror = () => rj(req.error);
+	});
+}
+
+function
+getPermissionRaw(tx: IDBTransaction, cu: string, pk: Uint8Array):
+	Promise<Permission | undefined>
+{
+	return new Promise((rs, rj) => {
+		const store = tx.objectStore("permissions");
+		const req = store.get([cu, pk] as IDBValidKey);
+		req.onsuccess = () => rs(req.result);
+		req.onerror = () => rj(req.error);
 	});
 }
 
@@ -494,9 +576,8 @@ getClientSummary(uuid: string): Promise<ClientSummary>
 	return new Promise((rs, rj) => {
 		const tx = db.transaction(NEW_CLIENTS, "readonly");
 		const req = tx.objectStore(NEW_CLIENTS).get(uuid);
-		req.onsuccess = () => {
-			rs(req.result);
-		};
+		req.onsuccess = () => { rs(req.result); };
+		req.onerror = () => rj(req.error);
 	});
 }
 

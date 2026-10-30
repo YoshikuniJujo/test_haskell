@@ -50,6 +50,8 @@ const initializeReady = (async () => {
 	if (cst === undefined) throw new Error("background.ts: no current set");
 	console.log("background.ts: CURRENT SET:", await DB.getSet(cst));
 
+	console.log("background.ts: ALL PERMISSIONS:", await DB.getAllPermissions());
+
 	const ots = [...(await otbs.keyInputTabs())]
 		.filter(([key]) => key !== "browser")
 		.map(([, value]) => value);
