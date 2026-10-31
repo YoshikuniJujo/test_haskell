@@ -353,6 +353,19 @@ getPermission(cu: string, pk: Uint8Array): Promise<Permission | undefined>
 	return getPermissionRaw(tx, cu, pk);
 }
 
+export async function
+getPermissionsByClientUuid(clientUuid: string): Promise<Permission[]>
+{
+	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction("permissions", "readonly");
+		const store = tx.objectStore("permissions");
+		const req = store.index("clientUuid").getAll(clientUuid);
+		req.onsuccess = () => rs(req.result);
+		req.onerror = () => rj(req.error);
+	});
+}
+
 function
 getPermissionRaw(tx: IDBTransaction, cu: string, pk: Uint8Array):
 	Promise<Permission | undefined>
