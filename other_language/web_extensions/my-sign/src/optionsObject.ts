@@ -1,6 +1,6 @@
 import type {
 	ClientSet, ClientSummary, PublicKeyOption, UUID,
-	EditMode
+	EditMode, Permission
 } from "./types.js";
 
 import { EditClientMode, EditProfileMode } from "./types.js";
@@ -31,6 +31,8 @@ export type OptionsObject = {
 	cancelButtonHidden: boolean,
 
 	clients: ClientSummary[],
+
+	clientPermissions: Permission[],
 
 	clientUuid: UUID | null,
 	clientName: string,
@@ -81,6 +83,8 @@ export function defaultOptionsObject(): OptionsObject
 		cancelButtonHidden: false,
 
 		clients: [],
+
+		clientPermissions: [],
 
 		clientUuid: null,
 		clientName: "",

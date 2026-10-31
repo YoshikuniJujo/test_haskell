@@ -597,6 +597,9 @@ TODO
 		- [x] 権限を読み出す関数を定義する
 		- [x] 既存のクライアントとアカウントの全ペアについて最大限の権限を追加する
 	+ [x] データベースへの書き込み関数を定義する
+	+ [x] permissionsにclientUuidのindexを作る
+	+ [ ] データベースから特定のクライアント用の
+		Permissionのリストを取り出す関数getPermissionsByClientUuidを作成する
 	+ [ ] 権限を定義するUIを作る
 		- [x] 1行を意味する型を作る - Permission
 		- [ ] HTMLにラジオボタンPermissionを追加する

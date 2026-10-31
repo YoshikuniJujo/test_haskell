@@ -8,7 +8,7 @@ import { toHex } from "./tools.js"
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 16;
+const DB_VERSION = 17;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
@@ -48,6 +48,7 @@ open()
 			else if (ev.oldVersion < 14) updatev13v14(db, tx);
 			else if (ev.oldVersion < 15) updatev14v15(db, tx);
 			else if (ev.oldVersion < 16) updatev15v16(db, tx);
+			else if (ev.oldVersion < 17) updatev16v17(db, tx);
 			tx.oncomplete = () => {
 				console.log("migration transaction complete");
 			}
@@ -289,15 +290,29 @@ updatev15v16(db: IDBDatabase, tx: IDBTransaction)
 				putPermissionRaw(tx, setPermissionSign(np));
 			}
 		}
+		updatev16v17(db, tx);
 	}
+}
+
+function
+updatev16v17(db: IDBDatabase, tx: IDBTransaction)
+{
+	tx.objectStore("permissions").createIndex("clientUuid", "clientUuid");
 }
 
 export async function
 putPermission(p: Permission): Promise<void>
 {
 	const db = await open();
-	const tx = db.transaction("permissions", "readonly");
-	putPermissionRaw(tx, p);
+	return new Promise((rs, rj) => {
+		const tx = db.transaction("permissions", "readwrite");
+		putPermissionRaw(tx, p);
+		tx.oncomplete = () => rs();
+		tx.onabort = () => rj(
+			tx.error ?? new Error("Transaction aborted"));
+		tx.onerror = () => rj(
+			tx.error ?? new Error("Transaction failed"));
+	});
 }
 
 function
