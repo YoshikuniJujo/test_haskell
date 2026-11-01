@@ -82,6 +82,10 @@ label {
 	cursor: pointer;
 }
 
+.permission {
+	display: block;
+}
+
 .client:hover,
 .client:focus-visible {
 	font-style: italic;

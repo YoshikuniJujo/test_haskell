@@ -106,6 +106,8 @@ const editModes =
 	document.querySelectorAll<HTMLInputElement>(
 		'input[name="edit-mode"]' );
 
+const permissionSettings = getElement<HTMLElement>("#permission-settings");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -448,6 +450,13 @@ loadOptions(obj: OptionsObject)
 	editMode.hidden = obj.editModeHidden;
 
 	console.log("options.ts: LOAD OPTIONS: permissions =", obj.clientPermissions);
+	permissionSettings.replaceChildren();
+	for (const p of obj.clientPermissions) {
+		const row = document.createElement("dev");
+		row.className = "permission";
+		row.textContent = "FOOBAR";
+		permissionSettings.append(row);
+	}
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;
