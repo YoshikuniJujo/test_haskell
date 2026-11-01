@@ -366,6 +366,18 @@ getPermissionsByClientUuid(clientUuid: string): Promise<Permission[]>
 	});
 }
 
+export async function
+getPermissionsByClientUuid2(clientUuid: string): Promise<Permission[]>
+{
+	const pks: Uint8Array[]  = await getPublicKeys();
+
+	return Promise.all(pks.map(async pk => {
+		const permission =
+			await getPermission(clientUuid, pk);
+		return permission ?? noPermission(clientUuid, pk);
+	}));
+}
+
 function
 getPermissionRaw(tx: IDBTransaction, cu: string, pk: Uint8Array):
 	Promise<Permission | undefined>
@@ -393,7 +405,7 @@ addKeyPair(key: Account)
 }
 
 export async function
-getPublicKeys()
+getPublicKeys(): Promise<Uint8Array[]>
 {
 	const db = await open();
 
@@ -402,7 +414,7 @@ getPublicKeys()
 		const store = tx.objectStore(SECRET_KEYS);
 		const req = store.getAllKeys();
 
-		req.onsuccess = () => rs(req.result);
+		req.onsuccess = () => rs(req.result as Uint8Array[]);
 		req.onerror = () => rj(req.error);
 	});
 }

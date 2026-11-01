@@ -195,7 +195,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			if (tg.openType === "uuid" && id !== null) {
 				const clnt = await DB.getClient(id);
 				const pks = await DB.getPublicKeyOptions();
-				ostt.openClientDetail(clnt, pks);
+				const pmss = await DB.getPermissionsByClientUuid2(id);
+				console.log("background.ts: PERMISSIONS:", pmss);
+				ostt.openClientDetail(clnt, pks, pmss);
 			}
 
 			if (tg.openType == "set") {
@@ -225,8 +227,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			try {
 				const clnt = await DB.getClient(fromUuid(m.value));
 				const pks = await DB.getPublicKeyOptions();
+				const pmss = await DB.getPermissionsByClientUuid2(fromUuid(m.value));
+				console.log("background.ts: PERMISSIONS:", pmss);
 				const obj = (await optionsStateFromSender(s))
-					.openClientDetail(clnt, pks);
+					.openClientDetail(clnt, pks, pmss);
 				return obj;
 			}
 			catch (e) {
@@ -352,7 +356,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			const clnt = await DB.getClient(fromUuid(ostt.clientUuid()));
 			const pks = await DB.getPublicKeyOptions();
-			ostt.openClientDetail(clnt, pks);
+			const pmss = await DB.getPermissionsByClientUuid2(fromUuid(ostt.clientUuid()));
+			console.log("background.ts: PERMISSIONS:", pmss);
+			ostt.openClientDetail(clnt, pks, pmss);
 			ostt.save();
 			return ostt.optionsObject();
 		}

@@ -2,7 +2,7 @@ import type { Storage } from "./storage.js";
 import type { OptionsObject } from "./optionsObject.js";
 import type {
 	UUID, Client, EditingClient, ClientSummary, ClientSummaryRaw,
-	ClientSet, OptionsTabTag, PublicKeyOption, Result, Profile, EditMode }
+	ClientSet, OptionsTabTag, PublicKeyOption, Result, Profile, EditMode, Permission }
 	from "./types.js";
 import { uuid, fromUuid, EditClientMode, editModeToString } from "./types.js";
 import { defaultOptionsObject, newClientMode, clientListMode } from "./optionsObject.js";
@@ -162,8 +162,11 @@ export class OptionsState
 		await this.save();
 	}
 
-	async openClientDetail(ec: EditingClient, pkos: PublicKeyOption[])
+	async openClientDetail(
+		ec: EditingClient, pkos: PublicKeyOption[], pmss: Permission[])
 	{
+		console.log("optionsState.ts: OPEN CLIENT DETAIL:", pmss);
+
 		if (ec.uuid === null) throw new Error(
 			"optionsState.ts: openClientDetail: no UUID");
 		this.#optionsObject.clientUuid = uuid(ec.uuid);
