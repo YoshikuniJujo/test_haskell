@@ -604,6 +604,8 @@ TODO
 		- [x] 1行を意味する型を作る - Permission
 		- [x] HTMLにラジオボタンPermissionを追加する
 		- [x] HTMLに表示用の領域を作る
+		- [ ] OptionsObjectに保存する型をPermissionから変更する
+			* publlic keyだけではなくnameも必要
 		- [ ] permissionSettingsHiddenを追加する
 		- [ ] Permission[]から画面を表示する関数を書く
 		- [ ] ダミーのPermission[]で試す
