@@ -108,6 +108,8 @@ const editModes =
 		'input[name="edit-mode"]' );
 
 const permissionSettings = getElement<HTMLElement>("#permission-settings");
+const permissionSettingsField =
+	getElement<HTMLElement>("#permission-settings-field");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -447,7 +449,7 @@ loadOptions(obj: OptionsObject)
 	urlPatternNotMatchError.hidden = obj.urlPatternNotMatchErrorHidden;
 
 	clientSettings.hidden = obj.clientSettingsHidden;
-	permissionSettings.hidden = obj.permissionSettingsHidden;
+	permissionSettingsField.hidden = obj.permissionSettingsHidden;
 	profileSettings.hidden = obj.profileSettingsHidden;
 	editMode.hidden = obj.editModeHidden;
 

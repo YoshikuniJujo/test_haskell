@@ -608,6 +608,14 @@ TODO
 		- [x] OptionsObjectに保存する型をPermissionから変更する
 			* publlic keyだけではなくnameも必要
 		- [x] permissionSettingsHiddenを追加する
+		- [x] HTMLにExit, Nextボタンを作成
+		- [ ] Exit, Nextボタンの機能を作成
+			* [ ] background.tsへのsendMessage
+			* [ ] background.ts内での処理
+		- [ ] Nextのときにすくなくともひとつのパーミッションがnone以外であることを
+			遷移の条件にする
+		- [ ] クライアント作成でOKにした場合にパーミッション編集画面に遷移
+		- [ ] クライアントを作成する流れで呼ばれた時にはExitボタンを隠す
 		- [ ] Permission[]から画面を表示する関数を書く
 		- [ ] ダミーのPermission[]で試す
 		- [ ] PermissionsをoptionsObjectに
