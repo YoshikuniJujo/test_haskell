@@ -190,6 +190,8 @@ export class OptionsState
 		this.#optionsObject.optionsError = "";
 		this.#optionsObject.editModeHidden = true;
 
+		this.setPermissions(pmss);
+
 		switch(editModeToString(this.#optionsObject.editMode)) {
 			case "Client": this.clientSettingsMode(); break;
 			case "Profile": this.profileSettingsMode(); break;
@@ -352,6 +354,11 @@ export class OptionsState
 	setEditMode(em: EditMode)
 	{
 		this.#optionsObject.editMode = em;
+	}
+
+	setPermissions(pmss: Permission[])
+	{
+		this.#optionsObject.clientPermissions = pmss;
 	}
 }
 

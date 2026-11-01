@@ -446,6 +446,8 @@ loadOptions(obj: OptionsObject)
 	clientSettings.hidden = obj.clientSettingsHidden;
 	profileSettings.hidden = obj.profileSettingsHidden;
 	editMode.hidden = obj.editModeHidden;
+
+	console.log("options.ts: LOAD OPTIONS: permissions =", obj.clientPermissions);
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;

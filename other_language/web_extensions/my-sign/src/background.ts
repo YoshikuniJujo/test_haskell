@@ -466,6 +466,10 @@ newClient(
 	ostt.newClientMode();
 	if (urlPattern !== undefined) ostt.setUrlPattern(urlPattern);
 	if (name !== undefined) ostt.setClientName(name);
+
+	const pmss = await DB.getPermissionsByClientUuid2(fromUuid(uuid));
+	ostt.setPermissions(pmss);
+
 	ostt.save();
 	return ostt.optionsObject();
 }
