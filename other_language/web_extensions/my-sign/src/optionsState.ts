@@ -198,7 +198,7 @@ export class OptionsState
 		switch(editModeToString(this.#optionsObject.editMode)) {
 			case "Client": this.clientSettingsMode(); break;
 			case "Profile": this.profileSettingsMode(); break;
-			case "Permission": console.log("EDIT PERMISSION MODE"); break;
+			case "Permission": this.permissionSettingsMode(); break;
 			default: throw new Error("never occur"); break;
 		}
 
@@ -345,12 +345,21 @@ export class OptionsState
 	clientSettingsMode()
 	{
 		this.#optionsObject.clientSettingsHidden = false;
+		this.#optionsObject.permissionSettingsHidden = true;
+		this.#optionsObject.profileSettingsHidden = true;
+	}
+
+	permissionSettingsMode()
+	{
+		this.#optionsObject.clientSettingsHidden = true;
+		this.#optionsObject.permissionSettingsHidden = false;
 		this.#optionsObject.profileSettingsHidden = true;
 	}
 
 	profileSettingsMode()
 	{
 		this.#optionsObject.clientSettingsHidden = true;
+		this.#optionsObject.permissionSettingsHidden = true;
 		this.#optionsObject.profileSettingsHidden = false;
 	}
 

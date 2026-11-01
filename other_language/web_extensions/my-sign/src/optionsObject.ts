@@ -64,6 +64,7 @@ export type OptionsObject = {
 	newSetName: string,
 
 	clientSettingsHidden: boolean,
+	permissionSettingsHidden: boolean,
 	profileSettingsHidden: boolean,
 	editModeHidden: boolean,
 
@@ -116,6 +117,7 @@ export function defaultOptionsObject(): OptionsObject
 		newSetName: "",
 
 		clientSettingsHidden: false,
+		permissionSettingsHidden: false,
 		profileSettingsHidden: false,
 		editModeHidden: false,
 		editMode: EditProfileMode

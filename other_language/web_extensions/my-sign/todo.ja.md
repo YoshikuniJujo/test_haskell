@@ -607,7 +607,7 @@ TODO
 		- [x] PermissionNewクラスを作成する
 		- [x] OptionsObjectに保存する型をPermissionから変更する
 			* publlic keyだけではなくnameも必要
-		- [ ] permissionSettingsHiddenを追加する
+		- [x] permissionSettingsHiddenを追加する
 		- [ ] Permission[]から画面を表示する関数を書く
 		- [ ] ダミーのPermission[]で試す
 		- [ ] PermissionsをoptionsObjectに

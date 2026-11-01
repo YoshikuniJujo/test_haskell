@@ -447,6 +447,7 @@ loadOptions(obj: OptionsObject)
 	urlPatternNotMatchError.hidden = obj.urlPatternNotMatchErrorHidden;
 
 	clientSettings.hidden = obj.clientSettingsHidden;
+	permissionSettings.hidden = obj.permissionSettingsHidden;
 	profileSettings.hidden = obj.profileSettingsHidden;
 	editMode.hidden = obj.editModeHidden;
 
