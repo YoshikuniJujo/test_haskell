@@ -14,7 +14,7 @@ import { isUrl, findKey } from "./tools.js";
 import {
 	optionsTabTag, uuid, fromUuid, isError, error, success,
 	ClientSuccess, InvalidUrlPattern, UrlPatternMismatch, isClientError,
-	EditClientMode, EditProfileMode
+	EditClientMode, EditPermissionMode, EditProfileMode
 } from "./types.js";
 import { OptionsState } from "./optionsState.js";
 import { selectOrToString } from "./optionsObject.js";
@@ -448,8 +448,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "editModeChanged": {
 			const ostt = await optionsStateFromSender(s);
 			console.log("background.ts: EDIT MODE CHANGED:", m.value);
-			if (m.value === "client") ostt.setEditMode(EditClientMode);
-			else ostt.setEditMode(EditProfileMode);
+			if (m.value === "client")
+				ostt.setEditMode(EditClientMode);
+			if (m.value === "permission")
+				ostt.setEditMode(EditPermissionMode);
+			else	ostt.setEditMode(EditProfileMode);
 		}
 	}
 }

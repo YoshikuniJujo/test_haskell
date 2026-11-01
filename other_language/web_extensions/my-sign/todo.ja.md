@@ -602,8 +602,8 @@ TODO
 		Permissionのリストを取り出す関数getPermissionsByClientUuidを作成する
 	+ [ ] 権限を定義するUIを作る
 		- [x] 1行を意味する型を作る - Permission
-		- [ ] HTMLにラジオボタンPermissionを追加する
-		- [ ] HTMLに表示用の領域を作る
+		- [x] HTMLにラジオボタンPermissionを追加する
+		- [x] HTMLに表示用の領域を作る
 		- [ ] Permission[]から画面を表示する関数を書く
 		- [ ] ダミーのPermission[]で試す
 		- [ ] PermissionsをoptionsObjectに
