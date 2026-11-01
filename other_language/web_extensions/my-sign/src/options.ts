@@ -8,7 +8,7 @@
 import type { OptionsObject } from "./optionsObject.js";
 import type {
 	Client, ClientSummary, EditingClient,
-	UUID, OptionsInputMessages, PublicKeyOption, Result
+	UUID, OptionsInputMessages, PublicKeyOption, Result,
 	} from "./types.js";
 import {
 	defaultOptionsObject, newClientMode, selectOrToString
@@ -16,7 +16,8 @@ import {
 import {
 	defaultEditingClient, uuid, fromUuid, uuidNull,
 	isClientError, isInvalidUrlPattern, isUrlPatternMismatch,
-	isError } from "./types.js";
+	isError,
+	accountToPublicKeyOption } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import { Log } from "./log2.js"
 import { getElement, scrollToBottom } from "./domTools.js";
@@ -452,9 +453,13 @@ loadOptions(obj: OptionsObject)
 	console.log("options.ts: LOAD OPTIONS: permissions =", obj.clientPermissions);
 	permissionSettings.replaceChildren();
 	for (const p of obj.clientPermissions) {
+		console.log("options.ts: loadOptions: p =", p);
+		const accnm = p.accountName;
 		const row = document.createElement("dev");
+		console.log("options.ts: loadOptions: PUBLIC KEY OPTION:", accnm);
 		row.className = "permission";
-		row.textContent = "FOOBAR";
+		row.textContent = publicKeyToString(
+			p.permission.publicKey, accnm );
 		permissionSettings.append(row);
 	}
 }
@@ -552,9 +557,16 @@ loadPublicKeyFrom(pkos: PublicKeyOption[])
 		option.dataset.name = pk.name;
 
 		const npub = Bech32.encode("npub", fromHex(pk.publicKey));
-		option.textContent = pk.name + " " + npub.slice(0, 21) + "..." + npub.slice(-6);
+		option.textContent = publicKeyToString(fromHex(pk.publicKey), pk.name);
 		currentKeyD.append(option);
 	}
+}
+
+function
+publicKeyToString(pk: Uint8Array, nm: string): string
+{
+	const npub = Bech32.encode("npub", pk);
+	return nm + " " + npub.slice(0, 21) + "..." + npub.slice(-6);
 }
 
 function

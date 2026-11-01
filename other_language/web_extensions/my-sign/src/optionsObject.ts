@@ -1,9 +1,11 @@
 import type {
 	ClientSet, ClientSummary, PublicKeyOption, UUID,
-	EditMode, Permission
+	EditMode, Permission, PermissionObject
 } from "./types.js";
 
 import { EditClientMode, EditProfileMode } from "./types.js";
+
+import { PermissionNew } from "./permission.js";
 
 export type SelectSetOr =
 	| { selectSetOr: "Select" }
@@ -32,7 +34,7 @@ export type OptionsObject = {
 
 	clients: ClientSummary[],
 
-	clientPermissions: Permission[],
+	clientPermissions: PermissionObject[],
 
 	clientUuid: UUID | null,
 	clientName: string,

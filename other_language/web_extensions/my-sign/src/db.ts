@@ -1,9 +1,11 @@
 import type {
 	ClientSet, Client, ClientSummary, ClientSummaryRaw, EditingClient,
-	Account, PublicKeyOption, UUID, Profile, Permission } from "./types.js"
-import { fromUuid, noPermission, setPermissionSign } from "./types.js"
-import { unit } from "./data/unit.js"
-import { toHex } from "./tools.js"
+	Account, PublicKeyOption, UUID, Profile, Permission } from "./types.js";
+import { fromUuid, noPermission, setPermissionSign } from "./types.js";
+import { unit } from "./data/unit.js";
+import { toHex } from "./tools.js";
+
+import { PermissionNew } from "./permission.js";
 
 declare const __DEV__: boolean;
 
@@ -369,12 +371,28 @@ getPermissionsByClientUuid(clientUuid: string): Promise<Permission[]>
 export async function
 getPermissionsByClientUuid2(clientUuid: string): Promise<Permission[]>
 {
-	const pks: Uint8Array[]  = await getPublicKeys();
+	const accs: Account[]  = await getAccounts();
+	const pks: Uint8Array[]  = accs.map(acc => { return acc.publicKey; });
 
 	return Promise.all(pks.map(async pk => {
 		const permission =
 			await getPermission(clientUuid, pk);
 		return permission ?? noPermission(clientUuid, pk);
+	}));
+}
+
+export async function
+getPermissionsByClientUuid3(clientUuid: string): Promise<PermissionNew[]>
+// getPermissionsByClientUuid3(clientUuid: string): Promise<Permission[]>
+{
+	const accs: Account[]  = await getAccounts();
+
+	return Promise.all(accs.map(async acc => {
+		const pk = acc.publicKey;
+		const permission =
+			await getPermission(clientUuid, pk);
+		return new PermissionNew(permission ?? noPermission(clientUuid, pk), acc);
+//		return permission ?? noPermission(clientUuid, pk);
 	}));
 }
 
@@ -723,6 +741,19 @@ getAccount(pk: Uint8Array): Promise<Account>
 		const store = tx.objectStore(SECRET_KEYS);
 //		const req = store.get(pk.slice().buffer);
 		const req = store.get(pk as IDBValidKey);
+		req.onsuccess = () => rs(req.result);
+		req.onerror = () => rj(req.error);
+	});
+}
+
+export async function
+getAccounts(): Promise<Account[]>
+{
+	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(SECRET_KEYS, "readonly");
+		const store = tx.objectStore(SECRET_KEYS);
+		const req = store.getAll();
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
 	});

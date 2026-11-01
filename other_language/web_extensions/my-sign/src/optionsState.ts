@@ -8,6 +8,9 @@ import { uuid, fromUuid, EditClientMode, editModeToString } from "./types.js";
 import { defaultOptionsObject, newClientMode, clientListMode } from "./optionsObject.js";
 import { toHex, fromHex } from "./tools.js";
 
+
+import { PermissionNew } from "./permission.js";
+
 const KEY_BASE = "8450604e-6f98-49bf-a5a9-724346528a0a";
 
 export class OptionsState
@@ -163,7 +166,7 @@ export class OptionsState
 	}
 
 	async openClientDetail(
-		ec: EditingClient, pkos: PublicKeyOption[], pmss: Permission[])
+		ec: EditingClient, pkos: PublicKeyOption[], pmss: PermissionNew[])
 	{
 		console.log("optionsState.ts: OPEN CLIENT DETAIL:", pmss);
 
@@ -356,9 +359,13 @@ export class OptionsState
 		this.#optionsObject.editMode = em;
 	}
 
-	setPermissions(pmss: Permission[])
+	setPermissions(pmss: PermissionNew[])
 	{
-		this.#optionsObject.clientPermissions = pmss;
+		console.log("optionsState.ts: setPermissions: pmss =", pmss);
+		this.#optionsObject.clientPermissions = pmss.map(p => { return {
+			accountName: p.account().name,
+			permission: p.permission()
+		} });
 	}
 }
 

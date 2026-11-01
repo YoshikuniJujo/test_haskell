@@ -1,4 +1,4 @@
-import { isUuid, isUrl } from "./tools.js";
+import { isUuid, isUrl, toHex } from "./tools.js";
 
 export interface ClientSet { uuid: string; name: string; }
 
@@ -106,6 +106,15 @@ optionsTabTag(id: string): OptionsTabTag
 	}
 }
 
+export function
+accountToPublicKeyOption(acc: Account): PublicKeyOption
+{
+	return {
+		type: "PublicKeyOption",
+		publicKey: toHex(acc.publicKey),
+		name: acc.name };
+}
+
 export type PublicKeyOption =
 	{ type: "PublicKeyOption", publicKey: string, name: string }
 
@@ -211,3 +220,5 @@ export type Permission = {
 	getPublicKey: boolean, sign: boolean,
 	encrypt: boolean, decrypt: boolean
 };
+
+export type PermissionObject = { accountName: string, permission: Permission }

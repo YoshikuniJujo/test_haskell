@@ -195,7 +195,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			if (tg.openType === "uuid" && id !== null) {
 				const clnt = await DB.getClient(id);
 				const pks = await DB.getPublicKeyOptions();
-				const pmss = await DB.getPermissionsByClientUuid2(id);
+				const pmss = await DB.getPermissionsByClientUuid3(id);
 				console.log("background.ts: PERMISSIONS:", pmss);
 				ostt.openClientDetail(clnt, pks, pmss);
 			}
@@ -227,7 +227,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			try {
 				const clnt = await DB.getClient(fromUuid(m.value));
 				const pks = await DB.getPublicKeyOptions();
-				const pmss = await DB.getPermissionsByClientUuid2(fromUuid(m.value));
+				const pmss = await DB.getPermissionsByClientUuid3(fromUuid(m.value));
 				console.log("background.ts: PERMISSIONS:", pmss);
 				const obj = (await optionsStateFromSender(s))
 					.openClientDetail(clnt, pks, pmss);
@@ -356,7 +356,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			const clnt = await DB.getClient(fromUuid(ostt.clientUuid()));
 			const pks = await DB.getPublicKeyOptions();
-			const pmss = await DB.getPermissionsByClientUuid2(fromUuid(ostt.clientUuid()));
+			const pmss = await DB.getPermissionsByClientUuid3(fromUuid(ostt.clientUuid()));
 			console.log("background.ts: PERMISSIONS:", pmss);
 			ostt.openClientDetail(clnt, pks, pmss);
 			ostt.save();
@@ -470,7 +470,8 @@ newClient(
 	if (urlPattern !== undefined) ostt.setUrlPattern(urlPattern);
 	if (name !== undefined) ostt.setClientName(name);
 
-	const pmss = await DB.getPermissionsByClientUuid2(fromUuid(uuid));
+	const pmss = await DB.getPermissionsByClientUuid3(fromUuid(uuid));
+	console.log("background.ts: NEW CLIENT: pmss =", pmss);
 	ostt.setPermissions(pmss);
 
 	ostt.save();
