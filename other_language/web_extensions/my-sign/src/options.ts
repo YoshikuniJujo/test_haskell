@@ -73,6 +73,9 @@ const applyEditClient = getElement<HTMLButtonElement>("#apply-client");
 const cancelEditClient = getElement<HTMLButtonElement>("#cancel-edit-client");
 const revert = getElement<HTMLButtonElement>("#revert");
 
+const permissionSettingsExit =
+	getElement<HTMLButtonElement>("#permission-settings-exit");
+
 const form = getElement("#generate-form");
 const accName = getElement<HTMLInputElement>("#account-name");
 const password = getElement<HTMLInputElement>("#password");
@@ -191,6 +194,9 @@ cancelEditClient.addEventListener("click", () => {
 
 revert.addEventListener("click", () => {
 	sendMethodAndLoad("revert"); });
+
+permissionSettingsExit.addEventListener("click", () => {
+	sendMethodAndLoad("clientListMode"); });
 
 document.addEventListener("keydown", event => {
 	if (event.key === "Escape" && !clientDetail.hidden)

@@ -611,7 +611,7 @@ TODO
 		- [x] HTMLにExit, Nextボタンを作成
 		- [ ] Exit, Nextボタンの機能を作成
 			* [ ] background.tsへのsendMessage
-				- [ ] Exit
+				- [x] Exit
 				- [ ] Next
 			* [ ] background.ts内での処理
 				- [ ] Exitボタンの処理にはclientsElmの内容の更新も必要かも
