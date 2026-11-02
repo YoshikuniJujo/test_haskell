@@ -629,8 +629,8 @@ TODO
 		- [x] permissionからラジオボタンのvalueを計算する関数を書く
 		- [x] ラジオボタンの状態をloadする
 		- [x] 保持するpermissionsを配列ではなく辞書にする
-		- [ ] ラジオボタンの値からpermissionを計算する関数を書く
-		- [ ] optionsStateに保持
+		- [x] ラジオボタンの値からpermissionを計算する関数を書く
+		- [x] optionsStateに保持
 		- [ ] DBへの書き込み
 	+ [ ] Nextのときにすくなくともひとつのパーミッションがnone以外であることを
 		遷移の条件にする

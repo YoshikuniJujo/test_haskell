@@ -468,6 +468,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				"background.ts: PERMISSION CHANGED",
 				m.publicKey, m.value);
 			const ostt = await optionsStateFromSender(s);
+			ostt.modifyPermission(m.publicKey, m.value);
+			return ostt.optionsObject();
 		}
 	}
 }

@@ -4,7 +4,7 @@ import type {
 	UUID, Client, EditingClient, ClientSummary, ClientSummaryRaw,
 	ClientSet, OptionsTabTag, PublicKeyOption, Result, Profile, EditMode, Permission }
 	from "./types.js";
-import { uuid, fromUuid, EditClientMode, editModeToString } from "./types.js";
+import { uuid, fromUuid, EditClientMode, editModeToString, radioToPermissionValue } from "./types.js";
 import { defaultOptionsObject, newClientMode, clientListMode } from "./optionsObject.js";
 import { toHex, fromHex } from "./tools.js";
 
@@ -390,8 +390,11 @@ export class OptionsState
 		});
 	}
 
-	modifyPermission(pk: Uint8Array, p: string)
+	modifyPermission(pk: Uint8Array, p: "none" | "publicKey" | "sign")
 	{
+		const pv = this.#optionsObject.clientPermissions[toHex(pk)];
+		if (pv === undefined) throw new Error("bad");
+		radioToPermissionValue(pv, p);
 	}
 }
 

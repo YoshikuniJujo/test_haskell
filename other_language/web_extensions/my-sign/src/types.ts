@@ -246,3 +246,28 @@ permissionValueToRadio(p: PermissionValue)
 	else if (!p.decrypt) return "sign";
 	else return "bad";
 }
+
+export function
+radioToPermissionValue(pv: PermissionValue, p: "none" | "publicKey" | "sign")
+{
+	switch (p) {
+		case "none": {
+			pv.getPublicKey = false;
+			pv.sign = false;
+			pv.encrypt = false;
+			pv.decrypt = false;
+			break; }
+		case "publicKey": {
+			pv.getPublicKey = true;
+			pv.sign = false;
+			pv.encrypt = false;
+			pv.decrypt = false;
+			break; }
+		case "sign": {
+			pv.getPublicKey = true;
+			pv.sign = true;
+			pv.encrypt = true;
+			pv.decrypt = false;
+			break; }
+	}
+}

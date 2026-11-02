@@ -493,13 +493,14 @@ loadOptions(obj: OptionsObject)
 			[	{ value: "none", label: "None" },
 				{ value: "publicKey", label: "Get Public Key" },
 				{ value: "sign", label: "+ Sign" } ],
-			value => {
-				browser.runtime.sendMessage({
+			async value => {
+				const obj = await browser.runtime.sendMessage({
 					class: "Options",
 					method: "permissionChanged",
 					publicKey: fromHex(pk),
-					value
-				});
+					value });
+				await loadOptions(obj);
+
 			}
 		);
 		rs.classList.add("radio-group");
