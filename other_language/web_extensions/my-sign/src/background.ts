@@ -108,6 +108,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "clientSubmited"; }
 	| { class: "Options"; method: "clientListMode"; }
 	| { class: "Options"; method: "profileSettingsMode"; }
+	| { class: "Options"; method: "permissionSettingsNext"; }
 	| { class: "Options"; method: "revert";  value: UUID; }
 	| { class: "Options"; method: "accountNameInput"; value: string; }
 	| { class: "Options"; method: "currentKeyOptions"; }
@@ -359,6 +360,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "profileSettingsMode": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.profileSettingsMode();
+			return ostt.optionsObject(); }
+		case "permissionSettingsNext": {
+			const ostt = await optionsStateFromSender(s);
+			if (ostt.atLeastOnePermission())
+				ostt.profileSettingsMode();
 			return ostt.optionsObject(); }
 		case "revert": {
 			const ostt = await optionsStateFromSender(s);

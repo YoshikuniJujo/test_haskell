@@ -203,7 +203,7 @@ permissionSettingsExit.addEventListener("click", () => {
 	sendMethodAndLoad("clientListMode"); });
 
 permissionSettingsNext.addEventListener("click", () => {
-	sendMethodAndLoad("profileSettingsMode"); });
+	sendMethodAndLoad("permissionSettingsNext"); });
 
 document.addEventListener("keydown", event => {
 	if (event.key === "Escape" && !clientDetail.hidden)

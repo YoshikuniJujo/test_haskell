@@ -410,6 +410,12 @@ export class OptionsState
 			getPublicKey: pv.getPublicKey,
 			sign: pv.sign, encrypt: pv.encrypt, decrypt: pv.decrypt };
 	}
+
+	atLeastOnePermission(): boolean
+	{
+		return Object.values(this.#optionsObject.clientPermissions)
+			.some(p => p.getPublicKey);
+	}
 }
 
 async function
