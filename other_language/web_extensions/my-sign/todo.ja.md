@@ -628,7 +628,7 @@ TODO
 		- [x] backgroundにメッセージを送る
 		- [x] permissionからラジオボタンのvalueを計算する関数を書く
 		- [x] ラジオボタンの状態をloadする
-		- [ ] 保持するpermissionsを配列ではなく辞書にする
+		- [x] 保持するpermissionsを配列ではなく辞書にする
 		- [ ] ラジオボタンの値からpermissionを計算する関数を書く
 		- [ ] optionsStateに保持
 		- [ ] DBへの書き込み

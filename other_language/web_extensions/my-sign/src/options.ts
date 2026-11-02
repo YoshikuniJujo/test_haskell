@@ -17,7 +17,8 @@ import {
 	defaultEditingClient, uuid, fromUuid, uuidNull,
 	isClientError, isInvalidUrlPattern, isUrlPatternMismatch,
 	isError,
-	accountToPublicKeyOption, permissionObjectToRadio } from "./types.js";
+	accountToPublicKeyOption, permissionObjectToRadio,
+	permissionValueToRadio } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import { Log } from "./log2.js"
 import { getElement, scrollToBottom } from "./domTools.js";
@@ -467,7 +468,7 @@ loadOptions(obj: OptionsObject)
 
 	console.log("options.ts: LOAD OPTIONS: permissions =", obj.clientPermissions);
 	permissionSettings.replaceChildren();
-	for (const p of obj.clientPermissions) {
+	for (const [pk, p] of Object.entries(obj.clientPermissions)) {
 		console.log("options.ts: loadOptions: p =", p);
 		const accnm = p.accountName;
 		const row = document.createElement("div");
@@ -477,7 +478,7 @@ loadOptions(obj: OptionsObject)
 		const accountName = document.createElement("span");
 		accountName.className = "account-name";
 		accountName.textContent = publicKeyToString(
-			p.permission.publicKey, accnm );
+			fromHex(pk), accnm );
 		accountName.title = accountName.textContent;
 		row.append(accountName);
 			/*
@@ -485,11 +486,10 @@ loadOptions(obj: OptionsObject)
 			p.permission.publicKey, accnm );
 			*/
 		console.log(
-			"options.ts: loadOptions: p.permission.publicKey:",
-			toHex(p.permission.publicKey));
+			"options.ts: loadOptions: p.permission.publicKey:", pk);
 		const rs = mkRadioGroup(
-			toHex(p.permission.publicKey),
-			permissionObjectToRadio(p),
+			pk,
+			permissionValueToRadio(p),
 			[	{ value: "none", label: "None" },
 				{ value: "publicKey", label: "Get Public Key" },
 				{ value: "sign", label: "+ Sign" } ],
@@ -497,7 +497,7 @@ loadOptions(obj: OptionsObject)
 				browser.runtime.sendMessage({
 					class: "Options",
 					method: "permissionChanged",
-					publicKey: p.permission.publicKey,
+					publicKey: fromHex(pk),
 					value
 				});
 			}

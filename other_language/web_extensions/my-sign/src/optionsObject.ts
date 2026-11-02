@@ -1,6 +1,6 @@
 import type {
 	ClientSet, ClientSummary, PublicKeyOption, UUID,
-	EditMode, Permission, PermissionObject
+	EditMode, Permission, PermissionObject, PermissionValue
 } from "./types.js";
 
 import { EditClientMode, EditProfileMode } from "./types.js";
@@ -34,7 +34,8 @@ export type OptionsObject = {
 
 	clients: ClientSummary[],
 
-	clientPermissions: PermissionObject[],
+//	clientPermissions: PermissionObject[],
+	clientPermissions: Record<string, PermissionValue>,
 
 	clientUuid: UUID | null,
 	clientName: string,
@@ -89,7 +90,7 @@ export function defaultOptionsObject(): OptionsObject
 
 		clients: [],
 
-		clientPermissions: [],
+		clientPermissions: {},
 
 		clientUuid: null,
 		clientName: "",

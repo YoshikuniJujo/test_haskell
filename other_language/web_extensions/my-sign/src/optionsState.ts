@@ -379,10 +379,15 @@ export class OptionsState
 	setPermissions(pmss: PermissionNew[])
 	{
 		console.log("optionsState.ts: setPermissions: pmss =", pmss);
-		this.#optionsObject.clientPermissions = pmss.map(p => { return {
-			accountName: p.account().name,
-			permission: p.permission()
-		} });
+		this.#optionsObject.clientPermissions = {};
+		pmss.forEach(p => {
+			this.#optionsObject.clientPermissions[toHex(p.permission().publicKey)] = {
+				accountName: p.account().name,
+				getPublicKey: p.permission().getPublicKey,
+				sign: p.permission().sign,
+				encrypt: p.permission().encrypt,
+				decrypt: p.permission().decrypt }
+		});
 	}
 
 	modifyPermission(pk: Uint8Array, p: string)

@@ -223,10 +223,24 @@ export type Permission = {
 
 export type PermissionObject = { accountName: string, permission: Permission }
 
+export type PermissionValue = {
+	accountName: string,
+	getPublicKey: boolean, sign: boolean,
+	encrypt: boolean, decrypt: boolean }
+
 export function
 permissionObjectToRadio(po: PermissionObject)
 {
 	const p = po.permission;
+	if (!p.getPublicKey) return "none";
+	else if (!p.sign) return "publicKey";
+	else if (!p.decrypt) return "sign";
+	else return "bad";
+}
+
+export function
+permissionValueToRadio(p: PermissionValue)
+{
 	if (!p.getPublicKey) return "none";
 	else if (!p.sign) return "publicKey";
 	else if (!p.decrypt) return "sign";
