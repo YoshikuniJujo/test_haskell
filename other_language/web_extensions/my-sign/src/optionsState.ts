@@ -384,6 +384,10 @@ export class OptionsState
 			permission: p.permission()
 		} });
 	}
+
+	modifyPermission(pk: Uint8Array, p: string)
+	{
+	}
 }
 
 async function

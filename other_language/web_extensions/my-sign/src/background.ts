@@ -120,6 +120,8 @@ type OptionsMethod =
 	| { class: "Options"; method: "newSetNameInput"; value: string; }
 	| { class: "Options"; method: "loadCommonState"; }
 	| { class: "Options"; method: "editModeChanged", value: string; }
+	| { class: "Options"; method: "permissionChanged",
+		publicKey: Uint8Array, value: "none" | "publicKey" | "sign" }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -459,6 +461,13 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			else if (m.value === "permission")
 				ostt.setEditMode(EditPermissionMode);
 			else	ostt.setEditMode(EditProfileMode);
+			return ostt.optionsObject();
+		}
+		case "permissionChanged": {
+			console.log(
+				"background.ts: PERMISSION CHANGED",
+				m.publicKey, m.value);
+			const ostt = await optionsStateFromSender(s);
 		}
 	}
 }
