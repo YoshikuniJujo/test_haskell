@@ -626,6 +626,7 @@ TODO
 			* [x] ラジオボタンを表示する
 	+ [ ] ラジオボタンの機能を書く
 		- [x] backgroundにメッセージを送る
+		- [ ] permissionからラジオボタンのvalueを計算する関数を書く
 		- [ ] ラジオボタンの状態をloadする
 		- [ ] optionsStateに保持
 		- [ ] DBへの書き込み
