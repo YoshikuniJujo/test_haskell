@@ -469,6 +469,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				m.publicKey, m.value);
 			const ostt = await optionsStateFromSender(s);
 			ostt.modifyPermission(m.publicKey, m.value);
+			DB.putPermission(ostt.getPermission(m.publicKey));
 			return ostt.optionsObject();
 		}
 	}

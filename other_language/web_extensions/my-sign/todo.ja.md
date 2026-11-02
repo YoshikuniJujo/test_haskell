@@ -624,14 +624,14 @@ TODO
 			* [x] loadOptionsにpermissionSettingsExitHiddenを追加
 		- [x] loadOptionsで表示する
 			* [x] ラジオボタンを表示する
-	+ [ ] ラジオボタンの機能を書く
+	+ [x] ラジオボタンの機能を書く
 		- [x] backgroundにメッセージを送る
 		- [x] permissionからラジオボタンのvalueを計算する関数を書く
 		- [x] ラジオボタンの状態をloadする
 		- [x] 保持するpermissionsを配列ではなく辞書にする
 		- [x] ラジオボタンの値からpermissionを計算する関数を書く
 		- [x] optionsStateに保持
-		- [ ] DBへの書き込み
+		- [x] DBへの書き込み
 	+ [ ] Nextのときにすくなくともひとつのパーミッションがnone以外であることを
 		遷移の条件にする
 	+ [ ] Profileの設定のときに権限のないアカウントは表示しないようにする
@@ -646,6 +646,7 @@ TODO
 	+ [ ] 実際に公開鍵の取得や署名のときに権限を確認する
 		- [ ] 権限が足りないときにはエラーメッセージをrejectの引数として返す
 		- [ ] 画面にpopover機能で表示する
+* [ ] クライアントの設定あたりのvalidationについて整理する
 * [ ] TODOを見返し修正する
 * [ ] Profileの編集領域にクライアント名とURLPatternを表示する
 * [ ] log用にタブを登録する処理を削除する

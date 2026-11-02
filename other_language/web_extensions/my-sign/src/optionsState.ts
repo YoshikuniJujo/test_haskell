@@ -397,6 +397,19 @@ export class OptionsState
 		radioToPermissionValue(pv, p);
 		this.save();
 	}
+
+	getPermission(pk: Uint8Array): Permission
+	{
+		const pv = this.#optionsObject.clientPermissions[toHex(pk)];
+		const uuid = this.#optionsObject.clientUuid;
+		if (uuid === null) throw new Error("bad");
+		if (pv === undefined) throw new Error("bad");
+		return {
+			clientUuid: fromUuid(uuid),
+			publicKey: pk,
+			getPublicKey: pv.getPublicKey,
+			sign: pv.sign, encrypt: pv.encrypt, decrypt: pv.decrypt };
+	}
 }
 
 async function
