@@ -310,7 +310,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			DB.putClientNoProfile(await ostt.getClient());
 
-			ostt.profileSettingsMode();
+			ostt.permissionSettingsMode();
 			return ostt.optionsObject();
 		}
 		case "deleteClient": {
