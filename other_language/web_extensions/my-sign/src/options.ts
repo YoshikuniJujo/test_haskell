@@ -76,6 +76,9 @@ const revert = getElement<HTMLButtonElement>("#revert");
 const permissionSettingsExit =
 	getElement<HTMLButtonElement>("#permission-settings-exit");
 
+const permissionSettingsNext =
+	getElement<HTMLButtonElement>("#permission-settings-next");
+
 const form = getElement("#generate-form");
 const accName = getElement<HTMLInputElement>("#account-name");
 const password = getElement<HTMLInputElement>("#password");
@@ -197,6 +200,9 @@ revert.addEventListener("click", () => {
 
 permissionSettingsExit.addEventListener("click", () => {
 	sendMethodAndLoad("clientListMode"); });
+
+permissionSettingsNext.addEventListener("click", () => {
+	sendMethodAndLoad("profileSettingsMode"); });
 
 document.addEventListener("keydown", event => {
 	if (event.key === "Escape" && !clientDetail.hidden)

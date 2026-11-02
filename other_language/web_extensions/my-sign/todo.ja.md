@@ -609,13 +609,13 @@ TODO
 			* publlic keyだけではなくnameも必要
 		- [x] permissionSettingsHiddenを追加する
 		- [x] HTMLにExit, Nextボタンを作成
-		- [ ] Exit, Nextボタンの機能を作成
-			* [ ] background.tsへのsendMessage
+		- [x] Exit, Nextボタンの機能を作成
+			* [x] background.tsへのsendMessage
 				- [x] Exit
-				- [ ] Next
-			* [ ] background.ts内での処理
-				- [ ] Exitボタンの処理にはclientsElmの内容の更新も必要かも
-				- [ ] Nextボタンは単にProfile設定画面に遷移で良い
+				- [x] Next
+			* [x] background.ts内での処理
+				- [x] Exitボタンの処理にはclientsElmの内容の更新も必要かも
+				- [x] Nextボタンは単にProfile設定画面に遷移で良い
 		- [ ] Nextのときにすくなくともひとつのパーミッションがnone以外であることを
 			遷移の条件にする
 		- [ ] クライアント作成でOKにした場合にパーミッション編集画面に遷移
