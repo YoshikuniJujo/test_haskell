@@ -617,7 +617,11 @@ TODO
 				- [x] Exitボタンの処理にはclientsElmの内容の更新も必要かも
 				- [x] Nextボタンは単にProfile設定画面に遷移で良い
 		- [x] クライアント作成でOKにした場合にパーミッション編集画面に遷移
-		- [ ] クライアントを作成する流れで呼ばれた時にはExitボタンを隠す
+		- [x] クライアントを作成する流れで呼ばれた時にはExitボタンを隠す
+			* [x] permissionSettingsExitHiddenをoptionsObjectに設定
+			* [x] setPermissionSettingsExitHiddenをoptionsStateに設定
+			* [x] setPermissionSettingsExitHiddenをbackgroundに追加
+			* [x] loadOptionsにpermissionSettingsExitHiddenを追加
 		- [ ] クライアントを作成する流れでない場合にクライアント編集画面に以下のボタンを置く
 			* Revert/Apply/Cancel/OK
 		- [ ] クライアント作成する流れの場合にはOKボタン以外は隠す

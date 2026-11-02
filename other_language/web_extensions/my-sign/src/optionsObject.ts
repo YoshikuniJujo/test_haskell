@@ -68,7 +68,9 @@ export type OptionsObject = {
 	profileSettingsHidden: boolean,
 	editModeHidden: boolean,
 
-	editMode: EditMode
+	editMode: EditMode,
+
+	permissionSettingsExitHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -120,7 +122,9 @@ export function defaultOptionsObject(): OptionsObject
 		permissionSettingsHidden: false,
 		profileSettingsHidden: false,
 		editModeHidden: false,
-		editMode: EditProfileMode
+		editMode: EditProfileMode,
+
+		permissionSettingsExitHidden: false
 	};
 }
 

@@ -333,6 +333,11 @@ export class OptionsState
 		this.#optionsObject.cancelButtonHidden = true;
 	}
 
+	onlyNextButton()
+	{
+		this.#optionsObject.permissionSettingsExitHidden = true;
+	}
+
 	setDetailErrorHidden(deh: boolean)
 	{
 		this.#optionsObject.detailErrorHidden = deh;

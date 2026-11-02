@@ -477,6 +477,8 @@ loadOptions(obj: OptionsObject)
 			p.permission.publicKey, accnm );
 		permissionSettings.append(row);
 	}
+
+	permissionSettingsExit.hidden = obj.permissionSettingsExitHidden;
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;
