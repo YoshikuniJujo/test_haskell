@@ -624,9 +624,8 @@ TODO
 			* Revert/Apply/Cancel/OK
 		- [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
 		- [ ] Permission[]から画面を表示する関数を書く
-		- [ ] ダミーのPermission[]で試す
-		- [ ] PermissionsをoptionsObjectに
-		- [ ] PermissionsをoptionsStateに
+		- [x] PermissionsをoptionsObjectに
+		- [x] PermissionsをoptionsStateに
 		- [ ] Permissionsを読み込む処理を書く
 		- [ ] loadOptionsで表示する
 	+ [ ] Profileの送定のときに権限のないアカウントは表示しないようにする
