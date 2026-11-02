@@ -474,8 +474,16 @@ loadOptions(obj: OptionsObject)
 		console.log("options.ts: loadOptions: PUBLIC KEY OPTION:", accnm);
 		row.classList.add("permission");
 		row.classList.add("permission-row");
+		const accountName = document.createElement("span");
+		accountName.className = "account-name";
+		accountName.textContent = publicKeyToString(
+			p.permission.publicKey, accnm );
+		accountName.title = accountName.textContent;
+		row.append(accountName);
+			/*
 		row.textContent = publicKeyToString(
 			p.permission.publicKey, accnm );
+			*/
 		console.log(
 			"options.ts: loadOptions: p.permission.publicKey:",
 			toHex(p.permission.publicKey));

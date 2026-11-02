@@ -141,4 +141,19 @@ label {
 	display: flex;
 	align-items: center;
 	gap: 12px;
+	row-gap: 0px;
+}
+
+.permission-row > .account-name {
+	width: 300px;
+	flex-shrink: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+@media (max-width: 600px) {
+	.permission-row {
+		flex-wrap: wrap;
+	}
 }
