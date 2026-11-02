@@ -611,11 +611,18 @@ TODO
 		- [x] HTMLにExit, Nextボタンを作成
 		- [ ] Exit, Nextボタンの機能を作成
 			* [ ] background.tsへのsendMessage
+				- [ ] Exit
+				- [ ] Next
 			* [ ] background.ts内での処理
+				- [ ] Exitボタンの処理にはclientsElmの内容の更新も必要かも
+				- [ ] Nextボタンは単にProfile設定画面に遷移で良い
 		- [ ] Nextのときにすくなくともひとつのパーミッションがnone以外であることを
 			遷移の条件にする
 		- [ ] クライアント作成でOKにした場合にパーミッション編集画面に遷移
 		- [ ] クライアントを作成する流れで呼ばれた時にはExitボタンを隠す
+		- [ ] クライアントを作成する流れでない場合にクライアント編集画面に以下のボタンを置く
+			* Revert/Apply/Cancel/OK
+		- [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
 		- [ ] Permission[]から画面を表示する関数を書く
 		- [ ] ダミーのPermission[]で試す
 		- [ ] PermissionsをoptionsObjectに

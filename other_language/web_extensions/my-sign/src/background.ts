@@ -450,7 +450,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: EDIT MODE CHANGED:", m.value);
 			if (m.value === "client")
 				ostt.setEditMode(EditClientMode);
-			if (m.value === "permission")
+			else if (m.value === "permission")
 				ostt.setEditMode(EditPermissionMode);
 			else	ostt.setEditMode(EditProfileMode);
 		}

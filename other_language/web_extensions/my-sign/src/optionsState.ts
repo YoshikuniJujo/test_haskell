@@ -195,6 +195,7 @@ export class OptionsState
 
 		this.setPermissions(pmss);
 
+		console.log("optionsState.ts: editMode =", this.#optionsObject.editMode);
 		switch(editModeToString(this.#optionsObject.editMode)) {
 			case "Client": this.clientSettingsMode(); break;
 			case "Profile": this.profileSettingsMode(); break;
@@ -366,6 +367,8 @@ export class OptionsState
 	setEditMode(em: EditMode)
 	{
 		this.#optionsObject.editMode = em;
+		console.log("optionsState.ts: SET EDIT MODE:", em);
+		this.save();
 	}
 
 	setPermissions(pmss: PermissionNew[])
