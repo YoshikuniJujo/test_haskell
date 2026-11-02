@@ -55,6 +55,10 @@ label {
 	color: #c00;
 }
 
+#at-least-one-permission {
+	color: #c00;
+}
+
 #log-output {
 	max-height: 20em;
 	overflow-y: auto;

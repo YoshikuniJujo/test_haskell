@@ -416,6 +416,11 @@ export class OptionsState
 		return Object.values(this.#optionsObject.clientPermissions)
 			.some(p => p.getPublicKey);
 	}
+
+	setAtLeastOnePermissionHidden(aoph: boolean): void
+	{
+		this.#optionsObject.atLeastOnePermissionHidden = aoph;
+	}
 }
 
 async function

@@ -117,6 +117,7 @@ const editModes =
 const permissionSettings = getElement<HTMLElement>("#permission-settings");
 const permissionSettingsField =
 	getElement<HTMLElement>("#permission-settings-field");
+const atLeastOnePermission = getElement<HTMLElement>("#at-least-one-permission");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -509,6 +510,7 @@ loadOptions(obj: OptionsObject)
 	}
 
 	permissionSettingsExit.hidden = obj.permissionSettingsExitHidden;
+	atLeastOnePermission.hidden = obj.atLeastOnePermissionHidden;
 }
 
 function

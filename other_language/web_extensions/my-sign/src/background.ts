@@ -145,6 +145,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			ostt.setDetailErrorHidden(true);
 			ostt.setUrlPatternNotMatchErrorHidden(true);
+			ostt.setAtLeastOnePermissionHidden(true);
 			return ostt.optionsObject();
 		}
 		case "optionsObject": {
@@ -365,6 +366,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			if (ostt.atLeastOnePermission())
 				ostt.profileSettingsMode();
+			else ostt.setAtLeastOnePermissionHidden(false);
 			return ostt.optionsObject(); }
 		case "revert": {
 			const ostt = await optionsStateFromSender(s);
