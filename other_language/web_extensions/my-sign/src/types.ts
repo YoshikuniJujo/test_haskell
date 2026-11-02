@@ -222,3 +222,13 @@ export type Permission = {
 };
 
 export type PermissionObject = { accountName: string, permission: Permission }
+
+export function
+permissionObjectToRadio(po: PermissionObject)
+{
+	const p = po.permission;
+	if (!p.getPublicKey) return "none";
+	else if (!p.sign) return "publicKey";
+	else if (!p.decrypt) return "sign";
+	else return "bad";
+}

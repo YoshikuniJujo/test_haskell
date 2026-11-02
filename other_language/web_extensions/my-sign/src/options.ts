@@ -17,7 +17,7 @@ import {
 	defaultEditingClient, uuid, fromUuid, uuidNull,
 	isClientError, isInvalidUrlPattern, isUrlPatternMismatch,
 	isError,
-	accountToPublicKeyOption } from "./types.js";
+	accountToPublicKeyOption, permissionObjectToRadio } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
 import { Log } from "./log2.js"
 import { getElement, scrollToBottom } from "./domTools.js";
@@ -489,7 +489,7 @@ loadOptions(obj: OptionsObject)
 			toHex(p.permission.publicKey));
 		const rs = mkRadioGroup(
 			toHex(p.permission.publicKey),
-			"none",
+			permissionObjectToRadio(p),
 			[	{ value: "none", label: "None" },
 				{ value: "publicKey", label: "Get Public Key" },
 				{ value: "sign", label: "+ Sign" } ],
