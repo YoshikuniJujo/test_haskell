@@ -395,6 +395,7 @@ export class OptionsState
 		const pv = this.#optionsObject.clientPermissions[toHex(pk)];
 		if (pv === undefined) throw new Error("bad");
 		radioToPermissionValue(pv, p);
+		this.save();
 	}
 }
 
