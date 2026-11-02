@@ -600,7 +600,7 @@ TODO
 	+ [x] permissionsにclientUuidのindexを作る
 	+ [x] データベースから特定のクライアント用の
 		Permissionのリストを取り出す関数getPermissionsByClientUuidを作成する
-	+ [ ] 権限を定義するUIを作る
+	+ [x] 権限を定義するUIを作る (途中)
 		- [x] 1行を意味する型を作る - Permission
 		- [x] HTMLにラジオボタンPermissionを追加する
 		- [x] HTMLに表示用の領域を作る
@@ -622,6 +622,17 @@ TODO
 			* [x] setPermissionSettingsExitHiddenをoptionsStateに設定
 			* [x] setPermissionSettingsExitHiddenをbackgroundに追加
 			* [x] loadOptionsにpermissionSettingsExitHiddenを追加
+		- [x] loadOptionsで表示する
+			* [x] ラジオボタンを表示する
+	+ [ ] ラジオボタンの機能を書く
+		- [x] backgroundにメッセージを送る
+		- [ ] ラジオボタンの状態をloadする
+		- [ ] optionsStateに保持
+		- [ ] DBへの書き込み
+	+ [ ] Nextのときにすくなくともひとつのパーミッションがnone以外であることを
+		遷移の条件にする
+	+ [ ] Profileの設定のときに権限のないアカウントは表示しないようにする
+	+ [ ] 権限を定義するUIを作る (続き)
 		- [ ] クライアントを作成する流れでない場合にクライアント編集画面に以下のボタンを置く
 			* Revert/Apply/Cancel/OK
 		- [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
@@ -629,14 +640,6 @@ TODO
 		- [x] PermissionsをoptionsObjectに
 		- [x] PermissionsをoptionsStateに
 		- [ ] Permissionsを読み込む処理を書く
-		- [ ] loadOptionsで表示する
-			* [ ] ラジオボタンを表示する
-	+ [ ] ラジオボタンの機能を書く
-		- [ ] backgroundにメッセージを送る
-		- [ ] DBへの書き込み
-	+ [ ] Nextのときにすくなくともひとつのパーミッションがnone以外であることを
-		遷移の条件にする
-	+ [ ] Profileの設定のときに権限のないアカウントは表示しないようにする
 	+ [ ] 実際に公開鍵の取得や署名のときに権限を確認する
 		- [ ] 権限が足りないときにはエラーメッセージをrejectの引数として返す
 		- [ ] 画面にpopover機能で表示する

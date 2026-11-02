@@ -131,3 +131,14 @@ label {
 	display: flex;
 	gap: 1em;
 }
+
+.radio-group {
+	display: flex;
+	gap: 8px;
+}
+
+.permission-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}

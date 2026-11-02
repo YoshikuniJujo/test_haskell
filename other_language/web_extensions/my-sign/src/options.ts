@@ -470,15 +470,64 @@ loadOptions(obj: OptionsObject)
 	for (const p of obj.clientPermissions) {
 		console.log("options.ts: loadOptions: p =", p);
 		const accnm = p.accountName;
-		const row = document.createElement("dev");
+		const row = document.createElement("div");
 		console.log("options.ts: loadOptions: PUBLIC KEY OPTION:", accnm);
-		row.className = "permission";
+		row.classList.add("permission");
+		row.classList.add("permission-row");
 		row.textContent = publicKeyToString(
 			p.permission.publicKey, accnm );
+		console.log(
+			"options.ts: loadOptions: p.permission.publicKey:",
+			toHex(p.permission.publicKey));
+		const rs = mkRadioGroup(
+			toHex(p.permission.publicKey),
+			"none",
+			[	{ value: "none", label: "None" },
+				{ value: "publicKey", label: "Get Public Key" },
+				{ value: "sign", label: "+ Sign" } ],
+			value => {
+				browser.runtime.sendMessage({
+					class: "Options",
+					method: "permissionChanged",
+					publicKey: p.permission.publicKey,
+					value
+				});
+			}
+		);
+		rs.classList.add("radio-group");
+		row.append(rs);
 		permissionSettings.append(row);
 	}
 
 	permissionSettingsExit.hidden = obj.permissionSettingsExitHidden;
+}
+
+function
+mkRadioGroup(
+	name: string,
+	selectedValue: string,
+	options: { value: string; label: string}[],
+	onChange: (value: string) => void
+): HTMLDivElement
+{
+	const div = document.createElement("div");
+
+	for (const o of options) {
+		const label = document.createElement("label");
+		const radio = document.createElement("input");
+		radio.type = "radio";
+		radio.name = name;
+		radio.value = o.value;
+		radio.checked = o.value === selectedValue;
+
+		radio.addEventListener("change", () => {
+			if (radio.checked) onChange(radio.value);
+		});
+
+		label.append(radio, o.label);
+		div.append(label); }
+
+	return div;
 }
 
 let popoverTimer: ReturnType<typeof setTimeout> | undefined;
