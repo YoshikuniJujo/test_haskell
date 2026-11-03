@@ -522,7 +522,7 @@ getPublicKeysWithNames(): Promise<KeyWithName[]>
 }
 
 export async function
-getPublicKeyOptions(): Promise<PublicKeyOption[]>
+getPublicKeyOptions(cluuid: UUID): Promise<PublicKeyOption[]>
 {
 	const db = await open();
 
@@ -530,12 +530,6 @@ getPublicKeyOptions(): Promise<PublicKeyOption[]>
 		const tx = db.transaction(SECRET_KEYS, "readonly");
 		const store = tx.objectStore(SECRET_KEYS);
 		const req = store.getAll();
-		/*
-		const rslt = req.result;
-		const srslt = [...rslt].sort(
-			(a, b) => a.name.localeCompare(b.name)
-		);
-		*/
 
 		req.onsuccess = () => {
 			const rslt = req.result;

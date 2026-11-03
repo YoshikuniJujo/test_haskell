@@ -128,7 +128,7 @@ async function
 loadCommonState(ostt: OptionsState): Promise<void>
 {
 	ostt.setClientSummaries(await DB.getClientSummaries());
-	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
+	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions(ostt.clientUuid()));
 	ostt.setUseClientSet(await DB.getUseClientSet());
 	ostt.setClientSetList(await DB.getSetList());
 	const cs = await DB.getCurrentSet();
@@ -200,7 +200,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			if (tg.openType === "uuid" && id !== null) {
 				const clnt = await DB.getClient(id);
-				const pks = await DB.getPublicKeyOptions();
+				const pks = await DB.getPublicKeyOptions(ostt.clientUuid());
 				const pmss = await DB.getPermissionsByClientUuid3(id);
 				console.log("background.ts: PERMISSIONS:", pmss);
 				ostt.openClientDetail(clnt, pks, pmss);
@@ -232,7 +232,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			try {
 				const clnt = await DB.getClient(fromUuid(m.value));
-				const pks = await DB.getPublicKeyOptions();
+				const pks = await DB.getPublicKeyOptions(m.value);
 				const pmss = await DB.getPermissionsByClientUuid3(fromUuid(m.value));
 				console.log("background.ts: PERMISSIONS:", pmss);
 				const obj = (await optionsStateFromSender(s))
@@ -371,7 +371,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "revert": {
 			const ostt = await optionsStateFromSender(s);
 			const clnt = await DB.getClient(fromUuid(ostt.clientUuid()));
-			const pks = await DB.getPublicKeyOptions();
+			const pks = await DB.getPublicKeyOptions(ostt.clientUuid());
 			const pmss = await DB.getPermissionsByClientUuid3(fromUuid(ostt.clientUuid()));
 			console.log("background.ts: PERMISSIONS:", pmss);
 			ostt.openClientDetail(clnt, pks, pmss);
@@ -384,7 +384,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return; }
 		case "currentKeyOptions": {
 			const ostt = await optionsStateFromSender(s);
-			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
+			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions(ostt.clientUuid()));
 			return ostt.optionsObject(); }
 		case "useClientSetChanged": {
 			await DB.putUseClientSet(m.checked);
@@ -491,7 +491,7 @@ newClient(
 	const ostt = await optionsStateFromSender(s);
 	if (!ostt) throw new Error("bad2");
 	ostt.setClientUuid(uuid);
-	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
+	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions(ostt.clientUuid()));
 	ostt.newClientMode();
 	if (urlPattern !== undefined) ostt.setUrlPattern(urlPattern);
 	if (name !== undefined) ostt.setClientName(name);
@@ -1095,7 +1095,7 @@ browser.runtime.onConnect.addListener(async p => {
 		const esk = await EncryptedSecretKey.generate(
 			ostt.optionsObject().accountName, m2.password );
 		DB.addKeyPair(esk.toObject_563e7e39d4());
-		ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions());
+		ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions(ostt.clientUuid()));
 		p.postMessage({ method: "generateDone" });
 		p.disconnect();
 		browser.runtime.sendMessage({
