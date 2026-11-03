@@ -127,12 +127,16 @@ type OptionsMethod =
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
 {
+	console.log("background.ts: LOAD COMMON STATE: begin");
 	ostt.setClientSummaries(await DB.getClientSummaries());
-	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions(ostt.clientUuid()));
+	if (ostt.doesClientUuidExist()) {
+		console.log("background.ts: run getPublicKeyOptions2");
+		ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
+	}
 	ostt.setUseClientSet(await DB.getUseClientSet());
 	ostt.setClientSetList(await DB.getSetList());
 	const cs = await DB.getCurrentSet();
-	if (cs === undefined) throw new Error("bad");
+	if (cs === undefined) throw new Error("warui1");
 	ostt.setCurrentSetUuid(cs);
 }
 
@@ -199,8 +203,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			}
 
 			if (tg.openType === "uuid" && id !== null) {
+				console.log("backgound.ts: OPEN TYPE IS UUID");
 				const clnt = await DB.getClient(id);
-				const pks = await DB.getPublicKeyOptions(ostt.clientUuid());
+				const pks = await DB.getPublicKeyOptions2(ostt.clientUuid());
 				const pmss = await DB.getPermissionsByClientUuid3(id);
 				console.log("background.ts: PERMISSIONS:", pmss);
 				ostt.openClientDetail(clnt, pks, pmss);
@@ -212,7 +217,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			ostt.setClientSetList(sts);
 			const cs = await DB.getCurrentSet();
-			if (cs === undefined) throw new Error("bad");
+			if (cs === undefined) throw new Error("warui2");
 			ostt.setCurrentSetUuid(cs);
 
 			ostt.save();
@@ -232,7 +237,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			try {
 				const clnt = await DB.getClient(fromUuid(m.value));
-				const pks = await DB.getPublicKeyOptions(m.value);
+				const pks = await DB.getPublicKeyOptions2(m.value);
 				const pmss = await DB.getPermissionsByClientUuid3(fromUuid(m.value));
 				console.log("background.ts: PERMISSIONS:", pmss);
 				const obj = (await optionsStateFromSender(s))
@@ -364,14 +369,16 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return ostt.optionsObject(); }
 		case "permissionSettingsNext": {
 			const ostt = await optionsStateFromSender(s);
-			if (ostt.atLeastOnePermission())
+			if (ostt.atLeastOnePermission()) {
+				await loadCommonState(ostt);
 				ostt.profileSettingsMode();
+			}
 			else ostt.setAtLeastOnePermissionHidden(false);
 			return ostt.optionsObject(); }
 		case "revert": {
 			const ostt = await optionsStateFromSender(s);
 			const clnt = await DB.getClient(fromUuid(ostt.clientUuid()));
-			const pks = await DB.getPublicKeyOptions(ostt.clientUuid());
+			const pks = await DB.getPublicKeyOptions2(ostt.clientUuid());
 			const pmss = await DB.getPermissionsByClientUuid3(fromUuid(ostt.clientUuid()));
 			console.log("background.ts: PERMISSIONS:", pmss);
 			ostt.openClientDetail(clnt, pks, pmss);
@@ -384,7 +391,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return; }
 		case "currentKeyOptions": {
 			const ostt = await optionsStateFromSender(s);
-			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions(ostt.clientUuid()));
+			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
 			return ostt.optionsObject(); }
 		case "useClientSetChanged": {
 			await DB.putUseClientSet(m.checked);
@@ -412,9 +419,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return ostt.optionsObject(); }
 		case "selectSet": {
 			console.log("background.ts: SELECT SET:", m.value);
-			if (s.tab?.id === undefined) throw new Error("bad");
+			if (s.tab?.id === undefined) throw new Error("warui3");
 			const id = await otbs.key(s.tab.id);
-			if (id === null) throw new Error("bad");
+			if (id === null) throw new Error("warui4");
 			const tag = optionsTabTag(id);
 			const ostt = await optionsStateFromSender(s);
 			const sso = ostt.getSelectOr();
@@ -477,7 +484,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				m.publicKey, m.value);
 			const ostt = await optionsStateFromSender(s);
 			ostt.modifyPermission(m.publicKey, m.value);
-			DB.putPermission(ostt.getPermission(m.publicKey));
+			await DB.putPermission(ostt.getPermission(m.publicKey));
 			return ostt.optionsObject();
 		}
 	}
@@ -491,7 +498,7 @@ newClient(
 	const ostt = await optionsStateFromSender(s);
 	if (!ostt) throw new Error("bad2");
 	ostt.setClientUuid(uuid);
-	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions(ostt.clientUuid()));
+	ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
 	ostt.newClientMode();
 	if (urlPattern !== undefined) ostt.setUrlPattern(urlPattern);
 	if (name !== undefined) ostt.setClientName(name);
@@ -1095,7 +1102,7 @@ browser.runtime.onConnect.addListener(async p => {
 		const esk = await EncryptedSecretKey.generate(
 			ostt.optionsObject().accountName, m2.password );
 		DB.addKeyPair(esk.toObject_563e7e39d4());
-		ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions(ostt.clientUuid()));
+		ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
 		p.postMessage({ method: "generateDone" });
 		p.disconnect();
 		browser.runtime.sendMessage({

@@ -636,9 +636,9 @@ TODO
 		遷移の条件にする
 		- [x] チェックして進まなくする
 		- [x] エラーメッセージを表示する
-	+ [ ] Profileの設定のときに権限のないアカウントは表示しないようにする
+	+ [x] Profileの設定のときに権限のないアカウントは表示しないようにする
 		- [x] DB.getPublicKeyOptionsの引数にクライアントUUIDを追加する
-		- [ ] DB.getPublicKeyOptionsの中でfilteringする
+		- [x] DB.getPublicKeyOptionsの中でfilteringする
 	+ [ ] 権限を定義するUIを作る (続き)
 		- [ ] クライアントを作成する流れでない場合にクライアント編集画面に以下のボタンを置く
 			* Revert/Apply/Cancel/OK

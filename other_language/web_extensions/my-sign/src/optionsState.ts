@@ -220,8 +220,8 @@ export class OptionsState
 	makeClient(): Client
 	{
 		const obj = this.#optionsObject;
-		if (obj.clientUuid === null) throw new Error("bad");
-		if (obj.currentKey === null) throw new Error("bad");
+		if (obj.clientUuid === null) throw new Error("warui10");
+		if (obj.currentKey === null) throw new Error("warui11");
 		return {
 			uuid: fromUuid(obj.clientUuid),
 			name: obj.clientName,
@@ -239,7 +239,7 @@ export class OptionsState
 	getClient(): ClientSummaryRaw
 	{
 		if (this.#optionsObject.clientUuid === null)
-			throw new Error("bad");
+			throw new Error("warui12");
 		return {
 			type: "ClientSummaryRaw",
 			uuid: fromUuid(this.#optionsObject.clientUuid),
@@ -251,8 +251,8 @@ export class OptionsState
 	getProfile(): Profile
 	{
 		const obj = this.#optionsObject;
-		if (obj.clientUuid === null) throw new Error("bad");
-		if (obj.currentKey === null) throw new Error("bad");
+		if (obj.clientUuid === null) throw new Error("warui13");
+		if (obj.currentKey === null) throw new Error("warui14");
 		return {
 			uuid: fromUuid(obj.clientUuid),
 			publicKey: fromHex(obj.currentKey),
@@ -263,9 +263,14 @@ export class OptionsState
 			displayAccount: obj.displayAccount };
 	}
 
+	doesClientUuidExist(): boolean
+	{
+		return this.#optionsObject.clientUuid !== null;
+	}
+
 	clientUuid(): UUID
 	{
-		if (this.#optionsObject.clientUuid === null) throw new Error("bad");
+		if (this.#optionsObject.clientUuid === null) throw new Error("warui15");
 		return this.#optionsObject.clientUuid;
 	}
 
@@ -393,7 +398,7 @@ export class OptionsState
 	modifyPermission(pk: Uint8Array, p: "none" | "publicKey" | "sign")
 	{
 		const pv = this.#optionsObject.clientPermissions[toHex(pk)];
-		if (pv === undefined) throw new Error("bad");
+		if (pv === undefined) throw new Error("warui16");
 		radioToPermissionValue(pv, p);
 		this.save();
 	}
@@ -402,8 +407,8 @@ export class OptionsState
 	{
 		const pv = this.#optionsObject.clientPermissions[toHex(pk)];
 		const uuid = this.#optionsObject.clientUuid;
-		if (uuid === null) throw new Error("bad");
-		if (pv === undefined) throw new Error("bad");
+		if (uuid === null) throw new Error("warui17");
+		if (pv === undefined) throw new Error("warui18");
 		return {
 			clientUuid: fromUuid(uuid),
 			publicKey: pk,

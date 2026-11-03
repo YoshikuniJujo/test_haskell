@@ -546,6 +546,39 @@ getPublicKeyOptions(cluuid: UUID): Promise<PublicKeyOption[]>
 }
 
 export async function
+getPublicKeyOptions2(cluuid: UUID): Promise<PublicKeyOption[]>
+{
+	const db = await open();
+	const tx = db.transaction(["permissions", "secret-keys"], "readonly");
+	const store = tx.objectStore("permissions");
+	const skstore = tx.objectStore("secret-keys");
+
+	return new Promise((rs, rj) => {
+		const result: PublicKeyOption[] = [];
+		const req = store.index("clientUuid").openCursor(fromUuid(cluuid));
+		req.onsuccess = () => {
+			const cursor = req.result;
+			if (!cursor) { rs(result); return; }
+
+			const skreq = skstore.get(cursor.value.publicKey);
+
+			skreq.onsuccess = () => {
+				console.log("db.ts: getPublicKeyOptions2: getPublicKey =", cursor.value.getPublicKey);
+				console.log("db.ts: getPublicKeyOptions2: name =", skreq.result.name);
+				if (cursor.value.getPublicKey) {
+					result.push({
+						type: "PublicKeyOption",
+						publicKey: toHex(cursor.value.publicKey),
+						name: skreq.result.name
+					});
+				}
+				cursor.continue();
+			}
+		};
+	});
+}
+
+export async function
 getClients(): Promise<Client[]>
 {
 	const db = await open();
