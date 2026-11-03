@@ -642,6 +642,10 @@ TODO
 	+ [ ] 権限を定義するUIを作る (続き)
 		- [ ] クライアントを作成する流れでない場合にクライアント編集画面に以下のボタンを置く
 			* Revert/Apply/Cancel/OK
+			* [x] HTMLに設定
+			* [ ] CSSの設定
+			* [ ] backgroundにmessageを送る
+			* [ ] background側で処理を書く
 		- [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
 		- [x] Permission[]から画面を表示する関数を書く
 		- [x] PermissionsをoptionsObjectに
@@ -650,6 +654,8 @@ TODO
 	+ [ ] 実際に公開鍵の取得や署名のときに権限を確認する
 		- [ ] 権限が足りないときにはエラーメッセージをrejectの引数として返す
 		- [ ] 画面にpopover機能で表示する
+* [ ] クライアントの設定とプロファイルのDeleteについて考える
+* [ ] Deleteの実装を決める
 * [ ] クライアントの設定あたりのvalidationについて整理する
 * [ ] TODOを見返し修正する
 * [ ] Profileの編集領域にクライアント名とURLPatternを表示する

@@ -58,25 +58,33 @@
 			CLIENT DETAIL
 			<form id="client-form-d">
 				<div id="client-settings">
-				<label>
-					Client name
-					<input id="client-name-d" type="text" required>
-				</label>
-				<label>
-					Client URL Pattern
-					<input id="url-pattern-d" type="text" required>
-				</label>
-				<label>
-					<input id="use-priority" type="checkbox">
-					Use priority for Client selection
-				</label>
-				<label id="priority-label" hidden>
-					Priority
-					<input id="priority" type="number" min="0" step="1" value="100">
-					<small>Default: 100</small>
-				</label>
-
-				<button type="button" id ="send-client">Client OK</button>
+					<label>
+						Client name
+						<input id="client-name-d" type="text" required>
+					</label>
+					<label>
+						Client URL Pattern
+						<input id="url-pattern-d" type="text" required>
+					</label>
+					<label>
+						<input id="use-priority" type="checkbox">
+						Use priority for Client selection
+					</label>
+					<label id="priority-label" hidden>
+						Priority
+						<input id="priority" type="number" min="0" step="1" value="100">
+						<small>Default: 100</small>
+					</label>
+	
+					<div class="edit-client-buttons">
+						<button type="button" id="delete-client">Delete</button>
+						<div class="right-buttons">
+							<button type="button" id="client-revert">Revert</button>
+							<button type="button" id="client-apply">Apply</button>
+							<button type="button" id="client-cancel">Cancel</button>
+							<button type="button" id="send-client">OK</button>
+						</div>
+					</div>
 				</div>
 
 				<div id="permission-settings-field">
