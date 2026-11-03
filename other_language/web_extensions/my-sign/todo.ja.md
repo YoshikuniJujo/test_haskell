@@ -643,7 +643,7 @@ TODO
 		- [ ] クライアントを作成する流れでない場合にクライアント編集画面に以下のボタンを置く
 			* Revert/Apply/Cancel/OK
 		- [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
-		- [ ] Permission[]から画面を表示する関数を書く
+		- [x] Permission[]から画面を表示する関数を書く
 		- [x] PermissionsをoptionsObjectに
 		- [x] PermissionsをoptionsStateに
 		- [ ] Permissionsを読み込む処理を書く
