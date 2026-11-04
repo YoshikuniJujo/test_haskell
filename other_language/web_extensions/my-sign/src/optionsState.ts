@@ -356,6 +356,15 @@ export class OptionsState
 	clientSettingsMode()
 	{
 		this.#optionsObject.clientSettingsHidden = false;
+		this.#optionsObject.deleteClientConfirmationHidden = true;
+		this.#optionsObject.permissionSettingsHidden = true;
+		this.#optionsObject.profileSettingsHidden = true;
+	}
+
+	deleteClientConfirmationMode()
+	{
+		this.#optionsObject.clientSettingsHidden = true;
+		this.#optionsObject.deleteClientConfirmationHidden = false;
 		this.#optionsObject.permissionSettingsHidden = true;
 		this.#optionsObject.profileSettingsHidden = true;
 	}
@@ -363,6 +372,7 @@ export class OptionsState
 	permissionSettingsMode()
 	{
 		this.#optionsObject.clientSettingsHidden = true;
+		this.#optionsObject.deleteClientConfirmationHidden = true;
 		this.#optionsObject.permissionSettingsHidden = false;
 		this.#optionsObject.profileSettingsHidden = true;
 	}
@@ -370,6 +380,7 @@ export class OptionsState
 	profileSettingsMode()
 	{
 		this.#optionsObject.clientSettingsHidden = true;
+		this.#optionsObject.deleteClientConfirmationHidden = true;
 		this.#optionsObject.permissionSettingsHidden = true;
 		this.#optionsObject.profileSettingsHidden = false;
 	}

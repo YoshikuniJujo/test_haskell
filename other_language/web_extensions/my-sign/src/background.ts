@@ -126,6 +126,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "editModeChanged", value: string; }
 	| { class: "Options"; method: "permissionChanged",
 		publicKey: Uint8Array, value: "none" | "publicKey" | "sign" }
+	| { class: "Options"; method: "deleteClientCancel"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -149,6 +150,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 	console.log("background.ts: OPTIONS METHOD:", m);
 	switch(m.method) {
 		case "documentInput": {
+			console.log("background.ts: optionsMethod: DOCUMENT INPUT");
 			const ostt = await optionsStateFromSender(s);
 			ostt.setDetailErrorHidden(true);
 			ostt.setUrlPatternNotMatchErrorHidden(true);
@@ -330,6 +332,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: deleteClient:", m);
 			const ostt = await optionsStateFromSender(s);
 
+			/*
 			if (s.tab?.id === undefined) throw new Error("bad");
 			const params = new URLSearchParams({
 				message: "Are you sure you want to delete this client?",
@@ -344,6 +347,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			);
 
 			await browser.tabs.create({ url });
+			*/
+
+			ostt.deleteClientConfirmationMode();
+
 			return ostt.optionsObject(); }
 		case "deleteClientConfirmed": {
 			console.log("background.ts: deleteClientConfirmed");
@@ -517,6 +524,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			ostt.modifyPermission(m.publicKey, m.value);
 			await DB.putPermission(ostt.getPermission(m.publicKey));
+			return ostt.optionsObject();
+		}
+		case "deleteClientCancel": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.clientSettingsMode();
 			return ostt.optionsObject();
 		}
 	}

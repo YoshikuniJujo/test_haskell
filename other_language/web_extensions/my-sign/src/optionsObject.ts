@@ -28,6 +28,8 @@ export type OptionsObject = {
 	deleteClientButtonHidden: boolean,
 	clientDetailHidden: boolean,
 
+	deleteClientConfirmationHidden: boolean,
+
 	revertButtonHidden: boolean,
 	applyButtonHidden: boolean,
 	cancelButtonHidden: boolean,
@@ -84,6 +86,8 @@ export function defaultOptionsObject(): OptionsObject
 		newClientButtonHidden: false,
 		deleteClientButtonHidden: true,
 		clientDetailHidden: true,
+
+		deleteClientConfirmationHidden: true,
 
 		revertButtonHidden: false,
 		applyButtonHidden: false,

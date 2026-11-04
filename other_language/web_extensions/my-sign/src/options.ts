@@ -119,6 +119,12 @@ const permissionSettingsField =
 	getElement<HTMLElement>("#permission-settings-field");
 const atLeastOnePermission = getElement<HTMLElement>("#at-least-one-permission");
 
+const deleteClientConfirmation =
+	getElement<HTMLElement>("#delete-client-confirmation");
+
+const clientDeleteCancel =
+	getElement<HTMLButtonElement>("#client-delete-cancel");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -353,6 +359,10 @@ if (__DEV__)
 		browser.runtime.sendMessage({ method: "resetDatabase" });
 	});
 
+clientDeleteCancel.addEventListener("click", () => {
+	sendMethodAndLoad("deleteClientCancel");
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
@@ -463,6 +473,7 @@ loadOptions(obj: OptionsObject)
 	urlPatternNotMatchError.hidden = obj.urlPatternNotMatchErrorHidden;
 
 	clientSettings.hidden = obj.clientSettingsHidden;
+	deleteClientConfirmation.hidden = obj.deleteClientConfirmationHidden;
 	permissionSettingsField.hidden = obj.permissionSettingsHidden;
 	profileSettings.hidden = obj.profileSettingsHidden;
 	editMode.hidden = obj.editModeHidden;
