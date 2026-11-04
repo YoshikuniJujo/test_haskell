@@ -656,7 +656,7 @@ TODO
 	+ [x] background.tsでctbsを作成する
 	+ [x] confirmation.tsを作成する
 	+ [x] background.ts側に無条件でmessageを送る
-	+ [ ] ユーザーへのメッセージをbackground.ts側から指定したものにする
+	+ [x] ユーザーへのメッセージをbackground.ts側から指定したものにする
 	+ [ ] HTMLにCancel/OKボタンを追加
 	+ [ ] OKボタンを押したときだけmessageを送るようにする
 	+ [ ] Deleteボタンで何個も確認タブが開いてしまうことを確認
