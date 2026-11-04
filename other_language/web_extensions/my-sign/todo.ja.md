@@ -589,7 +589,7 @@ TODO
 * [x] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [x] 設定項目をClient, Account, Client Profileの3項目に分ける
 * [x] 「クライアンのprofileが存在しなかった場合」の処理を書く
-* [ ] クライアントの権限テーブル
+* [x] クライアントの権限テーブル (途中)
 	+ [x] データベースを更新する
 		- [x] テーブルを作る関数を定義する
 		- [x] テーブルに保存したり、引き出したりするための型を用意する
@@ -639,24 +639,44 @@ TODO
 	+ [x] Profileの設定のときに権限のないアカウントは表示しないようにする
 		- [x] DB.getPublicKeyOptionsの引数にクライアントUUIDを追加する
 		- [x] DB.getPublicKeyOptionsの中でfilteringする
-	+ [ ] 権限を定義するUIを作る (続き)
-		- [ ] クライアントを作成する流れでない場合にクライアント編集画面に以下のボタンを置く
+	+ [x] 権限を定義するUIを作る (続き、途中)
+		- [x] クライアントを作成する流れでない場合に
+			クライアント編集画面に以下のボタンを置く(途中)
 			* Revert/Apply/Cancel/OK
 			* [x] HTMLに設定
-			* [ ] CSSの設定
-			* [ ] backgroundにmessageを送る
-			* [ ] background側で処理を書く
-		- [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
+			* [x] CSSの設定
 		- [x] Permission[]から画面を表示する関数を書く
 		- [x] PermissionsをoptionsObjectに
 		- [x] PermissionsをoptionsStateに
-		- [ ] Permissionsを読み込む処理を書く
+		- [x] Permissionsを読み込む処理を書く
+* [x] Deleteの実装を決める
+* [x] クライアントの設定とプロファイルのDeleteについて考える
+* [ ] Delete機能の実装
+	+ [x] confirmation.htmlを作成する
+	+ [x] background.tsでctbsを作成する
+	+ [x] confirmation.tsを作成する
+	+ [x] background.ts側に無条件でmessageを送る
+	+ [ ] ユーザーへのメッセージをbackground.ts側から指定したものにする
+	+ [ ] HTMLにCancel/OKボタンを追加
+	+ [ ] OKボタンを押したときだけmessageを送るようにする
+	+ [ ] Deleteボタンで何個も確認タブが開いてしまうことを確認
+	+ [ ] Deleteから開きctbsにそのページを登録する
+		- 確認タブが1つしか開かないことを確認
+	+ [ ] complete処理を書く
+	+ [ ] cancelの場合の処理を書く
+	+ [ ] タブが閉じたときの処理を書く
+	+ [ ] 元の設定画面が閉じたときの処理を書く
+* [ ] クライアントを作成する流れでない場合に
+	クライアント編集画面に以下のボタンを置く(続き)
+	+ Revert/Apply/Cancel/OK
+	+ [ ] backgroundにmessageを送る
+	+ [ ] background側で処理を書く
+* [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
+* [ ] クライアントの設定あたりのvalidationについて整理する
+* [ ] クライアントの権限テーブル (続き)
 	+ [ ] 実際に公開鍵の取得や署名のときに権限を確認する
 		- [ ] 権限が足りないときにはエラーメッセージをrejectの引数として返す
 		- [ ] 画面にpopover機能で表示する
-* [ ] クライアントの設定とプロファイルのDeleteについて考える
-* [ ] Deleteの実装を決める
-* [ ] クライアントの設定あたりのvalidationについて整理する
 * [ ] TODOを見返し修正する
 * [ ] Profileの編集領域にクライアント名とURLPatternを表示する
 * [ ] log用にタブを登録する処理を削除する
