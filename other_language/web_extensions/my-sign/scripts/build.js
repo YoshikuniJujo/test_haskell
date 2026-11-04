@@ -55,3 +55,4 @@ await copyFile("src/input.html", "dist/input.html");
 await copyFile("src/input.css", "dist/input.css");
 
 await copyFile("src/confirmation.html", "dist/confirmation.html");
+await copyFile("src/confirmation.css", "dist/confirmation.css");
