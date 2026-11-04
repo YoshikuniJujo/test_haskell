@@ -651,7 +651,14 @@ TODO
 		- [x] Permissionsを読み込む処理を書く
 * [x] Deleteの実装を決める
 * [x] クライアントの設定とプロファイルのDeleteについて考える
-* [ ] Delete機能の実装
+* [ ] Delete機能の新実装
+	+ [ ] 確認画面についてhiddenのfalse, trueを切り換える仕組みを作る
+	+ [ ] Deleteボタンで画面の遷移を行う
+	+ [ ] Cancelボタンで画面をもどる
+	+ [ ] Deleteボタンで下で作った確認画面を開かないようにする
+	+ [ ] OKボタンでDeleteを実行しClientList modeに移行する
+	+ [ ] Set機能を使っているかどうかでユーザーへのメッセージを変化させる
+* [ ] Delete機能の実装 (中断)
 	+ [x] confirmation.htmlを作成する
 	+ [x] background.tsでctbsを作成する
 	+ [x] confirmation.tsを作成する
