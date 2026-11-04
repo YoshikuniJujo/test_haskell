@@ -496,13 +496,20 @@ deleteClient(uuid: UUID)
 		const tx = db.transaction(
 			[CURRENT_SET, NEW_SET_CLIENTS, NEW_CLIENTS], "readwrite" );
 		const req = getCurrentSetRaw(tx);
+		const reqsc = tx.objectStore(NEW_SET_CLIENTS)
+			.index("clientUuid").openCursor(fromUuid(uuid));
 
 		req.onsuccess = () => {
 			const cs = req.result;
 			if (cs === undefined) { tx.abort(); return; }
-			tx.objectStore(NEW_SET_CLIENTS).delete([cs, fromUuid(uuid)]);
 			tx.objectStore(NEW_CLIENTS).delete(fromUuid(uuid));
 		}
+
+		reqsc.onsuccess = () => {
+			const cursor = reqsc.result;
+			if (cursor) { cursor.delete(); }
+		}
+
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
 	});
