@@ -656,6 +656,10 @@ TODO
 	+ [x] Deleteボタンで画面の遷移を行う
 	+ [x] Cancelボタンで画面をもどる
 	+ [x] Deleteボタンで下で作った確認画面を開かないようにする
+	+ [x] set-clientsテーブルにclientUuidでindexをつける
+	+ [ ] DB.deleteClientで関連するテーブルの要素も削除する
+		- [ ] set-clientsテーブルの要素を削除する
+		- [ ] permissionsテーブルの要素を削除する
 	+ [ ] OKボタンでDeleteを実行しClientList modeに移行する
 	+ [ ] Set機能を使っているかどうかでユーザーへのメッセージを変化させる
 * [ ] Delete機能の実装 (中断)

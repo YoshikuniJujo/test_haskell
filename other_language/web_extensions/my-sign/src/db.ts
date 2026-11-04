@@ -10,7 +10,7 @@ import { PermissionNew } from "./permission.js";
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 17;
+const DB_VERSION = 18;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
@@ -51,6 +51,7 @@ open()
 			else if (ev.oldVersion < 15) updatev14v15(db, tx);
 			else if (ev.oldVersion < 16) updatev15v16(db, tx);
 			else if (ev.oldVersion < 17) updatev16v17(db, tx);
+			else if (ev.oldVersion < 18) updatev17v18(db, tx);
 			tx.oncomplete = () => {
 				console.log("migration transaction complete");
 			}
@@ -300,6 +301,13 @@ function
 updatev16v17(db: IDBDatabase, tx: IDBTransaction)
 {
 	tx.objectStore("permissions").createIndex("clientUuid", "clientUuid");
+	updatev17v18(db, tx);
+}
+
+function
+updatev17v18(db: IDBDatabase, tx: IDBTransaction)
+{
+	tx.objectStore("set-clients").createIndex("clientUuid", "clientUuid");
 }
 
 export async function
