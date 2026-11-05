@@ -900,7 +900,13 @@ getPublicKey(url: string, tid: number)
 	{
 		const c = await getClient(url);
 		if (c === null) return null;
-		else return c.publicKey;
+		else {
+			console.log("background.ts: GET ACCOUNT PUBLIC KEY:", c);
+			console.log("background.ts: GET ACCOUNT PUBLIC KEY:",
+			    await DB.getPermission(c.uuid, c.publicKey));
+			return c.publicKey;
+		}
+
 	}
 }
 
