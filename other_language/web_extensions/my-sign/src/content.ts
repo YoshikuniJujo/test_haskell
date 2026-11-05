@@ -1,4 +1,5 @@
 import { addToArrayMap, forEachValues } from "./mapArray.js"
+import { isErr } from "./types.js"
 
 console.log("content.ts begin");
 
@@ -147,6 +148,10 @@ const nostr = {
 				const v = await browser.runtime.sendMessage({
 					method: "publicKey"
 				});
+				if (isErr(v)) {
+					rj("foobar");
+					return;
+				}
 				rs(v);
 			}
 			catch (e) { rj(cloneInto(e, window)); }

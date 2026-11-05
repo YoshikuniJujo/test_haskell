@@ -8,13 +8,13 @@ import * as Bech32 from "./codec/bech32.js";
 import { addToArrayMap, forEachValues } from "./mapArray.js";
 
 import type {
-	Client, ClientSummary, ClientSummaryRaw, ClientResult, OptionsTabTag, UUID } from "./types.js";
+	Client, ClientSummary, ClientSummaryRaw, ClientResult, OptionsTabTag, UUID, Err } from "./types.js";
 
 import { isUrl, findKey } from "./tools.js";
 import {
 	optionsTabTag, uuid, fromUuid, isError, error, success,
 	ClientSuccess, InvalidUrlPattern, UrlPatternMismatch, isClientError,
-	EditClientMode, EditPermissionMode, EditProfileMode
+	EditClientMode, EditPermissionMode, EditProfileMode, orErr, err
 } from "./types.js";
 import { OptionsState } from "./optionsState.js";
 import { selectOrToString } from "./optionsObject.js";
@@ -603,7 +603,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			if (!s.tab) throw new Error("bad7");
 			if (s.tab.id === undefined) throw new Error("bad8");
 			if (!s.url) throw new Error("bad9");
-			return hex(await getPublicKey(s.url, s.tab.id));
+			return orErr(hex, await getPublicKey(s.url, s.tab.id));
 		case "prepareSymmetricKey":
 			if (!s.tab) throw new Error("bad10");
 			if (s.tab.id === undefined) throw new Error("bad11");
@@ -788,8 +788,6 @@ browser.tabs.onRemoved.addListener(async tid => {
 	pgVanished(tid);
 });
 
-const waitForClientChanged = new Map();
-
 type Account = {
 	name: string;
 }
@@ -866,45 +864,24 @@ signEvent(pbk: string, evt: Event)
 const requestsWAitingForClient = new Map();
 
 async function
-getPublicKey(url: string, tid: number)
+getPublicKey(url: string, tid: number): Promise<Uint8Array | Err>
 {
+	console.log("background.ts: GET PUBLIC KEY");
 	const pbk = await getAccountPublicKey();
 	if (pbk !== null) return pbk;
-
-	console.log("getPublicKey: ", url);
-
-	const { promise: pr, resolve: rs, reject: rj } = Promise.withResolvers();
-
-	console.log("after Promise.withResolvers");
-
-//	waitForClientChanged.set(url, { resolve: rs, reject: rj });
-	addToArrayMap(waitForClientChanged, url, { resolve: rs, reject: rj });
-
-	console.log(waitForClientChanged);
-
-	const ot = await browser.tabs.create({
-		active: false,
-		url: browser.runtime.getURL("options.html")
-	});
-	console.log(ot);
-	console.log("getPublicKey", url, tid, ot.id)
-	if (!ot.id) throw new Error("bad35");
-	const use = await otbs.assign(url, tid, ot.id);
-	if (use != ot.id) await browser.tabs.remove(ot.id);
-	await browser.tabs.update(use, { active: true });
-
-	throw new Error("No client matches sender URL: " + url);
+	return err("never occur");
 
 	async function
-	getAccountPublicKey()
+	getAccountPublicKey(): Promise<Uint8Array | Err | null>
 	{
 		const c = await getClient(url);
 		if (c === null) return null;
 		else {
 			console.log("background.ts: GET ACCOUNT PUBLIC KEY:", c);
-			console.log("background.ts: GET ACCOUNT PUBLIC KEY:",
-			    await DB.getPermission(c.uuid, c.publicKey));
-			return c.publicKey;
+			const p = await DB.getPermission(c.uuid, c.publicKey);
+			console.log("background.ts: GET ACCOUNT PUBLIC KEY:", p);
+			if (p && p.getPublicKey) return c.publicKey;
+			else return err("not permitted");
 		}
 
 	}
