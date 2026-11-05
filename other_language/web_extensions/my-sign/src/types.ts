@@ -1,6 +1,17 @@
 import { isUuid, isUrl, toHex } from "./tools.js";
 
-export type Err = { type: "Err", errMessage: string }
+export type Err = { type: "Err", errMessage: string };
+
+function isErr<T>(v: T | Err): v is Err {
+	return typeof v === "object" &&
+		v !== null && "type" in v && v.type === "Err";
+}
+
+function orErr<T, U>(f: (v: T) => U, v: T | Err): U | Err
+{
+	if (isErr(v)) return v;
+	return f(v as T);
+}
 
 export interface ClientSet { uuid: string; name: string; }
 

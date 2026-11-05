@@ -700,6 +700,7 @@ TODO
 	+ [ ] 実際に公開鍵の取得のときに権限を確認する
 		- [x] データベースからbooleanを取得
 		- [x] types.tsにErr型を定義する
+		- [x] orErrを定義
 		- [ ] 返り値をチェックしてconsole.logするようにする
 		- [ ] 一時的にpublicKeyメッセージの返答をエラー値にする
 		- [ ] console.logによる表示を確認する
