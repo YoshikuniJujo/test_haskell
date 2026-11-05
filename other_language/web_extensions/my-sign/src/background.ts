@@ -304,9 +304,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			(await optionsStateFromSender(s)).opacityInput(m.value);
 			return; }
 		case "openSettingsByClickChanged": {
-			(await optionsStateFromSender(s))
-				.openSettingsByClickChanged(m.checked);
-			return; }
+			const ostt = await optionsStateFromSender(s);
+			ostt.openSettingsByClickChanged(m.checked);
+			return ostt.optionsObject(); }
 		case "currentKeyInput": {
 			console.log("background.ts: currentKeyInput:", m);
 			(await optionsStateFromSender(s)).currentKeyInput(m.value);

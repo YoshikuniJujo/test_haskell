@@ -188,10 +188,11 @@ backgroundColor.addEventListener("input", async () => {
 		value: backgroundColor.value });
 	await loadOptions(obj); });
 
-openSettingsByClick.addEventListener("change", () => {
-	browser.runtime.sendMessage({
+openSettingsByClick.addEventListener("change", async () => {
+	const obj = await browser.runtime.sendMessage({
 		class: "Options", method: "openSettingsByClickChanged",
 		checked: openSettingsByClick.checked });
+	loadOptions(obj);
 });
 
 clientOk.addEventListener("click", async () => {
