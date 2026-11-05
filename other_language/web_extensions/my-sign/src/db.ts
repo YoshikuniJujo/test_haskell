@@ -494,7 +494,7 @@ deleteClient(uuid: UUID)
 
 	return new Promise((rs, rj) => {
 		const tx = db.transaction(
-			[CURRENT_SET, NEW_SET_CLIENTS, NEW_CLIENTS], "readwrite" );
+			[CURRENT_SET, NEW_SET_CLIENTS, NEW_CLIENTS, "permissions"], "readwrite" );
 		const req = getCurrentSetRaw(tx);
 		const reqsc = tx.objectStore(NEW_SET_CLIENTS)
 			.index("clientUuid").openCursor(fromUuid(uuid));

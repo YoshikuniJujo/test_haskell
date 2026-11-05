@@ -103,8 +103,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "currentKeyInput"; value: string }
 	| { class: "Options"; method: "clientOk"; }
 	| { class: "Options"; method: "deleteClient"; }
-	| { class: "Options"; method: "deleteClientConfirmed";
-		tabId: string; clientUuid: string; }
+	| { class: "Options"; method: "deleteClientConfirmed"; }
 	| { class: "Options"; method: "checkUrlPattern"; }
 	| { class: "Options"; method: "applyClient"; boolean: boolean }
 	| { class: "Options"; method: "isClientMatched"; }
@@ -332,38 +331,15 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: deleteClient:", m);
 			const ostt = await optionsStateFromSender(s);
 
-			/*
-			if (s.tab?.id === undefined) throw new Error("bad");
-			const params = new URLSearchParams({
-				message: "Are you sure you want to delete this client?",
-				class: "Options",
-				method: "deleteClientConfirmed",
-				tabId: String(s.tab.id),
-				clientUuid: fromUuid(ostt.clientUuid())
-			});
-
-			const url = browser.runtime.getURL(
-				`confirmation.html?${params.toString()}`
-			);
-
-			await browser.tabs.create({ url });
-			*/
-
 			ostt.deleteClientConfirmationMode();
 
 			return ostt.optionsObject(); }
 		case "deleteClientConfirmed": {
 			console.log("background.ts: deleteClientConfirmed");
-			console.log(
-				"background.ts: deleetClientConfirmed: params:",
-				m.tabId, m.clientUuid );
 
-			const id = await otbs.key(Number(m.tabId));
-			if (id === null) throw new Error("bad");
-			const ostt = optionsStates.get(id);
-			if (ostt === undefined) throw new Error(`bad: ${m.tabId}`);
+			const ostt = await optionsStateFromSender(s);
 
-			await DB.deleteClient(uuid(m.clientUuid));
+			await DB.deleteClient(ostt.clientUuid());
 //			await ostt.setClientSummaries(await DB.getClientSummaries());
 			ostt.clientListMode();
 			browser.runtime.sendMessage({
@@ -372,8 +348,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				method: "update" });
 			await broadcast({ method: "clientChanged" });
 
-			return;
-		}
+			return ostt.optionsObject(); }
 		case "checkUrlPattern": {
 			const rslt = await checkUrlPattern(s);
 			if (isClientError(rslt)) return rslt;

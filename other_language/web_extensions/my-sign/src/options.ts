@@ -125,6 +125,8 @@ const deleteClientConfirmation =
 const clientDeleteCancel =
 	getElement<HTMLButtonElement>("#client-delete-cancel");
 
+const clientDeleteOk = getElement<HTMLButtonElement>("#client-delete-ok");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -360,7 +362,10 @@ if (__DEV__)
 	});
 
 clientDeleteCancel.addEventListener("click", () => {
-	sendMethodAndLoad("deleteClientCancel");
+	sendMethodAndLoad("deleteClientCancel"); });
+
+clientDeleteOk.addEventListener("click", () => {
+	sendMethodAndLoad("deleteClientConfirmed");
 });
 
 // ------------------------------------------------------------------------
