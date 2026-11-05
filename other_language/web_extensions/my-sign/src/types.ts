@@ -1,5 +1,7 @@
 import { isUuid, isUrl, toHex } from "./tools.js";
 
+export type Err = { type: "Err", errMessage: string }
+
 export interface ClientSet { uuid: string; name: string; }
 
 export type Client = {
