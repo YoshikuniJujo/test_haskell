@@ -127,6 +127,8 @@ const clientDeleteCancel =
 
 const clientDeleteOk = getElement<HTMLButtonElement>("#client-delete-ok");
 
+const clientSettingsRevert = getElement<HTMLButtonElement>("#client-revert");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -366,6 +368,10 @@ clientDeleteCancel.addEventListener("click", () => {
 
 clientDeleteOk.addEventListener("click", () => {
 	sendMethodAndLoad("deleteClientConfirmed");
+});
+
+clientSettingsRevert.addEventListener("click", () => {
+	sendMethodAndLoad("clientSettingsRevert");
 });
 
 // ------------------------------------------------------------------------

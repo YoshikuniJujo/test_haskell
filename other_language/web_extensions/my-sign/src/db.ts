@@ -665,6 +665,20 @@ getAllClients(): Promise<ClientSummaryRaw[]>
 }
 
 export async function
+getClientSummaryRaw(uuid: UUID): Promise<ClientSummaryRaw>
+{
+	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(NEW_CLIENTS, "readonly");
+		const req = tx.objectStore(NEW_CLIENTS).get(fromUuid(uuid));
+		req.onsuccess = () => {
+			rs(req.result);
+		}
+		req.onerror = () => rj(req.error);
+	});
+}
+
+export async function
 getClientSummaries(): Promise<ClientSummary[]>
 {
 	const db = await open();

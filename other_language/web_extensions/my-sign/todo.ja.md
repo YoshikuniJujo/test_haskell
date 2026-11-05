@@ -651,7 +651,7 @@ TODO
 		- [x] Permissionsを読み込む処理を書く
 * [x] Deleteの実装を決める
 * [x] クライアントの設定とプロファイルのDeleteについて考える
-* [ ] Delete機能の新実装
+* [x] Delete機能の新実装 (途中)
 	+ [x] 確認画面についてhiddenのfalse, trueを切り換える仕組みを作る
 	+ [x] Deleteボタンで画面の遷移を行う
 	+ [x] Cancelボタンで画面をもどる
@@ -660,13 +660,39 @@ TODO
 	+ [x] DB.deleteClientで関連するテーブルの要素も削除する
 		- [x] set-clientsテーブルの要素を削除する
 		- [x] permissionsテーブルの要素を削除する
-	+ [ ] OKボタンでDeleteを実行しClientList modeに移行する
+	+ [x] OKボタンでDeleteを実行しClientList modeに移行する
 		- [x] 前に用意したメッセージを単に送るだけでいいか考える
-		- [ ] background.tsのdeleteClientConfirmedを修正する
-			* [ ] tab IDは必要ない
-			* [ ] client UUIDもメッセージで渡す必要はない
-		- [ ] 実装する
+		- [x] background.tsのdeleteClientConfirmedを修正する
+			* [x] tab IDは必要ない
+			* [x] client UUIDもメッセージで渡す必要はない
+		- [x] 実装する
+* [ ] 存在しないクライアントを作成する流れでない場合に
+	クライアント編集画面に以下のボタンを置く(続き)
+	+ Revert/Apply/Cancel/OK
+	+ [ ] backgroundにmessageを送る
+		- [x] Revertのメッセージを送る("clientSettingsRevert")
+			* [x] 何もせずoptionsObjectを返す処理をbackgroundに書いておく
+			* [x] メッセージを送る
+		- [ ] Applyのメッセージを送る
+		- [ ] Cancelのメッセージを送る
+	+ [ ] background側で処理を書く
+		- [x] Revertの処理を書く
+		- [ ] Applyの処理を書く
+		- [ ] Cancelの処理を書く
+* [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
+* [ ] クライアントの設定あたりのvalidationについて整理する
+* [ ] クライアントの権限テーブル (続き)
+	+ [ ] 実際に公開鍵の取得や署名のときに権限を確認する
+		- [ ] 権限が足りないときにはエラーメッセージをrejectの引数として返す
+		- [ ] 画面にpopover機能で表示する
+* [ ] TODOを見返し修正する
+* [ ] Delete機能の新実装 (続き)
+	+ [ ] 消すクライアントの名前とURLPatternを表示する
 	+ [ ] Set機能を使っているかどうかでユーザーへのメッセージを変化させる
+* [ ] Delete機能の中断した実装の掃除
+	+ [ ] ctbsを消す
+	+ [ ] それ以外、ファイルなどを消す
+	+ [ ] その他
 * [ ] Delete機能の実装 (中断)
 	+ [x] confirmation.htmlを作成する
 	+ [x] background.tsでctbsを作成する
@@ -682,18 +708,6 @@ TODO
 	+ [ ] cancelの場合の処理を書く
 	+ [ ] タブが閉じたときの処理を書く
 	+ [ ] 元の設定画面が閉じたときの処理を書く
-* [ ] クライアントを作成する流れでない場合に
-	クライアント編集画面に以下のボタンを置く(続き)
-	+ Revert/Apply/Cancel/OK
-	+ [ ] backgroundにmessageを送る
-	+ [ ] background側で処理を書く
-* [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
-* [ ] クライアントの設定あたりのvalidationについて整理する
-* [ ] クライアントの権限テーブル (続き)
-	+ [ ] 実際に公開鍵の取得や署名のときに権限を確認する
-		- [ ] 権限が足りないときにはエラーメッセージをrejectの引数として返す
-		- [ ] 画面にpopover機能で表示する
-* [ ] TODOを見返し修正する
 * [ ] Profileの編集領域にクライアント名とURLPatternを表示する
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする

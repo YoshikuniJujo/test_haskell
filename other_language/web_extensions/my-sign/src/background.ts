@@ -126,6 +126,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "permissionChanged",
 		publicKey: Uint8Array, value: "none" | "publicKey" | "sign" }
 	| { class: "Options"; method: "deleteClientCancel"; }
+	| { class: "Options"; method: "clientSettingsRevert"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -141,6 +142,15 @@ loadCommonState(ostt: OptionsState): Promise<void>
 	const cs = await DB.getCurrentSet();
 	if (cs === undefined) throw new Error("warui1");
 	ostt.setCurrentSetUuid(cs);
+}
+
+async function
+loadClient(ostt: OptionsState): Promise<void>
+{
+	const clnt = await DB.getClientSummaryRaw(ostt.clientUuid());
+	ostt.setClientName(clnt.name);
+	ostt.setUrlPattern(clnt.urlPattern);
+	ostt.priorityInput(clnt.priority);
 }
 
 async function
@@ -504,6 +514,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "deleteClientCancel": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.clientSettingsMode();
+			return ostt.optionsObject();
+		}
+		case "clientSettingsRevert": {
+			const ostt = await optionsStateFromSender(s);
+			await loadClient(ostt);
 			return ostt.optionsObject();
 		}
 	}
