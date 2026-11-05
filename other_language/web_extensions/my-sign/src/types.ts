@@ -32,6 +32,20 @@ export type EditingClient = Omit<Client, "uuid" | "publicKey" | "priority"> & {
 	publicKey: Uint8Array | undefined,
 	priority: number | null }
 
+export function
+defaultClient(uuid: string, name: string, urlPattern: string, priority: number)
+	: EditingClient
+{
+	return {
+		uuid: uuid, name: name,
+		urlPattern: urlPattern, priority: priority,
+		publicKey: undefined,
+		openSettingsByClick: true,
+		backgroundColor: "#008000", backgroundOpacity: 0.5,
+		positionX: 100, positionY: 0, displayAccount: true
+	};
+}
+
 export function defaultEditingClient(): EditingClient
 {
 	return {

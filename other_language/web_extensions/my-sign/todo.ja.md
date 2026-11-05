@@ -666,26 +666,29 @@ TODO
 			* [x] tab IDは必要ない
 			* [x] client UUIDもメッセージで渡す必要はない
 		- [x] 実装する
-* [ ] 存在しないクライアントを作成する流れでない場合に
+* [x] 存在しないクライアントを作成する流れでない場合に
 	クライアント編集画面に以下のボタンを置く(続き)
 	+ Revert/Apply/Cancel/OK
-	+ [ ] backgroundにmessageを送る
+	+ [x] backgroundにmessageを送る
 		- [x] Revertのメッセージを送る("clientSettingsRevert")
 			* [x] 何もせずoptionsObjectを返す処理をbackgroundに書いておく
 			* [x] メッセージを送る
 		- [x] Applyのメッセージを送る
 			* [x] ファームのバリデーションをチェックする
 			* [x] メッセージを送る
-		- [ ] Cancelのメッセージを送る
-	+ [ ] background側で処理を書く
+		- [x] Cancelのメッセージを送る
+	+ [x] background側で処理を書く
 		- [x] Revertの処理を書く
 		- [x] Applyの処理を書く
 			* [x] URLPatternが文法的に正しいことをチェックする
 				+ [x] 正しくない場合にはエラーメッセージを表示する
 			* [x] DBに書き込む
-		- [ ] Cancelの処理を書く
-* [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
+		- [x] Cancelの処理を書く
+* [x] openClientDetailのDB.getClient()のところを修正する
+* [x] revertのDB.getClient()のところを修正する
 * [ ] クライアントの設定あたりのvalidationについて整理する
+	+ [ ] formを分ける
+* [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
 * [ ] クライアントの権限テーブル (続き)
 	+ [ ] 実際に公開鍵の取得や署名のときに権限を確認する
 		- [ ] 権限が足りないときにはエラーメッセージをrejectの引数として返す

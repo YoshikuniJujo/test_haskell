@@ -129,6 +129,7 @@ const clientDeleteOk = getElement<HTMLButtonElement>("#client-delete-ok");
 
 const clientSettingsRevert = getElement<HTMLButtonElement>("#client-revert");
 const clientSettingsApply = getElement<HTMLButtonElement>("#client-apply");
+const clientSettingsCancel = getElement<HTMLButtonElement>("#client-cancel");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -378,6 +379,10 @@ clientSettingsRevert.addEventListener("click", () => {
 clientSettingsApply.addEventListener("click", () => {
 	if (!clientFormD.reportValidity()) return;
 	sendMethodAndLoadWithKind("clientOk", "apply");
+});
+
+clientSettingsCancel.addEventListener("click", () => {
+	sendMethodAndLoad("clientListMode");
 });
 
 // ------------------------------------------------------------------------

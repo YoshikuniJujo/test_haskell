@@ -334,6 +334,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			DB.putClientNoProfile(await ostt.getClient());
 
+			loadCommonState(ostt);
 			if (m.kind === "ok") ostt.permissionSettingsMode();
 			return ostt.optionsObject();
 		}

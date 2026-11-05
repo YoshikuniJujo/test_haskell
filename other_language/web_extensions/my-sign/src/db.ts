@@ -1,7 +1,7 @@
 import type {
 	ClientSet, Client, ClientSummary, ClientSummaryRaw, EditingClient,
 	Account, PublicKeyOption, UUID, Profile, Permission } from "./types.js";
-import { fromUuid, noPermission, setPermissionSign } from "./types.js";
+import { fromUuid, noPermission, setPermissionSign, defaultClient } from "./types.js";
 import { unit } from "./data/unit.js";
 import { toHex } from "./tools.js";
 
@@ -761,12 +761,14 @@ getClient(uuid: string): Promise<EditingClient>
 
 		function finish() {
 			if (!done1 || !done2) return;
-			if (r === undefined || r2 === undefined) {
-				rj(new Error(`no such client: ${uuid}`));
+//			if (r === undefined || r2 === undefined) {
+			if (r2 === undefined) {
+				rj(new Error(`no such client: ${uuid}, ${r}, ${r2}`));
 				return;
 			}
-
-				rs({
+			if (r === undefined)
+				rs(defaultClient(r2.uuid, r2.name, r2.urlPattern, r2.priority));
+			else	rs({
 					uuid: r2.uuid,
 					name: r2.name,
 					urlPattern: r2.urlPattern,
