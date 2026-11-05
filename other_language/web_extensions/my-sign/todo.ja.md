@@ -657,10 +657,15 @@ TODO
 	+ [x] Cancelボタンで画面をもどる
 	+ [x] Deleteボタンで下で作った確認画面を開かないようにする
 	+ [x] set-clientsテーブルにclientUuidでindexをつける
-	+ [ ] DB.deleteClientで関連するテーブルの要素も削除する
+	+ [x] DB.deleteClientで関連するテーブルの要素も削除する
 		- [x] set-clientsテーブルの要素を削除する
-		- [ ] permissionsテーブルの要素を削除する
+		- [x] permissionsテーブルの要素を削除する
 	+ [ ] OKボタンでDeleteを実行しClientList modeに移行する
+		- [x] 前に用意したメッセージを単に送るだけでいいか考える
+		- [ ] background.tsのdeleteClientConfirmedを修正する
+			* [ ] tab IDは必要ない
+			* [ ] client UUIDもメッセージで渡す必要はない
+		- [ ] 実装する
 	+ [ ] Set機能を使っているかどうかでユーザーへのメッセージを変化させる
 * [ ] Delete機能の実装 (中断)
 	+ [x] confirmation.htmlを作成する
