@@ -881,7 +881,9 @@ getPublicKey(url: string, tid: number): Promise<Uint8Array | Err>
 			const p = await DB.getPermission(c.uuid, c.publicKey);
 			console.log("background.ts: GET ACCOUNT PUBLIC KEY:", p);
 			if (p && p.getPublicKey) return c.publicKey;
-			else return err("not permitted");
+			else return err(
+				"This client is not permitted " +
+				"to access this account's public key." );
 		}
 
 	}

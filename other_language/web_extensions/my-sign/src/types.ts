@@ -1,11 +1,11 @@
 import { isUuid, isUrl, toHex } from "./tools.js";
 
-export type Err = { type: "Err", errMessage: string };
+export type Err = { type: "Err", message: string };
 
 export function
 err(msg: string): Err
 {
-	return { type: "Err", errMessage: msg }
+	return { type: "Err", message: msg }
 }
 
 export function

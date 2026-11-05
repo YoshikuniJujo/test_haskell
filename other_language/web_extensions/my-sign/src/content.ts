@@ -149,7 +149,8 @@ const nostr = {
 					method: "publicKey"
 				});
 				if (isErr(v)) {
-					rj("foobar");
+					rj(cloneInto(new Error(v.message), window));
+					showPopover(v.message);
 					return;
 				}
 				rs(v);
