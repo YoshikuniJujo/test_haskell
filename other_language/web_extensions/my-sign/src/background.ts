@@ -101,7 +101,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "opacityInput"; value: number }
 	| { class: "Options"; method: "openSettingsByClickChanged"; checked: boolean }
 	| { class: "Options"; method: "currentKeyInput"; value: string }
-	| { class: "Options"; method: "clientOk"; }
+	| { class: "Options"; method: "clientOk"; kind: "apply" | "ok"; }
 	| { class: "Options"; method: "deleteClient"; }
 	| { class: "Options"; method: "deleteClientConfirmed"; }
 	| { class: "Options"; method: "checkUrlPattern"; }
@@ -334,7 +334,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			DB.putClientNoProfile(await ostt.getClient());
 
-			ostt.permissionSettingsMode();
+			if (m.kind === "ok") ostt.permissionSettingsMode();
 			return ostt.optionsObject();
 		}
 		case "deleteClient": {

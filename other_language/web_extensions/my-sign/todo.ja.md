@@ -673,11 +673,16 @@ TODO
 		- [x] Revertのメッセージを送る("clientSettingsRevert")
 			* [x] 何もせずoptionsObjectを返す処理をbackgroundに書いておく
 			* [x] メッセージを送る
-		- [ ] Applyのメッセージを送る
+		- [x] Applyのメッセージを送る
+			* [x] ファームのバリデーションをチェックする
+			* [x] メッセージを送る
 		- [ ] Cancelのメッセージを送る
 	+ [ ] background側で処理を書く
 		- [x] Revertの処理を書く
-		- [ ] Applyの処理を書く
+		- [x] Applyの処理を書く
+			* [x] URLPatternが文法的に正しいことをチェックする
+				+ [x] 正しくない場合にはエラーメッセージを表示する
+			* [x] DBに書き込む
 		- [ ] Cancelの処理を書く
 * [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
 * [ ] クライアントの設定あたりのvalidationについて整理する

@@ -128,6 +128,7 @@ const clientDeleteCancel =
 const clientDeleteOk = getElement<HTMLButtonElement>("#client-delete-ok");
 
 const clientSettingsRevert = getElement<HTMLButtonElement>("#client-revert");
+const clientSettingsApply = getElement<HTMLButtonElement>("#client-apply");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -191,7 +192,7 @@ openSettingsByClick.addEventListener("change", () => {
 });
 
 clientOk.addEventListener("click", async () => {
-	sendMethodAndLoad("clientOk");
+	sendMethodAndLoadWithKind("clientOk", "ok");
 });
 
 deleteClient.addEventListener("click", async () => {
@@ -372,6 +373,11 @@ clientDeleteOk.addEventListener("click", () => {
 
 clientSettingsRevert.addEventListener("click", () => {
 	sendMethodAndLoad("clientSettingsRevert");
+});
+
+clientSettingsApply.addEventListener("click", () => {
+	if (!clientFormD.reportValidity()) return;
+	sendMethodAndLoadWithKind("clientOk", "apply");
 });
 
 // ------------------------------------------------------------------------
@@ -705,4 +711,13 @@ async function
 sendMethodAndLoad(mtd: string)
 {
 	await loadOptions(await sendMethod(mtd));
+}
+
+async function
+sendMethodAndLoadWithKind(mtd: string, knd: string)
+{
+	await loadOptions(await browser.runtime.sendMessage({
+		class: "Options",
+		method: mtd,
+		kind: knd }));
 }
