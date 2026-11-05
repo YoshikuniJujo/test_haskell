@@ -437,6 +437,14 @@ export class OptionsState
 	{
 		this.#optionsObject.atLeastOnePermissionHidden = aoph;
 	}
+
+	onlyClientOk(): void
+	{
+		this.#optionsObject.clientDeleteHidden = true;
+		this.#optionsObject.clientRevertHidden = true;
+		this.#optionsObject.clientApplyHidden = true;
+		this.#optionsObject.clientCancelHidden = true;
+	}
 }
 
 async function

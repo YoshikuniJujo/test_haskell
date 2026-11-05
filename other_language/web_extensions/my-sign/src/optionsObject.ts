@@ -74,7 +74,12 @@ export type OptionsObject = {
 	editMode: EditMode,
 
 	permissionSettingsExitHidden: boolean,
-	atLeastOnePermissionHidden: boolean
+	atLeastOnePermissionHidden: boolean,
+
+	clientDeleteHidden: boolean,
+	clientRevertHidden: boolean,
+	clientApplyHidden: boolean,
+	clientCancelHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -131,7 +136,12 @@ export function defaultOptionsObject(): OptionsObject
 		editMode: EditProfileMode,
 
 		permissionSettingsExitHidden: false,
-		atLeastOnePermissionHidden: true
+		atLeastOnePermissionHidden: true,
+
+		clientDeleteHidden: false,
+		clientRevertHidden: false,
+		clientApplyHidden: false,
+		clientCancelHidden: false
 	};
 }
 

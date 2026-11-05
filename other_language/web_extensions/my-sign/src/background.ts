@@ -212,8 +212,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					// ostt.setEditMode(EditClientMode);
 					ostt.clientSettingsMode();
 				}
+				ostt.onlyClientOk();
+				ostt.onlyNextButton();
 				ostt.onlyOkButton();
-				ostt.onlyNextButton()
 			}
 
 			if (tg.openType === "uuid" && id !== null) {

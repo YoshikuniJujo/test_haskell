@@ -688,7 +688,14 @@ TODO
 * [x] revertのDB.getClient()のところを修正する
 * [x] クライアントの設定あたりのvalidationについて整理する
 	+ [x] formを分ける
-* [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
+* [x] クライアント作成する流れの場合にはOKボタン以外は隠す
+	+ 消すのはDelete/Revert/Apply/Cancel
+	+ [x] optionsObjectにそれぞれのhiddenを追加
+	+ [x] options.tsでそれを反映するようにする
+	+ [x] optionsStateでそれらをまとめてhiddenにするメソッドを作成
+		名前はonlyClientOkあたりか
+	+ [x] "url"のところで上記のメソッドを呼ぶ
+* [ ] Set選択画面でselect&editのときには消えないようにする
 * [ ] クライアントの権限テーブル (続き)
 	+ [ ] 実際に公開鍵の取得や署名のときに権限を確認する
 		- [ ] 権限が足りないときにはエラーメッセージをrejectの引数として返す

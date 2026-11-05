@@ -195,6 +195,7 @@ openSettingsByClick.addEventListener("change", () => {
 });
 
 clientOk.addEventListener("click", async () => {
+	if (!clientFormDClientSettings.reportValidity()) return;
 	sendMethodAndLoadWithKind("clientOk", "ok");
 });
 
@@ -546,6 +547,11 @@ loadOptions(obj: OptionsObject)
 
 	permissionSettingsExit.hidden = obj.permissionSettingsExitHidden;
 	atLeastOnePermission.hidden = obj.atLeastOnePermissionHidden;
+
+	deleteClient.hidden = obj.clientDeleteHidden;
+	clientSettingsRevert.hidden = obj.clientRevertHidden;
+	clientSettingsApply.hidden = obj.clientApplyHidden;
+	clientSettingsCancel.hidden = obj.clientCancelHidden;
 }
 
 function
