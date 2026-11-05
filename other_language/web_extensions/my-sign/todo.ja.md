@@ -686,8 +686,8 @@ TODO
 		- [x] Cancelの処理を書く
 * [x] openClientDetailのDB.getClient()のところを修正する
 * [x] revertのDB.getClient()のところを修正する
-* [ ] クライアントの設定あたりのvalidationについて整理する
-	+ [ ] formを分ける
+* [x] クライアントの設定あたりのvalidationについて整理する
+	+ [x] formを分ける
 * [ ] クライアント作成する流れの場合にはOKボタン以外は隠す
 * [ ] クライアントの権限テーブル (続き)
 	+ [ ] 実際に公開鍵の取得や署名のときに権限を確認する

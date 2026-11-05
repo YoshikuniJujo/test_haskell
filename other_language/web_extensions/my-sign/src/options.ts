@@ -50,6 +50,8 @@ const clientsElm = getElement<HTMLElement>("#clients");
 const newClient = getElement<HTMLElement>("#new-client");
 const clientDetail = getElement<HTMLElement>("#client-detail");
 const clientFormD = getElement<HTMLFormElement>("#client-form-d");
+const clientFormDClientSettings = getElement<HTMLFormElement>(
+	"#client-form-d-client-settings" );
 const clientNameD = getElement<HTMLInputElement>("#client-name-d");
 const urlPatternD = getElement<HTMLInputElement>("#url-pattern-d");
 const usePriority = getElement<HTMLInputElement>("#use-priority");
@@ -377,7 +379,7 @@ clientSettingsRevert.addEventListener("click", () => {
 });
 
 clientSettingsApply.addEventListener("click", () => {
-	if (!clientFormD.reportValidity()) return;
+	if (!clientFormDClientSettings.reportValidity()) return;
 	sendMethodAndLoadWithKind("clientOk", "apply");
 });
 
