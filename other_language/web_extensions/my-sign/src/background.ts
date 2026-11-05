@@ -462,7 +462,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				method: "update" });
 			await broadcast({ method: "clientChanged" });
 
-			if (tag.openType == "set") {
+			if (
+				tag.openType == "set" &&
+				selectOrToString(sso) !== "select-and-edit"
+			) {
 				console.log("background.ts: SELECT SET: OPEN TYPE: set");
 				const sts = await otbs.complete(tag.id, s.tab.id);
 				const st0 = sts[0];
