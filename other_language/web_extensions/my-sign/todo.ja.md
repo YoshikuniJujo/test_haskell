@@ -696,17 +696,19 @@ TODO
 		名前はonlyClientOkあたりか
 	+ [x] "url"のところで上記のメソッドを呼ぶ
 * [x] Set選択画面でselect&editのときには消えないようにする
-* [ ] クライアントの権限テーブル (続き)
+* [x] クライアントの権限テーブル (続き)
 	+ [x] 実際に公開鍵の取得のときに権限を確認する
 		- [x] データベースからbooleanを取得
 		- [x] types.tsにErr型を定義する
 		- [x] orErrを定義
 		- [x] 権限が足りないときにはエラーメッセージをrejectの引数として返す
 		- [x] 画面にpopover機能で表示する
-	+ [ ] 実際に署名のときに権限を確認する
-		- [ ] データベースからbooleanを取得
-		- [ ] falseならreject
-		- [ ] falseならpopoverで表示
+	+ [x] 実際に署名のときに権限を確認する
+		- [x] データベースからbooleanを取得
+		- [x] falseならreject
+		- [x] falseならpopoverで表示
+	+ [x] エラーメッセージでreloadするようにアドバイスする
+* [ ] profile settingsのところのDeleteボタンを消す
 * [ ] TODOを見返し修正する
 * [ ] Delete機能の新実装 (続き)
 	+ [ ] 消すクライアントの名前とURLPatternを表示する

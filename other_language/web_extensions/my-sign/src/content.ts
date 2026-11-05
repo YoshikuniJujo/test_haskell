@@ -146,7 +146,7 @@ const nostr = {
 				});
 
 				const v = await browser.runtime.sendMessage({
-					method: "publicKey"
+					method: "publicKey", kind: "get"
 				});
 				if (isErr(v)) {
 					rj(cloneInto(new Error(v.message), window));
@@ -164,8 +164,13 @@ const nostr = {
 		return new window.Promise(async (rs, rj) => {
 			try {
 				const pbk = await browser.runtime.sendMessage({
-					method: "publicKey"
+					method: "publicKey", kind: "sign"
 				});
+				if (isErr(pbk)) {
+					rj(cloneInto(new Error(pbk.message), window));
+					showPopover(pbk.message);
+					return;
+				}
 				await new Promise((rs, rj) => {
 					addToArrayMap(
 						requestsWaitingForPassword, pbk,

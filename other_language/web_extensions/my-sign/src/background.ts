@@ -565,7 +565,7 @@ optionsStateFromSender(s: browser.runtime.MessageSender): Promise<OptionsState>
 
 type GlobalMethod =
 	| { method: "accountDisplayInfo"; }
-	| { method: "publicKey"; }
+	| { method: "publicKey"; kind: "get" | "sign" }
 	| { method: "prepareSymmetricKey", pubKey: string; }
 	| { method: "registerSymmetricKey", pubKey: string, pswd: Uint8Array; }
 	| { method: "signEvent", pubKey: string, event: Event; }
@@ -603,7 +603,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			if (!s.tab) throw new Error("bad7");
 			if (s.tab.id === undefined) throw new Error("bad8");
 			if (!s.url) throw new Error("bad9");
-			return orErr(hex, await getPublicKey(s.url, s.tab.id));
+			return orErr(hex, await getPublicKey(s.url, s.tab.id, m.kind));
 		case "prepareSymmetricKey":
 			if (!s.tab) throw new Error("bad10");
 			if (s.tab.id === undefined) throw new Error("bad11");
@@ -855,16 +855,16 @@ rgSymkey(tid: number, pbk: string)
 async function
 signEvent(pbk: string, evt: Event)
 {
-			const acc = await getAccount(unhex(pbk));
-			const { pswds = {} } = await browser.storage.session.get("pswds");
-			const smk = pswds[pbk];
-			return acc.signEvent(evt, smk);
+	const acc = await getAccount(unhex(pbk));
+	const { pswds = {} } = await browser.storage.session.get("pswds");
+	const smk = pswds[pbk];
+	return acc.signEvent(evt, smk);
 }
 
 const requestsWAitingForClient = new Map();
 
 async function
-getPublicKey(url: string, tid: number): Promise<Uint8Array | Err>
+getPublicKey(url: string, tid: number, knd: "get" | "sign"): Promise<Uint8Array | Err>
 {
 	console.log("background.ts: GET PUBLIC KEY");
 	const pbk = await getAccountPublicKey();
@@ -880,10 +880,24 @@ getPublicKey(url: string, tid: number): Promise<Uint8Array | Err>
 			console.log("background.ts: GET ACCOUNT PUBLIC KEY:", c);
 			const p = await DB.getPermission(c.uuid, c.publicKey);
 			console.log("background.ts: GET ACCOUNT PUBLIC KEY:", p);
-			if (p && p.getPublicKey) return c.publicKey;
-			else return err(
-				"This client is not permitted " +
-				"to access this account's public key." );
+			let b: boolean;
+			let em: string = "";
+			if (!p) b = false;
+			else switch (knd) {
+				case "get":
+					b = p.getPublicKey;
+					em = "This client is not permitted " +
+						"to access this account's public key." +
+						"Please update the permissions and reload the page."
+					break;
+				case "sign":
+					b = p.sign;
+					em = "This client is not permitted " +
+						"to sign events for this account." +
+						"Please update the permissions and reload the page."
+					break; }
+			if (b) return c.publicKey;
+			else return err(em);
 		}
 
 	}
