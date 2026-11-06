@@ -172,6 +172,8 @@
 
 		<h2>Account</h2>
 
+		<button id="new-account">New Account</button>
+
 		<form id="generate-form">
 			<label>
 				Account name
@@ -190,7 +192,12 @@
 				Show password
 			</label>
 			<div id="password-error" hidden>Passwords do not match.</div>
-			<button id="generate" type="submit">Generate</button>
+			<div class="edit-client-buttons">
+				<div class="right-buttons">
+					<button id="generate-form-exit" type="button">Exit</button>
+					<button id="generate" type="submit">Generate</button>
+				</div>
+			</div>
 		</form>
 
 		<hr>

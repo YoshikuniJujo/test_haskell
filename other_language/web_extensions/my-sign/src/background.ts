@@ -38,7 +38,6 @@ const contentTabs = new Set<number>();
 
 const itbs = new InputTabs("input");
 const otbs = new InputTabs("options");
-const ctbs = new InputTabs("confirmation");
 
 const optionsStates: Map<string, OptionsState> = new Map();
 
@@ -978,19 +977,15 @@ unhex(s: string)
 }
 
 async function
-getAccount(pbk: Uint8Array)
+getAccount(pbk: Uint8Array): Promise<EncryptedSecretKey>
 {
-			const acc = await DB.getAccount(pbk);
-			return new EncryptedSecretKey(
-				acc.publicKey,
-				acc.name,
-				acc.logN,
-				acc.salt,
-				acc.nonce,
-				acc.keySecurityByte,
-				acc.ciphertext,
-				acc.saltForCheckPassword,
-				acc.hashForCheckPassword )
+	const acc = await DB.getAccount(pbk);
+	return new EncryptedSecretKey(
+		acc.publicKey, acc.name,
+		acc.logN, acc.salt, acc.nonce,
+		acc.keySecurityByte, acc.ciphertext,
+		acc.saltForCheckPassword,
+		acc.hashForCheckPassword )
 }
 
 async function
