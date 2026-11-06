@@ -86,12 +86,29 @@ label {
 	cursor: pointer;
 }
 
+.account {
+	display: block;
+	font-size: 1.2em;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	text-align: left;
+	cursor: pointer;
+}
+
 .permission {
 	display: block;
 }
 
 .client:hover,
 .client:focus-visible {
+	font-style: italic;
+	outline: none;
+}
+
+.account:hover,
+.account:focus-visible {
 	font-style: italic;
 	outline: none;
 }

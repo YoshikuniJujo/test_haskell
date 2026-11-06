@@ -1,5 +1,9 @@
 import { isUuid, isUrl, toHex } from "./tools.js";
 
+export type KeyWithName = {
+	publicKey: Uint8Array,
+	name: string }
+
 export type Err = { type: "Err", message: string };
 
 export function

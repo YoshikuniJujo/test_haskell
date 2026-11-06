@@ -198,10 +198,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.setOpenInTabButtonHidden(tg.openType !== "browser");
 
 			await loadCommonState(ostt);
-			console.log(
-				"background.ts: OPTIONS BEGIN: Accounts:",
-				await DB.getPublicKeysWithNames()
-			);
+			const accl = await DB.getPublicKeysWithNames()
+			console.log("background.ts: OPTIONS BEGIN: Accounts:", accl);
+			ostt.setAccountList(accl);
 
 			optionsStates.set(id ?? "browser", ostt);
 			ostt.clientSettingsMode();

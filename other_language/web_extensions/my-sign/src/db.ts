@@ -1,6 +1,6 @@
 import type {
 	ClientSet, Client, ClientSummary, ClientSummaryRaw, EditingClient,
-	Account, PublicKeyOption, UUID, Profile, Permission } from "./types.js";
+	Account, PublicKeyOption, UUID, Profile, Permission, KeyWithName } from "./types.js";
 import { fromUuid, noPermission, setPermissionSign, defaultClient } from "./types.js";
 import { unit } from "./data/unit.js";
 import { toHex } from "./tools.js";
@@ -518,10 +518,6 @@ deleteClient(uuid: UUID)
 		tx.onerror = () => rj(tx.error);
 	});
 }
-
-type KeyWithName = {
-	publicKey: Uint8Array,
-	name: string }
 
 export async function
 getPublicKeysWithNames(): Promise<KeyWithName[]>

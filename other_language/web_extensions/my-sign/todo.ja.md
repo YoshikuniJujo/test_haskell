@@ -779,19 +779,29 @@ TODO
 		- [x] 上記の結果をoptions画面の初期化処理のところでconsole.logする
 		- [x] HTMLに表示領域を作成(#account-list-area);
 			* [x] textcontentsに適当な文字列を入れてみる
-		- [ ] アカウントの配列をoptionsObjectに追加
-		- [ ] アカウントの配列を読み込むメソッドをoptionsStateに追加
-		- [ ] options画面の初期化処理にアカウントの配列の追加を追加
-		- [ ] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
+		- [x] アカウントの配列をoptionsObjectに追加
+		- [x] アカウントの配列を読み込むメソッドをoptionsStateに追加
+		- [x] options画面の初期化処理にアカウントの配列の追加を追加
+		- [x] rowをdivではなくbuttonにする
+		- [x] CSSでボタンらしくない見た目にする
 		- [ ] options.tsでアカウントリスト表示処理を追加
+			* [x] 表示
 			* [ ] それぞれの要素にクリックしたときにメッセージを送る処理を追加
-	+ [ ] ラジオボタンを配置する(Export/Delete)
+		- [ ] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
+	+ [ ] ラジオボタンを配置する(Rename/Export/Delete)
 		- [ ] HTMLに追加
 		- [ ] optionsObjectに追加
 		- [ ] optionsStateに追加
 		- [ ] backgroundにメッセージを送信
 		- [ ] background側での処理
 		- [ ] loadOptionsで反映させる
+	+ [ ] Rename機能を追加
+		- [ ] db.tsに追加
+		- [ ] HTMLの画面を追加
+		- [ ] 画面の遷移のところを作成(optionsObject, optionsState, options)
+		- [ ] 名前とPublicKeyの入力
+		- [ ] 名前のinputの部分
+		- [ ] Cancel/OKボタン
 	+ [ ] ExportがONになっているときにExport確認画面に遷移させる
 		- [ ] HTMLにExport確認領域を追加
 		- [ ] optionsObjectにhiddenを追加

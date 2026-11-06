@@ -572,6 +572,17 @@ loadOptions(obj: OptionsObject)
 	generateForm.hidden = obj.generateFormHidden;
 
 	accountListArea.textContent = "HERE YOU ARE!"
+
+	console.log("options.ts: LOAD OPTIONS: accountList =", obj.accountList);
+	for (const acc of obj.accountList) {
+		const row = document.createElement("button");
+		row.textContent = publicKeyToString(acc.publicKey, acc.name); // Bech32.encode("npub", acc.publicKey);
+		row.className = "account";
+		row.addEventListener("click", () => {
+			console.log("CLICKED:", acc);
+		});
+		accountListArea.append(row);
+	}
 }
 
 function
