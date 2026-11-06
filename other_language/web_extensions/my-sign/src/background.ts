@@ -128,6 +128,8 @@ type OptionsMethod =
 	| { class: "Options"; method: "clientSettingsRevert"; }
 	| { class: "Options"; method: "generateFormMode"; }
 	| { class: "Options"; method: "accountListMode"; }
+	| { class: "Options"; method: "accountClicked",
+		name: string, publicKey: string }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -540,6 +542,13 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "accountListMode": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.accountListMode();
+			return ostt.optionsObject();
+		}
+		case "accountClicked": {
+			const ostt = await optionsStateFromSender(s);
+
+			console.log("background.ts: ACCOUNT CLICKED:", m.name, m.publicKey);
+
 			return ostt.optionsObject();
 		}
 	}

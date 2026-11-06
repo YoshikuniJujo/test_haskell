@@ -786,7 +786,8 @@ TODO
 		- [x] CSSでボタンらしくない見た目にする
 		- [ ] options.tsでアカウントリスト表示処理を追加
 			* [x] 表示
-			* [ ] それぞれの要素にクリックしたときにメッセージを送る処理を追加
+			* [x] それぞれの要素にクリックしたときにメッセージを送る処理を追加
+				+ "accountClicked"でname, publicKeyを送信する
 		- [ ] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
 	+ [ ] ラジオボタンを配置する(Rename/Export/Delete)
 		- [x] HTMLに追加

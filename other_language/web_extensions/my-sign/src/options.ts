@@ -578,8 +578,14 @@ loadOptions(obj: OptionsObject)
 		const row = document.createElement("button");
 		row.textContent = publicKeyToString(acc.publicKey, acc.name); // Bech32.encode("npub", acc.publicKey);
 		row.className = "account";
-		row.addEventListener("click", () => {
+		row.addEventListener("click", async () => {
 			console.log("CLICKED:", acc);
+			const obj = await browser.runtime.sendMessage({
+				class: "Options",
+				method: "accountClicked",
+				name: acc.name,
+				publicKey: acc.publicKey });
+			loadOptions(obj);
 		});
 		accountListArea.append(row);
 	}
