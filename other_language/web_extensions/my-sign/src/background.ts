@@ -126,6 +126,8 @@ type OptionsMethod =
 		publicKey: Uint8Array, value: "none" | "publicKey" | "sign" }
 	| { class: "Options"; method: "deleteClientCancel"; }
 	| { class: "Options"; method: "clientSettingsRevert"; }
+	| { class: "Options"; method: "generateFormMode"; }
+	| { class: "Options"; method: "accountListMode"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -146,10 +148,12 @@ loadCommonState(ostt: OptionsState): Promise<void>
 async function
 loadClient(ostt: OptionsState): Promise<void>
 {
-	const clnt = await DB.getClientSummaryRaw(ostt.clientUuid());
-	ostt.setClientName(clnt.name);
-	ostt.setUrlPattern(clnt.urlPattern);
-	ostt.priorityInput(clnt.priority);
+	if (ostt.doesClientUuidExist()) {
+		const clnt = await DB.getClientSummaryRaw(ostt.clientUuid());
+		ostt.setClientName(clnt.name);
+		ostt.setUrlPattern(clnt.urlPattern);
+		ostt.priorityInput(clnt.priority);
+	}
 }
 
 async function
@@ -523,6 +527,16 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "clientSettingsRevert": {
 			const ostt = await optionsStateFromSender(s);
 			await loadClient(ostt);
+			return ostt.optionsObject();
+		}
+		case "generateFormMode": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.generateAccountMode();
+			return ostt.optionsObject();
+		}
+		case "accountListMode": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.accountListMode();
 			return ostt.optionsObject();
 		}
 	}
@@ -1135,7 +1149,8 @@ browser.runtime.onConnect.addListener(async p => {
 		const esk = await EncryptedSecretKey.generate(
 			ostt.optionsObject().accountName, m2.password );
 		DB.addKeyPair(esk.toObject_563e7e39d4());
-		ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
+		if (ostt.doesClientUuidExist())
+			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
 		p.postMessage({ method: "generateDone" });
 		p.disconnect();
 		browser.runtime.sendMessage({

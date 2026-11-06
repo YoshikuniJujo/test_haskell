@@ -133,6 +133,11 @@ const clientSettingsRevert = getElement<HTMLButtonElement>("#client-revert");
 const clientSettingsApply = getElement<HTMLButtonElement>("#client-apply");
 const clientSettingsCancel = getElement<HTMLButtonElement>("#client-cancel");
 
+const accountList = getElement<HTMLElement>("#account-list");
+const newAccount = getElement<HTMLButtonElement>("#new-account");
+const generateForm = getElement<HTMLElement>("#generate-form");
+const generateFormExit = getElement<HTMLButtonElement>("#generate-form-exit");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -389,6 +394,14 @@ clientSettingsCancel.addEventListener("click", () => {
 	sendMethodAndLoad("clientListMode");
 });
 
+newAccount.addEventListener("click", () => {
+	sendMethodAndLoad("generateFormMode");
+});
+
+generateFormExit.addEventListener("click", () => {
+	sendMethodAndLoad("accountListMode");
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
@@ -553,6 +566,9 @@ loadOptions(obj: OptionsObject)
 	clientSettingsRevert.hidden = obj.clientRevertHidden;
 	clientSettingsApply.hidden = obj.clientApplyHidden;
 	clientSettingsCancel.hidden = obj.clientCancelHidden;
+
+	accountList.hidden = obj.accountListHidden;
+	generateForm.hidden = obj.generateFormHidden;
 }
 
 function

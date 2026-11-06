@@ -445,6 +445,18 @@ export class OptionsState
 		this.#optionsObject.clientApplyHidden = true;
 		this.#optionsObject.clientCancelHidden = true;
 	}
+
+	accountListMode(): void
+	{
+		this.#optionsObject.accountListHidden = false;
+		this.#optionsObject.generateFormHidden = true;
+	}
+
+	generateAccountMode(): void
+	{
+		this.#optionsObject.accountListHidden = true;
+		this.#optionsObject.generateFormHidden = false;
+	}
 }
 
 async function

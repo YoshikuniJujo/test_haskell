@@ -763,13 +763,15 @@ TODO
 * [x] アカウント表示領域の文字の透過度を背景の透過度に合わせる
 * [ ] ncryptsecのエクスポート
 	+ [x] 今のAccount領域にNew Accountボタンを追加する
-	+ [ ] 今初めから出ている画面をそのボタンで開くようにする
-		- [ ] optionsObjectにgenerateFormHiddenを追加する
-		- [ ] optionsStateでそのモードに遷移するメソッドを書く
-		- [ ] options.tsでhiddenを画面に反映する
-		- [ ] New Accountボタンのクリックで遷移するようにする
+	+ [x] 今初めから出ている画面をそのボタンで開くようにする
+		- [x] optionsObjectにgenerateFormHiddenを追加する
+		- [x] optionsObjectにaccountListHiddenを追加する
+		- [x] HTMLで&lt;div id="account-list"&gt;を追加する
+		- [x] optionsStateでそのモードに遷移するメソッドを書く
+		- [x] options.tsでhiddenを画面に反映する
+		- [x] New Accountボタンのクリックで遷移するようにする
 		- [x] Exitボタンを作る
-		- [ ] Exitボタンでもどれるようにする
+		- [x] Exitボタンでもどれるようにする
 		- [x] GenerateボタンとExitボタンとを右寄せにする
 	+ [ ] アカウントリストを表示する
 	+ [ ] ラジオボタンを配置する

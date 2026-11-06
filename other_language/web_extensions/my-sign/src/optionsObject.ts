@@ -79,7 +79,10 @@ export type OptionsObject = {
 	clientDeleteHidden: boolean,
 	clientRevertHidden: boolean,
 	clientApplyHidden: boolean,
-	clientCancelHidden: boolean
+	clientCancelHidden: boolean,
+
+	accountListHidden: boolean,
+	generateFormHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -141,7 +144,10 @@ export function defaultOptionsObject(): OptionsObject
 		clientDeleteHidden: false,
 		clientRevertHidden: false,
 		clientApplyHidden: false,
-		clientCancelHidden: false
+		clientCancelHidden: false,
+
+		accountListHidden: false,
+		generateFormHidden: true
 	};
 }
 
