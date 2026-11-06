@@ -774,10 +774,34 @@ TODO
 		- [x] Exitボタンでもどれるようにする
 		- [x] GenerateボタンとExitボタンとを右寄せにする
 	+ [ ] アカウントリストを表示する
-	+ [ ] ラジオボタンを配置する
+		- [x] DB.getAllAccountsを定義する
+			* DB.getPublicKeysWithNamesで定義済み
+		- [x] 上記の結果をoptions画面の初期化処理のところでconsole.logする
+		- [ ] HTMLに表示領域を作成
+		- [ ] アカウントの配列をoptionsObjectに追加
+		- [ ] アカウントの配列を読み込むメソッドをoptionsStateに追加
+		- [ ] options画面の初期化処理にアカウントの配列の追加を追加
+		- [ ] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
+		- [ ] options.tsでアカウントリスト表示処理を追加
+	+ [ ] ラジオボタンを配置する(Export/Delete)
+		- [ ] HTMLに追加
+		- [ ] optionsObjectに追加
+		- [ ] optionsStateに追加
+		- [ ] backgroundにメッセージを送信
+		- [ ] background側での処理
+		- [ ] loadOptionsで反映させる
 	+ [ ] ExportがONになっているときにExport確認画面に遷移させる
+		- [ ] HTMLにExport確認領域を追加
+		- [ ] optionsObjectにhiddenを追加
+		- [ ] optionsStateにmodeを追加
+		- [ ] loadOPtionsで反映させる
 	+ [ ] Exoprt確認画面でOKを押すとダウンロードする
+		- [ ] download権限を追加
+		- [ ] ncryptsecの中身の文字列を作成
+		- [ ] ダウンロード(ファイル名はncryptsec1[10文字]_[6文字].bech32か)
 	+ [ ] completeになったところでDBにExportの時間を保存する
+		- [ ] completeを確認
+		- [ ] DBにダウンロードの日時を追加
 * [ ] ncryptsecのインポート
 * [ ] nsecのインポート
 * [ ] TODOを見返し修正する
