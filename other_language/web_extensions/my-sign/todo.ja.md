@@ -789,7 +789,7 @@ TODO
 			* [ ] それぞれの要素にクリックしたときにメッセージを送る処理を追加
 		- [ ] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
 	+ [ ] ラジオボタンを配置する(Rename/Export/Delete)
-		- [ ] HTMLに追加
+		- [x] HTMLに追加
 		- [ ] optionsObjectに追加
 		- [ ] optionsStateに追加
 		- [ ] backgroundにメッセージを送信

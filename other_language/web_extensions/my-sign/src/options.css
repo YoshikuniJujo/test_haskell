@@ -130,6 +130,13 @@ label {
 	margin-left: auto;
 }
 
+.account-radios {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+}
+
 .new-set label {
 	margin-left: auto;
 	display: flex;
