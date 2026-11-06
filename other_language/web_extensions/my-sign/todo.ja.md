@@ -708,7 +708,7 @@ TODO
 		- [x] falseならreject
 		- [x] falseならpopoverで表示
 	+ [x] エラーメッセージでreloadするようにアドバイスする
-* [ ] profile settingsのところのDeleteボタンを消す
+* [x] profile settingsのところのDeleteボタンを消す
 * [ ] TODOを見返し修正する
 * [ ] Delete機能の新実装 (続き)
 	+ [ ] 消すクライアントの名前とURLPatternを表示する
