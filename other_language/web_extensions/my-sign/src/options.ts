@@ -134,6 +134,7 @@ const clientSettingsApply = getElement<HTMLButtonElement>("#client-apply");
 const clientSettingsCancel = getElement<HTMLButtonElement>("#client-cancel");
 
 const accountList = getElement<HTMLElement>("#account-list");
+const accountListArea = getElement<HTMLElement>("#account-list-area");
 const newAccount = getElement<HTMLButtonElement>("#new-account");
 const generateForm = getElement<HTMLElement>("#generate-form");
 const generateFormExit = getElement<HTMLButtonElement>("#generate-form-exit");
@@ -569,6 +570,8 @@ loadOptions(obj: OptionsObject)
 
 	accountList.hidden = obj.accountListHidden;
 	generateForm.hidden = obj.generateFormHidden;
+
+	accountListArea.textContent = "HERE YOU ARE!"
 }
 
 function

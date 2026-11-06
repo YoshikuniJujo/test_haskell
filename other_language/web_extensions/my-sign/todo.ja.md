@@ -777,12 +777,14 @@ TODO
 		- [x] DB.getAllAccountsを定義する
 			* DB.getPublicKeysWithNamesで定義済み
 		- [x] 上記の結果をoptions画面の初期化処理のところでconsole.logする
-		- [ ] HTMLに表示領域を作成
+		- [x] HTMLに表示領域を作成(#account-list-area);
+			* [x] textcontentsに適当な文字列を入れてみる
 		- [ ] アカウントの配列をoptionsObjectに追加
 		- [ ] アカウントの配列を読み込むメソッドをoptionsStateに追加
 		- [ ] options画面の初期化処理にアカウントの配列の追加を追加
 		- [ ] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
 		- [ ] options.tsでアカウントリスト表示処理を追加
+			* [ ] それぞれの要素にクリックしたときにメッセージを送る処理を追加
 	+ [ ] ラジオボタンを配置する(Export/Delete)
 		- [ ] HTMLに追加
 		- [ ] optionsObjectに追加
