@@ -603,6 +603,11 @@ loadOptions(obj: OptionsObject)
 		});
 		accountListArea.append(row);
 	}
+
+	const accountRadioSelected = getElement<HTMLInputElement>(
+		"#" + obj.accountSettingsRadio);
+	if (accountRadioSelected === null) throw new Error("bad");
+	accountRadioSelected.checked = true;
 }
 
 function

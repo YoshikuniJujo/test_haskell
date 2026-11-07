@@ -784,19 +784,19 @@ TODO
 		- [x] options画面の初期化処理にアカウントの配列の追加を追加
 		- [x] rowをdivではなくbuttonにする
 		- [x] CSSでボタンらしくない見た目にする
-		- [ ] options.tsでアカウントリスト表示処理を追加
+		- [x] options.tsでアカウントリスト表示処理を追加
 			* [x] 表示
 			* [x] それぞれの要素にクリックしたときにメッセージを送る処理を追加
 				+ "accountClicked"でname, publicKeyを送信する
 		- [ ] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
-	+ [ ] ラジオボタンを配置する(Rename/Export/Delete)
+	+ [x] ラジオボタンを配置する(Rename/Export/Delete)
 		- [x] HTMLに追加
 		- [x] optionsObjectに追加
 		- [x] optionsStateに追加
 		- [x] backgroundにメッセージを送信
 		- [x] background側での処理
-		- [ ] loadOptionsで反映させる
-	* [ ] client setのedit modeを設定画面を閉じてから開いたときに復元させる
+		- [x] loadOptionsで反映させる
+	* [x] client setのedit modeを設定画面を閉じてから開いたときに復元させる
 	+ [ ] Rename機能を追加
 		- [ ] db.tsに追加
 		- [ ] HTMLの画面を追加
