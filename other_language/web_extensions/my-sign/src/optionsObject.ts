@@ -1,6 +1,7 @@
 import type {
 	ClientSet, ClientSummary, PublicKeyOption, UUID,
-	EditMode, Permission, PermissionObject, PermissionValue, KeyWithName
+	EditMode, Permission, PermissionObject, PermissionValue, KeyWithName,
+	AccountSettingsRadio
 } from "./types.js";
 
 import { EditClientMode, EditProfileMode } from "./types.js";
@@ -84,7 +85,9 @@ export type OptionsObject = {
 	accountListHidden: boolean,
 	generateFormHidden: boolean,
 
-	accountList: KeyWithName[]
+	accountList: KeyWithName[],
+
+	accountSettingsRadio: AccountSettingsRadio
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -151,7 +154,9 @@ export function defaultOptionsObject(): OptionsObject
 		accountListHidden: false,
 		generateFormHidden: true,
 
-		accountList: []
+		accountList: [],
+
+		accountSettingsRadio: "rename"
 	};
 }
 

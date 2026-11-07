@@ -2,8 +2,8 @@ import type { Storage } from "./storage.js";
 import type { OptionsObject } from "./optionsObject.js";
 import type {
 	UUID, Client, EditingClient, ClientSummary, ClientSummaryRaw,
-	ClientSet, OptionsTabTag, PublicKeyOption, Result, Profile, EditMode, Permission, KeyWithName }
-	from "./types.js";
+	ClientSet, OptionsTabTag, PublicKeyOption, Result, Profile, EditMode, Permission, KeyWithName,
+	AccountSettingsRadio } from "./types.js";
 import { uuid, fromUuid, EditClientMode, editModeToString, radioToPermissionValue } from "./types.js";
 import { defaultOptionsObject, newClientMode, clientListMode } from "./optionsObject.js";
 import { toHex, fromHex } from "./tools.js";
@@ -461,6 +461,11 @@ export class OptionsState
 	setAccountList(ks: KeyWithName[]): void
 	{
 		this.#optionsObject.accountList = ks;
+	}
+
+	setAccountSettingsRadio(ar: AccountSettingsRadio): void
+	{
+		this.#optionsObject.accountSettingsRadio = ar;
 	}
 }
 

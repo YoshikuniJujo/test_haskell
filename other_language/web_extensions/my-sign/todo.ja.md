@@ -791,11 +791,12 @@ TODO
 		- [ ] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
 	+ [ ] ラジオボタンを配置する(Rename/Export/Delete)
 		- [x] HTMLに追加
-		- [ ] optionsObjectに追加
-		- [ ] optionsStateに追加
-		- [ ] backgroundにメッセージを送信
-		- [ ] background側での処理
+		- [x] optionsObjectに追加
+		- [x] optionsStateに追加
+		- [x] backgroundにメッセージを送信
+		- [x] background側での処理
 		- [ ] loadOptionsで反映させる
+	* [ ] client setのedit modeを設定画面を閉じてから開いたときに復元させる
 	+ [ ] Rename機能を追加
 		- [ ] db.tsに追加
 		- [ ] HTMLの画面を追加
@@ -803,6 +804,7 @@ TODO
 		- [ ] 名前とPublicKeyの入力
 		- [ ] 名前のinputの部分
 		- [ ] Cancel/OKボタン
+		- [ ] 別のウィンドウの設定画面やcontent画面でもリアルタイムに変更が反映されるようにする
 	+ [ ] ExportがONになっているときにExport確認画面に遷移させる
 		- [ ] HTMLにExport確認領域を追加
 		- [ ] optionsObjectにhiddenを追加

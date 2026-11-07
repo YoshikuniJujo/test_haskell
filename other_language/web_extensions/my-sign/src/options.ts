@@ -139,6 +139,10 @@ const newAccount = getElement<HTMLButtonElement>("#new-account");
 const generateForm = getElement<HTMLElement>("#generate-form");
 const generateFormExit = getElement<HTMLButtonElement>("#generate-form-exit");
 
+const accountRadios =
+	document.querySelectorAll<HTMLInputElement>(
+		'input[name="account"]' );
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -401,6 +405,16 @@ newAccount.addEventListener("click", () => {
 
 generateFormExit.addEventListener("click", () => {
 	sendMethodAndLoad("accountListMode");
+});
+
+accountRadios.forEach(radio => {
+	radio.addEventListener('change', async () => {
+		if (!radio.checked) return;
+		const mode = radio.value;
+		console.log("options.ts: ACCOUNT RADIOS: FOR EACH:", mode);
+		const obj = await sendMethodWithValueString("accountSettingsRadio", mode);
+		loadOptions(obj);
+	});
 });
 
 // ------------------------------------------------------------------------

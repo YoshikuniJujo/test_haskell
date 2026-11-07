@@ -8,7 +8,8 @@ import * as Bech32 from "./codec/bech32.js";
 import { addToArrayMap, forEachValues } from "./mapArray.js";
 
 import type {
-	Client, ClientSummary, ClientSummaryRaw, ClientResult, OptionsTabTag, UUID, Err } from "./types.js";
+	Client, ClientSummary, ClientSummaryRaw, ClientResult, OptionsTabTag,
+	UUID, Err, AccountSettingsRadio } from "./types.js";
 
 import { isUrl, findKey } from "./tools.js";
 import {
@@ -130,6 +131,8 @@ type OptionsMethod =
 	| { class: "Options"; method: "accountListMode"; }
 	| { class: "Options"; method: "accountClicked",
 		name: string, publicKey: string }
+	| { class: "Options"; method: "accountSettingsRadio",
+		value: AccountSettingsRadio }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -549,6 +552,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			console.log("background.ts: ACCOUNT CLICKED:", m.name, m.publicKey);
 
+			return ostt.optionsObject();
+		}
+		case "accountSettingsRadio": {
+			const ostt = await optionsStateFromSender(s);
+			console.log("background.ts: ACCOUNT SETTINGS RADIO", m.value);
+			ostt.setAccountSettingsRadio(m.value);
 			return ostt.optionsObject();
 		}
 	}

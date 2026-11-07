@@ -1,5 +1,7 @@
 import { isUuid, isUrl, toHex } from "./tools.js";
 
+export type AccountSettingsRadio = "rename" | "export" | "delete";
+
 export type KeyWithName = {
 	publicKey: Uint8Array,
 	name: string }
