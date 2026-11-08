@@ -130,7 +130,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "generateFormMode"; }
 	| { class: "Options"; method: "accountListMode"; }
 	| { class: "Options"; method: "accountClicked",
-		name: string, publicKey: string }
+		name: string, publicKey: Uint8Array }
 	| { class: "Options"; method: "accountSettingsRadio",
 		value: AccountSettingsRadio }
 
@@ -555,6 +555,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			switch (ostt.accountSettingsRadio()) {
 				case "rename":
 					ostt.accountRenameMode();
+					ostt.setAccountRenamePublicKey(Bech32.encode("npub", m.publicKey));
 			}
 
 			return ostt.optionsObject();

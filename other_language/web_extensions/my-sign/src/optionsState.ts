@@ -480,6 +480,11 @@ export class OptionsState
 		this.#optionsObject.accountRenameHidden = false;
 		this.save();
 	}
+
+	setAccountRenamePublicKey(pk: string): void
+	{
+		this.#optionsObject.accountRenamePublicKey = pk;
+	}
 }
 
 async function

@@ -146,6 +146,8 @@ const accountRadios =
 const accountRename = getElement<HTMLElement>("#account-rename");
 const accountRenameCancel = getElement<HTMLButtonElement>("#rename-cancel");
 
+const accountRenamePublicKey = getElement<HTMLElement>("#public-key-for-rename");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -617,6 +619,7 @@ loadOptions(obj: OptionsObject)
 	accountRadioSelected.checked = true;
 
 	accountRename.hidden = obj.accountRenameHidden;
+	accountRenamePublicKey.textContent = obj.accountRenamePublicKey;
 }
 
 function

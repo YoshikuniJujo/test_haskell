@@ -89,7 +89,8 @@ export type OptionsObject = {
 
 	accountSettingsRadio: AccountSettingsRadio,
 
-	accountRenameHidden: boolean
+	accountRenameHidden: boolean,
+	accountRenamePublicKey: string
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -160,7 +161,8 @@ export function defaultOptionsObject(): OptionsObject
 
 		accountSettingsRadio: "rename",
 
-		accountRenameHidden: true
+		accountRenameHidden: true,
+		accountRenamePublicKey: ""
 	};
 }
 

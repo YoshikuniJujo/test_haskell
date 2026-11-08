@@ -809,13 +809,22 @@ TODO
 		- [x] Cancelでaccount list modeにもどる
 		- [ ] 名前とPublicKeyの入力
 			* [ ] 名前の初期値
-			* [ ] PublicKeyの表示
+				+ [ ] optionsObject
+				+ [ ] optionsState
+				+ [ ] options
+				+ [ ] background
+			* [x] PublicKeyの表示
+				+ [x] optionsObject
+				+ [x] optionsState
+				+ [x] options
+				+ [x] background
 		- [ ] 名前のinputの部分
 			* inputのたびにoptionsStateにバックアップする
 		- [ ] Cancel/OKボタン
 			* [x] Cancelボタンの処理
 			* [ ] OKボタンの処理
 		- [ ] 別のウィンドウの設定画面やcontent画面でもリアルタイムに変更が反映されるようにする
+	+ [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 	+ [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 	+ [ ] ExportがONになっているときにExport確認画面に遷移させる
 		- [ ] HTMLにExport確認領域を追加
