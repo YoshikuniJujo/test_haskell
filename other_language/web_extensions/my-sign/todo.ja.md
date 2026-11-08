@@ -798,7 +798,7 @@ TODO
 		- [x] loadOptionsで反映させる
 	* [x] client setのedit modeを設定画面を閉じてから開いたときに復元させる
 	+ [ ] Rename機能を追加
-		- [ ] db.tsに追加
+		- [x] db.tsに追加
 		- [ ] HTMLの画面を追加
 		- [ ] 画面の遷移のところを作成(optionsObject, optionsState, options)
 		- [ ] 名前とPublicKeyの入力
@@ -813,7 +813,7 @@ TODO
 	+ [ ] Exoprt確認画面でOKを押すとダウンロードする
 		- [ ] download権限を追加
 		- [ ] ncryptsecの中身の文字列を作成
-		- [ ] ダウンロード(ファイル名はncryptsec1[10文字]_[6文字].bech32か)
+		- [ ] ダウンロード(ファイル名はncryptsec1[10文字]\_[6文字].bech32か)
 	+ [ ] completeになったところでDBにExportの時間を保存する
 		- [ ] completeを確認
 		- [ ] DBにダウンロードの日時を追加

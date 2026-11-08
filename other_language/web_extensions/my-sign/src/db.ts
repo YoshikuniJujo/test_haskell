@@ -1056,3 +1056,22 @@ getAllSetClientsBySetUuidRaw(
 	return tx.objectStore(NEW_SET_CLIENTS)
 		.index("setUuid").getAll(IDBKeyRange.only(setUuid));
 }
+
+export async function
+renameAccount(publicKey: Uint8Array, newName: string)
+{
+	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(SECRET_KEYS, "readwrite");
+		tx.oncomplete = rs;
+		tx.onerror = () => rj(tx.error);
+		const store = tx.objectStore(SECRET_KEYS);
+		const req1 = store.get(publicKey as IDBValidKey);
+		req1.onsuccess = () => {
+			const r = req1.result;
+			if (!r) {
+				tx.abort();
+				return; }
+			r.name = newName;
+			const req2 = store.put(r); } });
+}
