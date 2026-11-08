@@ -552,6 +552,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			console.log("background.ts: ACCOUNT CLICKED:", m.name, m.publicKey);
 
+			switch (ostt.accountSettingsRadio()) {
+				case "rename":
+					ostt.accountRenameMode();
+			}
+
 			return ostt.optionsObject();
 		}
 		case "accountSettingsRadio": {

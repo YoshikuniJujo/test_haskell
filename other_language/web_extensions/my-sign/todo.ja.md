@@ -796,15 +796,27 @@ TODO
 		- [x] backgroundにメッセージを送信
 		- [x] background側での処理
 		- [x] loadOptionsで反映させる
-	* [x] client setのedit modeを設定画面を閉じてから開いたときに復元させる
+	+ [x] client setのedit modeを設定画面を閉じてから開いたときに復元させる
 	+ [ ] Rename機能を追加
 		- [x] db.tsに追加
-		- [ ] HTMLの画面を追加
-		- [ ] 画面の遷移のところを作成(optionsObject, optionsState, options)
+		- [x] HTMLの画面を追加
+		- [x] 画面の遷移のところを作成(optionsObject, optionsState, options)
+			* [x] optionsObject
+				- [x] accountRenameHidden
+			* [x] optionsState
+			* [x] options
+		- [x] accountListのクリックで遷移させる
+		- [x] Cancelでaccount list modeにもどる
 		- [ ] 名前とPublicKeyの入力
+			* [ ] 名前の初期値
+			* [ ] PublicKeyの表示
 		- [ ] 名前のinputの部分
+			* inputのたびにoptionsStateにバックアップする
 		- [ ] Cancel/OKボタン
+			* [x] Cancelボタンの処理
+			* [ ] OKボタンの処理
 		- [ ] 別のウィンドウの設定画面やcontent画面でもリアルタイムに変更が反映されるようにする
+	+ [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 	+ [ ] ExportがONになっているときにExport確認画面に遷移させる
 		- [ ] HTMLにExport確認領域を追加
 		- [ ] optionsObjectにhiddenを追加
@@ -817,6 +829,7 @@ TODO
 	+ [ ] completeになったところでDBにExportの時間を保存する
 		- [ ] completeを確認
 		- [ ] DBにダウンロードの日時を追加
+* [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] ncryptsecのインポート
 * [ ] nsecのインポート
 * [ ] TODOを見返し修正する

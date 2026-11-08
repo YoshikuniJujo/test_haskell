@@ -87,7 +87,9 @@ export type OptionsObject = {
 
 	accountList: KeyWithName[],
 
-	accountSettingsRadio: AccountSettingsRadio
+	accountSettingsRadio: AccountSettingsRadio,
+
+	accountRenameHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -156,7 +158,9 @@ export function defaultOptionsObject(): OptionsObject
 
 		accountList: [],
 
-		accountSettingsRadio: "rename"
+		accountSettingsRadio: "rename",
+
+		accountRenameHidden: true
 	};
 }
 

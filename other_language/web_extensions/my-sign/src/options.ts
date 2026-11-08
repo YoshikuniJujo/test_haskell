@@ -143,6 +143,9 @@ const accountRadios =
 	document.querySelectorAll<HTMLInputElement>(
 		'input[name="account"]' );
 
+const accountRename = getElement<HTMLElement>("#account-rename");
+const accountRenameCancel = getElement<HTMLButtonElement>("#rename-cancel");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -417,6 +420,10 @@ accountRadios.forEach(radio => {
 	});
 });
 
+accountRenameCancel.addEventListener("click", () => {
+	sendMethodAndLoad("accountListMode");
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
@@ -608,6 +615,8 @@ loadOptions(obj: OptionsObject)
 		"#" + obj.accountSettingsRadio);
 	if (accountRadioSelected === null) throw new Error("bad");
 	accountRadioSelected.checked = true;
+
+	accountRename.hidden = obj.accountRenameHidden;
 }
 
 function

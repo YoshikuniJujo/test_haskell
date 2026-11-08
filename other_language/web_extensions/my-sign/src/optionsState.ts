@@ -449,6 +449,7 @@ export class OptionsState
 	accountListMode(): void
 	{
 		this.#optionsObject.accountListHidden = false;
+		this.#optionsObject.accountRenameHidden = true;
 		this.#optionsObject.generateFormHidden = true;
 	}
 
@@ -466,6 +467,18 @@ export class OptionsState
 	setAccountSettingsRadio(ar: AccountSettingsRadio): void
 	{
 		this.#optionsObject.accountSettingsRadio = ar;
+	}
+
+	accountSettingsRadio(): AccountSettingsRadio
+	{
+		return this.#optionsObject.accountSettingsRadio;
+	}
+
+	accountRenameMode(): void
+	{
+		this.#optionsObject.accountListHidden = true;
+		this.#optionsObject.accountRenameHidden = false;
+		this.save();
 	}
 }
 
