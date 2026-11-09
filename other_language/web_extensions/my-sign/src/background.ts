@@ -134,6 +134,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "accountSettingsRadio",
 		value: AccountSettingsRadio }
 	| { class: "Options"; method: "accountRenameNameInput", value: string }
+	| { class: "Options"; method: "accountRenameOk" }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -572,6 +573,14 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "accountRenameNameInput": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.setAccountRenameName(m.value);
+			return ostt.optionsObject();
+		}
+
+		case "accountRenameOk": {
+			const ostt = await optionsStateFromSender(s);
+			console.log("background.ts: ACCOUNT RENAME OK:"
+				   );
+			// ostt.setAccountRenameName(m.value);
 			return ostt.optionsObject();
 		}
 	}

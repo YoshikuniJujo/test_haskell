@@ -145,6 +145,7 @@ const accountRadios =
 
 const accountRename = getElement<HTMLElement>("#account-rename");
 const accountRenameCancel = getElement<HTMLButtonElement>("#rename-cancel");
+const accountRenameOk = getElement<HTMLButtonElement>("#rename-ok");
 
 const accountRenamePublicKey = getElement<HTMLElement>("#public-key-for-rename");
 const accountRenameName = getElement<HTMLInputElement>("#account-rename-name");
@@ -425,6 +426,10 @@ accountRadios.forEach(radio => {
 
 accountRenameCancel.addEventListener("click", () => {
 	sendMethodAndLoad("accountListMode");
+});
+
+accountRenameOk.addEventListener("click", () => {
+	sendMethodAndLoad("accountRenameOk");
 });
 
 accountRenameName.addEventListener("input", () => {

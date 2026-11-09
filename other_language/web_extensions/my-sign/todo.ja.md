@@ -824,6 +824,11 @@ TODO
 		- [ ] Cancel/OKボタン
 			* [x] Cancelボタンの処理
 			* [ ] OKボタンの処理
+				+ [x] options.ts: backgroundへのメッセージ
+				+ [ ] optionsState
+					- [x] get name
+					- [ ] get public key
+				+ [ ] backgroundでの処理
 		- [ ] 別のウィンドウの設定画面やcontent画面でもリアルタイムに変更が反映されるようにする
 			* [ ] content tab
 			* [ ] options tab

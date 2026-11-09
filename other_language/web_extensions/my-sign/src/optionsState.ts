@@ -492,6 +492,11 @@ export class OptionsState
 		this.#optionsObject.accountRenameName = nm;
 		this.save();
 	}
+
+	accountRenameName(): string
+	{
+		return this.#optionsObject.accountRenameName;
+	}
 }
 
 async function
