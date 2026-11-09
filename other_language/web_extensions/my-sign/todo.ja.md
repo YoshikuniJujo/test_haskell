@@ -818,6 +818,7 @@ TODO
 				+ [x] optionsState
 				+ [x] options
 				+ [x] background
+				+ [x] backgroundが落ちても消えないようにする
 		- [ ] 名前のinputの部分
 			* inputのたびにoptionsStateにバックアップする
 		- [ ] Cancel/OKボタン
