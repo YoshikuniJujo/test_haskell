@@ -630,7 +630,9 @@ loadOptions(obj: OptionsObject)
 	accountRadioSelected.checked = true;
 
 	accountRename.hidden = obj.accountRenameHidden;
-	accountRenamePublicKey.textContent = obj.accountRenamePublicKey;
+	if (obj.accountPublicKey === null) throw new Error("bad");
+	accountRenamePublicKey.textContent =
+		Bech32.encode("npub", obj.accountPublicKey);
 	accountRenameName.value = obj.accountRenameName;
 }
 

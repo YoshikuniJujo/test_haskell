@@ -481,9 +481,9 @@ export class OptionsState
 		this.save();
 	}
 
-	setAccountRenamePublicKey(pk: string): void
+	setAccountPublicKey(pk: Uint8Array): void
 	{
-		this.#optionsObject.accountRenamePublicKey = pk;
+		this.#optionsObject.accountPublicKey = pk;
 		this.save();
 	}
 

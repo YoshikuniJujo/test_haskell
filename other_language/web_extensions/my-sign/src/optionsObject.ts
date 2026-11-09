@@ -91,7 +91,8 @@ export type OptionsObject = {
 
 	accountRenameHidden: boolean,
 	accountRenameName: string,
-	accountRenamePublicKey: string
+
+	accountPublicKey: Uint8Array | null
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -164,7 +165,8 @@ export function defaultOptionsObject(): OptionsObject
 
 		accountRenameHidden: true,
 		accountRenameName: "",
-		accountRenamePublicKey: ""
+
+		accountPublicKey: null
 	};
 }
 

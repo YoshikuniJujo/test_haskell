@@ -558,7 +558,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				case "rename":
 					ostt.accountRenameMode();
 					ostt.setAccountRenameName(m.name);
-					ostt.setAccountRenamePublicKey(Bech32.encode("npub", m.publicKey));
+					ostt.setAccountPublicKey(m.publicKey);
 			}
 
 			return ostt.optionsObject();
