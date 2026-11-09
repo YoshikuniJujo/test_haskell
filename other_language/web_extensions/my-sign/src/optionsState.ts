@@ -487,6 +487,11 @@ export class OptionsState
 		this.save();
 	}
 
+	accountPublicKey(): Uint8Array | null
+	{
+		return this.#optionsObject.accountPublicKey;
+	}
+
 	setAccountRenameName(nm: string): void
 	{
 		this.#optionsObject.accountRenameName = nm;

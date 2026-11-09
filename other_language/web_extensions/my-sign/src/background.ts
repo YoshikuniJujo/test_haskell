@@ -233,7 +233,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			if (tg.openType === "uuid" && id !== null) {
 				console.log("backgound.ts: OPEN TYPE IS UUID");
 				const clnt = await DB.getClient(id);
-				const pks = await DB.getPublicKeyOptions2(ostt.clientUuid());
+				const pks = await DB.getPublicKeyOptions2(uuid(id));
 				const pmss = await DB.getPermissionsByClientUuid3(id);
 				console.log("background.ts: PERMISSIONS:", pmss);
 				ostt.openClientDetail(clnt, pks, pmss);
@@ -578,9 +578,16 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 		case "accountRenameOk": {
 			const ostt = await optionsStateFromSender(s);
-			console.log("background.ts: ACCOUNT RENAME OK:"
-				   );
-			// ostt.setAccountRenameName(m.value);
+			console.log("background.ts: ACCOUNT RENAME OK:",
+				ostt.accountRenameName(), ostt.accountPublicKey());
+			const pk = ostt.accountPublicKey();
+			if (pk === null) throw new Error("bad");
+			DB.renameAccount(pk, ostt.accountRenameName());
+			browser.runtime.sendMessage({
+				class: "Options",
+				direction: "signal",
+				method: "update" });
+			await broadcast({ method: "clientChanged" });
 			return ostt.optionsObject();
 		}
 	}

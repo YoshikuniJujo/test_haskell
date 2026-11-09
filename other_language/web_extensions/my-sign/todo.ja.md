@@ -797,7 +797,7 @@ TODO
 		- [x] background側での処理
 		- [x] loadOptionsで反映させる
 	+ [x] client setのedit modeを設定画面を閉じてから開いたときに復元させる
-	+ [ ] Rename機能を追加
+	+ [x] Rename機能を追加
 		- [x] db.tsに追加
 		- [x] HTMLの画面を追加
 		- [x] 画面の遷移のところを作成(optionsObject, optionsState, options)
@@ -821,23 +821,23 @@ TODO
 				+ [x] backgroundが落ちても消えないようにする
 		- [x] 名前のinputの部分
 			* inputのたびにoptionsStateにバックアップする
-		- [ ] Cancel/OKボタン
+		- [x] Cancel/OKボタン
 			* [x] Cancelボタンの処理
-			* [ ] OKボタンの処理
+			* [x] OKボタンの処理
 				+ [x] options.ts: backgroundへのメッセージ
-				+ [ ] optionsState
+				+ [x] optionsState
 					- [x] get name
-					- [ ] get public key
-				+ [ ] backgroundでの処理
+					- [x] get public key
+				+ [x] backgroundでの処理
 		- [x] add Account Public Key
 			* [x] optionsObject
 			* [x] optionsState
 			* [x] background
 			* [x] options
 		- [x] remove Account Rename Public Key
-		- [ ] 別のウィンドウの設定画面やcontent画面でもリアルタイムに変更が反映されるようにする
-			* [ ] content tab
-			* [ ] options tab
+		- [x] 別のウィンドウの設定画面やcontent画面でもリアルタイムに変更が反映されるようにする
+			* [x] content tab
+			* [x] options tab
 	+ [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 	+ [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 	+ [ ] ExportがONになっているときにExport確認画面に遷移させる
