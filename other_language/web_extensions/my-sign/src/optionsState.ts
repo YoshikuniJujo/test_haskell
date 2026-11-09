@@ -270,7 +270,8 @@ export class OptionsState
 
 	clientUuid(): UUID
 	{
-		if (this.#optionsObject.clientUuid === null) throw new Error("warui15");
+		if (this.#optionsObject.clientUuid === null)
+			throw new Error("warui15: " + this.#key);
 		return this.#optionsObject.clientUuid;
 	}
 

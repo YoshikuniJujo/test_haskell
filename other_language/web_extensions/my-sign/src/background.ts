@@ -151,7 +151,7 @@ loadCommonState(ostt: OptionsState): Promise<void>
 	if (cs === undefined) throw new Error("warui1");
 	ostt.setCurrentSetUuid(cs);
 
-	setPermissions(ostt);
+//	setPermissions(ostt);
 }
 
 async function
@@ -221,10 +221,13 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				if (c !== null) {
 					await newClient(s, uuid(c.uuid), c.urlPattern, c.name);
 					// ostt.setEditMode(EditProfileMode);
+					ostt.setClientUuid(uuid(c.uuid));
 					ostt.profileSettingsMode();
 				} else {
-					await newClient(s, uuid(crypto.randomUUID()), tg.id, undefined);
+					const cu = uuid(crypto.randomUUID());
+					await newClient(s, cu, tg.id, undefined);
 					// ostt.setEditMode(EditClientMode);
+					ostt.setClientUuid(cu);
 					ostt.clientSettingsMode();
 				}
 				ostt.onlyClientOk();
@@ -350,7 +353,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			DB.putClientNoProfile(await ostt.getClient());
 
-			loadCommonState(ostt);
+			await loadCommonState(ostt);
 			if (m.kind === "ok") ostt.permissionSettingsMode();
 			return ostt.optionsObject();
 		}
@@ -432,8 +435,14 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return; }
 		case "currentKeyOptions": {
 			const ostt = await optionsStateFromSender(s);
-			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
-			setPermissions(ostt);
+			if (ostt.doesClientUuidExist())
+				ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
+			setPermissions(ostt, null);
+			await loadCommonState(ostt);
+			browser.runtime.sendMessage({
+				class: "Options",
+				direction: "signal",
+				method: "update" });
 			return ostt.optionsObject(); }
 		case "useClientSetChanged": {
 			await DB.putUseClientSet(m.checked);
@@ -488,7 +497,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				if (st0 !== undefined)
 					await browser.tabs.update(st0, { active: true });
 				await browser.tabs.remove(s.tab.id);
-				loadCommonState(ostt);
+				await loadCommonState(ostt);
 			}
 
 			return ostt.optionsObject(); }
@@ -512,6 +521,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: LOAD COMMON STATE");
 			const ostt = await optionsStateFromSender(s);
 			await loadCommonState(ostt);
+			await setPermissions(ostt, null);
 			return ostt.optionsObject(); }
 		case "editModeChanged": {
 			const ostt = await optionsStateFromSender(s);
@@ -619,11 +629,19 @@ newClient(
 
 
 async function
-setPermissions(ostt: OptionsState)
+setPermissions(ostt: OptionsState, cu: UUID | null)
 {
-	const pmss = await DB.getPermissionsByClientUuid3(fromUuid(await ostt.clientUuid()));
-	console.log("background.ts: NEW CLIENT: pmss =", pmss);
-	ostt.setPermissions(pmss);
+	let cuid;
+	console.log("background.ts: setPermissions: before CLIENT UUID");
+	if (await ostt.doesClientUuidExist()) {
+		if (cu === null) cuid = await ostt.clientUuid();
+		else cuid = cu;
+		if (cuid !== null) {
+			const pmss = await DB.getPermissionsByClientUuid3(fromUuid(cuid));
+			console.log("background.ts: NEW CLIENT: pmss =", pmss);
+			ostt.setPermissions(pmss);
+		}
+	}
 }
 
 async function
