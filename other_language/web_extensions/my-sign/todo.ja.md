@@ -788,12 +788,12 @@ TODO
 			* [x] 表示
 			* [x] それぞれの要素にクリックしたときにメッセージを送る処理を追加
 				+ "accountClicked"でname, publicKeyを送信する
-		- [ ] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
-			* [ ] DBからそれぞれのフォームに反映する関数をbackground.tsに定義する
-				+ [ ] Account List
+		- [x] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
+			* [x] DBからそれぞれのフォームに反映する関数をbackground.tsに定義する
+				+ [x] Account List
 				+ [x] Permission List
-			* [ ] 別の設定画面でも反映されるようにする
-				+ [ ] Account List
+			* [x] 別の設定画面でも反映されるようにする
+				+ [x] Account List
 				+ [x] Permission List
 		- [ ] generateしたらnew account画面を抜けるようにする
 	+ [x] ラジオボタンを配置する(Rename/Export/Delete)

@@ -439,6 +439,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
 			setPermissions(ostt, null);
 			await loadCommonState(ostt);
+
+			const accl = await DB.getPublicKeysWithNames()
+			console.log("background.ts: OPTIONS BEGIN: Accounts:", accl);
+			ostt.setAccountList(accl);
+
 			browser.runtime.sendMessage({
 				class: "Options",
 				direction: "signal",
@@ -522,6 +527,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			await loadCommonState(ostt);
 			await setPermissions(ostt, null);
+
+			const accl = await DB.getPublicKeysWithNames()
+			console.log("background.ts: OPTIONS BEGIN: Accounts:", accl);
+			ostt.setAccountList(accl);
+
 			return ostt.optionsObject(); }
 		case "editModeChanged": {
 			const ostt = await optionsStateFromSender(s);
