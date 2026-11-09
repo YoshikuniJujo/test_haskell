@@ -804,7 +804,7 @@ TODO
 		- [x] background側での処理
 		- [x] loadOptionsで反映させる
 	+ [x] client setのedit modeを設定画面を閉じてから開いたときに復元させる
-	+ [ ] Rename機能を追加
+	+ [x] Rename機能を追加
 		- [x] db.tsに追加
 		- [x] HTMLの画面を追加
 		- [x] 画面の遷移のところを作成(optionsObject, optionsState, options)
@@ -845,9 +845,7 @@ TODO
 		- [x] 別のウィンドウの設定画面やcontent画面でもリアルタイムに変更が反映されるようにする
 			* [x] content tab
 			* [x] options tab
-		- [ ] OKボタンで画面をぬけるようにする
-	+ [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
-	+ [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
+		- [x] OKボタンで画面をぬけるようにする
 	+ [ ] ExportがONになっているときにExport確認画面に遷移させる
 		- [ ] HTMLにExport確認領域を追加
 		- [ ] optionsObjectにhiddenを追加
@@ -860,6 +858,7 @@ TODO
 	+ [ ] completeになったところでDBにExportの時間を保存する
 		- [ ] completeを確認
 		- [ ] DBにダウンロードの日時を追加
+* [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] ncryptsecのインポート
 * [ ] nsecのインポート
