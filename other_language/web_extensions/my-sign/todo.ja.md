@@ -854,10 +854,15 @@ TODO
 	+ [ ] Exoprt確認画面でOKを押すとダウンロードする
 		- [ ] download権限を追加
 		- [ ] ncryptsecの中身の文字列を作成
-		- [ ] ダウンロード(ファイル名はncryptsec1[10文字]\_[6文字].bech32か)
+		- [ ] ダウンロード(ファイル名は[名前]_[10文字]\_[6文字].ncryptsecか)
 	+ [ ] completeになったところでDBにExportの時間を保存する
 		- [ ] completeを確認
 		- [ ] DBにダウンロードの日時を追加
+* [ ] アカウント名に保存名を追加する
+	+ [ ] DBの更新
+	+ [ ] generateにチェックボックスと入力欄を付ける
+	+ [ ] 入力処理を書く
+	+ [ ] 保存処理を書く
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] ncryptsecのインポート
