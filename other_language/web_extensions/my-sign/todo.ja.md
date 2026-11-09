@@ -791,8 +791,11 @@ TODO
 		- [ ] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
 			* [ ] DBからそれぞれのフォームに反映する関数をbackground.tsに定義する
 				+ [ ] Account List
-				+ [ ] Permission List
+				+ [x] Permission List
 			* [ ] 別の設定画面でも反映されるようにする
+				+ [ ] Account List
+				+ [x] Permission List
+		- [ ] generateしたらnew account画面を抜けるようにする
 	+ [x] ラジオボタンを配置する(Rename/Export/Delete)
 		- [x] HTMLに追加
 		- [x] optionsObjectに追加
@@ -801,7 +804,7 @@ TODO
 		- [x] background側での処理
 		- [x] loadOptionsで反映させる
 	+ [x] client setのedit modeを設定画面を閉じてから開いたときに復元させる
-	+ [x] Rename機能を追加
+	+ [ ] Rename機能を追加
 		- [x] db.tsに追加
 		- [x] HTMLの画面を追加
 		- [x] 画面の遷移のところを作成(optionsObject, optionsState, options)
@@ -842,6 +845,7 @@ TODO
 		- [x] 別のウィンドウの設定画面やcontent画面でもリアルタイムに変更が反映されるようにする
 			* [x] content tab
 			* [x] options tab
+		- [ ] OKボタンで画面をぬけるようにする
 	+ [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 	+ [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 	+ [ ] ExportがONになっているときにExport確認画面に遷移させる

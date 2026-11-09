@@ -150,6 +150,8 @@ loadCommonState(ostt: OptionsState): Promise<void>
 	const cs = await DB.getCurrentSet();
 	if (cs === undefined) throw new Error("warui1");
 	ostt.setCurrentSetUuid(cs);
+
+	setPermissions(ostt);
 }
 
 async function
@@ -431,6 +433,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "currentKeyOptions": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
+			setPermissions(ostt);
 			return ostt.optionsObject(); }
 		case "useClientSetChanged": {
 			await DB.putUseClientSet(m.checked);
@@ -612,6 +615,15 @@ newClient(
 
 	ostt.save();
 	return ostt.optionsObject();
+}
+
+
+async function
+setPermissions(ostt: OptionsState)
+{
+	const pmss = await DB.getPermissionsByClientUuid3(fromUuid(await ostt.clientUuid()));
+	console.log("background.ts: NEW CLIENT: pmss =", pmss);
+	ostt.setPermissions(pmss);
 }
 
 async function
