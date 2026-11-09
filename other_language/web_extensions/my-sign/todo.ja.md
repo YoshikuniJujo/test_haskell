@@ -789,6 +789,10 @@ TODO
 			* [x] それぞれの要素にクリックしたときにメッセージを送る処理を追加
 				+ "accountClicked"でname, publicKeyを送信する
 		- [ ] アカウントのgenerateにアカウントの配列のoptionsStateへの追加を追加
+			* [ ] DBからそれぞれのフォームに反映する関数をbackground.tsに定義する
+				+ [ ] Account List
+				+ [ ] Permission List
+			* [ ] 別の設定画面でも反映されるようにする
 	+ [x] ラジオボタンを配置する(Rename/Export/Delete)
 		- [x] HTMLに追加
 		- [x] optionsObjectに追加
