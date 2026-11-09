@@ -829,6 +829,12 @@ TODO
 					- [x] get name
 					- [ ] get public key
 				+ [ ] backgroundでの処理
+		- [x] add Account Public Key
+			* [x] optionsObject
+			* [x] optionsState
+			* [x] background
+			* [x] options
+		- [x] remove Account Rename Public Key
 		- [ ] 別のウィンドウの設定画面やcontent画面でもリアルタイムに変更が反映されるようにする
 			* [ ] content tab
 			* [ ] options tab
