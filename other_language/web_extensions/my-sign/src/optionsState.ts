@@ -486,6 +486,12 @@ export class OptionsState
 		this.#optionsObject.accountRenamePublicKey = pk;
 		this.save();
 	}
+
+	setAccountRenameName(nm: string): void
+	{
+		this.#optionsObject.accountRenameName = nm;
+		this.save();
+	}
 }
 
 async function

@@ -147,6 +147,7 @@ const accountRename = getElement<HTMLElement>("#account-rename");
 const accountRenameCancel = getElement<HTMLButtonElement>("#rename-cancel");
 
 const accountRenamePublicKey = getElement<HTMLElement>("#public-key-for-rename");
+const accountRenameName = getElement<HTMLInputElement>("#account-rename-name");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -426,6 +427,11 @@ accountRenameCancel.addEventListener("click", () => {
 	sendMethodAndLoad("accountListMode");
 });
 
+accountRenameName.addEventListener("input", () => {
+	sendMethodAndLoadWithValueString(
+		"accountRenameNameInput", accountRenameName.value );
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
@@ -620,6 +626,7 @@ loadOptions(obj: OptionsObject)
 
 	accountRename.hidden = obj.accountRenameHidden;
 	accountRenamePublicKey.textContent = obj.accountRenamePublicKey;
+	accountRenameName.value = obj.accountRenameName;
 }
 
 function
@@ -801,4 +808,10 @@ sendMethodAndLoadWithKind(mtd: string, knd: string)
 		class: "Options",
 		method: mtd,
 		kind: knd }));
+}
+
+async function
+sendMethodAndLoadWithValueString(mtd: string, v: string)
+{
+	await loadOptions(await sendMethodWithValueString(mtd, v));
 }

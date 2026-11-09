@@ -807,24 +807,26 @@ TODO
 			* [x] options
 		- [x] accountListのクリックで遷移させる
 		- [x] Cancelでaccount list modeにもどる
-		- [ ] 名前とPublicKeyの入力
-			* [ ] 名前の初期値
-				+ [ ] optionsObject
-				+ [ ] optionsState
-				+ [ ] options
-				+ [ ] background
+		- [x] 名前とPublicKeyの入力
+			* [x] 名前の初期値
+				+ [x] optionsObject
+				+ [x] optionsState
+				+ [x] options
+				+ [x] background
 			* [x] PublicKeyの表示
 				+ [x] optionsObject
 				+ [x] optionsState
 				+ [x] options
 				+ [x] background
 				+ [x] backgroundが落ちても消えないようにする
-		- [ ] 名前のinputの部分
+		- [x] 名前のinputの部分
 			* inputのたびにoptionsStateにバックアップする
 		- [ ] Cancel/OKボタン
 			* [x] Cancelボタンの処理
 			* [ ] OKボタンの処理
 		- [ ] 別のウィンドウの設定画面やcontent画面でもリアルタイムに変更が反映されるようにする
+			* [ ] content tab
+			* [ ] options tab
 	+ [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 	+ [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 	+ [ ] ExportがONになっているときにExport確認画面に遷移させる

@@ -133,6 +133,7 @@ type OptionsMethod =
 		name: string, publicKey: Uint8Array }
 	| { class: "Options"; method: "accountSettingsRadio",
 		value: AccountSettingsRadio }
+	| { class: "Options"; method: "accountRenameNameInput", value: string }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -555,6 +556,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			switch (ostt.accountSettingsRadio()) {
 				case "rename":
 					ostt.accountRenameMode();
+					ostt.setAccountRenameName(m.name);
 					ostt.setAccountRenamePublicKey(Bech32.encode("npub", m.publicKey));
 			}
 
@@ -564,6 +566,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			console.log("background.ts: ACCOUNT SETTINGS RADIO", m.value);
 			ostt.setAccountSettingsRadio(m.value);
+			return ostt.optionsObject();
+		}
+
+		case "accountRenameNameInput": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.setAccountRenameName(m.value);
 			return ostt.optionsObject();
 		}
 	}
