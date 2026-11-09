@@ -448,6 +448,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				class: "Options",
 				direction: "signal",
 				method: "update" });
+			ostt.accountListMode();
 			return ostt.optionsObject(); }
 		case "useClientSetChanged": {
 			await DB.putUseClientSet(m.checked);
@@ -611,6 +612,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				direction: "signal",
 				method: "update" });
 			await broadcast({ method: "clientChanged" });
+			ostt.accountListMode();
 			return ostt.optionsObject();
 		}
 	}

@@ -773,7 +773,7 @@ TODO
 		- [x] Exitボタンを作る
 		- [x] Exitボタンでもどれるようにする
 		- [x] GenerateボタンとExitボタンとを右寄せにする
-	+ [ ] アカウントリストを表示する
+	+ [x] アカウントリストを表示する
 		- [x] DB.getAllAccountsを定義する
 			* DB.getPublicKeysWithNamesで定義済み
 		- [x] 上記の結果をoptions画面の初期化処理のところでconsole.logする
@@ -795,7 +795,7 @@ TODO
 			* [x] 別の設定画面でも反映されるようにする
 				+ [x] Account List
 				+ [x] Permission List
-		- [ ] generateしたらnew account画面を抜けるようにする
+		- [x] generateしたらnew account画面を抜けるようにする
 	+ [x] ラジオボタンを配置する(Rename/Export/Delete)
 		- [x] HTMLに追加
 		- [x] optionsObjectに追加
