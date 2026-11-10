@@ -135,6 +135,8 @@ type OptionsMethod =
 		value: AccountSettingsRadio }
 	| { class: "Options"; method: "accountRenameNameInput", value: string }
 	| { class: "Options"; method: "accountRenameOk" }
+	| { class: "Options"; method: "setCustomSaveNameChanged";
+		boolean: boolean }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -613,6 +615,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				method: "update" });
 			await broadcast({ method: "clientChanged" });
 			ostt.accountListMode();
+			return ostt.optionsObject();
+		}
+
+		case "setCustomSaveNameChanged": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.useSetCustomSaveName(m.boolean);
 			return ostt.optionsObject();
 		}
 	}

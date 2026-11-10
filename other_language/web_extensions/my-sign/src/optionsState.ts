@@ -503,6 +503,12 @@ export class OptionsState
 	{
 		return this.#optionsObject.accountRenameName;
 	}
+
+	useSetCustomSaveName(u: boolean): void
+	{
+		this.#optionsObject.setSaveName = u;
+		this.#optionsObject.customSaveNameLabelHidden = !u;
+	}
 }
 
 async function

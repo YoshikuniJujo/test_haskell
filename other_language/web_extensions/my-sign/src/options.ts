@@ -150,6 +150,10 @@ const accountRenameOk = getElement<HTMLButtonElement>("#rename-ok");
 const accountRenamePublicKey = getElement<HTMLElement>("#public-key-for-rename");
 const accountRenameName = getElement<HTMLInputElement>("#account-rename-name");
 
+const setCustomSaveName = getElement<HTMLInputElement>("#set-custom-save-name");
+const customSaveNameLabel = getElement<HTMLElement>("#custom-save-name-label");
+const customSaveName = getElement<HTMLInputElement>("#custom-save-name");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -437,6 +441,11 @@ accountRenameName.addEventListener("input", () => {
 		"accountRenameNameInput", accountRenameName.value );
 });
 
+setCustomSaveName.addEventListener("change", () => {
+	sendMethodAndLoadWithBoolean(
+		"setCustomSaveNameChanged", setCustomSaveName.checked );
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
@@ -634,6 +643,9 @@ loadOptions(obj: OptionsObject)
 	else accountRenamePublicKey.textContent =
 		Bech32.encode("npub", obj.accountPublicKey);
 	accountRenameName.value = obj.accountRenameName;
+
+	setCustomSaveName.checked = obj.setSaveName;
+	customSaveNameLabel.hidden = obj.customSaveNameLabelHidden;
 }
 
 function
@@ -821,4 +833,10 @@ async function
 sendMethodAndLoadWithValueString(mtd: string, v: string)
 {
 	await loadOptions(await sendMethodWithValueString(mtd, v));
+}
+
+async function
+sendMethodAndLoadWithBoolean(mtd: string, b: boolean)
+{
+	await loadOptions(await sendMethodWithBoolean(mtd, b));
 }

@@ -868,15 +868,25 @@ TODO
 			* 追加した結果をDBに書きもどす
 	+ [ ] generateにチェックボックスと入力欄を付ける
 		- [x] HTMLにチェックボックスと入力欄を追加する
+			* set-custom-save-name
+			* custom-save-name-label
+			* custom-save-name
 		- [x] チェックボックスの内容をoptionsObjectに追加
-		- [ ] 入力欄のhiddenをoptionsObjectに追加
-		- [ ] チェックボックスの処理をoptionsStateに追加
-			* [ ] ここでチェックの内容とhiddenとを設定する
-		- [ ] チェックボックスの変化をoptionsからbackgroundにメッセージで通知
-		- [ ] options.tsのloadOptionsでチェックボックスとhiddenとを反映させる
-		- [ ] backgroundでの処理を書く
+		- [x] 入力欄のhiddenをoptionsObjectに追加
+			* customSaveNameLabelHidden
+		- [x] チェックボックスの処理をoptionsStateに追加
+			* [x] ここでチェックの内容とhiddenとを設定する
+		- [x] options.tsのloadOptionsでチェックボックスとhiddenとを反映させる
+		- [x] チェックボックスの変化をoptionsからbackgroundにメッセージで通知
+		- [x] backgroundでの処理を書く
 		- [ ] 入力処理を書く
+			* [ ] optionsObjectに追加
+			* [ ] optionsStateに追加
+			* [ ] optionsにlistenerを追加
 		- [ ] 保存処理を書く
+			* generateボタンに対する処理に追加する
+		- [ ] チェックボックスについてsaveが必要か調べる
+		- [ ] 入力欄についてsaveが必要か調べる
 	+ [ ] renameにチェックボックスと入力欄を付ける
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる

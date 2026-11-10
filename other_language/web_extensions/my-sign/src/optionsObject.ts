@@ -94,7 +94,8 @@ export type OptionsObject = {
 
 	accountPublicKey: Uint8Array | null,
 
-	setSaveName: boolean
+	setSaveName: boolean,
+	customSaveNameLabelHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -170,7 +171,8 @@ export function defaultOptionsObject(): OptionsObject
 
 		accountPublicKey: null,
 
-		setSaveName: false
+		setSaveName: false,
+		customSaveNameLabelHidden: true
 	};
 }
 
