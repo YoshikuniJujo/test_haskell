@@ -446,6 +446,10 @@ setCustomSaveName.addEventListener("change", () => {
 		"setCustomSaveNameChanged", setCustomSaveName.checked );
 });
 
+customSaveName.addEventListener("input", () => {
+	console.log("options.ts: customSaveName: input:", customSaveName.value);
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
