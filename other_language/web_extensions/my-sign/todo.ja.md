@@ -880,8 +880,11 @@ TODO
 		- [x] チェックボックスの変化をoptionsからbackgroundにメッセージで通知
 		- [x] backgroundでの処理を書く
 		- [ ] 入力処理を書く
-			* [ ] optionsObjectに追加
+			* [x] optionsObjectに追加
 			* [ ] optionsStateに追加
+			* [ ] 初期値を入力する
+			* [ ] setSaveNameがfalseのあいだは
+				nameの入力に追随するようにする
 			* [ ] optionsにlistenerを追加
 		- [ ] 保存処理を書く
 			* generateボタンに対する処理に追加する
