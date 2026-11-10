@@ -207,15 +207,23 @@
 
 		<form id="generate-form" hidden>
 			<label>
-				Account name
+				Account name:
 				<input id="account-name" type="text" required>
 			</label>
 			<label>
-				Password
+				<input type="checkbox" id="set-custom-save-name">
+				Set a custom filename prefix
+			</label>
+			<label id="custom-save-name-label" hidden>
+				Custom filename prefix:
+				<input id="custom-save-name">
+			</label>
+			<label>
+				Password:
 				<input id="password" type="password" required>
 			</label>
 			<label>
-				Confirm password
+				Confirm password:
 				<input id="password-confirm" type="password" required>
 			</label>
 			<label>

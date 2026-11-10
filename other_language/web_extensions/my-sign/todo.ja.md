@@ -330,7 +330,6 @@ TODO
 	+ [x] idからOptionsObjectを作る処理を関数化する (今のところやらない)
 	+ [x] background.tsの起動時に要素を追加する
 		- [x] storage.sessionにあればOptionsObjectを復元する
-		- [ ] なければOptionsObjectを作る <- この処理が必要かどうか検討する
 	+ [x] Mapの要素をidで検索
 	+ [x] OptionsBeginでMapに要素(OptionsStateのインスタンス)があれば
 		- [x] OptionsObjectをoptions.tsに返す
@@ -509,11 +508,7 @@ TODO
 	+ [x] contentTabsをbrowser.storage.sessionにバックアップ、リストア
 		- [x] storage.sessionを使う
 		- [x] 排他制御
-	+ [ ] 設定側でsetを意識した処理にする
-		- [ ] setを使っている場合にはDeleteだけでなくDelete From Current Setボタンも
-		- [ ] Deleteの処理をsetを使っている場合には「使われていないもの」だけ削除とする
-		- [ ] Delete From Current Setボタンの処理を実装
-		- [ ] クライアントリストで現在のセットで使われていないものを薄字にする
+	+ [ ] クライアントリストで現在のセットで使われていないものを薄字にする
 	+ [ ] DBから不要な項目を削除
 		- [x] setClientテーブルから名前とURLPatternを削除する
 		- [ ] その他
@@ -858,6 +853,7 @@ TODO
 	+ [ ] completeになったところでDBにExportの時間を保存する
 		- [ ] completeを確認
 		- [ ] DBにダウンロードの日時を追加
+* [x] TODOを修正する
 * [ ] アカウント名に保存名を追加する
 	+ [x] 表示名からアカウント名を計算する関数を書く
 		- [x] Haskellで書く
@@ -871,8 +867,17 @@ TODO
 			* 取り出したsecret keyにsave nameを追加する
 			* 追加した結果をDBに書きもどす
 	+ [ ] generateにチェックボックスと入力欄を付ける
-	+ [ ] 入力処理を書く
-	+ [ ] 保存処理を書く
+		- [x] HTMLにチェックボックスと入力欄を追加する
+		- [ ] チェックボックスの内容をoptionsObjectに追加
+		- [ ] 入力欄のhiddenをoptionsObjectに追加
+		- [ ] チェックボックスの処理をoptionsStateに追加
+			* [ ] ここでチェックの内容とhiddenとを設定する
+		- [ ] チェックボックスの変化をoptionsからbackgroundにメッセージで通知
+		- [ ] options.tsのloadOptionsでチェックボックスとhiddenとを反映させる
+		- [ ] backgroundでの処理を書く
+		- [ ] 入力処理を書く
+		- [ ] 保存処理を書く
+	+ [ ] renameにチェックボックスと入力欄を付ける
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] ncryptsecのインポート
