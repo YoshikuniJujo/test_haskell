@@ -504,6 +504,11 @@ export class OptionsState
 		return this.#optionsObject.accountRenameName;
 	}
 
+	setCustomSaveNameChecked(): boolean
+	{
+		return this.#optionsObject.setSaveName;
+	}
+
 	useSetCustomSaveName(u: boolean): void
 	{
 		this.#optionsObject.setSaveName = u;

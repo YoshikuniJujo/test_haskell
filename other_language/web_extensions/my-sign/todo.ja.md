@@ -883,7 +883,7 @@ TODO
 			* [x] optionsObjectに追加
 			* [x] optionsStateに追加
 			* [x] optionsでloadする
-			* [ ] setSaveNameがfalseのあいだは
+			* [x] setSaveNameがfalseのあいだは
 				nameの入力に追随するようにする
 			* [ ] optionsにlistenerを追加
 		- [ ] 保存処理を書く

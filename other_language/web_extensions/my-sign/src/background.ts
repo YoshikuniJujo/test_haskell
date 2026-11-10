@@ -11,7 +11,7 @@ import type {
 	Client, ClientSummary, ClientSummaryRaw, ClientResult, OptionsTabTag,
 	UUID, Err, AccountSettingsRadio } from "./types.js";
 
-import { isUrl, findKey } from "./tools.js";
+import { isUrl, findKey, camelToSnake } from "./tools.js";
 import {
 	optionsTabTag, uuid, fromUuid, isError, error, success,
 	ClientSuccess, InvalidUrlPattern, UrlPatternMismatch, isClientError,
@@ -433,7 +433,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		}
 		case "accountNameInput": {
 			console.log("background.ts: accountNameInput");
-			(await optionsStateFromSender(s)).setAccountName(m.value);
+			const ostt = await optionsStateFromSender(s);
+			ostt.setAccountName(m.value);
+			if (!ostt.setCustomSaveNameChecked())
+				ostt.setCustomSaveName(camelToSnake(m.value));
 			return; }
 		case "currentKeyOptions": {
 			const ostt = await optionsStateFromSender(s);
