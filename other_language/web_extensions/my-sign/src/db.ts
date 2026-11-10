@@ -1075,3 +1075,22 @@ renameAccount(publicKey: Uint8Array, newName: string)
 			r.name = newName;
 			const req2 = store.put(r); } });
 }
+
+export async function
+getSaveName(publicKey: Uint8Array): Promise<string>
+{
+	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(SECRET_KEYS, "readonly");
+		tx.onerror = () => rj(tx.error);
+		tx.onabort = () => rj(tx.error);
+		const store = tx.objectStore(SECRET_KEYS);
+		const req = store.get(publicKey as IDBValidKey);
+		req.onsuccess = () => {
+			const r = req.result;
+			if (!r) {
+				rj(new Error("Account not found"));
+				return; }
+			if (r.saveName === undefined) rs(camelToSnake(r.name));
+			else rs(r.saveName); } });
+}

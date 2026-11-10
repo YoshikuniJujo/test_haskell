@@ -862,7 +862,14 @@ TODO
 	+ [x] 表示名からアカウント名を計算する関数を書く
 		- [x] Haskellで書く
 		- [x] tools.tsで書く
-	+ [ ] DBの更新
+	+ [ ] DBの関数を定義
+		- [x] getSaveName
+			* public keyを指定してsave nameを取り出す
+			* save nameが定義されていなければdisplay nameから生成する
+		- [ ] putSaveName
+			* public keyを指定してsecret key全体を取り出す
+			* 取り出したsecret keyにsave nameを追加する
+			* 追加した結果をDBに書きもどす
 	+ [ ] generateにチェックボックスと入力欄を付ける
 	+ [ ] 入力処理を書く
 	+ [ ] 保存処理を書く
