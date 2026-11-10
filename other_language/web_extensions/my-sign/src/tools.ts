@@ -53,9 +53,12 @@ camelToSnake(s: string): string
 	{
 		if (s === "") return "";
 		const [c, ...cs] = s;
+		if (c === undefined) throw new Error("never occur");
 		if (/[A-Z]/.test(c))
-			return "_" + c.toLowerCase() + go2(false, cs.join(""));
-		return c + go(cs.join(""));
+			return "_" +
+				allowChar(c.toLowerCase()) +
+				go2(false, cs.join(""));
+		return allowChar(c) + go(cs.join(""));
 	}
 
 	function
@@ -67,12 +70,22 @@ camelToSnake(s: string): string
 		const [c, ...cs] = s;
 		const d = cs[0];
 
+		if (c === undefined) throw new Error("never occur");
+		if (d === undefined) throw new Error("never occur");
 		if (/[A-Z]/.test(c) && /[A-Z]/.test(d))
-			return c.toLowerCase() + go2(false, cs.join(""));
+			return allowChar(c.toLowerCase()) +
+				go2(false, cs.join(""));
 
 		if (/[A-Z]/.test(c) && /[a-z]/.test(d))
-			return (h ? "" : "_") + c.toLowerCase() + go(cs.join(""));
+			return (h ? "" : "_") +
+				allowChar(c.toLowerCase()) + go(cs.join(""));
 
-		return c.toLowerCase() + go(cs.join(""));
+		return allowChar(c.toLowerCase()) + go(cs.join(""));
+	}
+
+	function
+	allowChar(c: string): string
+	{
+		return /^[a-z0-9_]$/.test(c) ? c : "";
 	}
 }

@@ -3,7 +3,7 @@ import type {
 	Account, PublicKeyOption, UUID, Profile, Permission, KeyWithName } from "./types.js";
 import { fromUuid, noPermission, setPermissionSign, defaultClient } from "./types.js";
 import { unit } from "./data/unit.js";
-import { toHex } from "./tools.js";
+import { toHex, camelToSnake } from "./tools.js";
 
 import { PermissionNew } from "./permission.js";
 
