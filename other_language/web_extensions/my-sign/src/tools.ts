@@ -42,3 +42,37 @@ findKey<K, V>(map: Map<K, V>, p: (value: V) => boolean): K | undefined
 	for (const [k, v] of map) if (p(v)) return k;
 	return undefined;
 }
+
+export function
+camelToSnake(s: string): string
+{
+	return go2(true, s);
+
+	function
+	go(s: string): string
+	{
+		if (s === "") return "";
+		const [c, ...cs] = s;
+		if (/[A-Z]/.test(c))
+			return "_" + c.toLowerCase() + go2(false, cs.join(""));
+		return c + go(cs.join(""));
+	}
+
+	function
+	go2(h: boolean, s: string): string
+	{
+		if (s === "") return "";
+		if (s.length === 1) return s.toLowerCase();
+
+		const [c, ...cs] = s;
+		const d = cs[0];
+
+		if (/[A-Z]/.test(c) && /[A-Z]/.test(d))
+			return c.toLowerCase() + go2(false, cs.join(""));
+
+		if (/[A-Z]/.test(c) && /[a-z]/.test(d))
+			return (h ? "" : "_") + c.toLowerCase() + go(cs.join(""));
+
+		return c.toLowerCase() + go(cs.join(""));
+	}
+}
