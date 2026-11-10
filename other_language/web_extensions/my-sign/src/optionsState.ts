@@ -509,6 +509,16 @@ export class OptionsState
 		this.#optionsObject.setSaveName = u;
 		this.#optionsObject.customSaveNameLabelHidden = !u;
 	}
+
+	customSaveName(): string
+	{
+		return this.#optionsObject.customSaveName;
+	}
+
+	setCustomSaveName(nm: string): void
+	{
+		this.#optionsObject.customSaveName = nm;
+	}
 }
 
 async function

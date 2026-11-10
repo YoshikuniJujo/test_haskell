@@ -881,7 +881,8 @@ TODO
 		- [x] backgroundでの処理を書く
 		- [ ] 入力処理を書く
 			* [x] optionsObjectに追加
-			* [ ] optionsStateに追加
+			* [x] optionsStateに追加
+			* [ ] optionsでloadする
 			* [ ] 初期値を入力する
 			* [ ] setSaveNameがfalseのあいだは
 				nameの入力に追随するようにする
