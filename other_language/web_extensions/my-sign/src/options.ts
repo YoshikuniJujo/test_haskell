@@ -646,6 +646,7 @@ loadOptions(obj: OptionsObject)
 
 	setCustomSaveName.checked = obj.setSaveName;
 	customSaveNameLabel.hidden = obj.customSaveNameLabelHidden;
+	customSaveName.value = obj.customSaveName;
 }
 
 function
