@@ -1094,3 +1094,24 @@ getSaveName(publicKey: Uint8Array): Promise<string>
 			if (r.saveName === undefined) rs(camelToSnake(r.name));
 			else rs(r.saveName); } });
 }
+
+export async function
+putSaveName(publicKey: Uint8Array, svnm: string): Promise<void>
+{
+	const db = await open();
+	return new Promise((rs, rj) => {
+		const tx = db.transaction(SECRET_KEYS, "readwrite");
+		tx.oncomplete = () => rs();
+		tx.onerror = () => rj(tx.error);
+		tx.onabort = () => rj(tx.error);
+		const store = tx.objectStore(SECRET_KEYS);
+		const req = store.get(publicKey as IDBValidKey);
+		req.onsuccess = () => {
+			const r = req.result;
+			if (!r) {
+				tx.abort();
+				rj(new Error("Account not found"));
+				return; }
+			r.saveName = svnm;
+			store.put(r); } });
+}
