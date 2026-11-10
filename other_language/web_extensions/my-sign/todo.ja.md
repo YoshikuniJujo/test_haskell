@@ -868,7 +868,7 @@ TODO
 			* 追加した結果をDBに書きもどす
 	+ [ ] generateにチェックボックスと入力欄を付ける
 		- [x] HTMLにチェックボックスと入力欄を追加する
-		- [ ] チェックボックスの内容をoptionsObjectに追加
+		- [x] チェックボックスの内容をoptionsObjectに追加
 		- [ ] 入力欄のhiddenをoptionsObjectに追加
 		- [ ] チェックボックスの処理をoptionsStateに追加
 			* [ ] ここでチェックの内容とhiddenとを設定する
