@@ -137,6 +137,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "accountRenameOk" }
 	| { class: "Options"; method: "setCustomSaveNameChanged";
 		boolean: boolean }
+	| { class: "Options"; method: "customSaveNameInput"; value: string }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -624,6 +625,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "setCustomSaveNameChanged": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.useSetCustomSaveName(m.boolean);
+			return ostt.optionsObject();
+		}
+
+		case "customSaveNameInput": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.setCustomSaveName(m.value);
 			return ostt.optionsObject();
 		}
 	}

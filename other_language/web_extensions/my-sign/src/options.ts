@@ -448,6 +448,8 @@ setCustomSaveName.addEventListener("change", () => {
 
 customSaveName.addEventListener("input", () => {
 	console.log("options.ts: customSaveName: input:", customSaveName.value);
+	sendMethodAndLoadWithValueString(
+		"customSaveNameInput", customSaveName.value );
 });
 
 // ------------------------------------------------------------------------

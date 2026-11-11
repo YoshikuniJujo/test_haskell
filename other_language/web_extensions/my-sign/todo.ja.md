@@ -879,13 +879,13 @@ TODO
 		- [x] options.tsのloadOptionsでチェックボックスとhiddenとを反映させる
 		- [x] チェックボックスの変化をoptionsからbackgroundにメッセージで通知
 		- [x] backgroundでの処理を書く
-		- [ ] 入力処理を書く
+		- [x] 入力処理を書く
 			* [x] optionsObjectに追加
 			* [x] optionsStateに追加
 			* [x] optionsでloadする
 			* [x] setSaveNameがfalseのあいだは
 				nameの入力に追随するようにする
-			* [ ] optionsにlistenerを追加
+			* [x] optionsにlistenerを追加
 		- [ ] 保存処理を書く
 			* generateボタンに対する処理に追加する
 		- [ ] チェックボックスについてsaveが必要か調べる
