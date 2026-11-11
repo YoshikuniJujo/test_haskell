@@ -154,6 +154,11 @@ const setCustomSaveName = getElement<HTMLInputElement>("#set-custom-save-name");
 const customSaveNameLabel = getElement<HTMLElement>("#custom-save-name-label");
 const customSaveName = getElement<HTMLInputElement>("#custom-save-name");
 
+const setCustomSaveNameRename = getElement<HTMLInputElement>(
+	"#set-custom-save-name-rename" );
+const customSaveNameLabelRename = getElement<HTMLElement>(
+	"#custom-save-name-label-rename" );
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -452,6 +457,12 @@ customSaveName.addEventListener("input", () => {
 		"customSaveNameInput", customSaveName.value );
 });
 
+setCustomSaveNameRename.addEventListener("change", () => {
+	sendMethodAndLoadWithBoolean(
+		"setCustomSaveNameRenameChanged",
+		setCustomSaveNameRename.checked );
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
@@ -653,6 +664,9 @@ loadOptions(obj: OptionsObject)
 	setCustomSaveName.checked = obj.setSaveName;
 	customSaveNameLabel.hidden = obj.customSaveNameLabelHidden;
 	customSaveName.value = obj.customSaveName;
+
+	setCustomSaveNameRename.checked = obj.setSaveNameRename;
+	customSaveNameLabelRename.hidden = obj.customSaveNameLabelRenameHidden;
 }
 
 function

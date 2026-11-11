@@ -524,6 +524,12 @@ export class OptionsState
 	{
 		this.#optionsObject.customSaveName = nm;
 	}
+
+	useSetCustomSaveNameRename(u: boolean): void
+	{
+		this.#optionsObject.setSaveNameRename = u;
+		this.#optionsObject.customSaveNameLabelRenameHidden = !u;
+	}
 }
 
 async function

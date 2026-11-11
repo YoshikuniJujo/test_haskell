@@ -96,7 +96,10 @@ export type OptionsObject = {
 
 	setSaveName: boolean,
 	customSaveNameLabelHidden: boolean,
-	customSaveName: string
+	customSaveName: string,
+
+	setSaveNameRename: boolean,
+	customSaveNameLabelRenameHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -174,7 +177,10 @@ export function defaultOptionsObject(): OptionsObject
 
 		setSaveName: false,
 		customSaveNameLabelHidden: true,
-		customSaveName: ""
+		customSaveName: "",
+
+		setSaveNameRename: false,
+		customSaveNameLabelRenameHidden: true
 	};
 }
 

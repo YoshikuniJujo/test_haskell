@@ -897,12 +897,23 @@ TODO
 		- [ ] 入力欄についてsaveが必要か調べる
 	+ [ ] renameにチェックボックスと入力欄を付ける
 		- [x] HTMLに追加
-		- [ ] チェックボックスのところの処理
-			* [ ] チェックボックスの状態の保存と復元
-			* [ ] 入力欄のhiddenとunhidden
+		- [x] チェックボックスのところの処理
+			* [x] チェックボックスの状態の保存と復元
+				+ [x] optionsObject - setSaveNameRename
+				+ [x] optionsObject - customSaveNameLabelRenameHidden
+				+ [x] optionsState
+				+ [x] opitions
+				+ [x] background
+			* [x] 入力欄のhiddenとunhidden
 		- [ ] 入力欄の処理
+			* [ ] optionsObject
+			* [ ] optionsState
+			* [ ] チェックボックスがチェックされていなければnameに追随する
+				+ backgroundに定義
+			* [ ] optionsでinputにlistenerをつける
+			* [ ] backgroundで処理
 		- [ ] 名前の変更処理
-			* [ ] DBの関数の修正
+			* [ ] DBの関数の修正 renameAccount
 			* [ ] 必要なら型の修正
 		- [ ] チェックボックスについてsaveが必要か調べる
 		- [ ] 入力欄についてsaveが必要か調べる
