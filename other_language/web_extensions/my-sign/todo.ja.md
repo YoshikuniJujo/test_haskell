@@ -906,7 +906,7 @@ TODO
 				+ [x] background
 			* [x] 入力欄のhiddenとunhidden
 		- [ ] 入力欄の処理
-			* [ ] optionsObject
+			* [x] optionsObject
 			* [ ] optionsState
 			* [ ] チェックボックスがチェックされていなければnameに追随する
 				+ backgroundに定義
