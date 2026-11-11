@@ -586,9 +586,13 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			switch (ostt.accountSettingsRadio()) {
 				case "rename":
+					console.log(
+						"background.ts: rename:",
+						await DB.getAccount(m.publicKey));
 					ostt.accountRenameMode();
 					ostt.setAccountRenameName(m.name);
 					ostt.setAccountPublicKey(m.publicKey);
+					break;
 			}
 
 			return ostt.optionsObject();
@@ -1106,7 +1110,7 @@ getAccount(pbk: Uint8Array): Promise<EncryptedSecretKey>
 {
 	const acc = await DB.getAccount(pbk);
 	return new EncryptedSecretKey(
-		acc.publicKey, acc.name,
+		acc.publicKey, acc.name, acc.saveName,
 		acc.logN, acc.salt, acc.nonce,
 		acc.keySecurityByte, acc.ciphertext,
 		acc.saltForCheckPassword,
@@ -1258,7 +1262,9 @@ browser.runtime.onConnect.addListener(async p => {
 		// FOR DEVELOPMENT. REMOVE IT!
 		// console.log("background.ts: port:", m2.password);
 		const esk = await EncryptedSecretKey.generate(
-			ostt.optionsObject().accountName, m2.password );
+			ostt.optionsObject().accountName,
+			ostt.optionsObject().customSaveName,
+			m2.password );
 		DB.addKeyPair(esk.toObject_563e7e39d4());
 		if (ostt.doesClientUuidExist())
 			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));

@@ -1,7 +1,7 @@
 import type {
 	ClientSet, Client, ClientSummary, ClientSummaryRaw, EditingClient,
 	Account, PublicKeyOption, UUID, Profile, Permission, KeyWithName } from "./types.js";
-import { fromUuid, noPermission, setPermissionSign, defaultClient } from "./types.js";
+import { fromUuid, noPermission, setPermissionSign, defaultClient, ensureSaveName } from "./types.js";
 import { unit } from "./data/unit.js";
 import { toHex, camelToSnake } from "./tools.js";
 
@@ -799,7 +799,7 @@ getAccount(pk: Uint8Array): Promise<Account>
 		const store = tx.objectStore(SECRET_KEYS);
 //		const req = store.get(pk.slice().buffer);
 		const req = store.get(pk as IDBValidKey);
-		req.onsuccess = () => rs(req.result);
+		req.onsuccess = () => rs(ensureSaveName(req.result));
 		req.onerror = () => rj(req.error);
 	});
 }

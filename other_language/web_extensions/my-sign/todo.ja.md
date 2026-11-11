@@ -886,11 +886,26 @@ TODO
 			* [x] setSaveNameがfalseのあいだは
 				nameの入力に追随するようにする
 			* [x] optionsにlistenerを追加
-		- [ ] 保存処理を書く
+		- [x] Accountにsave nameが変まれていなければ、それを追加する処理を書く
+		- [x] DBからAccountを取得する関数にsave nameも追加する
+		- [x] Accountにsave nameを追加する
+		- [x] DBにsave nameも含めた保存関数を書く(修正する)
+		- [x] 保存処理を書く
 			* generateボタンに対する処理に追加する
+		- [x] renameのところで保存されていることを確認する
 		- [ ] チェックボックスについてsaveが必要か調べる
 		- [ ] 入力欄についてsaveが必要か調べる
 	+ [ ] renameにチェックボックスと入力欄を付ける
+		- [ ] HTMLに追加
+		- [ ] チェックボックスのところの処理
+			* [ ] チェックボックスの状態の保存と復元
+			* [ ] 入力欄のhiddenとunhidden
+		- [ ] 入力欄の処理
+		- [ ] 名前の変更処理
+			* [ ] DBの関数の修正
+			* [ ] 必要なら型の修正
+		- [ ] チェックボックスについてsaveが必要か調べる
+		- [ ] 入力欄についてsaveが必要か調べる
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] ncryptsecのインポート

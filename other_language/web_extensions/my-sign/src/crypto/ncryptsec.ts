@@ -29,6 +29,7 @@ EncryptedSecretKey
 
 	#logN;
 	#name;
+	#saveName;
 	#salt;
 	#nonce;
 	#keySecurityByte;
@@ -38,7 +39,7 @@ EncryptedSecretKey
 	#hashForCheckPassword;
 
 	constructor(
-		pk: Uint8Array, name: string,
+		pk: Uint8Array, name: string, saveName: string,
 		ln: number, slt: Uint8Array, nnc: Uint8Array,
 		ksb: number, ct: Uint8Array, sfcp: Uint8Array, hfcp: Uint8Array)
 	{
@@ -49,6 +50,7 @@ EncryptedSecretKey
 
 		this.#publicKey = pk;
 		this.#name = name;
+		this.#saveName = saveName;
 		this.#logN = ln;
 		this.#salt = slt;
 		this.#nonce = nnc;
@@ -58,7 +60,7 @@ EncryptedSecretKey
 		this.#hashForCheckPassword = hfcp;
 	}
 
-	static async generate(nm: string, pswd: Uint8Array)
+	static async generate(nm: string, snm: string, pswd: Uint8Array)
 	{
 		const lgn = 16
 		const sfcp = randomBytes(16);
@@ -72,17 +74,17 @@ EncryptedSecretKey
 				sk, { password: pswd, logN: lgn, keySecurityByte: 1 } ); }
 		finally { sk.fill(0); }
 		return new EncryptedSecretKey(
-			pk, nm, foo.logN, foo.salt, foo.nonce,
+			pk, nm, snm, foo.logN, foo.salt, foo.nonce,
 			foo.keySecurityByte, foo.ciphertext, sfcp, await hfcp );
 
 	}
 
-	static fromEncrypted(nm: string, encrypted: Encrypted, pswd: Uint8Array)
+	static fromEncrypted(nm: string, snm: string, encrypted: Encrypted, pswd: Uint8Array)
 	{
 		if (encrypted.version !== 2) throw new Error(
 			`Invalid ncryptsec version: expected 2, actual ${encrypted.version}` );
 		return this.#fromEncrypted(
-			nm,
+			nm, snm,
 			encrypted.logN,
 			encrypted.salt,
 			encrypted.nonce,
@@ -92,7 +94,7 @@ EncryptedSecretKey
 	}
 
 	static async #fromEncrypted(
-		nm: string, lgn: number,
+		nm: string, snm: string, lgn: number,
 		slt: Uint8Array, nnc: Uint8Array, ksb: number,
 		ct: Uint8Array, pswd: Uint8Array )
 	{
@@ -118,7 +120,7 @@ EncryptedSecretKey
 		const hfcp = await scryptAsync(
 			pswd, sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 		return new EncryptedSecretKey(
-			pk, nm, lgn, slt, nnc, ksb, ct, sfcp, hfcp );
+			pk, nm, snm, lgn, slt, nnc, ksb, ct, sfcp, hfcp );
 	}
 
 	get publicKey() { return this.#publicKey }
@@ -129,6 +131,7 @@ EncryptedSecretKey
 		return {
 			publicKey: this.#publicKey,
 			name: this.#name,
+			saveName: this.#saveName,
 			version: 2,
 			logN: this.#logN,
 			salt: this.#salt,
