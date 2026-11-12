@@ -922,7 +922,7 @@ TODO
 		- [x] Accountの修正
 		- [x] DBにaccountを保存する関数に追加
 		- [x] generateの時に保存
-		- [ ] renameの時に読み出し
+		- [x] renameの時に読み出し
 		- [ ] renameの時に保存
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる

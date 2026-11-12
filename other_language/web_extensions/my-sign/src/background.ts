@@ -590,6 +590,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				case "rename":
 					const acc = await DB.getAccount(m.publicKey);
 					console.log("background.ts: rename:", acc);
+					ostt.useSetCustomSaveNameRename(acc.useSaveName);
 					ostt.accountRenameMode();
 					ostt.setAccountRenameName(m.name);
 					ostt.setAccountPublicKey(m.publicKey);
