@@ -919,9 +919,9 @@ TODO
 		- [ ] チェックボックスについてsaveが必要か調べる
 		- [ ] 入力欄についてsaveが必要か調べる
 	+ [ ] custom save nameを指定してあるかどうかをDBに保存する
-		- [ ] Accountの修正
-		- [ ] DBにaccountを保存する関数に追加
-		- [ ] generateの時に保存
+		- [x] Accountの修正
+		- [x] DBにaccountを保存する関数に追加
+		- [x] generateの時に保存
 		- [ ] renameの時に読み出し
 		- [ ] renameの時に保存
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する

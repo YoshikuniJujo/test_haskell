@@ -89,6 +89,7 @@ export function defaultEditingClient(): EditingClient
 export type Account = {
 	publicKey: Uint8Array ,
 	name: string,
+	useSaveName: boolean,
 	saveName: string,
 	logN: number,
 	salt: Uint8Array,

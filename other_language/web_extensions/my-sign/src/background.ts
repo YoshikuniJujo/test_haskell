@@ -1118,7 +1118,7 @@ getAccount(pbk: Uint8Array): Promise<EncryptedSecretKey>
 {
 	const acc = await DB.getAccount(pbk);
 	return new EncryptedSecretKey(
-		acc.publicKey, acc.name, acc.saveName,
+		acc.publicKey, acc.name, acc.useSaveName, acc.saveName,
 		acc.logN, acc.salt, acc.nonce,
 		acc.keySecurityByte, acc.ciphertext,
 		acc.saltForCheckPassword,
@@ -1271,6 +1271,7 @@ browser.runtime.onConnect.addListener(async p => {
 		// console.log("background.ts: port:", m2.password);
 		const esk = await EncryptedSecretKey.generate(
 			ostt.optionsObject().accountName,
+			ostt.optionsObject().setSaveName,
 			ostt.optionsObject().customSaveName,
 			m2.password );
 		DB.addKeyPair(esk.toObject_563e7e39d4());
