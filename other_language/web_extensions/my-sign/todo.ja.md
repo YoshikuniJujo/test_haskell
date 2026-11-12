@@ -907,7 +907,8 @@ TODO
 			* [x] 入力欄のhiddenとunhidden
 		- [ ] 入力欄の処理
 			* [x] optionsObject
-			* [ ] optionsState
+			* [x] optionsState
+			* [x] 画面を開くときに初期値を設定する
 			* [ ] チェックボックスがチェックされていなければnameに追随する
 				+ backgroundに定義
 			* [ ] optionsでinputにlistenerをつける
@@ -917,6 +918,12 @@ TODO
 			* [ ] 必要なら型の修正
 		- [ ] チェックボックスについてsaveが必要か調べる
 		- [ ] 入力欄についてsaveが必要か調べる
+	+ [ ] custom save nameを指定してあるかどうかをDBに保存する
+		- [ ] Accountの修正
+		- [ ] DBにaccountを保存する関数に追加
+		- [ ] generateの時に保存
+		- [ ] renameの時に読み出し
+		- [ ] renameの時に保存
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] ncryptsecのインポート

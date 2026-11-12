@@ -588,12 +588,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			switch (ostt.accountSettingsRadio()) {
 				case "rename":
-					console.log(
-						"background.ts: rename:",
-						await DB.getAccount(m.publicKey));
+					const acc = await DB.getAccount(m.publicKey);
+					console.log("background.ts: rename:", acc);
 					ostt.accountRenameMode();
 					ostt.setAccountRenameName(m.name);
 					ostt.setAccountPublicKey(m.publicKey);
+					ostt.setCustomSaveNameRename(acc.saveName);
 					break;
 			}
 

@@ -158,6 +158,8 @@ const setCustomSaveNameRename = getElement<HTMLInputElement>(
 	"#set-custom-save-name-rename" );
 const customSaveNameLabelRename = getElement<HTMLElement>(
 	"#custom-save-name-label-rename" );
+const customSaveNameRename = getElement<HTMLInputElement>(
+	"#custom-save-name-rename" );
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -667,6 +669,7 @@ loadOptions(obj: OptionsObject)
 
 	setCustomSaveNameRename.checked = obj.setSaveNameRename;
 	customSaveNameLabelRename.hidden = obj.customSaveNameLabelRenameHidden;
+	customSaveNameRename.value = obj.customSaveNameRename;
 }
 
 function
