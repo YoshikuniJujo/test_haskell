@@ -610,6 +610,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "accountRenameNameInput": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.setAccountRenameName(m.value);
+			if (!ostt.getSetCustomSaveNameRename())
+				ostt.setCustomSaveNameRename(camelToSnake(m.value));
 			return ostt.optionsObject();
 		}
 

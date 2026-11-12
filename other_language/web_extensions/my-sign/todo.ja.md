@@ -909,7 +909,7 @@ TODO
 			* [x] optionsObject
 			* [x] optionsState
 			* [x] 画面を開くときに初期値を設定する
-			* [ ] チェックボックスがチェックされていなければnameに追随する
+			* [x] チェックボックスがチェックされていなければnameに追随する
 				+ backgroundに定義
 			* [ ] optionsでinputにlistenerをつける
 			* [ ] backgroundで処理
