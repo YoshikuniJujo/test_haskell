@@ -1058,7 +1058,12 @@ getAllSetClientsBySetUuidRaw(
 }
 
 export async function
-renameAccount(publicKey: Uint8Array, newName: string)
+renameAccount(
+	publicKey: Uint8Array,
+	newName: string,
+	useSaveName: boolean,
+	saveName: string
+)
 {
 	const db = await open();
 	return new Promise((rs, rj) => {
@@ -1073,6 +1078,8 @@ renameAccount(publicKey: Uint8Array, newName: string)
 				tx.abort();
 				return; }
 			r.name = newName;
+			r.useSaveName = useSaveName;
+			r.saveName = saveName;
 			const req2 = store.put(r); } });
 }
 

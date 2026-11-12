@@ -619,7 +619,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				ostt.accountRenameName(), ostt.accountPublicKey());
 			const pk = ostt.accountPublicKey();
 			if (pk === null) throw new Error("bad");
-			DB.renameAccount(pk, ostt.accountRenameName());
+			DB.renameAccount(
+				pk,
+				ostt.accountRenameName(),
+				ostt.getSetCustomSaveNameRename(),
+				ostt.customSaveNameRename()
+			);
 			browser.runtime.sendMessage({
 				class: "Options",
 				direction: "signal",
