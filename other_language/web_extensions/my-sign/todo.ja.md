@@ -893,7 +893,7 @@ TODO
 		- [x] 保存処理を書く
 			* generateボタンに対する処理に追加する
 		- [x] renameのところで保存されていることを確認する
-		- [ ] チェックボックスについてsaveが必要か調べる
+		- [x] チェックボックスについてsaveが必要か調べる
 		- [ ] 入力欄についてsaveが必要か調べる
 	+ [ ] renameにチェックボックスと入力欄を付ける
 		- [x] HTMLに追加
@@ -905,17 +905,17 @@ TODO
 				+ [x] opitions
 				+ [x] background
 			* [x] 入力欄のhiddenとunhidden
-		- [ ] 入力欄の処理
+		- [x] 入力欄の処理
 			* [x] optionsObject
 			* [x] optionsState
 			* [x] 画面を開くときに初期値を設定する
 			* [x] チェックボックスがチェックされていなければnameに追随する
 				+ backgroundに定義
-			* [ ] optionsでinputにlistenerをつける
-			* [ ] backgroundで処理
-		- [ ] 名前の変更処理
-			* [ ] DBの関数の修正 renameAccount
-			* [ ] 必要なら型の修正
+			* [x] optionsでinputにlistenerをつける
+			* [x] backgroundで処理
+		- [x] 名前の変更処理
+			* [x] DBの関数の修正 renameAccount
+			* [x] 必要なら型の修正
 		- [ ] チェックボックスについてsaveが必要か調べる
 		- [ ] 入力欄についてsaveが必要か調べる
 	+ [x] custom save nameを指定してあるかどうかをDBに保存する

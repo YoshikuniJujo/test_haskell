@@ -465,6 +465,11 @@ setCustomSaveNameRename.addEventListener("change", () => {
 		setCustomSaveNameRename.checked );
 });
 
+customSaveNameRename.addEventListener("input", () => {
+	sendMethodAndLoadWithValueString(
+		"customSaveNameRenameInput", customSaveNameRename.value );
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {

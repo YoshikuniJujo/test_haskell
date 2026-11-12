@@ -458,6 +458,7 @@ export class OptionsState
 	{
 		this.#optionsObject.accountListHidden = true;
 		this.#optionsObject.generateFormHidden = false;
+		this.save();
 	}
 
 	setAccountList(ks: KeyWithName[]): void
@@ -513,6 +514,7 @@ export class OptionsState
 	{
 		this.#optionsObject.setSaveName = u;
 		this.#optionsObject.customSaveNameLabelHidden = !u;
+		this.save();
 	}
 
 	customSaveName(): string
