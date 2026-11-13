@@ -161,6 +161,8 @@ const customSaveNameLabelRename = getElement<HTMLElement>(
 const customSaveNameRename = getElement<HTMLInputElement>(
 	"#custom-save-name-rename" );
 
+const accountExportForm = getElement<HTMLElement>("#account-export-form");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -675,6 +677,8 @@ loadOptions(obj: OptionsObject)
 	setCustomSaveNameRename.checked = obj.setSaveNameRename;
 	customSaveNameLabelRename.hidden = obj.customSaveNameLabelRenameHidden;
 	customSaveNameRename.value = obj.customSaveNameRename;
+
+	accountExportForm.hidden = obj.accountExportFormHidden;
 }
 
 function

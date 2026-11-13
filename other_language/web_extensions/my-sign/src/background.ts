@@ -598,6 +598,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					ostt.setAccountPublicKey(m.publicKey);
 					ostt.setCustomSaveNameRename(acc.saveName);
 					break;
+				case "export":
+					ostt.accountExportMode()
+					break;
 			}
 
 			return ostt.optionsObject();

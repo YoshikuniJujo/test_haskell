@@ -550,6 +550,13 @@ export class OptionsState
 	{
 		return this.#optionsObject.customSaveNameRename;
 	}
+
+	accountExportMode(): void
+	{
+		this.#optionsObject.accountListHidden = true;
+		this.#optionsObject.accountExportFormHidden = false;
+		this.save();
+	}
 }
 
 async function
