@@ -196,7 +196,7 @@ encode(foo: Encrypted): string
 	return Bech32.encode('ncryptsec',
 		new Uint8Array([
 			foo.version, foo.logN, ...foo.salt, ...foo.nonce,
-			foo.keySecurityByte, ...foo.ciphertext ]));
+			foo.keySecurityByte, ...foo.ciphertext ])) + "\n";
 }
 
 export function

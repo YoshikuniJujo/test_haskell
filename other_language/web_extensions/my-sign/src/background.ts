@@ -682,6 +682,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				encodeSecretKey(acc),
 				exportFileName(acc.saveName, acc.publicKey)
 			);
+			download(exportFileName(acc.saveName, acc.publicKey), encodeSecretKey(acc));
 			return ostt.optionsObject();
 		}
 	}
@@ -1396,4 +1397,65 @@ exportFileName(snm: string, pk: Uint8Array): string
 	if (snm === "") pfx = ""; pfx = snm + "_";
 	const npub = Bech32.encode("npub", pk);
 	return pfx + npub.slice(5, 15) + "_" + npub.slice(-6) + ".ncryptsec";
+}
+
+async function
+download(flnm: string, cnt: string): Promise<void>
+{
+	console.log("background.ts: download BEGIN");
+	const blob = new Blob([cnt], { type: "text/plain" });
+	const url = URL.createObjectURL(blob);
+
+	let downloadId: number | undefined;
+	let state: "complete" | "interrupted" | undefined;
+
+	const { promise: pr, resolve: rs, reject: rj } =
+		Promise.withResolvers();
+
+	const listener = (delta: browser.downloads._OnChangedDownloadDelta) => {
+		if (delta.id !== downloadId) return;
+
+		if (delta.state?.current === "complete") {
+			state = "complete";
+			rs(undefined);
+		} else if (delta.state?.current === "interrupted") {
+			state = "interrupted";
+			rj(new Error("Download interrupted"));
+		}
+	};
+
+	browser.downloads.onChanged.addListener(listener);
+
+	console.log("background.ts: download: before try");
+
+	try {
+		downloadId = await browser.downloads.download({
+//			url, filename: flnm, saveAs: true });
+			url, filename: flnm, saveAs: false });
+
+		console.log("background.ts: after browser.downloads.download");
+
+		const [item] = await browser.downloads.search({ id: downloadId });
+
+		console.log("background.ts: after browser.downloads.search");
+
+		if (item?.state === "complete") {
+			state = "complete";
+			rs(undefined);
+		} else if (item?.state === "interrupted") {
+			state = "interrupted";
+			rj(new Error("Download interrupted"));
+		}
+
+		if (state === undefined) await pr;
+	}
+	catch (e) {
+		console.log("background.ts: download: catch:", e);
+	}
+	finally {
+		console.log("background.ts: download: finally");
+		browser.downloads.onChanged.removeListener(listener);
+		URL.revokeObjectURL(url);
+	}
+	console.log("background.ts: download END");
 }
