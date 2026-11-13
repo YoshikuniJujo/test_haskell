@@ -532,6 +532,7 @@ export class OptionsState
 	{
 		this.#optionsObject.setSaveNameRename = u;
 		this.#optionsObject.customSaveNameLabelRenameHidden = !u;
+		this.save();
 	}
 
 	getSetCustomSaveNameRename(): boolean
@@ -542,6 +543,7 @@ export class OptionsState
 	setCustomSaveNameRename(nm: string): void
 	{
 		this.#optionsObject.customSaveNameRename = nm;
+		this.save();
 	}
 
 	customSaveNameRename(): string
