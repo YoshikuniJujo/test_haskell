@@ -11,7 +11,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "webdriver": "^9.31.2"
+    "webdriver": "^10.2.0"
   },
   "overrides": {
     "deepmerge-ts": "8.0.0"
