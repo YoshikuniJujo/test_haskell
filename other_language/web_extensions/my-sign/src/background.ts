@@ -682,7 +682,16 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				encodeSecretKey(acc),
 				exportFileName(acc.saveName, acc.publicKey)
 			);
-			download(exportFileName(acc.saveName, acc.publicKey), encodeSecretKey(acc));
+			console.log("ACCOUnT EXPORT OK CLICKED", navigator.clipboard);
+			console.log(
+				await browser.permissions.contains({
+					permissions: ["clipboardWrite"]
+				}));
+			console.log(await browser.permissions.getAll());
+			console.log(await browser.runtime.getManifest().permissions);
+			console.log(await browser.runtime.getManifest().optional_permissions);
+			await navigator.clipboard.writeText(encodeSecretKey(acc));
+//			download(exportFileName(acc.saveName, acc.publicKey), encodeSecretKey(acc));
 			return ostt.optionsObject();
 		}
 	}
