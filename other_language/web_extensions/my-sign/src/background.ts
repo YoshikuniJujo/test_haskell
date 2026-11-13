@@ -142,6 +142,7 @@ type OptionsMethod =
 		boolean: boolean }
 	| { class: "Options"; method: "customSaveNameRenameInput";
 		value: string }
+	| { class: "Options"; method: "accountExportCancelClicked"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -599,6 +600,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					ostt.setCustomSaveNameRename(acc.saveName);
 					break;
 				case "export":
+					ostt.setAccountExportTitle(
+						m.name + " " + Bech32.encode("npub", m.publicKey) );
 					ostt.accountExportMode()
 					break;
 			}
@@ -661,6 +664,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "customSaveNameRenameInput": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.setCustomSaveNameRename(m.value);
+			return ostt.optionsObject();
+		}
+
+		case "accountExportCancelClicked": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.accountListMode();
 			return ostt.optionsObject();
 		}
 	}

@@ -451,6 +451,7 @@ export class OptionsState
 	{
 		this.#optionsObject.accountListHidden = false;
 		this.#optionsObject.accountRenameHidden = true;
+		this.#optionsObject.accountExportFormHidden = true;
 		this.#optionsObject.generateFormHidden = true;
 	}
 
@@ -555,6 +556,12 @@ export class OptionsState
 	{
 		this.#optionsObject.accountListHidden = true;
 		this.#optionsObject.accountExportFormHidden = false;
+		this.save();
+	}
+
+	setAccountExportTitle(ttl: string): void
+	{
+		this.#optionsObject.accountExportTitle = ttl;
 		this.save();
 	}
 }

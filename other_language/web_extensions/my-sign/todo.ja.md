@@ -841,7 +841,7 @@ TODO
 			* [x] content tab
 			* [x] options tab
 		- [x] OKボタンで画面をぬけるようにする
-	+ [ ] ExportがONになっているときにExport確認画面に遷移させる
+	+ [x] ExportがONになっているときにExport確認画面に遷移させる
 		- [x] HTMLにExport確認領域を追加
 			* [x] PK表示領域
 			* [x] Cancelボタン
@@ -850,8 +850,12 @@ TODO
 		- [x] optionsStateにmodeを追加
 		- [x] loadOPtionsで反映させる
 		- [x] accountのクリックでExport画面を表示
-		- [ ] 名前とnpubの表示
-		- [ ] Cancelでアカウント一覧にもどる
+		- [x] 名前とnpubの表示
+			* [x] optionsObject
+			* [x] optionsState
+			* [x] options
+			* [x] background
+		- [x] Cancelでアカウント一覧にもどる
 	+ [ ] Exoprt確認画面でOKを押すとダウンロードする
 		- [ ] download権限を追加
 		- [ ] ncryptsecの中身の文字列を作成

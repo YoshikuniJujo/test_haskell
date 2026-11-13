@@ -162,6 +162,8 @@ const customSaveNameRename = getElement<HTMLInputElement>(
 	"#custom-save-name-rename" );
 
 const accountExportForm = getElement<HTMLElement>("#account-export-form");
+const accountExportTitle = getElement<HTMLElement>("#account-export-title");
+const accountExportCancel = getElement<HTMLButtonElement>("#account-export-cancel");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -472,6 +474,10 @@ customSaveNameRename.addEventListener("input", () => {
 		"customSaveNameRenameInput", customSaveNameRename.value );
 });
 
+accountExportCancel.addEventListener("click", () => {
+	sendMethodAndLoad("accountExportCancelClicked");
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
@@ -679,6 +685,7 @@ loadOptions(obj: OptionsObject)
 	customSaveNameRename.value = obj.customSaveNameRename;
 
 	accountExportForm.hidden = obj.accountExportFormHidden;
+	accountExportTitle.textContent = obj.accountExportTitle;
 }
 
 function
