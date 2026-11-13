@@ -525,6 +525,7 @@ export class OptionsState
 	setCustomSaveName(nm: string): void
 	{
 		this.#optionsObject.customSaveName = nm;
+		this.save();
 	}
 
 	useSetCustomSaveNameRename(u: boolean): void

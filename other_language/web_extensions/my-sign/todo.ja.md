@@ -866,7 +866,7 @@ TODO
 			* public keyを指定してsecret key全体を取り出す
 			* 取り出したsecret keyにsave nameを追加する
 			* 追加した結果をDBに書きもどす
-	+ [ ] generateにチェックボックスと入力欄を付ける
+	+ [x] generateにチェックボックスと入力欄を付ける
 		- [x] HTMLにチェックボックスと入力欄を追加する
 			* set-custom-save-name
 			* custom-save-name-label
@@ -894,7 +894,7 @@ TODO
 			* generateボタンに対する処理に追加する
 		- [x] renameのところで保存されていることを確認する
 		- [x] チェックボックスについてsaveが必要か調べる
-		- [ ] 入力欄についてsaveが必要か調べる
+		- [x] 入力欄についてsaveが必要か調べる
 	+ [ ] renameにチェックボックスと入力欄を付ける
 		- [x] HTMLに追加
 		- [x] チェックボックスのところの処理
