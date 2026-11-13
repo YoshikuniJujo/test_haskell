@@ -95,10 +95,21 @@ EncryptedSecretKey
 			pswd );
 	}
 
+	toEncrypted(): Encrypted
+	{
+		return {
+			version: 2,
+			logN: this.#logN,
+			salt: this.#salt,
+			nonce: this.#nonce,
+			keySecurityByte: this.#keySecurityByte,
+			ciphertext: this.#ciphertext };
+	}
+
 	static async #fromEncrypted(
 		nm: string, usnm: boolean, snm: string, lgn: number,
 		slt: Uint8Array, nnc: Uint8Array, ksb: number,
-		ct: Uint8Array, pswd: Uint8Array )
+		ct: Uint8Array, pswd: Uint8Array ): Promise<EncryptedSecretKey>
 	{
 		if (ksb > 2) throw new Error(
 			"Invalid key security byte: expected 0, 1, or 2, " +
@@ -172,7 +183,13 @@ EncryptedSecretKey
 }
 
 export function
-encode(foo: Encrypted)
+encodeSecretKey(e: EncryptedSecretKey)
+{
+	return encode(e.toEncrypted());
+}
+
+export function
+encode(foo: Encrypted): string
 {
 
 	return Bech32.encode('ncryptsec',
@@ -182,7 +199,7 @@ encode(foo: Encrypted)
 }
 
 export function
-decode(text: string)
+decode(text: string): Encrypted
 {
 
 const text2 = text.trim();
@@ -195,7 +212,11 @@ if (decoded.length !== 91) throw new Error(
 const [vsn, lgn, slt, nnc, aad, ct] =
 	split(decoded, [1, 1, 16, 24, 1, 48]);
 
-if (!vsn || !lgn || !aad) throw new Error("bad");
+if (!vsn || !lgn || !aad || !slt || !nnc || !ct) throw new Error("bad");
+
+if (vsn[0] === undefined) throw new Error("bad");
+if (lgn[0] === undefined) throw new Error("bad");
+if (aad[0] === undefined) throw new Error("bad");
 
 const encrypted = {
 	version: vsn[0], logN: lgn[0], salt: slt, nonce: nnc,

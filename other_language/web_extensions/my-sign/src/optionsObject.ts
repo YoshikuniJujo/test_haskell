@@ -103,7 +103,8 @@ export type OptionsObject = {
 	customSaveNameRename: string,
 
 	accountExportFormHidden: boolean,
-	accountExportTitle: string
+	accountExportName: string,
+	accountExportPublicKey: Uint8Array | null
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -188,7 +189,8 @@ export function defaultOptionsObject(): OptionsObject
 		customSaveNameRename: "",
 
 		accountExportFormHidden: true,
-		accountExportTitle: ""
+		accountExportName: "",
+		accountExportPublicKey: null
 	};
 }
 

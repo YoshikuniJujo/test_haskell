@@ -559,10 +559,23 @@ export class OptionsState
 		this.save();
 	}
 
-	setAccountExportTitle(ttl: string): void
+	setAccountExportName(nm: string): void
 	{
-		this.#optionsObject.accountExportTitle = ttl;
+		this.#optionsObject.accountExportName = nm;
 		this.save();
+	}
+
+	setAccountExportPublicKey(pk: Uint8Array): void
+	{
+		this.#optionsObject.accountExportPublicKey = pk;
+		this.save();
+	}
+
+	accountExportPublicKey(): Uint8Array
+	{
+		if (!this.#optionsObject.accountExportPublicKey)
+			throw new Error("bad");
+		return this.#optionsObject.accountExportPublicKey;
 	}
 }
 

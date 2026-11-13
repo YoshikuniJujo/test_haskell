@@ -164,6 +164,7 @@ const customSaveNameRename = getElement<HTMLInputElement>(
 const accountExportForm = getElement<HTMLElement>("#account-export-form");
 const accountExportTitle = getElement<HTMLElement>("#account-export-title");
 const accountExportCancel = getElement<HTMLButtonElement>("#account-export-cancel");
+const accountExportOk = getElement<HTMLButtonElement>("#account-export-ok");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -478,6 +479,10 @@ accountExportCancel.addEventListener("click", () => {
 	sendMethodAndLoad("accountExportCancelClicked");
 });
 
+accountExportOk.addEventListener("click", () => {
+	sendMethodAndLoad("accountExportOkClicked");
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
@@ -685,7 +690,10 @@ loadOptions(obj: OptionsObject)
 	customSaveNameRename.value = obj.customSaveNameRename;
 
 	accountExportForm.hidden = obj.accountExportFormHidden;
-	accountExportTitle.textContent = obj.accountExportTitle;
+	if (obj.accountExportPublicKey)
+		accountExportTitle.textContent =
+			obj.accountExportName + " " +
+			Bech32.encode("npub", obj.accountExportPublicKey);
 }
 
 function

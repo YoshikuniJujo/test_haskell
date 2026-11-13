@@ -1,5 +1,5 @@
 import { InputTabs } from "./inputTabs.js";
-import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
+import { EncryptedSecretKey, encodeSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js";
 import { Log } from "./log2.js";
 
@@ -143,6 +143,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "customSaveNameRenameInput";
 		value: string }
 	| { class: "Options"; method: "accountExportCancelClicked"; }
+	| { class: "Options"; method: "accountExportOkClicked"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -600,8 +601,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					ostt.setCustomSaveNameRename(acc.saveName);
 					break;
 				case "export":
-					ostt.setAccountExportTitle(
-						m.name + " " + Bech32.encode("npub", m.publicKey) );
+					ostt.setAccountExportName(m.name);
+					ostt.setAccountExportPublicKey(m.publicKey);
 					ostt.accountExportMode()
 					break;
 			}
@@ -670,6 +671,16 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "accountExportCancelClicked": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.accountListMode();
+			return ostt.optionsObject();
+		}
+
+		case "accountExportOkClicked": {
+			const ostt = await optionsStateFromSender(s);
+			const acc = await getAccount(ostt.accountExportPublicKey());
+			console.log(
+				"background.ts: accountExportOkClicked",
+				encodeSecretKey(acc)
+			);
 			return ostt.optionsObject();
 		}
 	}

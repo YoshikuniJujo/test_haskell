@@ -857,8 +857,9 @@ TODO
 			* [x] background
 		- [x] Cancelでアカウント一覧にもどる
 	+ [ ] Exoprt確認画面でOKを押すとダウンロードする
+		- [x] nameとpkを分ける
 		- [ ] download権限を追加
-		- [ ] ncryptsecの中身の文字列を作成
+		- [x] ncryptsecの中身の文字列を作成
 		- [ ] ダウンロード(ファイル名は[名前][下線][10文字][下線][6文字].ncryptsecか)
 		- [ ] ダウンロードの完了か中断を待ち解放する
 	+ [ ] completeになったところでDBにExportの時間を保存する
