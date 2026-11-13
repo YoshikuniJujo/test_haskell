@@ -136,8 +136,9 @@ EncryptedSecretKey
 			pk, nm, usnm, snm, lgn, slt, nnc, ksb, ct, sfcp, hfcp );
 	}
 
-	get publicKey() { return this.#publicKey }
-	get name() { return this.#name }
+	get publicKey() { return this.#publicKey; }
+	get name() { return this.#name; }
+	get saveName() { return this.#saveName; }
 
 	toObject_563e7e39d4()
 	{

@@ -679,7 +679,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const acc = await getAccount(ostt.accountExportPublicKey());
 			console.log(
 				"background.ts: accountExportOkClicked",
-				encodeSecretKey(acc)
+				encodeSecretKey(acc),
+				exportFileName(acc.saveName, acc.publicKey)
 			);
 			return ostt.optionsObject();
 		}
@@ -1386,4 +1387,13 @@ clientSubmitted(s: browser.runtime.MessageSender)
 	if (s.tab.id === undefined) throw new Error("bad32");
 	await browser.tabs.remove(s.tab.id);
 	return;
+}
+
+function
+exportFileName(snm: string, pk: Uint8Array): string
+{
+	let pfx;
+	if (snm === "") pfx = ""; pfx = snm + "_";
+	const npub = Bech32.encode("npub", pk);
+	return pfx + npub.slice(5, 15) + "_" + npub.slice(-6) + ".ncryptsec";
 }

@@ -858,6 +858,7 @@ TODO
 		- [x] Cancelでアカウント一覧にもどる
 	+ [ ] Exoprt確認画面でOKを押すとダウンロードする
 		- [x] nameとpkを分ける
+		- [x] filenameを作る関数を作る
 		- [ ] download権限を追加
 		- [x] ncryptsecの中身の文字列を作成
 		- [ ] ダウンロード(ファイル名は[名前][下線][10文字][下線][6文字].ncryptsecか)
