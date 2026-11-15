@@ -946,15 +946,18 @@ TODO
 	+ [x] 仕様を考える
 	+ [ ] HTML
 		- [ ] 最小限だけ作成
-		- [x] ボタンを生成
+		- [ ] ボタンを生成
+			* [x] Import Secret Keyという名前にする
+			* [ ] console.logする
+			* [ ] backgroundにメッセージを送信
+			* [ ] background側でメッセージを受信
 		- [ ] hiddenのところを作成
 			* [ ] optionsObject
 			* [ ] optionsState
 			* [ ] options
 			* [ ] background
-		- [ ] 残りを作る
-	+ [ ] 画面の遷移
-	+ [ ] 表示・非表示の切り替え
+	+ [ ] ImportボタンでImport領域に画面遷移するようにする
+	+ [ ] ncryptsecの表示領域について表示・非表示の切り替え
 	+ [ ] Uint8Arrayへのcopy、空文字列で上書き
 	+ [ ] パスワード入力タブを開く
 	+ [ ] パスワード入力タブでパスワードを正規化しUint8Arrayとしてコピー
