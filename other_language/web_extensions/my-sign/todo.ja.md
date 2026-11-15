@@ -942,6 +942,24 @@ TODO
 		- [x] generateの時に保存
 		- [x] renameの時に読み出し
 		- [x] renameの時に保存
+* [ ] Import機能
+	+ [ ] 仕様を考える
+	+ [ ] HTML
+		- [ ] 最小限だけ作成
+		- [x] ボタンを生成
+		- [ ] hiddenのところを作成
+			* [ ] optionsObject
+			* [ ] optionsState
+			* [ ] options
+			* [ ] background
+		- [ ] 残りを作る
+	+ [ ] 画面の遷移
+	+ [ ] 表示・非表示の切り替え
+	+ [ ] Uint8Arrayへのcopy、空文字列で上書き
+	+ [ ] portの接続
+	+ [ ] 鍵の送信
+	+ [ ] 鍵からEncryptedSecretKeyの生成
+	+ [ ] DBへの保存
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] ncryptsecのインポート

@@ -104,7 +104,9 @@ export type OptionsObject = {
 
 	accountExportFormHidden: boolean,
 	accountExportName: string,
-	accountExportPublicKey: Uint8Array | null
+	accountExportPublicKey: Uint8Array | null,
+
+	importFormHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -190,7 +192,9 @@ export function defaultOptionsObject(): OptionsObject
 
 		accountExportFormHidden: true,
 		accountExportName: "",
-		accountExportPublicKey: null
+		accountExportPublicKey: null,
+
+		importFormHidden: false
 	};
 }
 
