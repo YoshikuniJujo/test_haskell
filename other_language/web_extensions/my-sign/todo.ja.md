@@ -942,8 +942,8 @@ TODO
 		- [x] generateの時に保存
 		- [x] renameの時に読み出し
 		- [x] renameの時に保存
-* [ ] Import機能
-	+ [ ] 仕様を考える
+* [ ] ncryptsecのImport機能
+	+ [x] 仕様を考える
 	+ [ ] HTML
 		- [ ] 最小限だけ作成
 		- [x] ボタンを生成
@@ -956,10 +956,29 @@ TODO
 	+ [ ] 画面の遷移
 	+ [ ] 表示・非表示の切り替え
 	+ [ ] Uint8Arrayへのcopy、空文字列で上書き
+	+ [ ] パスワード入力タブを開く
+	+ [ ] パスワード入力タブでパスワードを正規化しUint8Arrayとしてコピー
+	+ [ ] パスワードの文字列を空文字列で上書きする
 	+ [ ] portの接続
 	+ [ ] 鍵の送信
+	+ [ ] パスワードのUint8Arrayを0クリア(入力用タブ) - finallyで
 	+ [ ] 鍵からEncryptedSecretKeyの生成
+		- [ ] 必要な情報を取り出す
+		- [ ] 復号する
+		- [ ] 秘密鍵から公開鍵を計算する
+		- [ ] 秘密鍵を0クリアする
+		- [ ] パスワード検証用のsaltとhashを計算する
+			* !!!saltは新しくランダム生成すること!!!
+		- [ ] パスワードのUint8Arrayを0クリア(background) - finallyで
+		- [ ] EncryptedSecretKeyを作成する
 	+ [ ] DBへの保存
+* [ ] Export機能に追加
+	+ [ ] Exportの成功・失敗時にメッセージを表示
+	+ [ ] Export時にその時間を登録
+* [ ] Delete機能
+* [ ] nsecのImport機能
+* [ ] ログ管理
+* [ ] TODOを整理・修正する
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] ncryptsecのインポート
