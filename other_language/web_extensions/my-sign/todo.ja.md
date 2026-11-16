@@ -944,20 +944,40 @@ TODO
 		- [x] renameの時に保存
 * [ ] ncryptsecのImport機能
 	+ [x] 仕様を考える
-	+ [ ] HTML
-		- [ ] 最小限だけ作成
+	+ [x] HTML
+		- [x] 最小限だけ作成
 		- [x] ボタンを生成
 			* [x] Import Secret Keyという名前にする
 			* [x] console.logする
 			* [x] backgroundにメッセージを送信
 			* [x] background側でメッセージを受信
-		- [ ] hiddenのところを作成
+		- [x] hiddenのところを作成
 			* [x] optionsObject
 			* [x] optionsState
-			* [ ] options
-			* [ ] background
-	+ [ ] ImportボタンでImport領域に画面遷移するようにする
+			* [x] options
+			* [x] background
+	+ [x] ImportボタンでImport領域に画面遷移するようにする
+	+ [ ] Import領域を作成
+		- [ ] HTML
+			* [ ] ncryptsec, nsecの入力エリアを作成
+		- [ ] optionsObject
+			* [ ] 名前
+			* [ ] 入力エリア
+		- [ ] optionsState
+			* [ ] 名前
+			* [ ] 入力エリア
+		- [ ] options
+			* [ ] 名前
+			* [ ] 入力エリア
+		- [ ] background
+			* [ ] 名前
+			* [ ] 入力エリア
 	+ [ ] ncryptsecの表示領域について表示・非表示の切り替え
+		- [ ] HTMLにチェックボックスを作る
+		- [ ] optionsObject
+		- [ ] optionsState
+		- [ ] options
+		- [ ] background
 	+ [ ] Uint8Arrayへのcopy、空文字列で上書き
 	+ [ ] パスワード入力タブを開く
 	+ [ ] パスワード入力タブでパスワードを正規化しUint8Arrayとしてコピー

@@ -167,6 +167,7 @@ const accountExportCancel = getElement<HTMLButtonElement>("#account-export-cance
 const accountExportOk = getElement<HTMLButtonElement>("#account-export-ok");
 
 const importButton = getElement<HTMLButtonElement>("#import-button");
+const importForm = getElement<HTMLElement>("#import-form");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -701,6 +702,8 @@ loadOptions(obj: OptionsObject)
 		accountExportTitle.textContent =
 			obj.accountExportName + " " +
 			Bech32.encode("npub", obj.accountExportPublicKey);
+
+	importForm.hidden = obj.importFormHidden;
 }
 
 function

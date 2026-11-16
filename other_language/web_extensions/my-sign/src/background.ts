@@ -699,6 +699,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "importButtonClicked": {
 			const ostt = await optionsStateFromSender(s);
 			console.log("background.ts: IMPORT BUTTON CLICKED");
+			ostt.importMode();
 			return ostt.optionsObject();
 		}
 	}
