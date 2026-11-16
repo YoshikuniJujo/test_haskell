@@ -1336,22 +1336,26 @@ browser.runtime.onConnect.addListener(async p => {
 	console.log(ostt.optionsObject().accountName);
 	p.onMessage.addListener(async m => {
 		const m2 = m as GenerateMessage;
-		// FOR DEVELOPMENT. REMOVE IT!
-		// console.log("background.ts: port:", m2.password);
-		const esk = await EncryptedSecretKey.generate(
-			ostt.optionsObject().accountName,
-			ostt.optionsObject().setSaveName,
-			ostt.optionsObject().customSaveName,
-			m2.password );
-		DB.addKeyPair(esk.toObject_563e7e39d4());
-		if (ostt.doesClientUuidExist())
-			ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
-		p.postMessage({ method: "generateDone" });
-		p.disconnect();
-		browser.runtime.sendMessage({
-			class: "Options",
-			direction: "signal",
-			method: "update" });
+		switch (m2.method) {
+			case "generate":
+				// FOR DEVELOPMENT. REMOVE IT!
+				// console.log("background.ts: port:", m2.password);
+				const esk = await EncryptedSecretKey.generate(
+					ostt.optionsObject().accountName,
+					ostt.optionsObject().setSaveName,
+					ostt.optionsObject().customSaveName,
+					m2.password );
+				DB.addKeyPair(esk.toObject_563e7e39d4());
+				if (ostt.doesClientUuidExist())
+					ostt.setCurrentKeyOptions(await DB.getPublicKeyOptions2(ostt.clientUuid()));
+				p.postMessage({ method: "generateDone" });
+				p.disconnect();
+				browser.runtime.sendMessage({
+					class: "Options",
+					direction: "signal",
+					method: "update" });
+				break;
+		}
 	});
 });
 

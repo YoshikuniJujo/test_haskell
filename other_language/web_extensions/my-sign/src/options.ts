@@ -505,7 +505,7 @@ showSecretKey.addEventListener("change", () => {
 });
 
 
-importForm.addEventListener("submit", () => {
+importForm.addEventListener("submit", event => {
 	event.preventDefault();
 	// FOR DEBUG. REMOVE IT!!
 	console.log("options.ts: IMPORT FORM: SUBMIT");
