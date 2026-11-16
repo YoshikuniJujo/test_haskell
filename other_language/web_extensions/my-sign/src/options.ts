@@ -168,6 +168,8 @@ const accountExportOk = getElement<HTMLButtonElement>("#account-export-ok");
 
 const importButton = getElement<HTMLButtonElement>("#import-button");
 const importForm = getElement<HTMLElement>("#import-form");
+const secretKeyImport = getElement<HTMLInputElement>("#secret-key-import");
+const showSecretKey = getElement<HTMLInputElement>("#show-secret-key");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -491,6 +493,11 @@ importButton.addEventListener("click", () => {
 	sendMethodAndLoad("importButtonClicked");
 });
 
+showSecretKey.addEventListener("change", () => {
+	console.log("options.ts: SHOW SECRET KEY: CHANGED");
+	sendMethodAndLoadWithBoolean("showSecretKeyChanged", showSecretKey.checked);
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
@@ -704,6 +711,8 @@ loadOptions(obj: OptionsObject)
 			Bech32.encode("npub", obj.accountExportPublicKey);
 
 	importForm.hidden = obj.importFormHidden;
+	secretKeyImport.type = obj.showSecretKey ? "text" : "password";
+	showSecretKey.checked = obj.showSecretKey;
 }
 
 function

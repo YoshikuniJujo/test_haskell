@@ -584,6 +584,12 @@ export class OptionsState
 		this.#optionsObject.importFormHidden = false;
 		this.save();
 	}
+
+	showSecretKey(s: boolean): void
+	{
+		this.#optionsObject.showSecretKey = s;
+		this.save();
+	}
 }
 
 async function

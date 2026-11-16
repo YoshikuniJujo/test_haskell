@@ -976,12 +976,12 @@ TODO
 		- [ ] background
 			* [ ] 名前
 			* [ ] 入力エリア
-	+ [ ] ncryptsecの表示領域について表示・非表示の切り替え
+	+ [x] ncryptsecの表示領域について表示・非表示の切り替え
 		- [x] HTMLにチェックボックスを作る
-		- [ ] optionsObject
-		- [ ] optionsState
-		- [ ] options
-		- [ ] background
+		- [x] optionsObject
+		- [x] optionsState
+		- [x] options
+		- [x] background
 	+ [ ] Importボタン
 		- [x] HTML
 		- [ ] Uint8Arrayへのcopy、空文字列で上書き

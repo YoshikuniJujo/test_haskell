@@ -107,7 +107,8 @@ export type OptionsObject = {
 	accountExportPublicKey: Uint8Array | null,
 
 	importFormHidden: boolean,
-	accountNameImport: string
+	accountNameImport: string,
+	showSecretKey: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -196,7 +197,8 @@ export function defaultOptionsObject(): OptionsObject
 		accountExportPublicKey: null,
 
 		importFormHidden: true,
-		accountNameImport: ""
+		accountNameImport: "",
+		showSecretKey: false
 	};
 }
 

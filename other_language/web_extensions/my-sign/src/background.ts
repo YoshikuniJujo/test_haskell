@@ -145,6 +145,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "accountExportCancelClicked"; }
 	| { class: "Options"; method: "accountExportOkClicked"; }
 	| { class: "Options"; method: "importButtonClicked"; }
+	| { class: "Options"; method: "showSecretKeyChanged"; boolean: boolean }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -700,6 +701,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			console.log("background.ts: IMPORT BUTTON CLICKED");
 			ostt.importMode();
+			return ostt.optionsObject();
+		}
+		case "showSecretKeyChanged": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.showSecretKey(m.boolean);
 			return ostt.optionsObject();
 		}
 	}
