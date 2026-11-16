@@ -509,6 +509,8 @@ importForm.addEventListener("submit", event => {
 	event.preventDefault();
 	// FOR DEBUG. REMOVE IT!!
 	console.log("options.ts: IMPORT FORM: SUBMIT");
+	const port = browser.runtime.connect();
+	console.log("options.ts: IMPORT FORM: port =", port);
 });
 
 /*

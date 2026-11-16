@@ -1334,6 +1334,7 @@ browser.runtime.onConnect.addListener(async p => {
 	console.log(ostt);
 	console.log(ostt.optionsObject());
 	console.log(ostt.optionsObject().accountName);
+	console.log(ostt.optionsObject().accountNameImport);
 	p.onMessage.addListener(async m => {
 		const m2 = m as GenerateMessage;
 		switch (m2.method) {
