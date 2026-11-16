@@ -144,6 +144,7 @@ type OptionsMethod =
 		value: string }
 	| { class: "Options"; method: "accountExportCancelClicked"; }
 	| { class: "Options"; method: "accountExportOkClicked"; }
+	| { class: "Options"; method: "importButtonClicked"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -692,6 +693,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log(await browser.runtime.getManifest().optional_permissions);
 			await navigator.clipboard.writeText(encodeSecretKey(acc));
 //			download(exportFileName(acc.saveName, acc.publicKey), encodeSecretKey(acc));
+			return ostt.optionsObject();
+		}
+
+		case "importButtonClicked": {
+			const ostt = await optionsStateFromSender(s);
+			console.log("background.ts: IMPORT BUTTON CLICKED");
 			return ostt.optionsObject();
 		}
 	}

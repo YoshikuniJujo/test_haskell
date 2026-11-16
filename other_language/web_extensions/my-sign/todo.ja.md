@@ -946,11 +946,11 @@ TODO
 	+ [x] 仕様を考える
 	+ [ ] HTML
 		- [ ] 最小限だけ作成
-		- [ ] ボタンを生成
+		- [x] ボタンを生成
 			* [x] Import Secret Keyという名前にする
 			* [x] console.logする
-			* [ ] backgroundにメッセージを送信
-			* [ ] background側でメッセージを受信
+			* [x] backgroundにメッセージを送信
+			* [x] background側でメッセージを受信
 		- [ ] hiddenのところを作成
 			* [ ] optionsObject
 			* [ ] optionsState

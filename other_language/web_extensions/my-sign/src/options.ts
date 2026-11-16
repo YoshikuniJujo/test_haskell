@@ -487,6 +487,7 @@ accountExportOk.addEventListener("click", () => {
 
 importButton.addEventListener("click", () => {
 	console.log("options.ts: IMPORT BUTTON: CLICKED");
+	sendMethodAndLoad("importButtonClicked");
 });
 
 // ------------------------------------------------------------------------
