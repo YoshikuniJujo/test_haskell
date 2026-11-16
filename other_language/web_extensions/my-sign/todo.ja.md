@@ -958,8 +958,8 @@ TODO
 			* [x] background
 	+ [x] ImportボタンでImport領域に画面遷移するようにする
 	+ [ ] Import領域を作成
-		- [ ] HTML
-			* [ ] ncryptsec, nsecの入力エリアを作成
+		- [x] HTML
+			* [x] ncryptsec, nsecの入力エリアを作成
 		- [ ] optionsObject
 			* [ ] 名前
 			* [ ] 入力エリア
@@ -973,12 +973,18 @@ TODO
 			* [ ] 名前
 			* [ ] 入力エリア
 	+ [ ] ncryptsecの表示領域について表示・非表示の切り替え
-		- [ ] HTMLにチェックボックスを作る
+		- [x] HTMLにチェックボックスを作る
 		- [ ] optionsObject
 		- [ ] optionsState
 		- [ ] options
 		- [ ] background
-	+ [ ] Uint8Arrayへのcopy、空文字列で上書き
+	+ [ ] Importボタン
+		- [x] HTML
+		- [ ] Uint8Arrayへのcopy、空文字列で上書き
+		- [ ] backgroundに送信
+			* [ ] portを接続
+			* [ ] 鍵の送信
+		- [ ] backgroundでの処理
 	+ [ ] パスワード入力タブを開く
 	+ [ ] パスワード入力タブでパスワードを正規化しUint8Arrayとしてコピー
 	+ [ ] パスワードの文字列を空文字列で上書きする
