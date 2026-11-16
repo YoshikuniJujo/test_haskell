@@ -171,6 +171,7 @@ const importForm = getElement<HTMLElement>("#import-form");
 const accountNameImport = getElement<HTMLInputElement>("#account-name-import");
 const secretKeyImport = getElement<HTMLInputElement>("#secret-key-import");
 const showSecretKey = getElement<HTMLInputElement>("#show-secret-key");
+const importButtonImport = getElement<HTMLButtonElement>("#import-button-import");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -502,6 +503,20 @@ showSecretKey.addEventListener("change", () => {
 	console.log("options.ts: SHOW SECRET KEY: CHANGED");
 	sendMethodAndLoadWithBoolean("showSecretKeyChanged", showSecretKey.checked);
 });
+
+
+importForm.addEventListener("submit", () => {
+	event.preventDefault();
+	// FOR DEBUG. REMOVE IT!!
+	console.log("options.ts: IMPORT FORM: SUBMIT");
+});
+
+/*
+importButtonImport.addEventListener("click", () => {
+	// FOR DEBUG. REMOVE IT!!
+	console.log("options.ts: IMPORT BUTTON IMPORT: CLICK");
+});
+*/
 
 // ------------------------------------------------------------------------
 
