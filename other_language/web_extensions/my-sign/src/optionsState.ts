@@ -585,6 +585,12 @@ export class OptionsState
 		this.save();
 	}
 
+	accountNameImportInput(nm: string): void
+	{
+		this.#optionsObject.accountNameImport = nm;
+		this.save();
+	}
+
 	showSecretKey(s: boolean): void
 	{
 		this.#optionsObject.showSecretKey = s;
