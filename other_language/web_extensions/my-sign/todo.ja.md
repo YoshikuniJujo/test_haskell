@@ -961,14 +961,18 @@ TODO
 		- [x] HTML
 			* [x] ncryptsec, nsecの入力エリアを作成
 		- [ ] optionsObject
-			* [ ] 名前
+			* [x] 名前
 			* [ ] 入力エリア
 		- [ ] optionsState
 			* [ ] 名前
 			* [ ] 入力エリア
 		- [ ] options
 			* [ ] 名前
+				+ [ ] loadOptions
+				+ [ ] input listener
 			* [ ] 入力エリア
+				+ [ ] loadOptions
+				+ [ ] input listener
 		- [ ] background
 			* [ ] 名前
 			* [ ] 入力エリア
@@ -981,11 +985,18 @@ TODO
 	+ [ ] Importボタン
 		- [x] HTML
 		- [ ] Uint8Arrayへのcopy、空文字列で上書き
+			* [ ] Bech32 decodeする
+			* [ ] 一度console.logする
 		- [ ] backgroundに送信
 			* [ ] portを接続
 			* [ ] 鍵の送信
+			* [ ] console.logを消す
 		- [ ] backgroundでの処理
 	+ [ ] パスワード入力タブを開く
+		- [ ] InputTabsを使う
+		- [ ] keyは何がいいだろうか
+			* ncryptsecやnsecから計算したハッシュ値あたりが良さそう
+			* SHA-256でハッシュ化して、それを文字列化する感じか
 	+ [ ] パスワード入力タブでパスワードを正規化しUint8Arrayとしてコピー
 	+ [ ] パスワードの文字列を空文字列で上書きする
 	+ [ ] portの接続
