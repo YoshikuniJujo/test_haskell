@@ -145,6 +145,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "accountExportCancelClicked"; }
 	| { class: "Options"; method: "accountExportOkClicked"; }
 	| { class: "Options"; method: "importButtonClicked"; }
+	| { class: "Options"; method: "accountNameImportInput"; value: string }
 	| { class: "Options"; method: "showSecretKeyChanged"; boolean: boolean }
 
 async function
@@ -701,6 +702,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			console.log("background.ts: IMPORT BUTTON CLICKED");
 			ostt.importMode();
+			return ostt.optionsObject();
+		}
+		case "accountNameImportInput": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.accountNameImportInput(m.value);
 			return ostt.optionsObject();
 		}
 		case "showSecretKeyChanged": {

@@ -960,22 +960,18 @@ TODO
 	+ [ ] Import領域を作成
 		- [x] HTML
 			* [x] ncryptsec, nsecの入力エリアを作成
-		- [ ] optionsObject
+		- [x] optionsObject
 			* [x] 名前
-			* [ ] 入力エリア
-		- [ ] optionsState
+		- [x] optionsState
 			* [x] 名前
-			* [ ] 入力エリア
-		- [ ] options
-			* [ ] 名前
-				+ [ ] loadOptions
-				+ [ ] input listener
-			* [ ] 入力エリア
-				+ [ ] loadOptions
-				+ [ ] input listener
-		- [ ] background
-			* [ ] 名前
-			* [ ] 入力エリア
+		- [x] options
+			* [x] 名前
+				+ [x] loadOptions
+			* [x] 入力エリア
+				+ [x] loadOptions
+		- [x] background
+			* [x] 名前
+		- [ ] secret input area
 	+ [x] ncryptsecの表示領域について表示・非表示の切り替え
 		- [x] HTMLにチェックボックスを作る
 		- [x] optionsObject
