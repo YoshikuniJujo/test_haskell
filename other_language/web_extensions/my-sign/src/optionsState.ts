@@ -577,6 +577,13 @@ export class OptionsState
 			throw new Error("bad");
 		return this.#optionsObject.accountExportPublicKey;
 	}
+
+	importMode(): void
+	{
+		this.#optionsObject.accountListHidden = true;
+		this.#optionsObject.importFormHidden = false;
+		this.save();
+	}
 }
 
 async function

@@ -194,7 +194,7 @@ export function defaultOptionsObject(): OptionsObject
 		accountExportName: "",
 		accountExportPublicKey: null,
 
-		importFormHidden: false
+		importFormHidden: true
 	};
 }
 

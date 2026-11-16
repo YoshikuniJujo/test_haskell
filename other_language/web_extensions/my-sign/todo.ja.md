@@ -952,8 +952,8 @@ TODO
 			* [x] backgroundにメッセージを送信
 			* [x] background側でメッセージを受信
 		- [ ] hiddenのところを作成
-			* [ ] optionsObject
-			* [ ] optionsState
+			* [x] optionsObject
+			* [x] optionsState
 			* [ ] options
 			* [ ] background
 	+ [ ] ImportボタンでImport領域に画面遷移するようにする
