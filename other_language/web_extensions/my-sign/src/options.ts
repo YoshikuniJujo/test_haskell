@@ -166,6 +166,8 @@ const accountExportTitle = getElement<HTMLElement>("#account-export-title");
 const accountExportCancel = getElement<HTMLButtonElement>("#account-export-cancel");
 const accountExportOk = getElement<HTMLButtonElement>("#account-export-ok");
 
+const importButton = getElement<HTMLButtonElement>("#import-button");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -481,6 +483,10 @@ accountExportCancel.addEventListener("click", () => {
 
 accountExportOk.addEventListener("click", () => {
 	sendMethodAndLoad("accountExportOkClicked");
+});
+
+importButton.addEventListener("click", () => {
+	console.log("options.ts: IMPORT BUTTON: CLICKED");
 });
 
 // ------------------------------------------------------------------------

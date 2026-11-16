@@ -948,7 +948,7 @@ TODO
 		- [ ] 最小限だけ作成
 		- [ ] ボタンを生成
 			* [x] Import Secret Keyという名前にする
-			* [ ] console.logする
+			* [x] console.logする
 			* [ ] backgroundにメッセージを送信
 			* [ ] background側でメッセージを受信
 		- [ ] hiddenのところを作成
