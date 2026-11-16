@@ -4,7 +4,7 @@ import * as W from './word.js';
 const charset = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
 
 export function
-encode(hrp: string, dp: Iterable<number>)
+encode(hrp: string, dp: Iterable<number>): string
 {
 	const { init: ci, last: cl, lastN: cn } = chunks(5, Array.from(dp));
 	const w5i = ci.map(W.pack8sTo40).map(W.unpack40To5s);
@@ -14,8 +14,10 @@ encode(hrp: string, dp: Iterable<number>)
 	return hrp + '1' + [...w5s, ...chksm].map(w => charset[w]).join('');
 }
 
+export type Bech32 = { hrp: string, dp: Uint8Array }
+
 export function
-decode(txt: string)
+decode(txt: string): Bech32
 {
 	const cs = [...txt];
 	const i = cs.lastIndexOf('1'); const hrp = cs.slice(0, i);
