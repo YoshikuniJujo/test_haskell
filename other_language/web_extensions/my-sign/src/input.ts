@@ -1,4 +1,5 @@
 import * as Bech32 from "./codec/bech32.js"
+import { encodePassword } from "./tools.js"
 
 const params = new URLSearchParams(location.search);
 const accName = params.get("accountName");
@@ -44,12 +45,6 @@ unhex(s: string)
 	for (let i = 0; i < bs.length; ++i)
 		bs[i] = parseInt(s.slice(i * 2, i * 2 + 2), 16);
 	return bs;
-}
-
-function
-encodePassword(pswd: string): Uint8Array
-{
-	return new TextEncoder().encode(pswd.normalize("NFKC"));
 }
 
 browser.runtime.onConnect.addListener(p => {

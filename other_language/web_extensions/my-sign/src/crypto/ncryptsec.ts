@@ -64,13 +64,19 @@ EncryptedSecretKey
 
 	static async generate(nm: string, usnm: boolean, snm: string, pswd: Uint8Array)
 	{
+		const { secretKey: sk } = schnorr.keygen();
+		return this.fromSec(nm, usnm, snm, sk, pswd);
+	}
+
+	static async fromSec(nm: string, usnm: boolean, snm: string, sk: Uint8Array, pswd: Uint8Array)
+	{
 		const lgn = 16
 		const sfcp = randomBytes(16);
 //		const sfcp = new Uint8Array(16);
 //		webcrypto.getRandomValues(sfcp);
 		const hfcp = scryptAsync(
 			pswd, sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
-		const { secretKey: sk, publicKey: pk } = schnorr.keygen();
+		const pk = schnorr.getPublicKey(sk);
 		let foo;
 		try { foo = await encrypt(
 				sk, { password: pswd, logN: lgn, keySecurityByte: 1 } ); }

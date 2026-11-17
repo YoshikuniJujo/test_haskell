@@ -784,6 +784,7 @@ type GlobalMethod =
 	| { method: "addLogTab" }
 	| { method: "getClientsDev" }
 	| { method: "resetDatabase" }
+	| { method: "createAccountFromNcryptsec" }
 
 	/*
 type Client = {
@@ -967,6 +968,20 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 					console.warn("Failed to reload tab:", tab.id, error);
 				});
 			});
+			return;
+		case "createAccountFromNcryptsec":
+			console.log(
+				"background.ts: CREATE ACCOUNT FROM NCRYPTSEC:" +
+				" message source:",
+				s.tab?.id
+			);
+			if (s.tab?.id === undefined) throw new Error("bad");
+			const pswd = await browser.tabs.sendMessage(s.tab.id, {
+				from: "background",
+				method: "password"
+			});
+			// FOR DEBUG. DELETE IT!!!
+			console.log("background.ts: CREATE ACCOUNT FROM NCRYPTSEC: pswd =", pswd);
 			return;
 	}
 }
