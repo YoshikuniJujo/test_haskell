@@ -130,6 +130,15 @@ export class InputTabs {
 		return (assns[key]?.inputTab) ?? null;
 	}
 
+	async sources(tid: number): Promise<number[]>
+	{
+		const assns = await this.#getAssignments();
+		for (const [nm, ts] of Object.entries(assns)) {
+			if (tid === ts.inputTab) return ts.sourceTabs;
+		}
+		return [];
+	}
+
 }
 
 function

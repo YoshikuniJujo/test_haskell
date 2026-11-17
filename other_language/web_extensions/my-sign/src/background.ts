@@ -45,6 +45,8 @@ const optionsStates: Map<string, OptionsState> = new Map();
 
 const clientUrls: Map<string, Set<{ url: string, tabId: number}>> = new Map();
 
+const ncryptsecs: Map<string, Uint8Array> = new Map();
+
 const initializeReady = (async () => {
 
 	const cst = await DB.getCurrentSet();
@@ -981,22 +983,36 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				method: "password"
 			});
 
-			const id = await stbs.key(s.tab.id);
-			if (!id) throw new Error("bad");
-			const ostt = optionsStates.get(id);
-			if (!ostt) throw new Error("bad");
-
-			/*
-			const esk = await EncryptedSecretKey.fromCryptsec(
-				ostt.optionsObject().accountName,
-				ostt.optionsObject().setSaveName,
-				ostt.optionsObject().customSaveName,
-
-			);
-			*/
-
 			// FOR DEBUG. DELETE IT!!!
 			console.log("background.ts: CREATE ACCOUNT FROM NCRYPTSEC: pswd =", pswd);
+
+			const hsh = await stbs.key(s.tab.id);
+			console.log(hsh);
+			if (!hsh) throw new Error("bad");
+
+			const tid = (await stbs.sources(s.tab.id))[0];
+			console.log(tid);
+			if (!tid) throw new Error("bad");
+			const id = (await otbs.key(tid));
+			if (!id) throw new Error("bad: hello");
+			console.log(id);
+			const ostt = optionsStates.get(id);
+			if (!ostt) throw new Error("bad: world");
+			console.log("ostt =", ostt);
+
+			// FOR DEBUG. REMOVE IT!!!
+			console.log("background.ts: CREATE ACCOUNT FROM NCRYPTSEC:" +
+				    " ncryptsecs =", ncryptsecs);
+			const cs = ncryptsecs.get(hsh);
+			if (!cs) throw new Error("bad");
+			const esk = await EncryptedSecretKey.fromCryptsec(
+				ostt.optionsObject().accountNameImport,
+				ostt.optionsObject().setSaveName,
+				ostt.optionsObject().customSaveName,
+				cs, pswd
+			);
+			console.log(esk);
+			DB.addKeyPair(esk.toObject_563e7e39d4());
 			return;
 	}
 }
@@ -1401,6 +1417,7 @@ browser.runtime.onConnect.addListener(async p => {
 				if (p.sender?.tab?.id === undefined) throw new Error("bad");
 				const use = await stbs.assign(
 					await sha256hash(m2.secretKey.dp), p.sender.tab.id, it.id );
+				ncryptsecs.set(await sha256hash(m2.secretKey.dp), m2.secretKey.dp);
 				if (use !== it.id) await browser.tabs.remove(it.id);
 				await browser.tabs.update(use, { active: true });
 //				const port = browser.tabs.connect(it.id, { name: "readPassword_import" });

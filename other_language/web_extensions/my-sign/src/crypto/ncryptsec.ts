@@ -72,7 +72,7 @@ EncryptedSecretKey
 		nm: string, usnm: boolean, snm: string, csk: Uint8Array, pswd: Uint8Array )
 	{
 		const e = decodeBytes(csk);
-		this.fromEncrypted(nm, usnm, snm, e, pswd);
+		return this.fromEncrypted(nm, usnm, snm, e, pswd);
 	}
 
 	static async fromSec(nm: string, usnm: boolean, snm: string, sk: Uint8Array, pswd: Uint8Array)
