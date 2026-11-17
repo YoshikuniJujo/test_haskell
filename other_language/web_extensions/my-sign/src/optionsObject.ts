@@ -108,7 +108,9 @@ export type OptionsObject = {
 
 	importFormHidden: boolean,
 	accountNameImport: string,
-	showSecretKey: boolean
+	showSecretKey: boolean,
+
+	deleteFormHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -198,7 +200,9 @@ export function defaultOptionsObject(): OptionsObject
 
 		importFormHidden: true,
 		accountNameImport: "",
-		showSecretKey: false
+		showSecretKey: false,
+
+		deleteFormHidden: true
 	};
 }
 

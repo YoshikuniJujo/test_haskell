@@ -173,6 +173,8 @@ const secretKeyImport = getElement<HTMLInputElement>("#secret-key-import");
 const showSecretKey = getElement<HTMLInputElement>("#show-secret-key");
 const importButtonImport = getElement<HTMLButtonElement>("#import-button-import");
 
+const deleteForm = getElement<HTMLElement>("#delete-form");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -740,6 +742,8 @@ loadOptions(obj: OptionsObject)
 	accountNameImport.value = obj.accountNameImport;
 	secretKeyImport.type = obj.showSecretKey ? "text" : "password";
 	showSecretKey.checked = obj.showSecretKey;
+
+	deleteForm.hidden = obj.deleteFormHidden;
 }
 
 function

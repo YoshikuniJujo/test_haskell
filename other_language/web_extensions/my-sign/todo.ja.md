@@ -1013,12 +1013,13 @@ TODO
 	+ [x] Export時にその時間を登録
 * [ ] Delete機能
 	+ [x] deleteラジオボタンを試す
-	+ [ ] Delete form
-		- [ ] HTML
-		- [ ] optionsObject
-		- [ ] optionsState
-		- [ ] options
-		- [ ] background
+	+ [x] Delete form
+		- [x] HTML
+		- [x] optionsObject
+		- [x] optionsState
+		- [x] options
+		- [x] background
+	+ [ ] 名前と公開鍵を表示する
 	+ [ ] HTMLに遷移先のformを追加
 		- [x] Deleteする公開鍵を表示する領域
 		- [ ] Cancelボタン

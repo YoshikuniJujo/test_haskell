@@ -596,6 +596,13 @@ export class OptionsState
 		this.#optionsObject.showSecretKey = s;
 		this.save();
 	}
+
+	deleteMode(): void
+	{
+		this.#optionsObject.accountListHidden = true;
+		this.#optionsObject.deleteFormHidden = false;
+		this.save();
+	}
 }
 
 async function
