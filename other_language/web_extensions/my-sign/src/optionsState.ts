@@ -603,6 +603,13 @@ export class OptionsState
 		this.#optionsObject.deleteFormHidden = false;
 		this.save();
 	}
+
+	accountDeleteNamePublicKey(nm: string, pk: Uint8Array)
+	{
+		this.#optionsObject.accountDeleteName = nm;
+		this.#optionsObject.accountDeletePublicKey = pk;
+		this.save();
+	}
 }
 
 async function
