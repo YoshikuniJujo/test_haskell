@@ -1008,10 +1008,19 @@ TODO
 		- [ ] パスワードのUint8Arrayを0クリア(background) - finallyで
 		- [x] EncryptedSecretKeyを作成する
 	+ [x] DBへの保存
-* [x] Export機能に追加
+* [ ] Export機能に追加
 	+ [ ] Exportの成功・失敗時にメッセージを表示
 	+ [x] Export時にその時間を登録
 * [ ] Delete機能
+	+ [x] deleteラジオボタンを試す
+	+ [ ] HTMLに遷移先のformを追加
+		- [ ] Deleteする公開鍵を表示する領域
+		- [ ] Cancelボタン
+		- [ ] OK(またはDelete)ボタン
+	+ [ ] 画面の遷移を実装
+	+ [ ] exportedAtを調べて画面の遷移をせずerrorを表示するようにする
+	+ [ ] Cancelボタンの処理の実装
+	+ [ ] OKボタンの処理の実装
 * [ ] nsecのImport機能
 * [ ] ログ管理
 * [ ] TODOを整理・修正する

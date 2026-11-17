@@ -596,9 +596,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			console.log("background.ts: ACCOUNT CLICKED:", m.name, m.publicKey);
 
+			const acc = await DB.getAccount(m.publicKey);
 			switch (ostt.accountSettingsRadio()) {
 				case "rename":
-					const acc = await DB.getAccount(m.publicKey);
 					console.log("background.ts: rename:", acc);
 					ostt.useSetCustomSaveNameRename(acc.useSaveName);
 					ostt.accountRenameMode();
@@ -611,6 +611,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					ostt.setAccountExportName(m.name);
 					ostt.setAccountExportPublicKey(m.publicKey);
 					ostt.accountExportMode()
+					break;
+				case "delete":
+					console.log("background.ts: delete:", acc);
 					break;
 			}
 
