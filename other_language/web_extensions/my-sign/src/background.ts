@@ -980,6 +980,21 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				from: "background",
 				method: "password"
 			});
+
+			const id = await stbs.key(s.tab.id);
+			if (!id) throw new Error("bad");
+			const ostt = optionsStates.get(id);
+			if (!ostt) throw new Error("bad");
+
+			/*
+			const esk = await EncryptedSecretKey.fromCryptsec(
+				ostt.optionsObject().accountName,
+				ostt.optionsObject().setSaveName,
+				ostt.optionsObject().customSaveName,
+
+			);
+			*/
+
 			// FOR DEBUG. DELETE IT!!!
 			console.log("background.ts: CREATE ACCOUNT FROM NCRYPTSEC: pswd =", pswd);
 			return;

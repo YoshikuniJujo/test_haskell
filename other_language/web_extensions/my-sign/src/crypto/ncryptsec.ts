@@ -68,6 +68,13 @@ EncryptedSecretKey
 		return this.fromSec(nm, usnm, snm, sk, pswd);
 	}
 
+	static async fromCryptsec(
+		nm: string, usnm: boolean, snm: string, csk: Uint8Array, pswd: Uint8Array )
+	{
+		const e = decodeBytes(csk);
+		this.fromEncrypted(nm, usnm, snm, e, pswd);
+	}
+
 	static async fromSec(nm: string, usnm: boolean, snm: string, sk: Uint8Array, pswd: Uint8Array)
 	{
 		const lgn = 16
@@ -208,29 +215,31 @@ encode(foo: Encrypted): string
 export function
 decode(text: string): Encrypted
 {
+	const text2 = text.trim();
+	const { dp: decoded } = Bech32.decode(text2);
+	return decodeBytes(decoded);
+}
 
-const text2 = text.trim();
+export function
+decodeBytes(decoded: Uint8Array): Encrypted
+{
+	if (decoded.length !== 91) throw new Error(
+		`Invalid ncryptsec length: expected 91, actual ${decoded.length}` );
 
-const { dp: decoded } = Bech32.decode(text2);
+	const [vsn, lgn, slt, nnc, aad, ct] =
+		split(decoded, [1, 1, 16, 24, 1, 48]);
 
-if (decoded.length !== 91) throw new Error(
-	`Invalid ncryptsec length: expected 91, actual ${decoded.length}` );
+	if (!vsn || !lgn || !aad || !slt || !nnc || !ct) throw new Error("bad");
 
-const [vsn, lgn, slt, nnc, aad, ct] =
-	split(decoded, [1, 1, 16, 24, 1, 48]);
+	if (vsn[0] === undefined) throw new Error("bad");
+	if (lgn[0] === undefined) throw new Error("bad");
+	if (aad[0] === undefined) throw new Error("bad");
 
-if (!vsn || !lgn || !aad || !slt || !nnc || !ct) throw new Error("bad");
+	const encrypted = {
+		version: vsn[0], logN: lgn[0], salt: slt, nonce: nnc,
+		keySecurityByte: aad[0], ciphertext: ct };
 
-if (vsn[0] === undefined) throw new Error("bad");
-if (lgn[0] === undefined) throw new Error("bad");
-if (aad[0] === undefined) throw new Error("bad");
-
-const encrypted = {
-	version: vsn[0], logN: lgn[0], salt: slt, nonce: nnc,
-	keySecurityByte: aad[0], ciphertext: ct };
-
-return encrypted;
-
+	return encrypted;
 }
 
 type EncryptArguments = {
