@@ -1019,12 +1019,12 @@ TODO
 		- [x] optionsState
 		- [x] options
 		- [x] background
-	+ [ ] 名前と公開鍵を表示する
+	+ [x] 名前と公開鍵を表示する
 		- [x] 名前をoptionsObjectに
 		- [x] 公開鍵をoptionsObjectに
 		- [x] optionsState
-		- [ ] options
-		- [ ] background
+		- [x] options
+		- [x] background
 	+ [ ] HTMLに遷移先のformを追加
 		- [x] Deleteする公開鍵を表示する領域
 		- [ ] Cancelボタン

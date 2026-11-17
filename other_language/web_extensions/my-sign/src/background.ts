@@ -614,6 +614,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					break;
 				case "delete":
 					console.log("background.ts: delete:", acc);
+					ostt.accountDeleteNamePublicKey(m.name, m.publicKey);
 					ostt.deleteMode();
 					break;
 			}

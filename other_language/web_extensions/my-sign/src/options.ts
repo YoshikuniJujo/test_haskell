@@ -174,6 +174,7 @@ const showSecretKey = getElement<HTMLInputElement>("#show-secret-key");
 const importButtonImport = getElement<HTMLButtonElement>("#import-button-import");
 
 const deleteForm = getElement<HTMLElement>("#delete-form");
+const accountDeleteTitle = getElement<HTMLElement>("#account-delete-title");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -744,6 +745,10 @@ loadOptions(obj: OptionsObject)
 	showSecretKey.checked = obj.showSecretKey;
 
 	deleteForm.hidden = obj.deleteFormHidden;
+	if (obj.accountDeletePublicKey)
+		accountDeleteTitle.textContent =
+			obj.accountDeleteName + " " +
+			Bech32.encode("npub", obj.accountDeletePublicKey);
 }
 
 function
