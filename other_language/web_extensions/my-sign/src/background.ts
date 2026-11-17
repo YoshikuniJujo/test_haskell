@@ -39,6 +39,7 @@ const contentTabs = new Set<number>();
 
 const itbs = new InputTabs("input");
 const otbs = new InputTabs("options");
+const stbs = new InputTabs("ncryptsec");
 
 const optionsStates: Map<string, OptionsState> = new Map();
 
@@ -1322,6 +1323,7 @@ getOptionsTabTag(tid: number): Promise<OptionsTabTag | null>
 
 type GenerateMessage =
 	| { method: "generate", password: Uint8Array }
+	| { method: "import", secretKey: Bech32.Bech32 }
 
 browser.runtime.onConnect.addListener(async p => {
 	console.log("background.ts: onConnect:", p);
@@ -1356,9 +1358,39 @@ browser.runtime.onConnect.addListener(async p => {
 					direction: "signal",
 					method: "update" });
 				break;
+			case "import":
+				// FOR DEVELOPMENT. REMOVE IT!
+				console.log("background: ON CONNECT: IMPORT:", m2.secretKey);
+				const it = await browser.tabs.create({
+					active: false,
+					url: browser.runtime.getURL(
+						"inputNcryptsec.html?" +
+						"accountName=" + encodeURIComponent("foobar") +
+						"&publicKey=" + encodeURIComponent("barbaz") ) });
+				if (it.id === undefined) throw new Error("bad");
+				if (p.sender?.tab?.id === undefined) throw new Error("bad");
+				const use = await stbs.assign(
+					await sha256hash(m2.secretKey.dp), p.sender.tab.id, it.id );
+				if (use !== it.id) await browser.tabs.remove(it.id);
+				await browser.tabs.update(use, { active: true });
+//				const port = browser.tabs.connect(it.id, { name: "readPassword_import" });
+				break;
 		}
 	});
 });
+
+async function
+sha256hash(d: Uint8Array): Promise<string>
+{
+	const buffer = new ArrayBuffer(d.byteLength);
+	new Uint8Array(buffer).set(d);
+	const hash: Uint8Array =
+		new Uint8Array(await crypto.subtle.digest("SHA-256", buffer));
+	return Array.from(hash)
+		.map(b => b.toString(16).padStart(2, "0"))
+		.join("");
+
+}
 
 async function
 checkUrlPattern(s: browser.runtime.MessageSender): Promise<ClientResult>

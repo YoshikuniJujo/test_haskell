@@ -510,8 +510,11 @@ importForm.addEventListener("submit", event => {
 	console.log("options.ts: IMPORT FORM: SUBMIT");
 	const port = browser.runtime.connect();
 	console.log("options.ts: IMPORT FORM: port =", port);
+	const sk = Bech32.decode(secretKeyImport.value);
 	// FOR DEBUG. REMOVE IT!!
-	console.log("options.ts: IMPORT FORM: pwd =", Bech32.decode(secretKeyImport.value));
+	console.log("options.ts: IMPORT FORM: pwd =", sk);
+//	sendMethodAndLoadWithValueObject("importFormSubmitted", sk);
+	port.postMessage({ method: "import", secretKey: sk });
 });
 
 /*
@@ -899,6 +902,13 @@ sendMethodWithValueString(mtd: string, v: string)
 }
 
 function
+sendMethodWithValueObject(mtd: string, v: object)
+{
+	return browser.runtime.sendMessage({
+		class: "Options", method: mtd, value: v });
+}
+
+function
 sendMethodChecked(mtd: string, ckd: boolean): Promise<OptionsObject | undefined>
 {
 	return browser.runtime.sendMessage({
@@ -930,4 +940,10 @@ async function
 sendMethodAndLoadWithBoolean(mtd: string, b: boolean)
 {
 	await loadOptions(await sendMethodWithBoolean(mtd, b));
+}
+
+async function
+sendMethodAndLoadWithValueObject(mtd: string, v: object)
+{
+	await loadOptions(await sendMethodWithValueObject(mtd, v));
 }
