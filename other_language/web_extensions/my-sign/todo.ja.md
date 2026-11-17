@@ -1014,6 +1014,7 @@ TODO
 * [ ] Delete機能
 	+ [x] deleteラジオボタンを試す
 	+ [ ] HTMLに遷移先のformを追加
+		- [x] Delete form
 		- [ ] Deleteする公開鍵を表示する領域
 		- [ ] Cancelボタン
 		- [ ] OK(またはDelete)ボタン
