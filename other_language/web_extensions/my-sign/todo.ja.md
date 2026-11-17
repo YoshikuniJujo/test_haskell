@@ -987,30 +987,30 @@ TODO
 			* [ ] portを接続
 			* [ ] 鍵の送信
 			* [ ] console.logを消す
-		- [ ] backgroundでの処理
-	+ [ ] パスワード入力タブを開く
-		- [ ] InputTabsを使う
-		- [ ] keyは何がいいだろうか
+		- [x] backgroundでの処理
+	+ [x] パスワード入力タブを開く
+		- [x] InputTabsを使う
+		- [x] keyは何がいいだろうか
 			* ncryptsecやnsecから計算したハッシュ値あたりが良さそう
 			* SHA-256でハッシュ化して、それを文字列化する感じか
-	+ [ ] パスワード入力タブでパスワードを正規化しUint8Arrayとしてコピー
+	+ [x] パスワード入力タブでパスワードを正規化しUint8Arrayとしてコピー
 	+ [ ] パスワードの文字列を空文字列で上書きする
 	+ [ ] portの接続
-	+ [ ] 鍵の送信
+	+ [x] 鍵の送信
 	+ [ ] パスワードのUint8Arrayを0クリア(入力用タブ) - finallyで
-	+ [ ] 鍵からEncryptedSecretKeyの生成
-		- [ ] 必要な情報を取り出す
-		- [ ] 復号する
-		- [ ] 秘密鍵から公開鍵を計算する
+	+ [x] 鍵からEncryptedSecretKeyの生成
+		- [x] 必要な情報を取り出す
+		- [x] 復号する
+		- [x] 秘密鍵から公開鍵を計算する
 		- [ ] 秘密鍵を0クリアする
-		- [ ] パスワード検証用のsaltとhashを計算する
+		- [x] パスワード検証用のsaltとhashを計算する
 			* !!!saltは新しくランダム生成すること!!!
 		- [ ] パスワードのUint8Arrayを0クリア(background) - finallyで
-		- [ ] EncryptedSecretKeyを作成する
-	+ [ ] DBへの保存
-* [ ] Export機能に追加
+		- [x] EncryptedSecretKeyを作成する
+	+ [x] DBへの保存
+* [x] Export機能に追加
 	+ [ ] Exportの成功・失敗時にメッセージを表示
-	+ [ ] Export時にその時間を登録
+	+ [x] Export時にその時間を登録
 * [ ] Delete機能
 * [ ] nsecのImport機能
 * [ ] ログ管理

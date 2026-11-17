@@ -605,6 +605,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					ostt.setAccountRenameName(m.name);
 					ostt.setAccountPublicKey(m.publicKey);
 					ostt.setCustomSaveNameRename(acc.saveName);
+					console.log("background.ts: RENAME:", acc);
 					break;
 				case "export":
 					ostt.setAccountExportName(m.name);
@@ -697,6 +698,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log(await browser.runtime.getManifest().permissions);
 			console.log(await browser.runtime.getManifest().optional_permissions);
 			await navigator.clipboard.writeText(encodeSecretKey(acc));
+			DB.setExportedAt(ostt.accountExportPublicKey());
 //			download(exportFileName(acc.saveName, acc.publicKey), encodeSecretKey(acc));
 			return ostt.optionsObject();
 		}
