@@ -1013,9 +1013,14 @@ TODO
 	+ [x] Export時にその時間を登録
 * [ ] Delete機能
 	+ [x] deleteラジオボタンを試す
+	+ [ ] Delete form
+		- [ ] HTML
+		- [ ] optionsObject
+		- [ ] optionsState
+		- [ ] options
+		- [ ] background
 	+ [ ] HTMLに遷移先のformを追加
-		- [x] Delete form
-		- [ ] Deleteする公開鍵を表示する領域
+		- [x] Deleteする公開鍵を表示する領域
 		- [ ] Cancelボタン
 		- [ ] OK(またはDelete)ボタン
 	+ [ ] 画面の遷移を実装
