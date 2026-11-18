@@ -453,6 +453,7 @@ export class OptionsState
 		this.#optionsObject.accountRenameHidden = true;
 		this.#optionsObject.accountExportFormHidden = true;
 		this.#optionsObject.generateFormHidden = true;
+		this.#optionsObject.deleteFormHidden = true;
 	}
 
 	generateAccountMode(): void

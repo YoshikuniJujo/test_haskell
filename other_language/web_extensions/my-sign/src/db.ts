@@ -805,6 +805,22 @@ getAccount(pk: Uint8Array): Promise<Account>
 }
 
 export async function
+getExportedAt(pk: Uint8Array): Promise<Date | undefined>
+{
+	const db = await open();
+	const tx = db.transaction(SECRET_KEYS, "readonly");
+	const store = tx.objectStore(SECRET_KEYS);
+	const req = store.get(pk as IDBValidKey);
+	return new Promise<Date | undefined>((rs, rj) => {
+		req.onsuccess = () => {
+			const record = req.result;
+			rs(record?.exportedAt); };
+		tx.onerror = () => rj(tx.error);
+		tx.onabort = () => rj(tx.error);
+	});
+}
+
+export async function
 setExportedAt(pk: Uint8Array): Promise<void>
 {
 	const db = await open();

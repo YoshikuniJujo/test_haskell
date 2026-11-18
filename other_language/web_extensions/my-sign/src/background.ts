@@ -150,6 +150,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "importButtonClicked"; }
 	| { class: "Options"; method: "accountNameImportInput"; value: string }
 	| { class: "Options"; method: "showSecretKeyChanged"; boolean: boolean }
+	| { class: "Options"; method: "deleteCancelClicked"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -613,7 +614,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					ostt.accountExportMode()
 					break;
 				case "delete":
-					console.log("background.ts: delete:", acc);
+					console.log("background.ts: DELETE:", acc);
+					const exat = await DB.getExportedAt(m.publicKey);
+					console.log("background.ts: DELETE:", exat);
 					ostt.accountDeleteNamePublicKey(m.name, m.publicKey);
 					ostt.deleteMode();
 					break;
@@ -722,6 +725,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "showSecretKeyChanged": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.showSecretKey(m.boolean);
+			return ostt.optionsObject();
+		}
+		case "deleteCancelClicked": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.accountListMode();
 			return ostt.optionsObject();
 		}
 	}

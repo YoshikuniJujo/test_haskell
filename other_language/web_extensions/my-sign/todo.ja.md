@@ -1025,22 +1025,26 @@ TODO
 		- [x] optionsState
 		- [x] options
 		- [x] background
-	+ [ ] db.tsにexport時間を取り出す関数を追加する
-	+ [ ] export時刻と現在時刻をnumberでconsole.logする
+	+ [x] db.tsにexport時間を取り出す関数を追加する
+	+ [x] export時刻と現在時刻をnumberでconsole.logする
 	+ [ ] エラーメッセージ
 		- [x] HTML
 		- [ ] optionsObject
 		- [ ] optionsState
 		- [ ] options
 		- [ ] background
-	+ [ ] HTMLに遷移先のformを追加
+		- [ ] document inputでメッセージをhiddenにする
+	+ [x] HTMLに遷移先のformを追加
 		- [x] Deleteする公開鍵を表示する領域
-		- [ ] Cancelボタン
-		- [ ] OK(またはDelete)ボタン
+		- [x] Cancelボタン
+		- [x] OK(またはDelete)ボタン
 	+ [ ] 画面の遷移を実装
+		- [x] list -> delete
+		- [x] cancel button
+		- [ ] delete button
 	+ [ ] exportedAtを調べて画面の遷移をせずerrorを表示するようにする
-	+ [ ] Cancelボタンの処理の実装
-	+ [ ] OKボタンの処理の実装
+	+ [x] Cancelボタンの処理の実装
+	+ [ ] Deleteボタンの処理の実装
 * [ ] nsecのImport機能
 * [ ] ログ管理
 * [ ] TODOを整理・修正する

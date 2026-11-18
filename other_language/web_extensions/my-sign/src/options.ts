@@ -175,6 +175,7 @@ const importButtonImport = getElement<HTMLButtonElement>("#import-button-import"
 
 const deleteForm = getElement<HTMLElement>("#delete-form");
 const accountDeleteTitle = getElement<HTMLElement>("#account-delete-title");
+const deleteCancel = getElement<HTMLButtonElement>("#delete-cancel");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -526,6 +527,10 @@ importButtonImport.addEventListener("click", () => {
 	console.log("options.ts: IMPORT BUTTON IMPORT: CLICK");
 });
 */
+
+deleteCancel.addEventListener("click", () => {
+	sendMethodAndLoad("deleteCancelClicked");
+});
 
 // ------------------------------------------------------------------------
 
