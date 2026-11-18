@@ -633,6 +633,13 @@ export class OptionsState
 		this.#optionsObject.importPasswordFormHidden = false;
 		this.save();
 	}
+
+	importPasswordNsecMode(): void
+	{
+		this.#optionsObject.importFormHidden = true;
+		this.#optionsObject.importPasswordFormNsecHidden = false;
+		this.save();
+	}
 }
 
 async function

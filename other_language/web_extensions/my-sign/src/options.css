@@ -189,3 +189,7 @@ label {
 #delete-error {
 	color: #c00;
 }
+
+#password-error {
+	color: #c00;
+}

@@ -115,7 +115,9 @@ export type OptionsObject = {
 	accountDeletePublicKey: Uint8Array | null,
 	deleteErrorHidden: boolean,
 
-	importPasswordFormHidden: boolean
+	importPasswordFormHidden: boolean,
+
+	importPasswordFormNsecHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -212,7 +214,9 @@ export function defaultOptionsObject(): OptionsObject
 		accountDeletePublicKey: null,
 		deleteErrorHidden: true,
 
-		importPasswordFormHidden: true
+		importPasswordFormHidden: true,
+
+		importPasswordFormNsecHidden: true
 	};
 }
 

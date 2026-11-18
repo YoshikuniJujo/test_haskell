@@ -184,6 +184,8 @@ const importPasswordForm = getElement<HTMLElement>("#import-password-form");
 const importPassword = getElement<HTMLInputElement>("#import-password");
 const importPasswordOk = getElement<HTMLButtonElement>("#import-password-ok");
 
+const importPasswordFormNsec = getElement<HTMLElement>("#import-password-form-nsec");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -787,6 +789,7 @@ loadOptions(obj: OptionsObject)
 	deleteError.hidden = obj.deleteErrorHidden;
 
 	importPasswordForm.hidden = obj.importPasswordFormHidden;
+	importPasswordFormNsec.hidden = obj.importPasswordFormNsecHidden;
 }
 
 function

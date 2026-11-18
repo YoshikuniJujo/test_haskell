@@ -1485,6 +1485,7 @@ browser.runtime.onConnect.addListener(async p => {
 					m2.secretKey.hrp);
 
 				if (m2.secretKey.hrp === "ncryptsec") ostt.importPasswordMode();
+				if (m2.secretKey.hrp === "nsec") ostt.importPasswordNsecMode();
 				/*
 				browser.tabs.sendMessage(p.sender?.tab?.id, {
 				*/

@@ -1070,15 +1070,24 @@ TODO
 	+ [x] 既存の設定画面への反映
 * [ ] nsecのImport機能
 	+ [x] importNewでncryptsecとnsecとで処理を分岐させる
-	+ [ ] nsec用のフォームを作成
+	+ [x] nsec用のフォームを作成、遷移
 		- [x] HTML
-		- [ ] optionsObject
-		- [ ] optionsState
-		- [ ] options
-		- [ ] background
-	+ [ ] nsecだった場合にはnsec用のフォームに遷移させる
-	+ [ ] nsec用フォームにはパスワードと確認フォームとが必要
-	+ [ ] 処理としてはgenerateに近い形でできるはず
+		- [x] optionsObject
+		- [x] optionsState
+		- [x] options
+		- [x] background
+	+ [x] nsec用フォームにはパスワードと確認フォームとが必要
+	+ [ ] パスワードと確認フォームとの一致をチェックする
+		- [x] HTMLにエラーメッセージを追加
+		- [ ] 両者の一致を示すbooleanをoptionsObjectに追加
+		- [ ] 上記の書き込みのためのメソッドをoptionsStateに追加
+		- [ ] boolean値によってエラーのhiddenを変化させる(options)
+		- [ ] 上記の読み出しのためのメソッドを追加
+	+ [ ] submitボタン
+		- [ ] optionsからbackgroundにメッセージを送信
+		- [ ] 一致しているときだけ先に進む
+		- [ ] generateに近い処理を実装する
+		- [ ] 画面をaccountListにもどす
 * [ ] ログ管理
 * [ ] TODOを整理・修正する
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
