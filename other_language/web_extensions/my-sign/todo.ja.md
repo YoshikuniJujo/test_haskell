@@ -1025,6 +1025,14 @@ TODO
 		- [x] optionsState
 		- [x] options
 		- [x] background
+	+ [ ] db.tsにexport時間を取り出す関数を追加する
+	+ [ ] export時刻と現在時刻をnumberでconsole.logする
+	+ [ ] エラーメッセージ
+		- [x] HTML
+		- [ ] optionsObject
+		- [ ] optionsState
+		- [ ] options
+		- [ ] background
 	+ [ ] HTMLに遷移先のformを追加
 		- [x] Deleteする公開鍵を表示する領域
 		- [ ] Cancelボタン
