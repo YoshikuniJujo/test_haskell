@@ -1045,6 +1045,10 @@ TODO
 	+ [x] exportedAtを調べて画面の遷移をせずerrorを表示するようにする
 	+ [x] Cancelボタンの処理の実装
 	+ [ ] Deleteボタンの処理の実装
+		- [x] db.tsにdeleteAccount関数を追加
+		- [ ] options
+		- [ ] background
+	+ [ ] 既存の設定画面への反映
 * [ ] nsecのImport機能
 * [ ] ログ管理
 * [ ] TODOを整理・修正する

@@ -805,6 +805,20 @@ getAccount(pk: Uint8Array): Promise<Account>
 }
 
 export async function
+deleteAccount(pk: Uint8Array): Promise<void>
+{
+	const db = await open();
+	const tx = db.transaction(SECRET_KEYS, "readwrite");
+	const store = tx.objectStore(SECRET_KEYS);
+	store.delete(pk as IDBValidKey);
+	await new Promise<void>((rs, rj) => {
+		tx.oncomplete = () => rs();
+		tx.onerror = () => rj(tx.error);
+		tx.onabort = () => rj(tx.error);
+	});
+}
+
+export async function
 getExportedAt(pk: Uint8Array): Promise<Date | undefined>
 {
 	const db = await open();
