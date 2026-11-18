@@ -185,6 +185,9 @@ const importPassword = getElement<HTMLInputElement>("#import-password");
 const importPasswordOk = getElement<HTMLButtonElement>("#import-password-ok");
 
 const importPasswordFormNsec = getElement<HTMLElement>("#import-password-form-nsec");
+const importPasswordNsec = getElement<HTMLInputElement>("#import-password-nsec");
+const importPasswordConfirmNsec = getElement<HTMLInputElement>("#import-password-confirm-nsec");
+const passwordErrorNsec = getElement<HTMLElement>("#password-error-nsec");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -563,6 +566,20 @@ importPasswordForm.addEventListener("submit", event => {
 		password: pwd });
 	// sendMethodAndLoad("importPasswordOkClicked");
 });
+
+importPasswordNsec.addEventListener("input", checkPasswordNsec);
+importPasswordConfirmNsec.addEventListener("input", checkPasswordNsec);
+
+function
+checkPasswordNsec()
+{
+	importPasswordConfirmNsec.setCustomValidity(
+		importPasswordNsec.value === importPasswordConfirmNsec.value
+			? "" : "Passwords do not match." );
+	if (importPasswordNsec.value !== importPasswordConfirmNsec.value)
+		passwordErrorNsec.hidden = false;
+	else passwordErrorNsec.hidden = true;
+}
 
 // ------------------------------------------------------------------------
 

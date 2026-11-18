@@ -1077,12 +1077,9 @@ TODO
 		- [x] options
 		- [x] background
 	+ [x] nsec用フォームにはパスワードと確認フォームとが必要
-	+ [ ] パスワードと確認フォームとの一致をチェックする
+	+ [x] パスワードと確認フォームとの一致をチェックする
 		- [x] HTMLにエラーメッセージを追加
-		- [ ] 両者の一致を示すbooleanをoptionsObjectに追加
-		- [ ] 上記の書き込みのためのメソッドをoptionsStateに追加
-		- [ ] boolean値によってエラーのhiddenを変化させる(options)
-		- [ ] 上記の読み出しのためのメソッドを追加
+		- [x] その他
 	+ [ ] submitボタン
 		- [ ] optionsからbackgroundにメッセージを送信
 		- [ ] 一致しているときだけ先に進む
