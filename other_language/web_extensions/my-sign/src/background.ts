@@ -1026,7 +1026,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 
 			// FOR DEBUG. REMOVE IT!!!
 			console.log("background.ts: CREATE ACCOUNT FROM NCRYPTSEC:" +
-				    " ncryptsecs =", ncryptsecs);
+				" ncryptsecs =", ncryptsecs);
 			const cs = ncryptsecs.get(hsh);
 			if (!cs) throw new Error("bad");
 			const esk = await EncryptedSecretKey.fromCryptsec(
@@ -1184,7 +1184,7 @@ getClientNoProfile(url: string): Promise<ClientSummaryRaw|null>
 {
 	console.log("background.ts: GET CLIENT: BEGIN:", url);
 	console.log("background.ts: GET CLIENT: ALL CLIENTS:",
-		    await DB.getAllClients());
+		await DB.getAllClients());
 	const cs: ClientSummaryRaw[] = await DB.getAllClients();
 	cs.sort((a, b) => (b.priority ?? 100) - (a.priority ?? 100));
 	for (const c of cs) {
@@ -1198,7 +1198,7 @@ getClient(url: string): Promise<Client|null>
 {
 	console.log("background.ts: GET CLIENT: BEGIN:", url);
 	console.log("background.ts: GET CLIENT: ALL CLIENTS:",
-		    await DB.getAllClients());
+		await DB.getAllClients());
 	const cs: Client[] = await DB.getClients();
 	cs.sort((a, b) => (b.priority ?? 100) - (a.priority ?? 100));
 	for (const c of cs) {
