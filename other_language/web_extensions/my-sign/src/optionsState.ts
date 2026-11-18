@@ -454,6 +454,8 @@ export class OptionsState
 		this.#optionsObject.accountExportFormHidden = true;
 		this.#optionsObject.generateFormHidden = true;
 		this.#optionsObject.deleteFormHidden = true;
+		this.#optionsObject.importPasswordFormHidden = true;
+		this.save();
 	}
 
 	generateAccountMode(): void

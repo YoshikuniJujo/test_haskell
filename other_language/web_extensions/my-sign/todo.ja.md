@@ -1069,6 +1069,16 @@ TODO
 		- [x] background
 	+ [x] 既存の設定画面への反映
 * [ ] nsecのImport機能
+	+ [x] importNewでncryptsecとnsecとで処理を分岐させる
+	+ [ ] nsec用のフォームを作成
+		- [x] HTML
+		- [ ] optionsObject
+		- [ ] optionsState
+		- [ ] options
+		- [ ] background
+	+ [ ] nsecだった場合にはnsec用のフォームに遷移させる
+	+ [ ] nsec用フォームにはパスワードと確認フォームとが必要
+	+ [ ] 処理としてはgenerateに近い形でできるはず
 * [ ] ログ管理
 * [ ] TODOを整理・修正する
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する

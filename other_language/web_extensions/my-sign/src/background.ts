@@ -1481,7 +1481,10 @@ browser.runtime.onConnect.addListener(async p => {
 				console.log("background: ON CONNECT: IMPORT NEW:", m2.secretKey);
 				if (p.sender?.tab?.id === undefined) throw new Error("bad");
 
-				ostt.importPasswordMode();
+				console.log("background.ts: IMPORT NEW: hrp =",
+					m2.secretKey.hrp);
+
+				if (m2.secretKey.hrp === "ncryptsec") ostt.importPasswordMode();
 				/*
 				browser.tabs.sendMessage(p.sender?.tab?.id, {
 				*/
@@ -1501,6 +1504,7 @@ browser.runtime.onConnect.addListener(async p => {
 					m2.secretKey.dp, m2.password );
 				console.log(esk);
 				await DB.addKeyPair(esk.toObject_563e7e39d4());
+				ostt.accountListMode();
 				browser.runtime.sendMessage({
 					class: "Options",
 					direction: "signal",
