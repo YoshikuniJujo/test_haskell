@@ -1016,13 +1016,16 @@ TODO
 			* [x] optionsState
 			* [x] options
 			* [x] background
-		- [ ] パスワード入力欄
+		- [x] パスワード入力欄
+			* [x] options
 		- [ ] パスワード送信ボタン
-			* [ ] backgroundにメッセージを送信
-			* [ ] backgroundからパスワードを要求
-			* [ ] Uint8Arrayに正規化
-			* [ ] 空文字列で上書き
-			* [ ] Uint8Arrayのパスワードを返信
+			* [x] backgroundにメッセージを送信
+			* [ ] backgroundからncryptsecとパスワードを要求
+			* [ ] ncryptsecをUint8Arrayに正規化
+				+ secretKeyImport.value
+			* [ ] パスワードをUint8Arrayに正規化
+			* [ ] 空文字列で両者を上書き
+			* [ ] Uint8Arrayのncryptsecとパスワードを返信
 			* [ ] backgroundで続きの処理をする
 * [ ] Export機能に追加
 	+ [ ] Exportの成功・失敗時にメッセージを表示

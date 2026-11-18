@@ -152,6 +152,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "showSecretKeyChanged"; boolean: boolean }
 	| { class: "Options"; method: "deleteCancelClicked"; }
 	| { class: "Options"; method: "deleteOkClicked"; }
+	| { class: "Options"; method: "importPasswordOkClicked"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -756,6 +757,14 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const accl = await DB.getPublicKeysWithNames()
 			console.log("background.ts: OPTIONS BEGIN: Accounts:", accl);
 			ostt.setAccountList(accl);
+			return ostt.optionsObject();
+		}
+
+		case "importPasswordOkClicked": {
+			const ostt = await optionsStateFromSender(s);
+			console.log(
+				"background.ts: IMPORT PASSWORD OK CLICKED"
+			);
 			return ostt.optionsObject();
 		}
 	}
@@ -1471,7 +1480,10 @@ browser.runtime.onConnect.addListener(async p => {
 				if (p.sender?.tab?.id === undefined) throw new Error("bad");
 
 				ostt.importPasswordMode();
+				/*
 				browser.tabs.sendMessage(p.sender?.tab?.id, {
+				*/
+				browser.runtime.sendMessage({
 					class: "Options",
 					direction: "signal",
 					method: "update" });

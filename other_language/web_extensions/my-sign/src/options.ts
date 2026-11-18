@@ -181,6 +181,8 @@ const deleteError = getElement<HTMLElement>("#delete-error");
 const deleteOk = getElement<HTMLButtonElement>("#delete-ok");
 
 const importPasswordForm = getElement<HTMLElement>("#import-password-form");
+const importPassword = getElement<HTMLInputElement>("#import-password");
+const importPasswordOk = getElement<HTMLButtonElement>("#import-password-ok");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -546,6 +548,11 @@ deleteCancel.addEventListener("click", () => {
 
 deleteOk.addEventListener("click", () => {
 	sendMethodAndLoad("deleteOkClicked");
+});
+
+importPasswordForm.addEventListener("submit", event => {
+	event.preventDefault();
+	sendMethodAndLoad("importPasswordOkClicked");
 });
 
 // ------------------------------------------------------------------------
