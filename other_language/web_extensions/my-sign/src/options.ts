@@ -552,7 +552,14 @@ deleteOk.addEventListener("click", () => {
 
 importPasswordForm.addEventListener("submit", event => {
 	event.preventDefault();
-	sendMethodAndLoad("importPasswordOkClicked");
+	const port = browser.runtime.connect();
+	const sk = Bech32.decode(secretKeyImport.value);
+	const pwd = encodePassword(importPassword.value);
+	port.postMessage({
+		method: "importPassword",
+		secretKey: sk,
+		password: pwd });
+	// sendMethodAndLoad("importPasswordOkClicked");
 });
 
 // ------------------------------------------------------------------------

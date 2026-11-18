@@ -1423,6 +1423,8 @@ type GenerateMessage =
 	| { method: "generate", password: Uint8Array }
 	| { method: "import", secretKey: Bech32.Bech32 }
 	| { method: "importNew", secretKey: Bech32.Bech32 }
+	| { method: "importPassword",
+		secretKey: Bech32.Bech32, password: Uint8Array }
 
 browser.runtime.onConnect.addListener(async p => {
 	console.log("background.ts: onConnect:", p);
@@ -1488,6 +1490,23 @@ browser.runtime.onConnect.addListener(async p => {
 					direction: "signal",
 					method: "update" });
 				break;
+			case "importPassword": {
+				console.log(
+					"background: ON CONNECT: IMPORT PASSWORD:",
+					m2.secretKey, m2.password );
+				const esk = await EncryptedSecretKey.fromCryptsec(
+					ostt.optionsObject().accountNameImport,
+					ostt.optionsObject().setSaveName,
+					ostt.optionsObject().customSaveName,
+					m2.secretKey.dp, m2.password );
+				console.log(esk);
+				await DB.addKeyPair(esk.toObject_563e7e39d4());
+				browser.runtime.sendMessage({
+					class: "Options",
+					direction: "signal",
+					method: "update" });
+				break;
+			}
 		}
 	});
 });

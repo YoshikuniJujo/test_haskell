@@ -1019,14 +1019,14 @@ TODO
 		- [x] パスワード入力欄
 			* [x] options
 		- [ ] パスワード送信ボタン
-			* [x] backgroundにメッセージを送信
-			* [ ] backgroundからncryptsecとパスワードを要求
-			* [ ] ncryptsecをUint8Arrayに正規化
-				+ secretKeyImport.value
-			* [ ] パスワードをUint8Arrayに正規化
+			* [x] backgroundにメッセージを送信 (やめた)
+			* [x] backgroundとportをつなぐ
+			* [x] ncryptsecをUint8Arrayに正規化
+				- secretKeyImport.value
+			* [x] パスワードをUint8Arrayに正規化
 			* [ ] 空文字列で両者を上書き
-			* [ ] Uint8Arrayのncryptsecとパスワードを返信
-			* [ ] backgroundで続きの処理をする
+			* [x] ncryptsecとパスワードとをUint8Arrayの形で返す
+			* [x] backgroundで続きの処理をする
 * [ ] Export機能に追加
 	+ [ ] Exportの成功・失敗時にメッセージを表示
 	+ [x] Export時にその時間を登録
