@@ -590,6 +590,11 @@ importPasswordFormNsec.addEventListener("submit", ev => {
 	const sk = Bech32.decode(secretKeyImport.value);
 	const pwd = new TextEncoder().encode(importPasswordNsec.value.normalize("NFKC"));
 	console.log("options.ts: IMPORT PASSWORD FORM NSEC: SUBMIT:", sk, pwd)
+	const port = browser.runtime.connect();
+	port.postMessage({
+		method: "importPasswordNsec",
+		secretKey: sk,
+		password: pwd });
 });
 
 // ------------------------------------------------------------------------

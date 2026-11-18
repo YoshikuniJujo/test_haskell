@@ -1068,7 +1068,7 @@ TODO
 		- [x] options
 		- [x] background
 	+ [x] 既存の設定画面への反映
-* [ ] nsecのImport機能
+* [x] nsecのImport機能
 	+ [x] importNewでncryptsecとnsecとで処理を分岐させる
 	+ [x] nsec用のフォームを作成、遷移
 		- [x] HTML
@@ -1080,14 +1080,14 @@ TODO
 	+ [x] パスワードと確認フォームとの一致をチェックする
 		- [x] HTMLにエラーメッセージを追加
 		- [x] その他
-	+ [ ] submitボタン
+	+ [x] submitボタン
 		- [x] 一致しているときだけ先に進む
-		- [ ] optionsからbackgroundにメッセージを送信
-			* [ ] secret key
-			* [ ] password
-		- [ ] generateに近い処理を実装する
-		- [ ] DBに書き込む
-		- [ ] 画面をaccountListにもどす
+		- [x] optionsからbackgroundにメッセージを送信
+			* [x] secret key
+			* [x] password
+		- [x] generateに近い処理を実装する
+		- [x] DBに書き込む
+		- [x] 画面をaccountListにもどす
 * [ ] ログ管理
 * [ ] TODOを整理・修正する
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
