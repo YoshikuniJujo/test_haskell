@@ -624,6 +624,13 @@ export class OptionsState
 		if (r === null) throw new Error("bad");
 		return r;
 	}
+
+	importPasswordMode(): void
+	{
+		this.#optionsObject.importFormHidden = true;
+		this.#optionsObject.importPasswordFormHidden = false;
+		this.save();
+	}
 }
 
 async function

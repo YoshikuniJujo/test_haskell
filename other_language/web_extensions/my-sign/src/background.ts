@@ -1468,6 +1468,13 @@ browser.runtime.onConnect.addListener(async p => {
 				break;
 			case "importNew":
 				console.log("background: ON CONNECT: IMPORT NEW:", m2.secretKey);
+				if (p.sender?.tab?.id === undefined) throw new Error("bad");
+
+				ostt.importPasswordMode();
+				browser.tabs.sendMessage(p.sender?.tab?.id, {
+					class: "Options",
+					direction: "signal",
+					method: "update" });
 				break;
 		}
 	});

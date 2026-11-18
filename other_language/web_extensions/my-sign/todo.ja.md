@@ -1011,11 +1011,11 @@ TODO
 * [ ] ncryptsecからのimportの新しい仕様
 	+ [ ] formを作成
 		- [x] HTML
-		- [ ] hiddenについて
-			* [ ] optionsObject
-			* [ ] optionsState
-			* [ ] options
-			* [ ] background
+		- [x] hiddenについて
+			* [x] optionsObject
+			* [x] optionsState
+			* [x] options
+			* [x] background
 		- [ ] パスワード入力欄
 		- [ ] パスワード送信ボタン
 			* [ ] backgroundにメッセージを送信

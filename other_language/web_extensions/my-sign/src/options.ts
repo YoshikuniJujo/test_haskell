@@ -180,6 +180,8 @@ const deleteCancel = getElement<HTMLButtonElement>("#delete-cancel");
 const deleteError = getElement<HTMLElement>("#delete-error");
 const deleteOk = getElement<HTMLButtonElement>("#delete-ok");
 
+const importPasswordForm = getElement<HTMLElement>("#import-password-form");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -769,6 +771,8 @@ loadOptions(obj: OptionsObject)
 			obj.accountDeleteName + " " +
 			Bech32.encode("npub", obj.accountDeletePublicKey);
 	deleteError.hidden = obj.deleteErrorHidden;
+
+	importPasswordForm.hidden = obj.importPasswordFormHidden;
 }
 
 function
