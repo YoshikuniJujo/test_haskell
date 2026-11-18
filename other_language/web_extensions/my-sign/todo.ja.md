@@ -1088,6 +1088,7 @@ TODO
 		- [x] generateに近い処理を実装する
 		- [x] DBに書き込む
 		- [x] 画面をaccountListにもどす
+* [ ] nsecからのimportではKSBを0x00にする
 * [ ] ログ管理
 * [ ] TODOを整理・修正する
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
