@@ -1090,6 +1090,11 @@ TODO
 		- [x] 画面をaccountListにもどす
 * [ ] nsecからのimportではKSBを0x00にする
 * [ ] ログ管理
+* [ ] ncryptsecからのimportでエラー処理を追加する
+* [ ] パスワード入力フォームについて
+	+ [ ] デフォルトはtype="password"にする
+	+ [ ] チェックボックスで見えるようにする
+* [ ] 一通り機能を試してみてTODOを書き出す
 * [ ] TODOを整理・修正する
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
