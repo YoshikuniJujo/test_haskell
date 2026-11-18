@@ -1413,6 +1413,7 @@ getOptionsTabTag(tid: number): Promise<OptionsTabTag | null>
 type GenerateMessage =
 	| { method: "generate", password: Uint8Array }
 	| { method: "import", secretKey: Bech32.Bech32 }
+	| { method: "importNew", secretKey: Bech32.Bech32 }
 
 browser.runtime.onConnect.addListener(async p => {
 	console.log("background.ts: onConnect:", p);
@@ -1464,6 +1465,9 @@ browser.runtime.onConnect.addListener(async p => {
 				if (use !== it.id) await browser.tabs.remove(it.id);
 				await browser.tabs.update(use, { active: true });
 //				const port = browser.tabs.connect(it.id, { name: "readPassword_import" });
+				break;
+			case "importNew":
+				console.log("background: ON CONNECT: IMPORT NEW:", m2.secretKey);
 				break;
 		}
 	});

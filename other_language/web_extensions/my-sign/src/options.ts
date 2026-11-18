@@ -172,6 +172,7 @@ const accountNameImport = getElement<HTMLInputElement>("#account-name-import");
 const secretKeyImport = getElement<HTMLInputElement>("#secret-key-import");
 const showSecretKey = getElement<HTMLInputElement>("#show-secret-key");
 const importButtonImport = getElement<HTMLButtonElement>("#import-button-import");
+const importButtonImportNew = getElement<HTMLButtonElement>("#import-button-import-new");
 
 const deleteForm = getElement<HTMLElement>("#delete-form");
 const accountDeleteTitle = getElement<HTMLElement>("#account-delete-title");
@@ -529,6 +530,13 @@ importButtonImport.addEventListener("click", () => {
 	console.log("options.ts: IMPORT BUTTON IMPORT: CLICK");
 });
 */
+
+importButtonImportNew.addEventListener("click", () => {
+	console.log("optionnnnns.ts: IMPORT BUTTON NEW");
+	const port = browser.runtime.connect();
+	const sk = Bech32.decode(secretKeyImport.value);
+	port.postMessage({ method: "importNew", secretKey: sk });
+});
 
 deleteCancel.addEventListener("click", () => {
 	sendMethodAndLoad("deleteCancelClicked");

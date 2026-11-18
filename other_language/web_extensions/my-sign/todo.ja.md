@@ -1008,6 +1008,22 @@ TODO
 		- [ ] パスワードのUint8Arrayを0クリア(background) - finallyで
 		- [x] EncryptedSecretKeyを作成する
 	+ [x] DBへの保存
+* [ ] ncryptsecからのimportの新しい仕様
+	+ [ ] formを作成
+		- [ ] HTML
+		- [ ] hiddenについて
+			* [ ] optionsObject
+			* [ ] optionsState
+			* [ ] options
+			* [ ] background
+		- [ ] パスワード入力欄
+		- [ ] パスワード送信ボタン
+			* [ ] backgroundにメッセージを送信
+			* [ ] backgroundからパスワードを要求
+			* [ ] Uint8Arrayに正規化
+			* [ ] 空文字列で上書き
+			* [ ] Uint8Arrayのパスワードを返信
+			* [ ] backgroundで続きの処理をする
 * [ ] Export機能に追加
 	+ [ ] Exportの成功・失敗時にメッセージを表示
 	+ [x] Export時にその時間を登録
