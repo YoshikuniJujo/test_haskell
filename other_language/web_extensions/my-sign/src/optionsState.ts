@@ -611,6 +611,12 @@ export class OptionsState
 		this.#optionsObject.accountDeletePublicKey = pk;
 		this.save();
 	}
+
+	setDeleteErrorHidden(deh: boolean)
+	{
+		this.#optionsObject.deleteErrorHidden = deh;
+		this.save();
+	}
 }
 
 async function

@@ -112,7 +112,8 @@ export type OptionsObject = {
 
 	deleteFormHidden: boolean,
 	accountDeleteName: string,
-	accountDeletePublicKey: Uint8Array | null
+	accountDeletePublicKey: Uint8Array | null,
+	deleteErrorHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -206,7 +207,8 @@ export function defaultOptionsObject(): OptionsObject
 
 		deleteFormHidden: true,
 		accountDeleteName: "",
-		accountDeletePublicKey: null
+		accountDeletePublicKey: null,
+		deleteErrorHidden: true
 	};
 }
 

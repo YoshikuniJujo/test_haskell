@@ -176,6 +176,7 @@ const importButtonImport = getElement<HTMLButtonElement>("#import-button-import"
 const deleteForm = getElement<HTMLElement>("#delete-form");
 const accountDeleteTitle = getElement<HTMLElement>("#account-delete-title");
 const deleteCancel = getElement<HTMLButtonElement>("#delete-cancel");
+const deleteError = getElement<HTMLElement>("#delete-error");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -754,6 +755,7 @@ loadOptions(obj: OptionsObject)
 		accountDeleteTitle.textContent =
 			obj.accountDeleteName + " " +
 			Bech32.encode("npub", obj.accountDeletePublicKey);
+	deleteError.hidden = obj.deleteErrorHidden;
 }
 
 function

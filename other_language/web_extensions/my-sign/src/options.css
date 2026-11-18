@@ -185,3 +185,7 @@ label {
 		flex-wrap: wrap;
 	}
 }
+
+#delete-error {
+	color: #c00;
+}

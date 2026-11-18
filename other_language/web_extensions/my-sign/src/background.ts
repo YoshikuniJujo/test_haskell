@@ -192,6 +192,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.setDetailErrorHidden(true);
 			ostt.setUrlPatternNotMatchErrorHidden(true);
 			ostt.setAtLeastOnePermissionHidden(true);
+			ostt.setDeleteErrorHidden(true);
 			return ostt.optionsObject();
 		}
 		case "optionsObject": {
@@ -617,8 +618,16 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					console.log("background.ts: DELETE:", acc);
 					const exat = await DB.getExportedAt(m.publicKey);
 					console.log("background.ts: DELETE:", exat);
-					ostt.accountDeleteNamePublicKey(m.name, m.publicKey);
-					ostt.deleteMode();
+					if (exat !== undefined)
+						console.log("background.ts: DELETE:",
+							Date.now() - exat.getTime());
+					if (exat !== undefined &&
+						Date.now() - exat.getTime() < 10 * 60 * 1000) {
+						ostt.accountDeleteNamePublicKey(m.name, m.publicKey);
+						ostt.deleteMode(); }
+					else {
+						ostt.setDeleteErrorHidden(false);
+					}
 					break;
 			}
 
