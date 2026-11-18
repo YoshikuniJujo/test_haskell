@@ -10,7 +10,7 @@ import { PermissionNew } from "./permission.js";
 declare const __DEV__: boolean;
 
 const DB_NAME = "my-sign";
-const DB_VERSION = 18;
+const DB_VERSION = 19;
 
 const SECRET_KEYS = "secret-keys";
 const OLD_SET_CLIENTS = "setClients";
@@ -52,6 +52,7 @@ open()
 			else if (ev.oldVersion < 16) updatev15v16(db, tx);
 			else if (ev.oldVersion < 17) updatev16v17(db, tx);
 			else if (ev.oldVersion < 18) updatev17v18(db, tx);
+			else if (ev.oldVersion < 19) updatev18v19(db, tx);
 			tx.oncomplete = () => {
 				console.log("migration transaction complete");
 			}
@@ -308,6 +309,14 @@ function
 updatev17v18(db: IDBDatabase, tx: IDBTransaction)
 {
 	tx.objectStore("set-clients").createIndex("clientUuid", "clientUuid");
+	updatev18v19(db, tx);
+}
+
+function
+updatev18v19(db: IDBDatabase, tx: IDBTransaction)
+{
+	tx.objectStore("set-clients").createIndex("publicKey", "publicKey");
+	tx.objectStore("permissions").createIndex("publicKey", "publicKey");
 }
 
 export async function
@@ -419,6 +428,8 @@ getPermissionRaw(tx: IDBTransaction, cu: string, pk: Uint8Array):
 export async function
 addKeyPair(key: Account)
 {
+	console.log("db.ts: addKeyPiar: BEGIN");
+
 	const db = await open();
 
 	return new Promise((rs, rj) => {
@@ -427,6 +438,7 @@ addKeyPair(key: Account)
 		store.add(key);
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
+		tx.onabort = () => rj(tx.error);
 	});
 }
 
@@ -808,9 +820,30 @@ export async function
 deleteAccount(pk: Uint8Array): Promise<void>
 {
 	const db = await open();
-	const tx = db.transaction(SECRET_KEYS, "readwrite");
+	const tx = db.transaction(
+		[SECRET_KEYS, "permissions", "set-clients"], "readwrite" );
 	const store = tx.objectStore(SECRET_KEYS);
+	const pm = tx.objectStore("permissions");
+	const sc = tx.objectStore("set-clients");
+
 	store.delete(pk as IDBValidKey);
+
+	const pmIndex = pm.index("publicKey");
+	const pmReq = pmIndex.openCursor(IDBKeyRange.only(pk));
+	pmReq.onsuccess = () => {
+		const cursor = pmReq.result;
+		if (cursor === null) return;
+		cursor.delete();
+		cursor.continue(); };
+
+	const scIndex = sc.index("publicKey");
+	const scReq = scIndex.openCursor(IDBKeyRange.only(pk));
+	scReq.onsuccess = () => {
+		const cursor = scReq.result;
+		if (cursor === null) return;
+		cursor.delete();
+		cursor.continue(); };
+
 	await new Promise<void>((rs, rj) => {
 		tx.oncomplete = () => rs();
 		tx.onerror = () => rj(tx.error);

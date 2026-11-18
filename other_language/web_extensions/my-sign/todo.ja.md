@@ -1011,7 +1011,7 @@ TODO
 * [ ] Export機能に追加
 	+ [ ] Exportの成功・失敗時にメッセージを表示
 	+ [x] Export時にその時間を登録
-* [ ] Delete機能
+* [x] Delete機能
 	+ [x] deleteラジオボタンを試す
 	+ [x] Delete form
 		- [x] HTML
@@ -1038,17 +1038,17 @@ TODO
 		- [x] Deleteする公開鍵を表示する領域
 		- [x] Cancelボタン
 		- [x] OK(またはDelete)ボタン
-	+ [ ] 画面の遷移を実装
+	+ [x] 画面の遷移を実装
 		- [x] list -> delete
 		- [x] cancel button
-		- [ ] delete button
+		- [x] delete button
 	+ [x] exportedAtを調べて画面の遷移をせずerrorを表示するようにする
 	+ [x] Cancelボタンの処理の実装
-	+ [ ] Deleteボタンの処理の実装
+	+ [x] Deleteボタンの処理の実装
 		- [x] db.tsにdeleteAccount関数を追加
-		- [ ] options
-		- [ ] background
-	+ [ ] 既存の設定画面への反映
+		- [x] options
+		- [x] background
+	+ [x] 既存の設定画面への反映
 * [ ] nsecのImport機能
 * [ ] ログ管理
 * [ ] TODOを整理・修正する

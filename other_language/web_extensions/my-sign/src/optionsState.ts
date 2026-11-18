@@ -617,6 +617,13 @@ export class OptionsState
 		this.#optionsObject.deleteErrorHidden = deh;
 		this.save();
 	}
+
+	accountDeletePublicKey(): Uint8Array
+	{
+		const r = this.#optionsObject.accountDeletePublicKey;
+		if (r === null) throw new Error("bad");
+		return r;
+	}
 }
 
 async function

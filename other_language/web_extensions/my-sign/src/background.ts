@@ -151,6 +151,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "accountNameImportInput"; value: string }
 	| { class: "Options"; method: "showSecretKeyChanged"; boolean: boolean }
 	| { class: "Options"; method: "deleteCancelClicked"; }
+	| { class: "Options"; method: "deleteOkClicked"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -741,6 +742,22 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.accountListMode();
 			return ostt.optionsObject();
 		}
+		case "deleteOkClicked": {
+			const ostt = await optionsStateFromSender(s);
+			console.log(
+				"backgoround.ts: DELETE OK CLICKED",
+				ostt.accountDeletePublicKey() );
+			DB.deleteAccount(ostt.accountDeletePublicKey());
+			ostt.accountListMode();
+			await browser.runtime.sendMessage({
+				class: "Options",
+				direction: "signal",
+				method: "update" });
+			const accl = await DB.getPublicKeysWithNames()
+			console.log("background.ts: OPTIONS BEGIN: Accounts:", accl);
+			ostt.setAccountList(accl);
+			return ostt.optionsObject();
+		}
 	}
 }
 
@@ -1016,6 +1033,8 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 
 			const tid = (await stbs.sources(s.tab.id))[0];
 			console.log(tid);
+			console.log(otbs);
+			console.log(await otbs.keyInputTabs());
 			if (!tid) throw new Error("bad");
 			const id = (await otbs.key(tid));
 			if (!id) throw new Error("bad: hello");
@@ -1036,7 +1055,7 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 				cs, pswd
 			);
 			console.log(esk);
-			DB.addKeyPair(esk.toObject_563e7e39d4());
+			await DB.addKeyPair(esk.toObject_563e7e39d4());
 			return;
 	}
 }

@@ -177,6 +177,7 @@ const deleteForm = getElement<HTMLElement>("#delete-form");
 const accountDeleteTitle = getElement<HTMLElement>("#account-delete-title");
 const deleteCancel = getElement<HTMLButtonElement>("#delete-cancel");
 const deleteError = getElement<HTMLElement>("#delete-error");
+const deleteOk = getElement<HTMLButtonElement>("#delete-ok");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -531,6 +532,10 @@ importButtonImport.addEventListener("click", () => {
 
 deleteCancel.addEventListener("click", () => {
 	sendMethodAndLoad("deleteCancelClicked");
+});
+
+deleteOk.addEventListener("click", () => {
+	sendMethodAndLoad("deleteOkClicked");
 });
 
 // ------------------------------------------------------------------------
