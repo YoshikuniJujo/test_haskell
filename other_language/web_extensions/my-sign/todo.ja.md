@@ -1081,9 +1081,12 @@ TODO
 		- [x] HTMLにエラーメッセージを追加
 		- [x] その他
 	+ [ ] submitボタン
+		- [x] 一致しているときだけ先に進む
 		- [ ] optionsからbackgroundにメッセージを送信
-		- [ ] 一致しているときだけ先に進む
+			* [ ] secret key
+			* [ ] password
 		- [ ] generateに近い処理を実装する
+		- [ ] DBに書き込む
 		- [ ] 画面をaccountListにもどす
 * [ ] ログ管理
 * [ ] TODOを整理・修正する

@@ -581,6 +581,17 @@ checkPasswordNsec()
 	else passwordErrorNsec.hidden = true;
 }
 
+importPasswordFormNsec.addEventListener("submit", ev => {
+	ev.preventDefault()
+	if (importPasswordNsec.value !== importPasswordConfirmNsec.value) {
+		passwordErrorNsec.hidden = false;
+		importPasswordConfirmNsec.setCustomValidity("Password do not match.");
+		importPasswordConfirmNsec.reportValidity(); return; }
+	const sk = Bech32.decode(secretKeyImport.value);
+	const pwd = new TextEncoder().encode(importPasswordNsec.value.normalize("NFKC"));
+	console.log("options.ts: IMPORT PASSWORD FORM NSEC: SUBMIT:", sk, pwd)
+});
+
 // ------------------------------------------------------------------------
 
 browser.runtime.onMessage.addListener((m, s) => {
