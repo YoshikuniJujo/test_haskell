@@ -1519,7 +1519,7 @@ browser.runtime.onConnect.addListener(async p => {
 					ostt.optionsObject().accountNameImport,
 					ostt.optionsObject().setSaveName,
 					ostt.optionsObject().customSaveName,
-					m2.secretKey.dp, m2.password );
+					m2.secretKey.dp, m2.password, 0 );
 				await DB.addKeyPair(esk.toObject_563e7e39d4());
 				ostt.accountListMode();
 				browser.runtime.sendMessage({

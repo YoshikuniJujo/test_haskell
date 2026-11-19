@@ -65,7 +65,7 @@ EncryptedSecretKey
 	static async generate(nm: string, usnm: boolean, snm: string, pswd: Uint8Array)
 	{
 		const { secretKey: sk } = schnorr.keygen();
-		return this.fromSec(nm, usnm, snm, sk, pswd);
+		return this.fromSec(nm, usnm, snm, sk, pswd, 1);
 	}
 
 	static async fromCryptsec(
@@ -75,7 +75,9 @@ EncryptedSecretKey
 		return this.fromEncrypted(nm, usnm, snm, e, pswd);
 	}
 
-	static async fromSec(nm: string, usnm: boolean, snm: string, sk: Uint8Array, pswd: Uint8Array)
+	static async fromSec(
+		nm: string, usnm: boolean, snm: string,
+		sk: Uint8Array, pswd: Uint8Array, ksb: number)
 	{
 		const lgn = 16
 		const sfcp = randomBytes(16);
@@ -86,7 +88,7 @@ EncryptedSecretKey
 		const pk = schnorr.getPublicKey(sk);
 		let foo;
 		try { foo = await encrypt(
-				sk, { password: pswd, logN: lgn, keySecurityByte: 1 } ); }
+				sk, { password: pswd, logN: lgn, keySecurityByte: ksb } ); }
 		finally { sk.fill(0); }
 		return new EncryptedSecretKey(
 			pk, nm, usnm, snm, foo.logN, foo.salt, foo.nonce,

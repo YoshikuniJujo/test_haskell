@@ -1088,7 +1088,7 @@ TODO
 		- [x] generateに近い処理を実装する
 		- [x] DBに書き込む
 		- [x] 画面をaccountListにもどす
-* [ ] nsecからのimportではKSBを0x00にする
+* [x] nsecからのimportではKSBを0x00にする
 * [ ] ログ管理
 * [ ] ncryptsecからのimportでエラー処理を追加する
 * [ ] パスワード入力フォームについて
