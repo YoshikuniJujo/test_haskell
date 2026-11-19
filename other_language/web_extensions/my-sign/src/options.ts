@@ -20,7 +20,7 @@ import {
 	accountToPublicKeyOption, permissionObjectToRadio,
 	permissionValueToRadio } from "./types.js";
 import { EncryptedSecretKey } from "./crypto/ncryptsec.js";
-import * as Log from "./log2.js"
+import * as Log from "./log.js"
 import { getElement, scrollToBottom } from "./domTools.js";
 import { toHex, fromHex } from "./tools.js";
 import * as Bech32 from "./codec/bech32.js";

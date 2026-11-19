@@ -1,7 +1,7 @@
 import { InputTabs } from "./inputTabs.js";
 import { EncryptedSecretKey, encodeSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js";
-import * as Log from "./log2.js";
+import * as Log from "./log.js";
 
 import * as Bech32 from "./codec/bech32.js";
 
