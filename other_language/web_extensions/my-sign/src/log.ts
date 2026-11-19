@@ -1,8 +1,12 @@
+import type { Unit } from "./data/unit.js";
+import { unit } from "./data/unit.js";
+
 type Log = { time: number, message: string }
 
 const DB_NAME = "my-sign-log";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE_NAME = "log";
+const COUNTER = "couner";
 
 export async function
 toString(): Promise<string>
@@ -70,6 +74,7 @@ open()
 		const tx = req.transaction!;
 		if (ev.oldVersion < 1) updatev0v1(db, tx);
 		else if (ev.oldVersion < 2) updatev1v2(db, tx);
+		else if (ev.oldVersion < 3) updatev2v3(db, tx);
 		tx.oncomplete = () => {
 			console.log("migration transaction complete") }; };
 	return new Promise<IDBDatabase>((rs, rj) => {
@@ -88,4 +93,11 @@ function
 updatev1v2(db: IDBDatabase, tx: IDBTransaction)
 {
 	tx.objectStore(STORE_NAME).createIndex("time", "time");
+	updatev2v3(db, tx);
+}
+
+function
+updatev2v3(db: IDBDatabase, tx: IDBTransaction)
+{
+	db.createObjectStore(COUNTER, { keyPath: "unit" });
 }
