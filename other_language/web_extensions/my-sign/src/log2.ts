@@ -1,7 +1,3 @@
-import * as DB from "./db.js";
-
-export const Log = (() => {
-
 type Log = { time: Date, message: string }
 
 const DB_NAME = "my-sign-log";
@@ -9,8 +5,6 @@ const DB_VERSION = 1;
 const STORE_NAME = "log";
 
 let dbPromise: Promise<IDBDatabase>;
-
-let logTabs: Set<number> = new Set();
 
 function
 open()
@@ -33,9 +27,8 @@ getDB()
 	return dbPromise;
 }
 
-return {
-
-async write(msg: object|string)
+export async function
+write(msg: object|string)
 {
 	const db = await getDB();
 	const tx = db.transaction(STORE_NAME, "readwrite");
@@ -47,7 +40,6 @@ async write(msg: object|string)
 		time: Date.now(),
 		message: msg });
 
-	console.log("log2 write:", logTabs);
 	browser.runtime.sendMessage({
 		class: "Options",
 		direction: "signal",
@@ -57,9 +49,10 @@ async write(msg: object|string)
 		tx.oncomplete = rs;
 		tx.onerror = () => rj(tx.error);
 	});
-},
+}
 
-async readAll(): Promise<Log[]>
+export async function
+readAll(): Promise<Log[]>
 {
 	const db = await getDB();
 	const tx = db.transaction(STORE_NAME, "readonly");
@@ -70,27 +63,12 @@ async readAll(): Promise<Log[]>
 		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
 	});
-},
+}
 
-setLogTabs(tids: number[])
+export async function
+toString(): Promise<string>
 {
-	logTabs = new Set(tids);
-	console.log("setLogTabs", logTabs);
-},
-
-addLogTab(tid: number)
-{
-	logTabs.add(tid);
-	console.log("addLogTab", logTabs);
-},
-
-async toString(): Promise<string>
-{
-	const ls = await Log.readAll();
+	const ls = await readAll();
 	return ls.map(l =>
 		new Date(l.time).toLocaleString() + " " + l.message).join("\n");
 }
-
-};
-
-})();

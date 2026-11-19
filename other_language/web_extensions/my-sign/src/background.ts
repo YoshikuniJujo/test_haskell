@@ -1,7 +1,7 @@
 import { InputTabs } from "./inputTabs.js";
 import { EncryptedSecretKey, encodeSecretKey } from "./crypto/ncryptsec.js";
 import * as DB from "./db.js";
-import { Log } from "./log2.js";
+import * as Log from "./log2.js";
 
 import * as Bech32 from "./codec/bech32.js";
 
@@ -60,8 +60,6 @@ const initializeReady = (async () => {
 		.filter(([key]) => key !== "browser")
 		.map(([, value]) => value);
 	Log.write(`Options tabs: ${ots}`);
-
-	Log.setLogTabs(ots);
 
 	Log.write(`Options Tabs:, ${await otbs.keys()}`);
 
@@ -1003,7 +1001,6 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			console.log("addLogTab");
 			if (s.tab?.id === undefined) throw backgroundError(
 				"addLogTab: no sender tab ID" );
-			Log.addLogTab(s.tab.id);
 			return;
 		case "getClientsDev":
 			console.log("background.ts: getClientsDev");
@@ -1375,7 +1372,6 @@ pgVanished(vt: number)
 	const ots = [...(await otbs.keyInputTabs())]
 		.filter(([key]) => key !== "browser")
 		.map(([, value]) => value);
-	Log.setLogTabs(ots);
 }
 
 const ports = new Map();
