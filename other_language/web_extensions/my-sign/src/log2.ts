@@ -1,3 +1,5 @@
+import * as DB from "./db.js";
+
 export const Log = (() => {
 
 type Log = { time: Date, message: string }

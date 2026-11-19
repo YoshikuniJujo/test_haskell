@@ -23,7 +23,7 @@ const CURRENT_SET = "current-set";
 
 let dbPromise: Promise<IDBDatabase> | undefined;
 
-function
+export function
 open()
 {
 	if (dbPromise) return dbPromise;
