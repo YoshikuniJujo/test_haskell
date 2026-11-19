@@ -1,7 +1,7 @@
 type Log = { time: number, message: string }
 
 const DB_NAME = "my-sign-log";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = "log";
 
 export async function
@@ -28,7 +28,21 @@ write(msg: string): Promise<void>
 {
 	const tx = (await getDB()).transaction(STORE_NAME, "readwrite");
 	const st = tx.objectStore(STORE_NAME);
-	st.add({ time: Date.now(), message: msg });
+	const now = Date.now();
+	st.add({ time: now, message: msg });
+
+	const limit = now - 90 * 24 * 60 * 60 * 1000;
+	const idx = st.index("time");
+	const range = IDBKeyRange.upperBound(limit);
+	const req = idx.openCursor(range);
+	req.onsuccess = () => {
+		const cursor = req.result;
+		if (cursor) {
+			cursor.delete();
+			cursor.continue();
+		}
+	};
+
 	return new Promise((rs, rj) => {
 		tx.oncomplete = () => {
 			void browser.runtime.sendMessage({
@@ -51,12 +65,27 @@ function
 open()
 {
 	const req = indexedDB.open(DB_NAME, DB_VERSION);
-	req.onupgradeneeded = () => {
+	req.onupgradeneeded = ev => {
 		const db = req.result;
-		if (!db.objectStoreNames.contains(STORE_NAME))
-			db.createObjectStore(
-				STORE_NAME, { autoIncrement: true } ); };
+		const tx = req.transaction!;
+		if (ev.oldVersion < 1) updatev0v1(db, tx);
+		else if (ev.oldVersion < 2) updatev1v2(db, tx);
+		tx.oncomplete = () => {
+			console.log("migration transaction complete") }; };
 	return new Promise<IDBDatabase>((rs, rj) => {
 		req.onsuccess = () => { rs(req.result); };
 		req.onerror = () => { rj(req.error); }; });
+}
+
+function
+updatev0v1(db: IDBDatabase, tx: IDBTransaction)
+{
+	db.createObjectStore(STORE_NAME, { autoIncrement: true });
+	updatev1v2(db, tx);
+}
+
+function
+updatev1v2(db: IDBDatabase, tx: IDBTransaction)
+{
+	tx.objectStore(STORE_NAME).createIndex("time", "time");
 }
