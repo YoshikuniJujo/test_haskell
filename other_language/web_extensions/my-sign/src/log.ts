@@ -8,6 +8,8 @@ const DB_VERSION = 3;
 const STORE_NAME = "log";
 const COUNTER = "couner";
 
+const LIMIT_LENGTH = 50000;
+
 export async function
 toString(): Promise<string>
 {
@@ -30,37 +32,9 @@ readAll(): Promise<Log[]>
 export async function
 write(msg: string): Promise<void>
 {
-	const tx = (await getDB()).transaction(
-		[STORE_NAME, COUNTER], "readwrite");
-	const st = tx.objectStore(STORE_NAME);
-	const cntr = tx.objectStore(COUNTER);
-	const now = Date.now();
-	const limit = now - 90 * 24 * 60 * 60 * 1000;
-
-	const idx = st.index("time");
-	const range = IDBKeyRange.upperBound(limit);
-	const req = idx.openCursor(range);
-	let deleteLength = 0;
-
-	req.onsuccess = async () => {
-		const cursor = req.result;
-		if (cursor) {
-			const ln = deleteLog(cursor, tx);
-			deleteLength += ln;
-			cursor.continue();
-		} else {
-			const length =
-				(await requestToPromise(cntr.get("unit")) ?? 0) - deleteLength + msg.length;
-
-			console.log("log.ts: length =", length);
-
-			await requestToPromise(cntr.put(length, "unit"));
-		}
-	};
-
-	st.add({ time: now, message: msg });
-
-	return new Promise((rs, rj) => {
+	const tx =
+		(await getDB()).transaction([STORE_NAME, COUNTER], "readwrite");
+	const completed = new Promise<void>((rs, rj) => {
 		tx.oncomplete = () => {
 			void browser.runtime.sendMessage({
 				class: "Options", direction: "signal",
@@ -68,10 +42,50 @@ write(msg: string): Promise<void>
 			rs(); };
 		tx.onerror = () => rj(tx.error);
 		tx.onabort = () => rj(tx.error); });
+	const st = tx.objectStore(STORE_NAME);
+	const ct = tx.objectStore(COUNTER);
+	const now = Date.now();
+	st.add({ time: now, message: msg });
+	await incCounter(ct, msg.length);
+	await completed;
+}
+
+async function
+deleteExpiredLogs(): Promise<void>
+{
+	const tx =
+		(await getDB()).transaction([STORE_NAME, COUNTER], "readwrite");
+	const completed = new Promise<void>((rs, rj) => {
+		tx.oncomplete = () => { rs(); };
+		tx.onerror = () => rj(tx.error);
+		tx.onabort = () => rj(tx.error); });
+	const idx = tx.objectStore(STORE_NAME).index("time");
+	const ct = tx.objectStore(COUNTER);
+	const req = idx.openCursor(IDBKeyRange.upperBound(
+		Date.now() - 90 * 24 * 60 * 60 * 1000 ));
+	let dln = 0;
+	req.onsuccess = async () => {
+		const crsr = req.result;
+		if (crsr) { dln += deleteLog(crsr, tx); crsr.continue(); }
+		else await decCounter(ct, dln); };
+	await completed;
+}
+
+async function
+incCounter(ct: IDBObjectStore, am: number)
+{
+	await reqToPromise(
+		ct.put((await reqToPromise(ct.get("unit")) ?? 0) + am, "unit"));
+}
+
+async function
+decCounter(ct: IDBObjectStore, am: number)
+{
+	await incCounter(ct, - am);
 }
 
 function
-requestToPromise<T>(request: IDBRequest<T>): Promise<T>
+reqToPromise<T>(request: IDBRequest<T>): Promise<T>
 {
 	return new Promise((rs, rj) => {
 		request.onsuccess = () => rs(request.result);
@@ -82,14 +96,8 @@ requestToPromise<T>(request: IDBRequest<T>): Promise<T>
 function
 deleteLog(cursor: IDBCursorWithValue, tx: IDBTransaction): number
 {
-//	const cntr = tx.objectStore(COUNTER);
-	const deleteLength = cursor.value.message.length;
-//	const length =
-//		(await requestToPromise(cntr.get("unit")) ?? 0) - deleteLength;
-//	await requestToPromise(cntr.put(length, "unit"));
 	cursor.delete();
-
-	return deleteLength;
+	return cursor.value.message.length;
 }
 
 let dbPromise: Promise<IDBDatabase>;
