@@ -30,22 +30,35 @@ readAll(): Promise<Log[]>
 export async function
 write(msg: string): Promise<void>
 {
-	const tx = (await getDB()).transaction(STORE_NAME, "readwrite");
+	const tx = (await getDB()).transaction(
+		[STORE_NAME, COUNTER], "readwrite");
 	const st = tx.objectStore(STORE_NAME);
+	const cntr = tx.objectStore(COUNTER);
 	const now = Date.now();
-	st.add({ time: now, message: msg });
-
 	const limit = now - 90 * 24 * 60 * 60 * 1000;
+
 	const idx = st.index("time");
 	const range = IDBKeyRange.upperBound(limit);
 	const req = idx.openCursor(range);
-	req.onsuccess = () => {
+	let deleteLength = 0;
+
+	req.onsuccess = async () => {
 		const cursor = req.result;
 		if (cursor) {
-			deleteLog(cursor, tx);
+			const ln = deleteLog(cursor, tx);
+			deleteLength += ln;
 			cursor.continue();
+		} else {
+			const length =
+				(await requestToPromise(cntr.get("unit")) ?? 0) - deleteLength + msg.length;
+
+			console.log("log.ts: length =", length);
+
+			await requestToPromise(cntr.put(length, "unit"));
 		}
 	};
+
+	st.add({ time: now, message: msg });
 
 	return new Promise((rs, rj) => {
 		tx.oncomplete = () => {
@@ -58,9 +71,25 @@ write(msg: string): Promise<void>
 }
 
 function
-deleteLog(cursor: IDBCursorWithValue, tx: IDBTransaction): void
+requestToPromise<T>(request: IDBRequest<T>): Promise<T>
 {
+	return new Promise((rs, rj) => {
+		request.onsuccess = () => rs(request.result);
+		request.onerror = () => rj(request.error);
+	});
+}
+
+function
+deleteLog(cursor: IDBCursorWithValue, tx: IDBTransaction): number
+{
+//	const cntr = tx.objectStore(COUNTER);
+	const deleteLength = cursor.value.message.length;
+//	const length =
+//		(await requestToPromise(cntr.get("unit")) ?? 0) - deleteLength;
+//	await requestToPromise(cntr.put(length, "unit"));
 	cursor.delete();
+
+	return deleteLength;
 }
 
 let dbPromise: Promise<IDBDatabase>;
@@ -105,5 +134,6 @@ updatev1v2(db: IDBDatabase, tx: IDBTransaction)
 function
 updatev2v3(db: IDBDatabase, tx: IDBTransaction)
 {
-	db.createObjectStore(COUNTER, { keyPath: "unit" });
+//	db.createObjectStore(COUNTER, { keyPath: "unit" });
+	db.createObjectStore(COUNTER);
 }
