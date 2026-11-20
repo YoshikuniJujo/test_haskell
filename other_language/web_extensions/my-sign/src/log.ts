@@ -42,7 +42,7 @@ write(msg: string): Promise<void>
 	req.onsuccess = () => {
 		const cursor = req.result;
 		if (cursor) {
-			cursor.delete();
+			deleteLog(cursor, tx);
 			cursor.continue();
 		}
 	};
@@ -55,6 +55,12 @@ write(msg: string): Promise<void>
 			rs(); };
 		tx.onerror = () => rj(tx.error);
 		tx.onabort = () => rj(tx.error); });
+}
+
+function
+deleteLog(cursor: IDBCursorWithValue, tx: IDBTransaction): void
+{
+	cursor.delete();
 }
 
 let dbPromise: Promise<IDBDatabase>;
