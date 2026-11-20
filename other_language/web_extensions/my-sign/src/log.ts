@@ -32,14 +32,21 @@ readAll(): Promise<Log[]>
 export async function
 write(msg: string): Promise<void>
 {
+	await deleteExpired();
+	await add(msg);
+	await makeRoom();
+	void browser.runtime.sendMessage({
+		class: "Options", direction: "signal",
+		method: "logUpdated" }).catch(() => {});
+}
+
+async function
+add(msg: string): Promise<void>
+{
 	const tx =
 		(await getDB()).transaction([STORE_NAME, COUNTER], "readwrite");
 	const completed = new Promise<void>((rs, rj) => {
-		tx.oncomplete = () => {
-			void browser.runtime.sendMessage({
-				class: "Options", direction: "signal",
-				method: "logUpdated" }).catch(() => {});
-			rs(); };
+		tx.oncomplete = () => rs();
 		tx.onerror = () => rj(tx.error);
 		tx.onabort = () => rj(tx.error); });
 	const st = tx.objectStore(STORE_NAME);
@@ -51,7 +58,7 @@ write(msg: string): Promise<void>
 }
 
 async function
-deleteExpiredLogs(): Promise<void>
+deleteExpired(): Promise<void>
 {
 	const tx =
 		(await getDB()).transaction([STORE_NAME, COUNTER], "readwrite");
@@ -66,9 +73,47 @@ deleteExpiredLogs(): Promise<void>
 	let dln = 0;
 	req.onsuccess = async () => {
 		const crsr = req.result;
-		if (crsr) { dln += deleteLog(crsr, tx); crsr.continue(); }
+		if (crsr) { dln += deleteL(crsr, tx); crsr.continue(); }
 		else await decCounter(ct, dln); };
 	await completed;
+}
+
+async function
+makeRoom(): Promise<void>
+{
+	const tx =
+		(await getDB()).transaction([STORE_NAME, COUNTER], "readwrite");
+	const completed = new Promise<void>((rs, rj) => {
+		tx.oncomplete = () => { rs(); };
+		tx.onerror = () => rj(tx.error);
+		tx.onabort = () => rj(tx.error); });
+	const ct = tx.objectStore(COUNTER);
+	let length = await reqToPromise(ct.get("uinit")) ?? 0;
+	while (length > LIMIT_LENGTH) {
+		const dln = await deleteOldest(tx, 200);
+		if (dln === 0) break;
+		await decCounter(ct, dln);
+		length -= dln; }
+	await completed;
+}
+
+async function
+deleteOldest(tx: IDBTransaction, cnt: number): Promise<number>
+{
+	const idx = tx.objectStore(STORE_NAME).index("time");
+	const req = idx.openCursor();
+	return new Promise((rs, rj) => {
+		let deleted = 0;
+		let dln = 0;
+		req.onsuccess = () => {
+			const crsr = req.result;
+			if (crsr && deleted < cnt) {
+				dln + deleteL(crsr, tx);
+				deleted++;
+				crsr.continue(); }
+			else rs(dln); };
+		req.onerror = () => rj(req.error); });
+
 }
 
 async function
@@ -94,7 +139,7 @@ reqToPromise<T>(request: IDBRequest<T>): Promise<T>
 }
 
 function
-deleteLog(cursor: IDBCursorWithValue, tx: IDBTransaction): number
+deleteL(cursor: IDBCursorWithValue, tx: IDBTransaction): number
 {
 	cursor.delete();
 	return cursor.value.message.length;
