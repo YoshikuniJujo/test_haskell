@@ -73,7 +73,7 @@ deleteExpired(): Promise<void>
 	let dln = 0;
 	req.onsuccess = async () => {
 		const crsr = req.result;
-		if (crsr) { dln += deleteL(crsr, tx); crsr.continue(); }
+		if (crsr) { dln += deleteL(crsr); crsr.continue(); }
 		else await decCounter(ct, dln); };
 	await completed;
 }
@@ -88,7 +88,7 @@ makeRoom(): Promise<void>
 		tx.onerror = () => rj(tx.error);
 		tx.onabort = () => rj(tx.error); });
 	const ct = tx.objectStore(COUNTER);
-	let length = await reqToPromise(ct.get("uinit")) ?? 0;
+	let length = await reqToPromise(ct.get("unit")) ?? 0;
 	while (length > LIMIT_LENGTH) {
 		const dln = await deleteOldest(tx, 200);
 		if (dln === 0) break;
@@ -108,7 +108,7 @@ deleteOldest(tx: IDBTransaction, cnt: number): Promise<number>
 		req.onsuccess = () => {
 			const crsr = req.result;
 			if (crsr && deleted < cnt) {
-				dln + deleteL(crsr, tx);
+				dln += deleteL(crsr);
 				deleted++;
 				crsr.continue(); }
 			else rs(dln); };
@@ -139,7 +139,7 @@ reqToPromise<T>(request: IDBRequest<T>): Promise<T>
 }
 
 function
-deleteL(cursor: IDBCursorWithValue, tx: IDBTransaction): number
+deleteL(cursor: IDBCursorWithValue): number
 {
 	cursor.delete();
 	return cursor.value.message.length;
