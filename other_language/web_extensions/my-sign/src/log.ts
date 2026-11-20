@@ -97,7 +97,7 @@ makeRoom(): Promise<void>
 	await completed;
 }
 
-async function
+function
 deleteOldest(tx: IDBTransaction, cnt: number): Promise<number>
 {
 	const idx = tx.objectStore(STORE_NAME).index("time");
