@@ -28,6 +28,34 @@ import * as Bech32 from "./codec/bech32.js";
 declare const __DEV__: boolean;
 
 // ------------------------------------------------------------------------
+
+const logOutput = getElement("#log-output");
+
+browser.runtime.onMessage.addListener((m, s) => {
+	console.log("options.js: onMessage:", m, s);
+	if (m.class !== "Options" || m.direction !== "signal") return;
+	switch(m.method) {
+		case "logUpdated":
+			(async () => {
+				console.log("LOG OUTPUT BEGIN");
+				logOutput.textContent = await Log.toString();
+				scrollToBottom(logOutput);
+				return; })();
+		case "update": (async () => {
+			console.log("options.ts: recieve UPDATE signal");
+			const obj = await browser.runtime.sendMessage({
+				class: "Options",
+				direction: "request",
+				method: "loadCommonState" });
+			loadOptions(obj);
+			return; })();
+		default: return;
+	}
+});
+
+// ------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------
 // CONTENTS
 //
 // * GET ELEMENT
@@ -45,6 +73,8 @@ declare const __DEV__: boolean;
 
 // ------------------------------------------------------------------------
 // GET ELEMENT
+
+const logTest = getElement<HTMLButtonElement>("#log-test");
 
 const clientsElm = getElement<HTMLElement>("#clients");
 const newClient = getElement<HTMLElement>("#new-client");
@@ -91,7 +121,6 @@ const passwordError = getElement<HTMLElement>("#password-error");
 const optionsError = getElement("#options-error");
 const useClientSet = getElement<HTMLInputElement>("#use-client-set");
 
-const logOutput = getElement("#log-output");
 const browserFooter = getElement<HTMLElement>("#browser-footer");
 const openInTab = getElement<HTMLElement>("#open-in-tab");
 
@@ -196,6 +225,9 @@ const passwordErrorNsec = getElement<HTMLElement>("#password-error-nsec");
 	const obj = await browser.runtime.sendMessage({
 		class: "Options", method: "optionsBegin" });
 	console.log("FOOBAR", obj);
+	await Log.write("options.ts: OPTIONS BEGIN");
+	logOutput.textContent = await Log.toString();
+	scrollToBottom(logOutput);
 	await loadOptions(obj);
 
 	// LOG WRITE
@@ -410,6 +442,12 @@ newSet.addEventListener("click", async () => {
 
 // Others
 
+logTest.addEventListener("click", async () => {
+	await Log.write("options.ts: LOG TEST");
+	logOutput.textContent = await Log.toString();
+	scrollToBottom(logOutput);
+});
+
 useClientSet.addEventListener("change", async () => {
 	const obj = await sendMethodChecked(
 		"useClientSetChanged", useClientSet.checked );
@@ -595,30 +633,6 @@ importPasswordFormNsec.addEventListener("submit", ev => {
 		method: "importPasswordNsec",
 		secretKey: sk,
 		password: pwd });
-});
-
-// ------------------------------------------------------------------------
-
-browser.runtime.onMessage.addListener((m, s) => {
-	console.log("options.js: onMessage:", m, s);
-	if (m.class !== "Options" || m.direction !== "signal") return;
-	switch(m.method) {
-		case "logUpdated":
-			(async () => {
-				console.log("LOG OUTPUT BEGIN");
-				logOutput.textContent = await Log.toString();
-				scrollToBottom(logOutput);
-				return; })();
-		case "update": (async () => {
-			console.log("options.ts: recieve UPDATE signal");
-			const obj = await browser.runtime.sendMessage({
-				class: "Options",
-				direction: "request",
-				method: "loadCommonState" });
-			loadOptions(obj);
-			return; })();
-		default: return;
-	}
 });
 
 // ------------------------------------------------------------------------

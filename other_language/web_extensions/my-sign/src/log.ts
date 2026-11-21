@@ -4,11 +4,14 @@ import { unit } from "./data/unit.js";
 type Log = { time: number, message: string }
 
 const DB_NAME = "my-sign-log";
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const STORE_NAME = "log";
 const COUNTER = "couner";
 
-const LIMIT_LENGTH = 50000;
+declare const __DEV__: boolean;
+const LIMIT_DAYS = __DEV__ ? 3 : 90;
+const LIMIT_LENGTH = __DEV__ ? 500 : 50000;
+const DELETE_COUNT = __DEV__ ? 3 : 200;
 
 export async function
 toString(): Promise<string>
@@ -69,7 +72,7 @@ deleteExpired(): Promise<void>
 	const idx = tx.objectStore(STORE_NAME).index("time");
 	const ct = tx.objectStore(COUNTER);
 	const req = idx.openCursor(IDBKeyRange.upperBound(
-		Date.now() - 90 * 24 * 60 * 60 * 1000 ));
+		Date.now() - LIMIT_DAYS * 24 * 60 * 60 * 1000 ));
 	let dln = 0;
 	req.onsuccess = async () => {
 		const crsr = req.result;
@@ -90,7 +93,7 @@ makeRoom(): Promise<void>
 	const ct = tx.objectStore(COUNTER);
 	let length = await reqToPromise(ct.get("unit")) ?? 0;
 	while (length > LIMIT_LENGTH) {
-		const dln = await deleteOldest(tx, 200);
+		const dln = await deleteOldest(tx, DELETE_COUNT);
 		if (dln === 0) break;
 		await decCounter(ct, dln);
 		length -= dln; }
@@ -119,8 +122,14 @@ deleteOldest(tx: IDBTransaction, cnt: number): Promise<number>
 async function
 incCounter(ct: IDBObjectStore, am: number)
 {
-	await reqToPromise(
-		ct.put((await reqToPromise(ct.get("unit")) ?? 0) + am, "unit"));
+	const v = await reqToPromise(ct.get("unit")) ?? 0;
+	const next = v + am;
+	console.log("log.ts: incCounter:", {
+		v, am, next,
+		valueType: typeof v,
+		amType: typeof am,
+		nextType: typeof next });
+	await reqToPromise(ct.put(next, "unit"));
 }
 
 async function
@@ -163,6 +172,7 @@ open()
 		if (ev.oldVersion < 1) updatev0v1(db, tx);
 		else if (ev.oldVersion < 2) updatev1v2(db, tx);
 		else if (ev.oldVersion < 3) updatev2v3(db, tx);
+		else if (ev.oldVersion < 4) updatev3v4(db, tx);
 		tx.oncomplete = () => {
 			console.log("migration transaction complete") }; };
 	return new Promise<IDBDatabase>((rs, rj) => {
@@ -188,5 +198,13 @@ function
 updatev2v3(db: IDBDatabase, tx: IDBTransaction)
 {
 //	db.createObjectStore(COUNTER, { keyPath: "unit" });
+	db.createObjectStore(COUNTER);
+	updatev3v4(db, tx);
+}
+
+function
+updatev3v4(db: IDBDatabase, tx: IDBTransaction)
+{
+	db.deleteObjectStore(COUNTER);
 	db.createObjectStore(COUNTER);
 }
