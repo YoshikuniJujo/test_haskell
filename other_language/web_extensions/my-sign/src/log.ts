@@ -119,6 +119,22 @@ deleteOldest(tx: IDBTransaction, cnt: number): Promise<number>
 
 }
 
+export async function
+clear(): Promise<void>
+{
+	const tx =
+		(await getDB()).transaction([STORE_NAME, COUNTER], "readwrite");
+	const completed = new Promise<void>((rs, rj) => {
+		tx.oncomplete = () => { rs(); };
+		tx.onerror = () => rj(tx.error);
+		tx.onabort = () => rj(tx.error); });
+	const st = tx.objectStore(STORE_NAME);
+	const ct = tx.objectStore(COUNTER);
+	st.clear();
+	ct.put(0, "unit");
+	await completed;
+}
+
 async function
 incCounter(ct: IDBObjectStore, am: number)
 {
