@@ -151,6 +151,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "deleteCancelClicked"; }
 	| { class: "Options"; method: "deleteOkClicked"; }
 	| { class: "Options"; method: "importPasswordOkClicked"; }
+	| { class: "Options"; method: "logClear"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -763,6 +764,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log(
 				"background.ts: IMPORT PASSWORD OK CLICKED"
 			);
+			return ostt.optionsObject();
+		}
+
+		case "logClear": {
+			const ostt = await optionsStateFromSender(s);
+			Log.clear();
 			return ostt.optionsObject();
 		}
 	}

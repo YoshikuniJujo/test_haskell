@@ -218,6 +218,8 @@ const importPasswordNsec = getElement<HTMLInputElement>("#import-password-nsec")
 const importPasswordConfirmNsec = getElement<HTMLInputElement>("#import-password-confirm-nsec");
 const passwordErrorNsec = getElement<HTMLElement>("#password-error-nsec");
 
+const logClear = getElement<HTMLButtonElement>("#log-clear");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -633,6 +635,10 @@ importPasswordFormNsec.addEventListener("submit", ev => {
 		method: "importPasswordNsec",
 		secretKey: sk,
 		password: pwd });
+});
+
+logClear.addEventListener("click", () => {
+	sendMethodAndLoad("logClear");
 });
 
 // ------------------------------------------------------------------------

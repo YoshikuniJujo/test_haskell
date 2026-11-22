@@ -125,7 +125,11 @@ clear(): Promise<void>
 	const tx =
 		(await getDB()).transaction([STORE_NAME, COUNTER], "readwrite");
 	const completed = new Promise<void>((rs, rj) => {
-		tx.oncomplete = () => { rs(); };
+		tx.oncomplete = () => {
+			void browser.runtime.sendMessage({
+				class: "Options", direction: "signal",
+				method: "logUpdated" }).catch(() => {});
+			rs(); };
 		tx.onerror = () => rj(tx.error);
 		tx.onabort = () => rj(tx.error); });
 	const st = tx.objectStore(STORE_NAME);
