@@ -218,7 +218,9 @@ const importPasswordNsec = getElement<HTMLInputElement>("#import-password-nsec")
 const importPasswordConfirmNsec = getElement<HTMLInputElement>("#import-password-confirm-nsec");
 const passwordErrorNsec = getElement<HTMLElement>("#password-error-nsec");
 
+const logs = getElement<HTMLElement>("#logs");
 const logClear = getElement<HTMLButtonElement>("#log-clear");
+const showLogs = getElement<HTMLInputElement>("#show-logs");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -641,6 +643,10 @@ logClear.addEventListener("click", () => {
 	sendMethodAndLoad("logClear");
 });
 
+showLogs.addEventListener("change", () => {
+	sendMethodAndLoadWithBoolean("showLogsChanged", showLogs.checked);
+});
+
 // ------------------------------------------------------------------------
 // TYPES
 
@@ -843,6 +849,8 @@ loadOptions(obj: OptionsObject)
 
 	importPasswordForm.hidden = obj.importPasswordFormHidden;
 	importPasswordFormNsec.hidden = obj.importPasswordFormNsecHidden;
+
+	logs.hidden = obj.logsHidden;
 }
 
 function

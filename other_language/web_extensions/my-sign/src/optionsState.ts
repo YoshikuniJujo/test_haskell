@@ -640,6 +640,12 @@ export class OptionsState
 		this.#optionsObject.importPasswordFormNsecHidden = false;
 		this.save();
 	}
+
+	setLogsHidden(lh: boolean): void
+	{
+		this.#optionsObject.logsHidden = lh;
+		this.save();
+	}
 }
 
 async function

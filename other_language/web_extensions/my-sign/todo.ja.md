@@ -1105,12 +1105,12 @@ TODO
 		- [x] ログクリア関数をlog.tsに追加する
 		- [x] ログ消去ボタンでbackgroundにメッセージを送信
 		- [x] background側でDBからログを削除する
-* [ ] Logをデフォルトで見せないようにする
+* [x] Logをデフォルトで見せないようにする
 	+ [x] HTMLにチェックボックス
-	+ [ ] optionsObjectにhidden
-	+ [ ] optionsStateにhidden
-	+ [ ] options
-	+ [ ] background
+	+ [x] optionsObjectにhidden
+	+ [x] optionsStateにhidden
+	+ [x] options
+	+ [x] background
 * [ ] ncryptsecからのimportでエラー処理を追加する
 * [ ] パスワード入力フォームについて
 	+ [ ] デフォルトはtype="password"にする

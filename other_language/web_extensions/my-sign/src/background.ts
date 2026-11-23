@@ -152,6 +152,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "deleteOkClicked"; }
 	| { class: "Options"; method: "importPasswordOkClicked"; }
 	| { class: "Options"; method: "logClear"; }
+	| { class: "Options"; method: "showLogsChanged"; boolean: boolean }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -770,6 +771,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "logClear": {
 			const ostt = await optionsStateFromSender(s);
 			Log.clear();
+			return ostt.optionsObject();
+		}
+
+		case "showLogsChanged": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.setLogsHidden(!m.boolean);
 			return ostt.optionsObject();
 		}
 	}
