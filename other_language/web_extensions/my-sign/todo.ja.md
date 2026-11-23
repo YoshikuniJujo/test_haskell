@@ -1111,10 +1111,13 @@ TODO
 	+ [x] optionsStateにhidden
 	+ [x] options
 	+ [x] background
-* [ ] ncryptsecからのimportでエラー処理を追加する
-* [ ] パスワード入力フォームについて
+* [ ] パスワード入力フォームについて (nsec)
 	+ [ ] デフォルトはtype="password"にする
 	+ [ ] チェックボックスで見えるようにする
+* [ ] パスワード入力フォームについて (ncryptsec)
+	+ [ ] デフォルトはtype="password"にする
+	+ [ ] チェックボックスで見えるようにする
+* [ ] ncryptsecからのimportでエラー処理を追加する
 * [ ] 一通り機能を試してみてTODOを書き出す
 * [ ] TODOを整理・修正する
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
