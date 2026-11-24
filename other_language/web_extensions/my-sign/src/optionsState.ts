@@ -671,6 +671,12 @@ export class OptionsState
 		this.#optionsObject.importPasswordKeyExistError = ipkee;
 		this.save();
 	}
+
+	setImportPasswordNsecKeyExistError(ipkee: boolean): void
+	{
+		this.#optionsObject.importPasswordNsecKeyExistError = ipkee;
+		this.save();
+	}
 }
 
 async function

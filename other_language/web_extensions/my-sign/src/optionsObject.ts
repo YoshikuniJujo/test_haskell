@@ -124,7 +124,8 @@ export type OptionsObject = {
 	importNsecPasswordShow: boolean,
 	importPasswordShow: boolean,
 	importPasswordError: boolean,
-	importPasswordKeyExistError: boolean
+	importPasswordKeyExistError: boolean,
+	importPasswordNsecKeyExistError: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -231,7 +232,9 @@ export function defaultOptionsObject(): OptionsObject
 		importPasswordShow: false,
 
 		importPasswordError: false,
-		importPasswordKeyExistError: false
+		importPasswordKeyExistError: false,
+
+		importPasswordNsecKeyExistError: false
 	};
 }
 

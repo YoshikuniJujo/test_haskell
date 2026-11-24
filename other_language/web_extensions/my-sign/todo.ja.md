@@ -1134,15 +1134,15 @@ TODO
 		- [x] background
 			* [x] エラー表示
 			* [x] エラー表示の消去
-* [ ] nsecからのimportでエラー処理を追加する
-	+ [ ] キーがすでに登録済みだった場合
+* [x] nsecからのimportでエラー処理を追加する
+	+ [x] キーがすでに登録済みだった場合
 		- [x] HTML
-		- [ ] optionsObject
-		- [ ] optionsState
-		- [ ] options
-		- [ ] background
-			* [ ] エラー表示
-			* [ ] エラー表示の消去
+		- [x] optionsObject
+		- [x] optionsState
+		- [x] options
+		- [x] background
+			* [x] エラー表示
+			* [x] エラー表示の消去
 * [ ] 一通り機能を試してみてTODOを書き出す
 * [ ] TODOを整理・修正する
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する

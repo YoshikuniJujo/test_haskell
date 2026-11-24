@@ -201,3 +201,7 @@ label {
 #import-password-error-key-already-exists {
 	color: #c00;
 }
+
+#import-password-error-key-already-exists-nsec {
+	color: #c00;
+}

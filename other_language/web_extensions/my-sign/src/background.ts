@@ -201,6 +201,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.setDeleteErrorHidden(true);
 			ostt.setImportPasswordError(false);
 			ostt.setImportPasswordKeyExistError(false);
+			ostt.setImportPasswordNsecKeyExistError(false);
 			ostt.save();
 			return ostt.optionsObject();
 		}
@@ -1563,8 +1564,13 @@ browser.runtime.onConnect.addListener(async p => {
 					ostt.optionsObject().setSaveName,
 					ostt.optionsObject().customSaveName,
 					m2.secretKey.dp, m2.password, 0 );
-				await DB.addKeyPair(esk.toObject_563e7e39d4());
-				ostt.accountListMode();
+				try {
+					await DB.addKeyPair(esk.toObject_563e7e39d4());
+					ostt.accountListMode();
+				}
+				catch (e) {
+					ostt.setImportPasswordNsecKeyExistError(true);
+				}
 				browser.runtime.sendMessage({
 					class: "Options",
 					direction: "signal",
