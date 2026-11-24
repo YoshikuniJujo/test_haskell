@@ -1142,8 +1142,14 @@ TODO
 	+ [x] テストページの作成
 	+ [x] 実装
 * [ ] Permissionの編集領域にクライアント名とURLPatternを表示する
+	+ [x] HTML
+	+ [ ] optionsObject
+	+ [ ] optionsState
+	+ [ ] options
+	+ [ ] background
 * [ ] Profileの編集領域にクライアント名とURLPatternを表示する
 * [ ] TODOを整理・修正する
+* [ ] client, permission, profileの送信をsubmitにする
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
 	+ これをするかどうか検討する
@@ -1214,3 +1220,4 @@ TODO
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] Delete機能の新実装 (続き)
 	+ [ ] Set機能を使っているかどうかでユーザーへのメッセージを変化させる
+* [ ] 設定画面にCloseを実装する
