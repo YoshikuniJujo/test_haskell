@@ -48,19 +48,9 @@ await esbuild.build({
 	outfile: "dist/inputNcryptsec.js"
 });
 
-await esbuild.build({
-	...buildOptions,
-	entryPoints: ["src/confirmation.ts"],
-	bundle: true,
-	outfile: "dist/confirmation.js"
-});
-
 await copyFile("src/manifest.json", "dist/manifest.json");
 await copyFile("src/options.html", "dist/options.html");
 await copyFile("src/options.css", "dist/options.css");
 await copyFile("src/input.html", "dist/input.html");
 await copyFile("src/inputNcryptsec.html", "dist/inputNcryptsec.html");
 await copyFile("src/input.css", "dist/input.css");
-
-await copyFile("src/confirmation.html", "dist/confirmation.html");
-await copyFile("src/confirmation.css", "dist/confirmation.css");
