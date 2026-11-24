@@ -122,7 +122,9 @@ export type OptionsObject = {
 	logsHidden: boolean,
 
 	importNsecPasswordShow: boolean,
-	importPasswordShow: boolean
+	importPasswordShow: boolean,
+	importPasswordError: boolean,
+	importPasswordKeyExistError: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -226,7 +228,10 @@ export function defaultOptionsObject(): OptionsObject
 		logsHidden: true,
 
 		importNsecPasswordShow: false,
-		importPasswordShow: false
+		importPasswordShow: false,
+
+		importPasswordError: false,
+		importPasswordKeyExistError: false
 	};
 }
 

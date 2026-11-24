@@ -193,3 +193,11 @@ label {
 #password-error {
 	color: #c00;
 }
+
+#import-password-error {
+	color: #c00;
+}
+
+#import-password-error-key-already-exists {
+	color: #c00;
+}

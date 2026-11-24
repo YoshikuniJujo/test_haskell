@@ -425,8 +425,33 @@ getPermissionRaw(tx: IDBTransaction, cu: string, pk: Uint8Array):
 	});
 }
 
+export class KeyAlreadyExistsError extends Error
+{
+	constructor(message = "Key already exists.")
+	{
+		super(message);
+		this.name = "KeyAlreadyExistsError";
+	}
+}
+
 export async function
-addKeyPair(key: Account)
+addKeyPair(key: Account): Promise<void>
+{
+	try {
+		await addKeyPair0(key);
+	}
+	catch (e) {
+		console.log("db.ts: ADD KEY PAIR: ERROR:", e);
+		if (	e instanceof DOMException &&
+			e.name === "ConstraintError" ) {
+			throw new KeyAlreadyExistsError();
+		}
+		throw e;
+	}	
+}
+
+export async function
+addKeyPair0(key: Account)
 {
 	console.log("db.ts: addKeyPiar: BEGIN");
 
@@ -435,10 +460,10 @@ addKeyPair(key: Account)
 	return new Promise((rs, rj) => {
 		const tx = db.transaction(SECRET_KEYS, "readwrite");
 		const store = tx.objectStore(SECRET_KEYS);
-		store.add(key);
+		const req = store.add(key);
 		tx.oncomplete = rs;
-		tx.onerror = () => rj(tx.error);
-		tx.onabort = () => rj(tx.error);
+		tx.onerror = () => rj(req.error);
+		tx.onabort = () => rj(req.error);
 	});
 }
 

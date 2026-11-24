@@ -659,6 +659,18 @@ export class OptionsState
 		this.#optionsObject.importPasswordShow = ips;
 		this.save();
 	}
+
+	setImportPasswordError(ipe: boolean): void
+	{
+		this.#optionsObject.importPasswordError = ipe;
+		this.save();
+	}
+
+	setImportPasswordKeyExistError(ipkee: boolean): void
+	{
+		this.#optionsObject.importPasswordKeyExistError = ipkee;
+		this.save();
+	}
 }
 
 async function

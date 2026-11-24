@@ -133,11 +133,24 @@ EncryptedSecretKey
 			"Unsupported scrypt log_n: expected 16..22, " +
 			"actual " + lgn );
 
-		const smkey = scryptAsync(
+		const smkey = await scryptAsync(
 			pswd, slt, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 
+		// DEBUG ONLY!!! DELETE IT!!!!!!
+		console.log("SMKEY", smkey);
+
 		const cc = xchacha20poly1305(await smkey, nnc, new Uint8Array([ksb]));
-		const sk = cc.decrypt(ct);
+		let sk;
+		try { sk = await cc.decrypt(ct); }
+		catch (e) {
+			console.log("ncryptsec.ts: DECRYPT", e);
+			throw new Error(e?.toString() ?? "bad");
+		}
+		if (sk === undefined) throw new Error("bad");
+
+		// DEBUG ONLY!!! DELETE IT!!!!!!
+		console.log("SMKEY", sk);
+
 		let pk;
 		try { pk = schnorr.getPublicKey(sk); }
 		finally { sk.fill(0); }

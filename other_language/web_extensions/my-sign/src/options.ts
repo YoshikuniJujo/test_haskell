@@ -213,6 +213,9 @@ const importPasswordForm = getElement<HTMLElement>("#import-password-form");
 const importPassword = getElement<HTMLInputElement>("#import-password");
 const importPasswordShow = getElement<HTMLInputElement>("#import-password-show");
 const importPasswordOk = getElement<HTMLButtonElement>("#import-password-ok");
+const importPasswordError = getElement<HTMLElement>("#import-password-error");
+const importPasswordKeyExistError = getElement<HTMLElement>(
+	"#import-password-error-key-already-exists" );
 
 const importPasswordFormNsec = getElement<HTMLElement>("#import-password-form-nsec");
 const importPasswordNsec = getElement<HTMLInputElement>("#import-password-nsec");
@@ -871,6 +874,8 @@ loadOptions(obj: OptionsObject)
 		obj.importNsecPasswordShow ? "text" : "password";
 
 	importPassword.type = obj.importPasswordShow ? "text" : "password";
+	importPasswordError.hidden = !obj.importPasswordError;
+	importPasswordKeyExistError.hidden = !obj.importPasswordKeyExistError;
 }
 
 function

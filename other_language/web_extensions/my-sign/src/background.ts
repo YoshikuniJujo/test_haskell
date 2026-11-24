@@ -199,6 +199,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.setUrlPatternNotMatchErrorHidden(true);
 			ostt.setAtLeastOnePermissionHidden(true);
 			ostt.setDeleteErrorHidden(true);
+			ostt.setImportPasswordError(false);
+			ostt.setImportPasswordKeyExistError(false);
+			ostt.save();
 			return ostt.optionsObject();
 		}
 		case "optionsObject": {
@@ -1526,18 +1529,32 @@ browser.runtime.onConnect.addListener(async p => {
 				console.log(
 					"background: ON CONNECT: IMPORT PASSWORD:",
 					m2.secretKey, m2.password );
-				const esk = await EncryptedSecretKey.fromCryptsec(
-					ostt.optionsObject().accountNameImport,
-					ostt.optionsObject().setSaveName,
-					ostt.optionsObject().customSaveName,
-					m2.secretKey.dp, m2.password );
-				console.log(esk);
-				await DB.addKeyPair(esk.toObject_563e7e39d4());
-				ostt.accountListMode();
-				browser.runtime.sendMessage({
-					class: "Options",
-					direction: "signal",
-					method: "update" });
+				try {
+					const esk = await EncryptedSecretKey.fromCryptsec(
+						ostt.optionsObject().accountNameImport,
+						ostt.optionsObject().setSaveName,
+						ostt.optionsObject().customSaveName,
+						m2.secretKey.dp, m2.password );
+					console.log(
+						"background.ts: IMPORT PASSWORD:",
+						esk );
+					await DB.addKeyPair(esk.toObject_563e7e39d4());
+					ostt.accountListMode();
+					browser.runtime.sendMessage({
+						class: "Options",
+						direction: "signal",
+						method: "update" });
+				}
+				catch (e) {
+					console.log("IMPORT PASSWORD ERROR:", e);
+					if (e instanceof DB.KeyAlreadyExistsError)
+						ostt.setImportPasswordKeyExistError(true);
+					else ostt.setImportPasswordError(true);
+					browser.runtime.sendMessage({
+						class: "Options",
+						direction: "signal",
+						method: "update" });
+				}
 				break;
 			}
 			case "importPasswordNsec": {

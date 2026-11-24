@@ -284,6 +284,14 @@
 				Show Password
 			</label>
 			<button id="import-password-ok">Submit</button>
+			<div id="import-password-error">
+				Failed to decrypt.
+				The password may be incorrect or
+				the data may be corrupted.
+			</div>
+			<div id="import-password-error-key-already-exists">
+				This key already exists.
+			</div>
 		</form>
 
 		<form id="import-password-form-nsec" hidden>
@@ -301,6 +309,9 @@
 			</label>
 			<button id="import-password-ok-nsec">Submit</button>
 			<div id="password-error-nsec" hidden>Passwords do not match.</div>
+			<div id="import-password-error-key-already-exists-nsec">
+				This key already exists.
+			</div>
 		</form>
 
 		<form id="delete-form" hidden>
