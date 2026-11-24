@@ -1111,12 +1111,20 @@ TODO
 	+ [x] optionsStateにhidden
 	+ [x] options
 	+ [x] background
-* [ ] パスワード入力フォームについて (nsec)
-	+ [ ] デフォルトはtype="password"にする
-	+ [ ] チェックボックスで見えるようにする
+* [x] パスワード入力フォームについて (nsec)
+	+ [x] 可視性を設定するチェックボックスを追加する
+	+ [x] optionsObjectに可視性のフラグを追加する
+	+ [x] optionsStateに可視性のフラグの設定を追加する
+	+ [x] optionsに追加
+	+ [x] backgroundに追加
+	+ [x] デフォルトはtype="password"にする
 * [ ] パスワード入力フォームについて (ncryptsec)
+	+ [ ] 可視性を設定するチェックボックスを追加する
+	+ [ ] optionsObjectに可視性のフラグを追加する
+	+ [ ] optionsStateに可視性のフラグの設定を追加する
+	+ [ ] optionsに追加
+	+ [ ] backgroundに追加
 	+ [ ] デフォルトはtype="password"にする
-	+ [ ] チェックボックスで見えるようにする
 * [ ] ncryptsecからのimportでエラー処理を追加する
 * [ ] 一通り機能を試してみてTODOを書き出す
 * [ ] TODOを整理・修正する

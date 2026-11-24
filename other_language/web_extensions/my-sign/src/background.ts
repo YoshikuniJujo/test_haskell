@@ -152,7 +152,9 @@ type OptionsMethod =
 	| { class: "Options"; method: "deleteOkClicked"; }
 	| { class: "Options"; method: "importPasswordOkClicked"; }
 	| { class: "Options"; method: "logClear"; }
-	| { class: "Options"; method: "showLogsChanged"; boolean: boolean }
+	| { class: "Options"; method: "showLogsChanged"; boolean: boolean; }
+	| { class: "Options"; method: "importPasswordNsecShowChanged";
+		boolean: boolean; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -777,6 +779,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "showLogsChanged": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.setLogsHidden(!m.boolean);
+			return ostt.optionsObject();
+		}
+
+		case "importPasswordNsecShowChanged": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.setImportNsecPasswordShow(m.boolean);
 			return ostt.optionsObject();
 		}
 	}

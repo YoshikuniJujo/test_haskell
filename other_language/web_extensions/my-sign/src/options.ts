@@ -216,6 +216,7 @@ const importPasswordOk = getElement<HTMLButtonElement>("#import-password-ok");
 const importPasswordFormNsec = getElement<HTMLElement>("#import-password-form-nsec");
 const importPasswordNsec = getElement<HTMLInputElement>("#import-password-nsec");
 const importPasswordConfirmNsec = getElement<HTMLInputElement>("#import-password-confirm-nsec");
+const importPasswordNsecShow = getElement<HTMLInputElement>("#import-password-nsec-show");
 const passwordErrorNsec = getElement<HTMLElement>("#password-error-nsec");
 
 const logs = getElement<HTMLElement>("#logs");
@@ -612,6 +613,12 @@ importPasswordForm.addEventListener("submit", event => {
 importPasswordNsec.addEventListener("input", checkPasswordNsec);
 importPasswordConfirmNsec.addEventListener("input", checkPasswordNsec);
 
+importPasswordNsecShow.addEventListener("change", () => {
+	sendMethodAndLoadWithBoolean(
+		"importPasswordNsecShowChanged",
+		importPasswordNsecShow.checked );
+});
+
 function
 checkPasswordNsec()
 {
@@ -851,6 +858,11 @@ loadOptions(obj: OptionsObject)
 	importPasswordFormNsec.hidden = obj.importPasswordFormNsecHidden;
 
 	logs.hidden = obj.logsHidden;
+
+	importPasswordNsec.type =
+		obj.importNsecPasswordShow ? "text" : "password";
+	importPasswordConfirmNsec.type =
+		obj.importNsecPasswordShow ? "text" : "password";
 }
 
 function

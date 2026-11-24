@@ -455,6 +455,7 @@ export class OptionsState
 		this.#optionsObject.generateFormHidden = true;
 		this.#optionsObject.deleteFormHidden = true;
 		this.#optionsObject.importPasswordFormHidden = true;
+		this.#optionsObject.importPasswordFormNsecHidden = true;
 		this.save();
 	}
 
@@ -644,6 +645,12 @@ export class OptionsState
 	setLogsHidden(lh: boolean): void
 	{
 		this.#optionsObject.logsHidden = lh;
+		this.save();
+	}
+
+	setImportNsecPasswordShow(inps: boolean): void
+	{
+		this.#optionsObject.importNsecPasswordShow = inps;
 		this.save();
 	}
 }
