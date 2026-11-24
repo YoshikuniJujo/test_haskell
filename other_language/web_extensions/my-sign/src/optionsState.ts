@@ -198,7 +198,10 @@ export class OptionsState
 		console.log("optionsState.ts: editMode =", this.#optionsObject.editMode);
 		switch(editModeToString(this.#optionsObject.editMode)) {
 			case "Client": this.clientSettingsMode(); break;
-			case "Profile": this.profileSettingsMode(); break;
+			case "Profile": {
+				this.setProfileClientName(ec.name, ec.urlPattern);
+				this.profileSettingsMode(); break;
+			}
 			case "Permission": {
 				this.setPermissionClientName(ec.name, ec.urlPattern);
 				this.permissionSettingsMode(); break;
@@ -704,6 +707,13 @@ export class OptionsState
 	{
 		this.#optionsObject.permissionClientName = nm;
 		this.#optionsObject.permissionClientUrlPattern = pt;
+		this.save();
+	}
+
+	setProfileClientName(nm: string, pt: string): void
+	{
+		this.#optionsObject.profileClientName = nm;
+		this.#optionsObject.profileClientUrlPattern = pt;
 		this.save();
 	}
 }

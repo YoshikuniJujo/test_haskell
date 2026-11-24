@@ -251,6 +251,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					await newClient(s, uuid(c.uuid), c.urlPattern, c.name);
 					// ostt.setEditMode(EditProfileMode);
 					ostt.setClientUuid(uuid(c.uuid));
+					const clnt = await DB.getClientSummaryRaw(ostt.clientUuid());
+					ostt.setProfileClientName(clnt.name, clnt.urlPattern);
 					ostt.profileSettingsMode();
 				} else {
 					const cu = uuid(crypto.randomUUID());
@@ -451,6 +453,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			if (ostt.atLeastOnePermission()) {
 				await loadCommonState(ostt);
+				const clnt = await DB.getClientSummaryRaw(ostt.clientUuid());
+				ostt.setProfileClientName(clnt.name, clnt.urlPattern);
 				ostt.profileSettingsMode();
 			}
 			else ostt.setAtLeastOnePermissionHidden(false);

@@ -1147,12 +1147,12 @@ TODO
 	+ [x] optionsState
 	+ [x] options
 	+ [x] background
-* [ ] Profileの編集領域にクライアント名とURLPatternを表示する
+* [x] Profileの編集領域にクライアント名とURLPatternを表示する
 	+ [x] HTML
-	+ [ ] optionsObject
-	+ [ ] optionsState
-	+ [ ] options
-	+ [ ] background
+	+ [x] optionsObject
+	+ [x] optionsState
+	+ [x] options
+	+ [x] background
 * [ ] TODOを整理・修正する
 * [ ] client, permission, profileの送信をsubmitにする
 * [ ] log用にタブを登録する処理を削除する

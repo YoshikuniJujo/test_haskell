@@ -134,7 +134,10 @@ export type OptionsObject = {
 	urlPatternForDelete: string,
 
 	permissionClientName: string,
-	permissionClientUrlPattern: string
+	permissionClientUrlPattern: string,
+
+	profileClientName: string,
+	profileClientUrlPattern: string
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -252,7 +255,10 @@ export function defaultOptionsObject(): OptionsObject
 		urlPatternForDelete: "",
 
 		permissionClientName: "",
-		permissionClientUrlPattern: ""
+		permissionClientUrlPattern: "",
+
+		profileClientName: "",
+		profileClientUrlPattern: ""
 	};
 }
 

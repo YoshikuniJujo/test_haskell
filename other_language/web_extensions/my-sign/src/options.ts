@@ -239,6 +239,10 @@ const permissionClientName = getElement<HTMLElement>("#permission-client-name");
 const permissionClientUrlPattern =
 	getElement<HTMLElement>("#permission-client-url-pattern");
 
+const profileClientName = getElement<HTMLElement>("#profile-client-name");
+const profileClientUrlPattern =
+	getElement<HTMLElement>("#profile-client-url-pattern");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -919,6 +923,9 @@ loadOptions(obj: OptionsObject)
 
 	permissionClientName.textContent = obj.permissionClientName;
 	permissionClientUrlPattern.textContent = obj.permissionClientUrlPattern;
+
+	profileClientName.textContent = obj.profileClientName;
+	profileClientUrlPattern.textContent = obj.profileClientUrlPattern;
 }
 
 function
