@@ -677,6 +677,12 @@ export class OptionsState
 		this.#optionsObject.importPasswordNsecKeyExistError = ipkee;
 		this.save();
 	}
+
+	setCopyMessageHidden(cmh: boolean): void
+	{
+		this.#optionsObject.copyMessageHidden = cmh;
+		this.save();
+	}
 }
 
 async function

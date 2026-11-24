@@ -125,7 +125,9 @@ export type OptionsObject = {
 	importPasswordShow: boolean,
 	importPasswordError: boolean,
 	importPasswordKeyExistError: boolean,
-	importPasswordNsecKeyExistError: boolean
+	importPasswordNsecKeyExistError: boolean,
+
+	copyMessageHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -234,7 +236,9 @@ export function defaultOptionsObject(): OptionsObject
 		importPasswordError: false,
 		importPasswordKeyExistError: false,
 
-		importPasswordNsecKeyExistError: false
+		importPasswordNsecKeyExistError: false,
+
+		copyMessageHidden: true
 	};
 }
 

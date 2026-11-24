@@ -202,6 +202,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			ostt.setImportPasswordError(false);
 			ostt.setImportPasswordKeyExistError(false);
 			ostt.setImportPasswordNsecKeyExistError(false);
+			ostt.setCopyMessageHidden(true);
 			ostt.save();
 			return ostt.optionsObject();
 		}
@@ -726,6 +727,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log(await browser.runtime.getManifest().optional_permissions);
 			await navigator.clipboard.writeText(encodeSecretKey(acc));
 			DB.setExportedAt(ostt.accountExportPublicKey());
+			ostt.setCopyMessageHidden(false);
+			ostt.accountListMode();
 //			download(exportFileName(acc.saveName, acc.publicKey), encodeSecretKey(acc));
 			return ostt.optionsObject();
 		}

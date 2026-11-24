@@ -229,6 +229,8 @@ const logs = getElement<HTMLElement>("#logs");
 const logClear = getElement<HTMLButtonElement>("#log-clear");
 const showLogs = getElement<HTMLInputElement>("#show-logs");
 
+const copyMessage = getElement<HTMLElement>("#copyMessage");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -898,6 +900,8 @@ loadOptions(obj: OptionsObject)
 	importPasswordKeyExistError.hidden = !obj.importPasswordKeyExistError;
 	importPasswordNsecKeyExistError.hidden =
 		!obj.importPasswordNsecKeyExistError;
+
+	copyMessage.hidden = obj.copyMessageHidden;
 }
 
 function
