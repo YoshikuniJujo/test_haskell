@@ -1153,8 +1153,11 @@ TODO
 	+ [x] optionsState
 	+ [x] options
 	+ [x] background
-* [ ] TODOを整理・修正する
 * [ ] client, permission, profileの送信をsubmitにする
+	+ [x] client
+	+ [ ] permission
+	+ [ ] profile
+* [ ] TODOを整理・修正する
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
 	+ これをするかどうか検討する

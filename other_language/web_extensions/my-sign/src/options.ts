@@ -99,8 +99,6 @@ const currentKeyD = getElement<HTMLSelectElement>("#current-key-d");
 const detailError = getElement<HTMLElement>("#detail-error");
 const urlPatternNotMatchError = getElement<HTMLElement>("#url-pattern-not-match-error");
 
-const clientOk = getElement<HTMLButtonElement>("#send-client");
-
 const deleteClient = getElement<HTMLElement>("#delete-client");
 const applyEditClient = getElement<HTMLButtonElement>("#apply-client");
 const cancelEditClient = getElement<HTMLButtonElement>("#cancel-edit-client");
@@ -308,7 +306,8 @@ openSettingsByClick.addEventListener("change", async () => {
 	loadOptions(obj);
 });
 
-clientOk.addEventListener("click", async () => {
+clientFormDClientSettings.addEventListener("submit", async (e) => {
+	e.preventDefault();
 	if (!clientFormDClientSettings.reportValidity()) return;
 	sendMethodAndLoadWithKind("clientOk", "ok");
 });
