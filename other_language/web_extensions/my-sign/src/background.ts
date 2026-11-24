@@ -155,6 +155,8 @@ type OptionsMethod =
 	| { class: "Options"; method: "showLogsChanged"; boolean: boolean; }
 	| { class: "Options"; method: "importPasswordNsecShowChanged";
 		boolean: boolean; }
+	| { class: "Options"; method: "importPasswordShowChanged";
+		boolean: boolean; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -785,6 +787,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "importPasswordNsecShowChanged": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.setImportNsecPasswordShow(m.boolean);
+			return ostt.optionsObject();
+		}
+
+		case "importPasswordShowChanged": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.setImportPasswordShow(m.boolean);
 			return ostt.optionsObject();
 		}
 	}

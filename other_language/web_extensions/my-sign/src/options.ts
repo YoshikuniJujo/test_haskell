@@ -211,6 +211,7 @@ const deleteOk = getElement<HTMLButtonElement>("#delete-ok");
 
 const importPasswordForm = getElement<HTMLElement>("#import-password-form");
 const importPassword = getElement<HTMLInputElement>("#import-password");
+const importPasswordShow = getElement<HTMLInputElement>("#import-password-show");
 const importPasswordOk = getElement<HTMLButtonElement>("#import-password-ok");
 
 const importPasswordFormNsec = getElement<HTMLElement>("#import-password-form-nsec");
@@ -598,6 +599,11 @@ deleteOk.addEventListener("click", () => {
 	sendMethodAndLoad("deleteOkClicked");
 });
 
+importPasswordShow.addEventListener("change", () => {
+	sendMethodAndLoadWithBoolean(
+		"importPasswordShowChanged", importPasswordShow.checked );
+});
+
 importPasswordForm.addEventListener("submit", event => {
 	event.preventDefault();
 	const port = browser.runtime.connect();
@@ -863,6 +869,8 @@ loadOptions(obj: OptionsObject)
 		obj.importNsecPasswordShow ? "text" : "password";
 	importPasswordConfirmNsec.type =
 		obj.importNsecPasswordShow ? "text" : "password";
+
+	importPassword.type = obj.importPasswordShow ? "text" : "password";
 }
 
 function

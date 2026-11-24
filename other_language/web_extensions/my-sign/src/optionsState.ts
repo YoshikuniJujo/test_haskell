@@ -653,6 +653,12 @@ export class OptionsState
 		this.#optionsObject.importNsecPasswordShow = inps;
 		this.save();
 	}
+
+	setImportPasswordShow(ips: boolean): void
+	{
+		this.#optionsObject.importPasswordShow = ips;
+		this.save();
+	}
 }
 
 async function
