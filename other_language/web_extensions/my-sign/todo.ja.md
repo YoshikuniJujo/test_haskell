@@ -255,7 +255,6 @@ TODO
 	+ [x] Backup, All Clear, Restoreボタンを作成
 	+ [x] OptionsStateにStorage interfaceを使う
 	+ [x] defaultOptionsObjectを定義する
-* [ ] background.tsからoptions.tsで"browser"のときに接続エラーが出るあたり確認
 * [x] 設定画面の実装の変更(続き, 途中)
 	+ [x] Backupボタンの処理を書く
 		- [x] options.tsからbackground.tsにreadClientListDevを送る
@@ -422,7 +421,7 @@ TODO
 	+ [x] v0 -> v1を関数化する
 	+ [x] v2 -> v3を関数化する
 	+ [x] v3 -> v4を関数化する
-* [ ] Set機能の追加
+* [x] Set機能の追加
 	+ [x] DBの修正
 		- [x] clientテーブルをclientとsetClientテーブルとに分ける
 			* [x] clientsテーブルの名前をsetClientsテーブルに変更する
@@ -508,23 +507,13 @@ TODO
 	+ [x] contentTabsをbrowser.storage.sessionにバックアップ、リストア
 		- [x] storage.sessionを使う
 		- [x] 排他制御
-	+ [ ] クライアントリストで現在のセットで使われていないものを薄字にする
-	+ [ ] DBから不要な項目を削除
 		- [x] setClientテーブルから名前とURLPatternを削除する
-		- [ ] その他
 	+ [x] setを使用する場合にはaccount表示領域のクリックでそれを開く
 * [x] priorityをsetClientsテーブルからclientsテーブルに移動する
 	+ [x] priorityをclientsテーブルにコピーする
 	+ [x] priorityがコピーされていることを確認する
 	+ [x] priorityについてclientsテーブルを参照するようにする
 	+ [x] setClientsテーブルからpriorityを消す
-* [ ] UUIDのOptionsページの仕様を修正する
-	+ [x] UUIDと「URLのセット」の辞書を作る
-	+ [ ] 関数removeOptionsSourceTab(tabId)を作る
-	+ [ ] background.tsのcase "openSettings"のところをリファクタリングする
-	+ [ ] 既存のクライアント詳細画面を開く処理をif(use set)に対するelseのところに入れる
-	+ [ ] UUIDで設定画面を開いたらそれに追加する
-	+ [ ] applyの時に、全部のURLをマッチさせられることを確認する
 * [x] checkUrlPatternあたりを整理する
 	+ [x] チェックをbackground.ts側にうつす
 		- [x] checkUrlPatternを関数化する
@@ -580,7 +569,6 @@ TODO
 	+ [x] optionsObject
 	+ [x] optionsSettings
 * [x] ラジオボタンによりクリックの意味を変える
-* [ ] clientsテーブルとset-clientsテーブルの要素を確認する
 * [x] 「権限テーブル」機能の追加の第一歩目としてクライアントの作成と編集を分離させる
 * [x] 設定項目をClient, Account, Client Profileの3項目に分ける
 * [x] 「クライアンのprofileが存在しなかった場合」の処理を書く
@@ -756,7 +744,7 @@ TODO
 	+ queueMicrotaskではNG
 	+ setTimeout(..., 0)はOK
 * [x] アカウント表示領域の文字の透過度を背景の透過度に合わせる
-* [ ] ncryptsecのエクスポート
+* [x] ncryptsecのエクスポート
 	+ [x] 今のAccount領域にNew Accountボタンを追加する
 	+ [x] 今初めから出ている画面をそのボタンで開くようにする
 		- [x] optionsObjectにgenerateFormHiddenを追加する
@@ -856,21 +844,16 @@ TODO
 			* [x] options
 			* [x] background
 		- [x] Cancelでアカウント一覧にもどる
-	+ [ ] Exoprt確認画面でOKを押すとダウンロードする
+	+ [x] Exoprt確認画面でOKを押すとダウンロードする
 		- [x] nameとpkを分ける
 		- [x] filenameを作る関数を作る
 		- [x] download権限を追加
 		- [x] ncryptsecの中身の文字列を作成
 		- [x] ダウンロード(ファイル名は[名前][下線][10文字][下線][6文字].ncryptsecか)
 		- [x] ダウンロードの完了か中断を待ち解放する
-		- [ ] account listにもどす
-	+ [ ] completeになったところでDBにExportの時間を保存する
-		- [ ] completeを確認
-		- [ ] DBにダウンロードの日時を追加
-	+ [ ] クリップボードにエクスポートする
+		- [x] account listにもどす
+	+ [x] クリップボードにエクスポートする
 		- [x] クリップボードへの書き込み
-		- [ ] 成功時にメッセージを出す
-		- [ ] 失敗時にメッセージを出す
 * [x] TODOを修正する
 * [x] アカウント名に保存名を追加する
 	+ [x] 表示名からアカウント名を計算する関数を書く
@@ -942,7 +925,7 @@ TODO
 		- [x] generateの時に保存
 		- [x] renameの時に読み出し
 		- [x] renameの時に保存
-* [ ] ncryptsecのImport機能
+* [x] ncryptsecのImport機能
 	+ [x] 仕様を考える
 	+ [x] HTML
 		- [x] 最小限だけ作成
@@ -957,7 +940,7 @@ TODO
 			* [x] options
 			* [x] background
 	+ [x] ImportボタンでImport領域に画面遷移するようにする
-	+ [ ] Import領域を作成
+	+ [x] Import領域を作成
 		- [x] HTML
 			* [x] ncryptsec, nsecの入力エリアを作成
 		- [x] optionsObject
@@ -971,22 +954,21 @@ TODO
 				+ [x] loadOptions
 		- [x] background
 			* [x] 名前
-		- [ ] secret input area
 	+ [x] ncryptsecの表示領域について表示・非表示の切り替え
 		- [x] HTMLにチェックボックスを作る
 		- [x] optionsObject
 		- [x] optionsState
 		- [x] options
 		- [x] background
-	+ [ ] Importボタン
+	+ [x] Importボタン
 		- [x] HTML
-		- [ ] Uint8Arrayへのcopy、空文字列で上書き
-			* [ ] Bech32 decodeする
-			* [ ] 一度console.logする
-		- [ ] backgroundに送信
-			* [ ] portを接続
-			* [ ] 鍵の送信
-			* [ ] console.logを消す
+		- [x] Uint8Arrayへのcopy、空文字列で上書き
+			* [x] Bech32 decodeする
+			* [x] 一度console.logする
+		- [x] backgroundに送信
+			* [x] portを接続
+			* [x] 鍵の送信
+			* [x] console.logを消す
 		- [x] backgroundでの処理
 	+ [x] パスワード入力タブを開く
 		- [x] InputTabsを使う
@@ -994,22 +976,22 @@ TODO
 			* ncryptsecやnsecから計算したハッシュ値あたりが良さそう
 			* SHA-256でハッシュ化して、それを文字列化する感じか
 	+ [x] パスワード入力タブでパスワードを正規化しUint8Arrayとしてコピー
-	+ [ ] パスワードの文字列を空文字列で上書きする
-	+ [ ] portの接続
+	+ [x] パスワードの文字列を空文字列で上書きする
+	+ [x] portの接続
 	+ [x] 鍵の送信
-	+ [ ] パスワードのUint8Arrayを0クリア(入力用タブ) - finallyで
+	+ [x] パスワードのUint8Arrayを0クリア(入力用タブ) - finallyで
 	+ [x] 鍵からEncryptedSecretKeyの生成
 		- [x] 必要な情報を取り出す
 		- [x] 復号する
 		- [x] 秘密鍵から公開鍵を計算する
-		- [ ] 秘密鍵を0クリアする
+		- [x] 秘密鍵を0クリアする
 		- [x] パスワード検証用のsaltとhashを計算する
 			* !!!saltは新しくランダム生成すること!!!
-		- [ ] パスワードのUint8Arrayを0クリア(background) - finallyで
+		- [x] パスワードのUint8Arrayを0クリア(background) - finallyで
 		- [x] EncryptedSecretKeyを作成する
 	+ [x] DBへの保存
-* [ ] ncryptsecからのimportの新しい仕様
-	+ [ ] formを作成
+* [x] ncryptsecからのimportの新しい仕様
+	+ [x] formを作成
 		- [x] HTML
 		- [x] hiddenについて
 			* [x] optionsObject
@@ -1018,17 +1000,16 @@ TODO
 			* [x] background
 		- [x] パスワード入力欄
 			* [x] options
-		- [ ] パスワード送信ボタン
+		- [x] パスワード送信ボタン
 			* [x] backgroundにメッセージを送信 (やめた)
 			* [x] backgroundとportをつなぐ
 			* [x] ncryptsecをUint8Arrayに正規化
 				- secretKeyImport.value
 			* [x] パスワードをUint8Arrayに正規化
-			* [ ] 空文字列で両者を上書き
+			* [x] 空文字列で両者を上書き
 			* [x] ncryptsecとパスワードとをUint8Arrayの形で返す
 			* [x] backgroundで続きの処理をする
-* [ ] Export機能に追加
-	+ [ ] Exportの成功・失敗時にメッセージを表示
+* [x] Export機能に追加
 	+ [x] Export時にその時間を登録
 * [x] Delete機能
 	+ [x] deleteラジオボタンを試す
@@ -1143,8 +1124,23 @@ TODO
 		- [x] background
 			* [x] エラー表示
 			* [x] エラー表示の消去
-* [ ] 一通り機能を試してみてTODOを書き出す
 * [ ] TODOを整理・修正する
+* [ ] UUIDのOptionsページの仕様を修正する
+	+ [x] UUIDと「URLのセット」の辞書を作る
+	+ [ ] 関数removeOptionsSourceTab(tabId)を作る
+	+ [ ] background.tsのcase "openSettings"のところをリファクタリングする
+	+ [ ] 既存のクライアント詳細画面を開く処理をif(use set)に対するelseのところに入れる
+	+ [ ] UUIDで設定画面を開いたらそれに追加する
+	+ [ ] applyの時に、全部のURLをマッチさせられることを確認する
+* [ ] クライアントリストで現在のセットで使われていないものを薄字にする
+* [ ] DBから不要な項目を削除
+* [ ] クリップボードにエクスポートする
+	+ [x] クリップボードへの書き込み
+	+ [ ] 成功時にメッセージを出す
+	+ [ ] 失敗時にメッセージを出す
+* [ ] clientsテーブルとset-clientsテーブルの要素を確認する
+* [ ] background.tsからoptions.tsで"browser"のときに接続エラーが出るあたり確認
+* [ ] 一通り機能を試してみてTODOを書き出す
 * [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] ncryptsecのインポート
@@ -1191,7 +1187,6 @@ TODO
 	+ [ ] classがundefinedではない場合には、classの名前によってswitchして、それぞれの関数を呼ぶ
 * [ ] ログ表示機能を設定画面に追加する(続き)
 	+ [ ] ログ表示領域をチェックボタンでon/offできるようにする
-	+ [ ] 7日でログは消すようにする
 	+ [ ] ユーザーがログを消せるようにする
 * [ ] パスワード入力用タブの異常系のテストのために/others/try-sign.htmlを修正する
 	+ [ ] ボタンを押すとイベントに署名するようにする

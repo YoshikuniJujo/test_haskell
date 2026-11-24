@@ -576,10 +576,12 @@ importForm.addEventListener("submit", event => {
 	const port = browser.runtime.connect();
 	console.log("options.ts: IMPORT FORM: port =", port);
 	const sk = Bech32.decode(secretKeyImport.value);
-	// FOR DEBUG. REMOVE IT!!
-	console.log("options.ts: IMPORT FORM: pwd =", sk);
-//	sendMethodAndLoadWithValueObject("importFormSubmitted", sk);
-	port.postMessage({ method: "import", secretKey: sk });
+	secretKeyImport.value = "";
+	try {
+		port.postMessage({ method: "import", secretKey: sk }); }
+	finally {
+		sk.dp.fill(0);
+	}
 });
 
 /*
@@ -593,7 +595,13 @@ importButtonImportNew.addEventListener("click", () => {
 	console.log("optionnnnns.ts: IMPORT BUTTON NEW");
 	const port = browser.runtime.connect();
 	const sk = Bech32.decode(secretKeyImport.value);
-	port.postMessage({ method: "importNew", secretKey: sk });
+	secretKeyImport.value = "";
+	try {
+		port.postMessage({ method: "importNew", secretKey: sk });
+	}
+	finally {
+		sk.dp.fill(0);
+	}
 });
 
 deleteCancel.addEventListener("click", () => {
@@ -613,11 +621,16 @@ importPasswordForm.addEventListener("submit", event => {
 	event.preventDefault();
 	const port = browser.runtime.connect();
 	const sk = Bech32.decode(secretKeyImport.value);
+	secretKeyImport.value = "";
 	const pwd = encodePassword(importPassword.value);
-	port.postMessage({
-		method: "importPassword",
-		secretKey: sk,
-		password: pwd });
+	importPassword.value = "";
+	try {
+		port.postMessage({
+			method: "importPassword",
+			secretKey: sk,
+			password: pwd }); }
+	finally {
+		sk.dp.fill(0); pwd.fill(0); }
 	// sendMethodAndLoad("importPasswordOkClicked");
 });
 
@@ -648,13 +661,18 @@ importPasswordFormNsec.addEventListener("submit", ev => {
 		importPasswordConfirmNsec.setCustomValidity("Password do not match.");
 		importPasswordConfirmNsec.reportValidity(); return; }
 	const sk = Bech32.decode(secretKeyImport.value);
+	secretKeyImport.value = "";
 	const pwd = new TextEncoder().encode(importPasswordNsec.value.normalize("NFKC"));
+	importPasswordNsec.value = "";
 	console.log("options.ts: IMPORT PASSWORD FORM NSEC: SUBMIT:", sk, pwd)
-	const port = browser.runtime.connect();
-	port.postMessage({
-		method: "importPasswordNsec",
-		secretKey: sk,
-		password: pwd });
+	try {
+		const port = browser.runtime.connect();
+		port.postMessage({
+			method: "importPasswordNsec",
+			secretKey: sk,
+			password: pwd }); }
+	finally {
+		sk.dp.fill(0); pwd.fill(0); }
 });
 
 logClear.addEventListener("click", () => {
