@@ -163,6 +163,16 @@ const nostr = {
 	{
 		return new window.Promise(async (rs, rj) => {
 			try {
+
+				const url = location.href;
+				await new Promise((rs, rj) => {
+					addToArrayMap(
+						waitingForClient, url,
+						{ resolve: rs, reject: rj } );
+					browser.runtime.sendMessage({
+						method: "prepareClient", clientUrl: url });
+				});
+
 				const pbk = await browser.runtime.sendMessage({
 					method: "publicKey", kind: "sign"
 				});
