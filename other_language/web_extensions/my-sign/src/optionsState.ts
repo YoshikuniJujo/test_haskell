@@ -683,6 +683,12 @@ export class OptionsState
 		this.#optionsObject.copyMessageHidden = cmh;
 		this.save();
 	}
+
+	setCopyErrorMessageHidden(cemh: boolean): void
+	{
+		this.#optionsObject.copyErrorMessageHidden = cemh;
+		this.save();
+	}
 }
 
 async function

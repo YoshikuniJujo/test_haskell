@@ -209,3 +209,7 @@ label {
 #copyMessage {
 	color: #0c0;
 }
+
+#copyErrorMessage {
+	color: #c00;
+}

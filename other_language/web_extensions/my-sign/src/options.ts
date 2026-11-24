@@ -230,6 +230,7 @@ const logClear = getElement<HTMLButtonElement>("#log-clear");
 const showLogs = getElement<HTMLInputElement>("#show-logs");
 
 const copyMessage = getElement<HTMLElement>("#copyMessage");
+const copyErrorMessage = getElement<HTMLElement>("#copyErrorMessage");
 
 // ------------------------------------------------------------------------
 // INITIALIZATION
@@ -902,6 +903,7 @@ loadOptions(obj: OptionsObject)
 		!obj.importPasswordNsecKeyExistError;
 
 	copyMessage.hidden = obj.copyMessageHidden;
+	copyErrorMessage.hidden = obj.copyErrorMessageHidden;
 }
 
 function
