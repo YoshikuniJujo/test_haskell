@@ -1158,6 +1158,17 @@ TODO
 	+ [x] permission
 	+ [x] profile
 * [ ] 設定画面にCloseを実装する
+	+ [ ] hidden関連
+		- [x] HTML
+		- [ ] CSSで右寄せにする
+		- [ ] optionsObject
+		- [ ] optionsState
+		- [ ] options
+		- [ ] background
+	* [ ] 処理
+		- [ ] optionsからbackgroundにメッセージ
+		- [ ] optionsStateのエントリを消す
+		- [ ] タブを閉じる
 * [ ] TODOを整理・修正する
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
