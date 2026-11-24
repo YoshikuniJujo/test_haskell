@@ -331,7 +331,8 @@ revert.addEventListener("click", () => {
 permissionSettingsExit.addEventListener("click", () => {
 	sendMethodAndLoad("clientListMode"); });
 
-permissionSettingsNext.addEventListener("click", () => {
+permissionSettingsField.addEventListener("submit", e => {
+	e.preventDefault();
 	sendMethodAndLoad("permissionSettingsNext"); });
 
 document.addEventListener("keydown", event => {

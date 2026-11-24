@@ -1155,7 +1155,7 @@ TODO
 	+ [x] background
 * [ ] client, permission, profileの送信をsubmitにする
 	+ [x] client
-	+ [ ] permission
+	+ [x] permission
 	+ [ ] profile
 * [ ] TODOを整理・修正する
 * [ ] log用にタブを登録する処理を削除する
