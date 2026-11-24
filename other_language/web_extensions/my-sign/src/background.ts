@@ -383,7 +383,11 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			DB.putClientNoProfile(await ostt.getClient());
 
 			await loadCommonState(ostt);
-			if (m.kind === "ok") ostt.permissionSettingsMode();
+			if (m.kind === "ok") {
+				const clnt = await DB.getClientSummaryRaw(ostt.clientUuid());
+				ostt.setPermissionClientName(clnt.name, clnt.urlPattern);
+				ostt.permissionSettingsMode();
+			}
 			return ostt.optionsObject();
 		}
 		case "deleteClient": {

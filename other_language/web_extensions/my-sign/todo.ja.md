@@ -1141,12 +1141,12 @@ TODO
 * [x] signEventでも設定画面を開くようにする
 	+ [x] テストページの作成
 	+ [x] 実装
-* [ ] Permissionの編集領域にクライアント名とURLPatternを表示する
+* [x] Permissionの編集領域にクライアント名とURLPatternを表示する
 	+ [x] HTML
-	+ [ ] optionsObject
-	+ [ ] optionsState
-	+ [ ] options
-	+ [ ] background
+	+ [x] optionsObject
+	+ [x] optionsState
+	+ [x] options
+	+ [x] background
 * [ ] Profileの編集領域にクライアント名とURLPatternを表示する
 * [ ] TODOを整理・修正する
 * [ ] client, permission, profileの送信をsubmitにする

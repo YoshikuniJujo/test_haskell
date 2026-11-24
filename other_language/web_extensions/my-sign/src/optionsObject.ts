@@ -131,7 +131,10 @@ export type OptionsObject = {
 	copyErrorMessageHidden: boolean,
 
 	nameForDelete: string,
-	urlPatternForDelete: string
+	urlPatternForDelete: string,
+
+	permissionClientName: string,
+	permissionClientUrlPattern: string
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -246,7 +249,10 @@ export function defaultOptionsObject(): OptionsObject
 		copyErrorMessageHidden: true,
 
 		nameForDelete: "",
-		urlPatternForDelete: ""
+		urlPatternForDelete: "",
+
+		permissionClientName: "",
+		permissionClientUrlPattern: ""
 	};
 }
 

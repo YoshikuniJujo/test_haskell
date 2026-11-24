@@ -199,7 +199,10 @@ export class OptionsState
 		switch(editModeToString(this.#optionsObject.editMode)) {
 			case "Client": this.clientSettingsMode(); break;
 			case "Profile": this.profileSettingsMode(); break;
-			case "Permission": this.permissionSettingsMode(); break;
+			case "Permission": {
+				this.setPermissionClientName(ec.name, ec.urlPattern);
+				this.permissionSettingsMode(); break;
+			}
 			default: throw new Error("never occur"); break;
 		}
 
@@ -694,6 +697,13 @@ export class OptionsState
 	{
 		this.#optionsObject.nameForDelete = nm;
 		this.#optionsObject.urlPatternForDelete = pt;
+		this.save();
+	}
+
+	setPermissionClientName(nm: string, pt: string): void
+	{
+		this.#optionsObject.permissionClientName = nm;
+		this.#optionsObject.permissionClientUrlPattern = pt;
 		this.save();
 	}
 }

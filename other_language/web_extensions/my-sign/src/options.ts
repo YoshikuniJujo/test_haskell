@@ -235,6 +235,10 @@ const copyErrorMessage = getElement<HTMLElement>("#copyErrorMessage");
 const nameForDelete = getElement<HTMLElement>("#name-for-delete");
 const urlPatternForDelete = getElement<HTMLElement>("#url-pattern-for-delete");
 
+const permissionClientName = getElement<HTMLElement>("#permission-client-name");
+const permissionClientUrlPattern =
+	getElement<HTMLElement>("#permission-client-url-pattern");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -912,6 +916,9 @@ loadOptions(obj: OptionsObject)
 
 	nameForDelete.textContent = obj.nameForDelete;
 	urlPatternForDelete.textContent = obj.urlPatternForDelete;
+
+	permissionClientName.textContent = obj.permissionClientName;
+	permissionClientUrlPattern.textContent = obj.permissionClientUrlPattern;
 }
 
 function
