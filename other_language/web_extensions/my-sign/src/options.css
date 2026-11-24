@@ -213,3 +213,7 @@ label {
 #copyErrorMessage {
 	color: #c00;
 }
+
+#delete-client-confirmation p {
+	margin: 8px 0;
+}

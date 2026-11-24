@@ -232,6 +232,9 @@ const showLogs = getElement<HTMLInputElement>("#show-logs");
 const copyMessage = getElement<HTMLElement>("#copyMessage");
 const copyErrorMessage = getElement<HTMLElement>("#copyErrorMessage");
 
+const nameForDelete = getElement<HTMLElement>("#name-for-delete");
+const urlPatternForDelete = getElement<HTMLElement>("#url-pattern-for-delete");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -906,6 +909,9 @@ loadOptions(obj: OptionsObject)
 
 	copyMessage.hidden = obj.copyMessageHidden;
 	copyErrorMessage.hidden = obj.copyErrorMessageHidden;
+
+	nameForDelete.textContent = obj.nameForDelete;
+	urlPatternForDelete.textContent = obj.urlPatternForDelete;
 }
 
 function

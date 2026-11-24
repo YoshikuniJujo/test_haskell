@@ -689,6 +689,13 @@ export class OptionsState
 		this.#optionsObject.copyErrorMessageHidden = cemh;
 		this.save();
 	}
+
+	setNameForDelete(nm: string, pt: string): void
+	{
+		this.#optionsObject.nameForDelete = nm;
+		this.#optionsObject.urlPatternForDelete = pt;
+		this.save();
+	}
 }
 
 async function

@@ -128,7 +128,10 @@ export type OptionsObject = {
 	importPasswordNsecKeyExistError: boolean,
 
 	copyMessageHidden: boolean,
-	copyErrorMessageHidden: boolean
+	copyErrorMessageHidden: boolean,
+
+	nameForDelete: string,
+	urlPatternForDelete: string
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -240,7 +243,10 @@ export function defaultOptionsObject(): OptionsObject
 		importPasswordNsecKeyExistError: false,
 
 		copyMessageHidden: true,
-		copyErrorMessageHidden: true
+		copyErrorMessageHidden: true,
+
+		nameForDelete: "",
+		urlPatternForDelete: ""
 	};
 }
 

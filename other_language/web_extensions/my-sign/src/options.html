@@ -55,7 +55,6 @@
 		<button id="new-client">New client</button>
 
 		<div id="client-detail" hidden>
-			CLIENT DETAIL
 			<form id="client-form-d-client-settings">
 				<div id="client-settings">
 					<label>
@@ -89,8 +88,10 @@
 
 				<div id="delete-client-confirmation" hidden>
 					<p>Are you sure you want to delete this client?</p>
+					<p>Name: <span id="name-for-delete"></span></p>
+					<p>URLPattern: <span id="url-pattern-for-delete"></span></p>
 					<button type="button" id="client-delete-cancel">Cancel</button>
-					<button type="button" id="client-delete-ok">OK</button>
+					<button type="button" id="client-delete-ok">Delete</button>
 				</div>
 			</form>
 

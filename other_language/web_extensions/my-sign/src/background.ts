@@ -390,6 +390,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: deleteClient:", m);
 			const ostt = await optionsStateFromSender(s);
 
+			const clnt = await DB.getClientSummaryRaw(ostt.clientUuid());
+			ostt.setNameForDelete(clnt.name, clnt.urlPattern);
+
 			ostt.deleteClientConfirmationMode();
 
 			return ostt.optionsObject(); }
