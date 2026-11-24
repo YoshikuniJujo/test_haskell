@@ -1153,10 +1153,11 @@ TODO
 	+ [x] optionsState
 	+ [x] options
 	+ [x] background
-* [ ] client, permission, profileの送信をsubmitにする
+* [x] client, permission, profileの送信をsubmitにする
 	+ [x] client
 	+ [x] permission
-	+ [ ] profile
+	+ [x] profile
+* [ ] 設定画面にCloseを実装する
 * [ ] TODOを整理・修正する
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
@@ -1228,4 +1229,3 @@ TODO
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] Delete機能の新実装 (続き)
 	+ [ ] Set機能を使っているかどうかでユーザーへのメッセージを変化させる
-* [ ] 設定画面にCloseを実装する
