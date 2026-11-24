@@ -1128,20 +1128,8 @@ TODO
 	+ [x] クリップボードへの書き込み
 	+ [x] 成功時にメッセージを出す
 	+ [x] 失敗時にメッセージを出す
+* [x] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] TODOを整理・修正する
-* [ ] UUIDのOptionsページの仕様を修正する
-	+ [x] UUIDと「URLのセット」の辞書を作る
-	+ [ ] 関数removeOptionsSourceTab(tabId)を作る
-	+ [ ] background.tsのcase "openSettings"のところをリファクタリングする
-	+ [ ] 既存のクライアント詳細画面を開く処理をif(use set)に対するelseのところに入れる
-	+ [ ] UUIDで設定画面を開いたらそれに追加する
-	+ [ ] applyの時に、全部のURLをマッチさせられることを確認する
-* [ ] クライアントリストで現在のセットで使われていないものを薄字にする
-* [ ] DBから不要な項目を削除
-* [ ] clientsテーブルとset-clientsテーブルの要素を確認する
-* [ ] background.tsからoptions.tsで"browser"のときに接続エラーが出るあたり確認
-* [ ] 一通り機能を試してみてTODOを書き出す
-* [ ] npubの表示を&lt;span title=...&gt;で全体を表示する
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] ncryptsecのインポート
 * [ ] nsecのインポート
@@ -1215,3 +1203,14 @@ TODO
 * [ ] ncryptsecの暗号化や復号が正しいかどうかを第三者のコードで確認
 * [ ] signのほうでもクライアントやプロファイルが存在しなかったときにOptionsを呼び出す
 * [ ] デフォルト色を設定可能にする
+* [ ] UUIDのOptionsページの仕様を修正する
+	+ [x] UUIDと「URLのセット」の辞書を作る
+	+ [ ] 関数removeOptionsSourceTab(tabId)を作る
+	+ [ ] background.tsのcase "openSettings"のところをリファクタリングする
+	+ [ ] 既存のクライアント詳細画面を開く処理をif(use set)に対するelseのところに入れる
+	+ [ ] UUIDで設定画面を開いたらそれに追加する
+	+ [ ] applyの時に、全部のURLをマッチさせられることを確認する
+* [ ] クライアントリストで現在のセットで使われていないものを薄字にする
+* [ ] DBから不要な項目を削除
+* [ ] clientsテーブルとset-clientsテーブルの要素を確認する
+* [ ] 一通り機能を試してみてTODOを書き出す

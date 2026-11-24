@@ -790,7 +790,8 @@ loadOptions(obj: OptionsObject)
 		accountName.className = "account-name";
 		accountName.textContent = publicKeyToString(
 			fromHex(pk), accnm );
-		accountName.title = accountName.textContent;
+		accountName.title = publicKeyToStringFull(fromHex(pk), accnm);
+//		accountName.title = accountName.textContent;
 		row.append(accountName);
 			/*
 		row.textContent = publicKeyToString(
@@ -836,6 +837,7 @@ loadOptions(obj: OptionsObject)
 	for (const acc of obj.accountList) {
 		const row = document.createElement("button");
 		row.textContent = publicKeyToString(acc.publicKey, acc.name); // Bech32.encode("npub", acc.publicKey);
+		row.title = publicKeyToStringFull(acc.publicKey, acc.name);
 		row.className = "account";
 		row.addEventListener("click", async () => {
 			console.log("CLICKED:", acc);
@@ -1028,6 +1030,7 @@ loadPublicKeyFrom(pkos: PublicKeyOption[])
 
 		const npub = Bech32.encode("npub", fromHex(pk.publicKey));
 		option.textContent = publicKeyToString(fromHex(pk.publicKey), pk.name);
+		option.title = publicKeyToStringFull(fromHex(pk.publicKey), pk.name);
 		currentKeyD.append(option);
 	}
 }
@@ -1037,6 +1040,13 @@ publicKeyToString(pk: Uint8Array, nm: string): string
 {
 	const npub = Bech32.encode("npub", pk);
 	return nm + " " + npub.slice(0, 21) + "..." + npub.slice(-6);
+}
+
+function
+publicKeyToStringFull(pk: Uint8Array, nm: string): string
+{
+	const npub = Bech32.encode("npub", pk);
+	return nm + " " + npub;
 }
 
 function
