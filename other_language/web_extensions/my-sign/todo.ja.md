@@ -1160,7 +1160,7 @@ TODO
 * [ ] 設定画面にCloseを実装する
 	+ [ ] hidden関連
 		- [x] HTML
-		- [ ] CSSで右寄せにする
+		- [x] CSSで右寄せにする
 		- [ ] optionsObject
 		- [ ] optionsState
 		- [ ] options
