@@ -241,6 +241,8 @@ const profileClientName = getElement<HTMLElement>("#profile-client-name");
 const profileClientUrlPattern =
 	getElement<HTMLElement>("#profile-client-url-pattern");
 
+const optionsCloseButton = getElement<HTMLButtonElement>("#options-close");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -926,6 +928,8 @@ loadOptions(obj: OptionsObject)
 
 	profileClientName.textContent = obj.profileClientName;
 	profileClientUrlPattern.textContent = obj.profileClientUrlPattern;
+
+	optionsCloseButton.hidden = obj.optionsCloseButtonHidden;
 }
 
 function

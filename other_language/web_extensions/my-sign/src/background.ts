@@ -284,6 +284,10 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			if (cs === undefined) throw new Error("warui2");
 			ostt.setCurrentSetUuid(cs);
 
+			console.log("background.ts: BEFORE SHOW CLOSE BUTTON:", tg.openType);
+			if (["tab", "uuid", "set"].includes(tg.openType))
+				ostt.setOptionsCloseButtonHidden(false);
+
 			ostt.save();
 			return ostt.optionsObject(); }
 		case "openClientDetail": {

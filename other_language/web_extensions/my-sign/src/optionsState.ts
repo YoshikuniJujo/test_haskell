@@ -716,6 +716,12 @@ export class OptionsState
 		this.#optionsObject.profileClientUrlPattern = pt;
 		this.save();
 	}
+
+	setOptionsCloseButtonHidden(ocbh: boolean): void
+	{
+		this.#optionsObject.optionsCloseButtonHidden = ocbh;
+		this.save();
+	}
 }
 
 async function

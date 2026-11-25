@@ -1158,13 +1158,13 @@ TODO
 	+ [x] permission
 	+ [x] profile
 * [ ] 設定画面にCloseを実装する
-	+ [ ] hidden関連
+	+ [x] hidden関連
 		- [x] HTML
 		- [x] CSSで右寄せにする
-		- [ ] optionsObject
-		- [ ] optionsState
-		- [ ] options
-		- [ ] background
+		- [x] optionsObject
+		- [x] optionsState
+		- [x] options
+		- [x] background
 	* [ ] 処理
 		- [ ] optionsからbackgroundにメッセージ
 		- [ ] optionsStateのエントリを消す

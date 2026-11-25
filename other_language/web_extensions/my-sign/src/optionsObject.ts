@@ -137,7 +137,9 @@ export type OptionsObject = {
 	permissionClientUrlPattern: string,
 
 	profileClientName: string,
-	profileClientUrlPattern: string
+	profileClientUrlPattern: string,
+
+	optionsCloseButtonHidden: boolean
 }
 
 export function defaultOptionsObject(): OptionsObject
@@ -258,7 +260,9 @@ export function defaultOptionsObject(): OptionsObject
 		permissionClientUrlPattern: "",
 
 		profileClientName: "",
-		profileClientUrlPattern: ""
+		profileClientUrlPattern: "",
+
+		optionsCloseButtonHidden: true
 	};
 }
 
