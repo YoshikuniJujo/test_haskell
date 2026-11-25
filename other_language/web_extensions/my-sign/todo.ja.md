@@ -1172,50 +1172,30 @@ TODO
 * [x] optionPageVanishedを修正 -> optionsPageVanished
 * [x] generateしたときにsymmetric keyをキャッシュするようにする
 	+ する必要はないかもしれない
-* [ ] use client setのタイトルとしてClient Setとする
-* [ ] TODOを整理・修正する
-* [ ] 設定画面のタブ管理について確認する(3)
+* [x] use client setのタイトルとしてProfile Setとする
+* [x] 設定画面のタブ管理について確認する(3)
 	+ [x] アカウント表示画面から開いた設定画面(set不使用時)
 		- [x] OKで閉じたら元の画面にもどって、そのタブを消す <- Closeで閉じる
 	+ [x] アカウント表示画面から開いた設定画面(set使用時)
 		- [x] 選択したら元の画面にもどって、そのタブを消す
-	+ [ ] ブラウザの設定画面
-	+ [ ] タブとして開いた設定画面
-	+ [ ] getPublicKeyのリカバリのための設定画面
-* [ ] getPublicKeysWithNamesの再検討、必ずEncryptedSecretKeyインスタンスを介するようにする
-* [ ] フォームの内容をデータベースに書き込む時の検証について考える
-	+ とくにBech32.decode()のところ
-	+ 今のところHTML側でvalidateしてJS側では例外を発生させるので良いと考えている
-* [ ] InputTabsにあるverificationについて存在価値を検討する
-* [ ] 「ブラウザが開いた設定画面であることの確認」をするかしないか検討する
-* [ ] let fooを使っているところを三項演算子で書き直す
-* [ ] クライアントが開かれているときに削除された場合の動作を確認
-* [ ] ncryptsecの暗号化や復号が正しいかどうかを第三者のコードで確認
-* [ ] signのほうでもクライアントやプロファイルが存在しなかったときにOptionsを呼び出す
-* [ ] デフォルト色を設定可能にする
-* [ ] UUIDのOptionsページの仕様を修正する
+	+ [x] ブラウザの設定画面
+	+ [x] タブとして開いた設定画面
+* [x] クライアントが開かれているときに削除された場合の動作を確認
+* [x] signのほうでもクライアントやプロファイルが存在しなかったときにOptionsを呼び出す
+* [x] デフォルト色を設定可能にする <- 必要なさそう
+* [x] UUIDのOptionsページの仕様を修正する <- やめた
 	+ [x] UUIDと「URLのセット」の辞書を作る
-	+ [ ] 関数removeOptionsSourceTab(tabId)を作る
-	+ [ ] background.tsのcase "openSettings"のところをリファクタリングする
-	+ [ ] 既存のクライアント詳細画面を開く処理をif(use set)に対するelseのところに入れる
-	+ [ ] UUIDで設定画面を開いたらそれに追加する
-	+ [ ] applyの時に、全部のURLをマッチさせられることを確認する
-* [ ] クライアントリストで現在のセットで使われていないものを薄字にする
-* [ ] DBから不要な項目を削除
-* [ ] clientsテーブルとset-clientsテーブルの要素を確認する
-* [ ] 一通り機能を試してみてTODOを書き出す
-* [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
-* [ ] Delete機能の新実装 (続き)
-	+ [ ] Set機能を使っているかどうかでユーザーへのメッセージを変化させる
-* [ ] log用にタブを登録する処理を削除する
-* [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
-	+ これをするかどうか検討する
-* [ ] loadCommonStateのdb側とostt側とを、それぞれまとめるか考える
-	+ [ ] DB.getCommonState
-	+ [ ] ostt.setCommonState
-	+ [ ] loadCommonStateはostt.setCommonState(await DB.getCommonState)になる
+	+ [x] 関数removeOptionsSourceTab(tabId)を作る
+	+ [x] background.tsのcase "openSettings"のところをリファクタリングする
+	+ [x] 既存のクライアント詳細画面を開く処理をif(use set)に対するelseのところに入れる
+	+ [x] UUIDで設定画面を開いたらそれに追加する
+	+ [x] applyの時に、全部のURLをマッチさせられることを確認する
+* [x] クライアントリストで現在のセットで使われていないものを薄字にする <- やらない
+* [x] Delete機能の新実装 (続き)
+	+ [x] Set機能を使っているかどうかでユーザーへのメッセージを変化させる <- やらない
+* [ ] TODOを整理・修正する
+* [ ] select set画面からもどるボタンを設計する
 * [ ] backgroundとoptionsの間の通信の設計を考える
-* [ ] options.tsのformのsubmitの部分をきれいにする
 * [ ] 設定画面の実装の変更(続き)
 	+ [x] openTypeやidをoptions.tsから消去する
 	+ [x] 設定画面の同期
@@ -1232,13 +1212,9 @@ TODO
 	+ [ ] メッセージの返答としてOptionsObjectを送る
 	+ [ ] options.tsは設定画面を更新
 	+ [x] options.tsの処理をbackground.tsにうつしていく
-* [ ] Client型のuuidをUUIDにする
 * [ ] logの処理について実装を再度検討する
-* [ ] backgroundの受け取るメッセージをメソッドとして解釈するようにする(続き)
-	+ [ ] classがundefinedではない場合には、classの名前によってswitchして、それぞれの関数を呼ぶ
-* [ ] パスワード入力用タブの異常系のテストのために/others/try-sign.htmlを修正する
-	+ [ ] ボタンを押すとイベントに署名するようにする
-	+ [ ] コンテンツ部分を入力できるようにする
-* [ ] パスワード入力用タブの異常系
-	+ [ ] 同じタブから3回パスワードを送る
-	+ [ ] 異なるタブから3つのアカウントを開く
+* [ ] フォームの内容をデータベースに書き込む時の検証について考える
+	+ とくにBech32.decode()のところ
+	+ 今のところHTML側でvalidateしてJS側では例外を発生させるので良いと考えている
+* [ ] 既に開かれているアカウントを開こうとしたら、開いているタブに飛ぶ感じにする
+* [ ] 一通り機能を試してみてTODOを書き出す
