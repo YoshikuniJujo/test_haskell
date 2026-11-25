@@ -1169,49 +1169,16 @@ TODO
 		- [x] optionsからbackgroundにメッセージ
 		- [x] optionsStateのエントリを消す
 		- [x] タブを閉じる
+* [x] optionPageVanishedを修正 -> optionsPageVanished
+* [x] generateしたときにsymmetric keyをキャッシュするようにする
+	+ する必要はないかもしれない
+* [ ] use client setのタイトルとしてClient Setとする
 * [ ] TODOを整理・修正する
-* [ ] log用にタブを登録する処理を削除する
-* [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
-	+ これをするかどうか検討する
-* [ ] loadCommonStateのdb側とostt側とを、それぞれまとめるか考える
-	+ [ ] DB.getCommonState
-	+ [ ] ostt.setCommonState
-	+ [ ] loadCommonStateはostt.setCommonState(await DB.getCommonState)になる
-* [ ] backgroundとoptionsの間の通信の設計を考える
-* [ ] options.tsのformのsubmitの部分をきれいにする
-* [ ] 設定画面の実装の変更(続き)
-	+ [x] openTypeやidをoptions.tsから消去する
-	+ [x] 設定画面の同期
-	+ [x] OptionsState.tsを作っていく
-	+ [ ] background.ts再起動時のOptionsStateの復元
-	+ [ ] 新しく設定画面を開いたときのIndexedDBからのOptionsStateの生成
-	+ [ ] 設定画面を開き直したときの設定画面の復元
-	+ [ ] 設定画面からOptionsStateへの同期
-	+ [ ] 同期のときにstorage.sessionにバックアップを取る
-	+ [ ] 設定画面を閉じて開くテスト
-	+ [ ] clientをクリックしたときにbackgrount.tsにメッセージを送る
-	+ [ ] background.tsがIndexedDBからクライアント情報を取得
-	+ [ ] クライアント情報でOptionsStateを更新
-	+ [ ] メッセージの返答としてOptionsObjectを送る
-	+ [ ] options.tsは設定画面を更新
-	+ [x] options.tsの処理をbackground.tsにうつしていく
-* [ ] Client型のuuidをUUIDにする
-* [ ] logの処理について実装を再度検討する
-* [ ] optionPageVanishedを修正 -> optionsPageVanished
-* [ ] generateしたときにsymmetric keyをキャッシュするようにする
-* [ ] backgroundの受け取るメッセージをメソッドとして解釈するようにする(続き)
-	+ [ ] classがundefinedではない場合には、classの名前によってswitchして、それぞれの関数を呼ぶ
-* [ ] パスワード入力用タブの異常系のテストのために/others/try-sign.htmlを修正する
-	+ [ ] ボタンを押すとイベントに署名するようにする
-	+ [ ] コンテンツ部分を入力できるようにする
-* [ ] パスワード入力用タブの異常系
-	+ [ ] 同じタブから3回パスワードを送る
-	+ [ ] 異なるタブから3つのアカウントを開く
 * [ ] 設定画面のタブ管理について確認する(3)
-	+ [ ] アカウント表示画面から開いた設定画面(set不使用時)
-		- [ ] OKで閉じたら元の画面にもどって、そのタブを消す
-	+ [ ] アカウント表示画面から開いた設定画面(set使用時)
-		- [ ] 選択したら元の画面にもどって、そのタブを消す
+	+ [x] アカウント表示画面から開いた設定画面(set不使用時)
+		- [x] OKで閉じたら元の画面にもどって、そのタブを消す <- Closeで閉じる
+	+ [x] アカウント表示画面から開いた設定画面(set使用時)
+		- [x] 選択したら元の画面にもどって、そのタブを消す
 	+ [ ] ブラウザの設定画面
 	+ [ ] タブとして開いた設定画面
 	+ [ ] getPublicKeyのリカバリのための設定画面
@@ -1240,3 +1207,38 @@ TODO
 * [ ] optionsStateのsaveについて、ちゃんと動作しているか調べる
 * [ ] Delete機能の新実装 (続き)
 	+ [ ] Set機能を使っているかどうかでユーザーへのメッセージを変化させる
+* [ ] log用にタブを登録する処理を削除する
+* [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする
+	+ これをするかどうか検討する
+* [ ] loadCommonStateのdb側とostt側とを、それぞれまとめるか考える
+	+ [ ] DB.getCommonState
+	+ [ ] ostt.setCommonState
+	+ [ ] loadCommonStateはostt.setCommonState(await DB.getCommonState)になる
+* [ ] backgroundとoptionsの間の通信の設計を考える
+* [ ] options.tsのformのsubmitの部分をきれいにする
+* [ ] 設定画面の実装の変更(続き)
+	+ [x] openTypeやidをoptions.tsから消去する
+	+ [x] 設定画面の同期
+	+ [x] OptionsState.tsを作っていく
+	+ [ ] background.ts再起動時のOptionsStateの復元
+	+ [ ] 新しく設定画面を開いたときのIndexedDBからのOptionsStateの生成
+	+ [ ] 設定画面を開き直したときの設定画面の復元
+	+ [ ] 設定画面からOptionsStateへの同期
+	+ [ ] 同期のときにstorage.sessionにバックアップを取る
+	+ [ ] 設定画面を閉じて開くテスト
+	+ [ ] clientをクリックしたときにbackgrount.tsにメッセージを送る
+	+ [ ] background.tsがIndexedDBからクライアント情報を取得
+	+ [ ] クライアント情報でOptionsStateを更新
+	+ [ ] メッセージの返答としてOptionsObjectを送る
+	+ [ ] options.tsは設定画面を更新
+	+ [x] options.tsの処理をbackground.tsにうつしていく
+* [ ] Client型のuuidをUUIDにする
+* [ ] logの処理について実装を再度検討する
+* [ ] backgroundの受け取るメッセージをメソッドとして解釈するようにする(続き)
+	+ [ ] classがundefinedではない場合には、classの名前によってswitchして、それぞれの関数を呼ぶ
+* [ ] パスワード入力用タブの異常系のテストのために/others/try-sign.htmlを修正する
+	+ [ ] ボタンを押すとイベントに署名するようにする
+	+ [ ] コンテンツ部分を入力できるようにする
+* [ ] パスワード入力用タブの異常系
+	+ [ ] 同じタブから3回パスワードを送る
+	+ [ ] 異なるタブから3つのアカウントを開く

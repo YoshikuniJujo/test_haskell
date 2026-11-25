@@ -1442,9 +1442,9 @@ pgVanished(vt: number)
 	console.log("HERE");
 	for (const d of s.cancelled) for (const s of d.sources) {
 		console.log(s);
-		console.log("background.ts: send optionPageVanished");
+		console.log("background.ts: send optionsPageVanished");
 		await browser.tabs.sendMessage(
-			s, { method: "optionPageVanished", isUrl: isUrl(d.pubKey), clientUrl: d.pubKey });
+			s, { method: "optionsPageVanished", isUrl: isUrl(d.pubKey), clientUrl: d.pubKey });
 	}
 
 	const sc0 = s.cancelled[0]?.sources[0];

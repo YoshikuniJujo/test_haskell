@@ -211,7 +211,7 @@ type Message =
 	| { method: "clientChanged" }
 	| { method: "inputPageVanished", pubKey: string }
 	| { method: "clientReady", clientUrl: string }
-	| { method: "optionPageVanished", isUrl: boolean, clientUrl: string }
+	| { method: "optionsPageVanished", isUrl: boolean, clientUrl: string }
 
 type RequestWaitingForPassword = { resolve: () => void, reject: (err: Error) => void }
 
@@ -265,8 +265,8 @@ browser.runtime.onMessage.addListener(async (m: Message) => { switch (m.method) 
 		forEachValues(waitingForClient,
 			m.clientUrl, (wtr: RequestWaitingForPassword) => wtr.resolve()); break;
 		break;
-	case "optionPageVanished":
-		console.log("content: clientPageVanished");
+	case "optionsPageVanished":
+		console.log("content: optionsPageVanished");
 		console.log(m);
 		if (m.isUrl) {
 			showPopover("My Sign: The options page was closed. Please reload this page to continue.");
