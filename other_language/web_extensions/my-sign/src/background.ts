@@ -631,10 +631,20 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			return ostt.optionsObject();
 		}
 		case "accountClicked": {
-			const ostt = await optionsStateFromSender(s);
-
 			console.log("background.ts: ACCOUNT CLICKED:", m.name, m.publicKey);
 
+			const t0 = findOptionsStateByAccountPublicKey(m.publicKey);
+			console.log("background.ts: ACCOUNT CLICKED: t0 =", t0);
+			const ostt = await optionsStateFromSender(s);
+			if (t0) {
+				const tid0 = await otbs.tab(t0);
+				if (tid0 === null) throw new Error("bad");
+				console.log("background.ts: ACCOUNT CLICKED: tid0 =", tid0);
+				browser.tabs.update(tid0, { active: true });
+				return ostt.optionsObject();
+			}
+
+			ostt.setAccountPublicKey(m.publicKey);
 			const acc = await DB.getAccount(m.publicKey);
 			switch (ostt.accountSettingsRadio()) {
 				case "rename":
@@ -642,7 +652,6 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 					ostt.useSetCustomSaveNameRename(acc.useSaveName);
 					ostt.accountRenameMode();
 					ostt.setAccountRenameName(m.name);
-					ostt.setAccountPublicKey(m.publicKey);
 					ostt.setCustomSaveNameRename(acc.saveName);
 					console.log("background.ts: RENAME:", acc);
 					break;
@@ -1773,4 +1782,26 @@ download(flnm: string, cnt: string): Promise<void>
 		URL.revokeObjectURL(url);
 	}
 	console.log("background.ts: download END");
+}
+
+function
+findOptionsStateByAccountPublicKey(accountPublicKey: Uint8Array): string | undefined
+{
+	const ret = Array.from(optionsStates.entries())
+		.find(([_, ostt]) => {
+			console.log(
+				"background.ts: findOptionsStateByAccountPublicKey:",
+				ostt.accountPublicKey()
+			);
+			return equalBytes(ostt.accountPublicKey(), accountPublicKey);
+		});
+	return ret ? ret[0] : undefined;
+}
+
+function
+equalBytes(a: Uint8Array | null, b: Uint8Array): boolean
+{
+	return a !== null &&
+		a.length === b.length &&
+		a.every((value, i) => value === b[i]);
 }

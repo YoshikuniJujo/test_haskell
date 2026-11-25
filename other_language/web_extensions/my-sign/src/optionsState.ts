@@ -467,6 +467,7 @@ export class OptionsState
 		this.#optionsObject.deleteFormHidden = true;
 		this.#optionsObject.importPasswordFormHidden = true;
 		this.#optionsObject.importPasswordFormNsecHidden = true;
+		this.#optionsObject.accountPublicKey = null;
 		this.save();
 	}
 

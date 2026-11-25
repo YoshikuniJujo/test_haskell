@@ -848,7 +848,7 @@ loadOptions(obj: OptionsObject)
 	accountList.hidden = obj.accountListHidden;
 	generateForm.hidden = obj.generateFormHidden;
 
-	accountListArea.textContent = "HERE YOU ARE!"
+	accountListArea.textContent = ""
 
 	console.log("options.ts: LOAD OPTIONS: accountList =", obj.accountList);
 	for (const acc of obj.accountList) {
