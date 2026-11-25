@@ -1157,7 +1157,7 @@ TODO
 	+ [x] client
 	+ [x] permission
 	+ [x] profile
-* [ ] 設定画面にCloseを実装する
+* [x] 設定画面にCloseを実装する
 	+ [x] hidden関連
 		- [x] HTML
 		- [x] CSSで右寄せにする
@@ -1165,10 +1165,10 @@ TODO
 		- [x] optionsState
 		- [x] options
 		- [x] background
-	* [ ] 処理
-		- [ ] optionsからbackgroundにメッセージ
-		- [ ] optionsStateのエントリを消す
-		- [ ] タブを閉じる
+	* [x] 処理
+		- [x] optionsからbackgroundにメッセージ
+		- [x] optionsStateのエントリを消す
+		- [x] タブを閉じる
 * [ ] TODOを整理・修正する
 * [ ] log用にタブを登録する処理を削除する
 * [ ] options.tsからbackground.tsにパスワードを渡すときにUUIDでチェックする

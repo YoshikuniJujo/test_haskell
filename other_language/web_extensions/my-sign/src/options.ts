@@ -699,6 +699,10 @@ showLogs.addEventListener("change", () => {
 	sendMethodAndLoadWithBoolean("showLogsChanged", showLogs.checked);
 });
 
+optionsCloseButton.addEventListener("click", () => {
+	sendMethod("close");
+});
+
 // ------------------------------------------------------------------------
 // TYPES
 

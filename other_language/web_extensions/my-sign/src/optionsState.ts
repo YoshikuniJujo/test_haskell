@@ -47,6 +47,11 @@ export class OptionsState
 		});
 	}
 
+	async remove()
+	{
+		await browser.storage.session.remove(this.#key);
+	}
+
 	optionsObject(): OptionsObject
 	{
 		return  this.#optionsObject;

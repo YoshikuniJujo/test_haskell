@@ -157,6 +157,7 @@ type OptionsMethod =
 		boolean: boolean; }
 	| { class: "Options"; method: "importPasswordShowChanged";
 		boolean: boolean; }
+	| { class: "Options"; method: "close"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -212,6 +213,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			return ostt.optionsObject(); }
 		case "optionsBegin": {
+			console.log("background.ts: OPTIONS BEGIN!!!");
 			console.log("background.ts: optionsMethod:", m, s);
 			const sts = await DB.getSetList();
 			console.log("background.ts: optionsBegin:", sts);
@@ -227,7 +229,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				tg = optionsTabTag("browser"); }
 			else tg = optionsTabTag(id);
 			let ostt;
+			console.log(
+				"background.ts: OPTIONS BEGIN: tg.id =", tg.id,
+				"id =", id
+			);
 			ostt = optionsStates.get(tg.id);
+			console.log("background.ts: OPTIONS BEGIN: ostt =", ostt);
 			if (ostt) return ostt.optionsObject();
 
 			ostt = new OptionsState(tg);
@@ -235,11 +242,14 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 
 			ostt.setOpenInTabButtonHidden(tg.openType !== "browser");
 
+			console.log("background.ts: OPTIONS BEGIN: HERE HERE HERE HERE");
+
 			await loadCommonState(ostt);
 			const accl = await DB.getPublicKeysWithNames()
 			console.log("background.ts: OPTIONS BEGIN: Accounts:", accl);
 			ostt.setAccountList(accl);
 
+			console.log("background.ts: BEFORE SET TO OPTIONS STATES:", id, ostt);
 			optionsStates.set(id ?? "browser", ostt);
 			ostt.clientSettingsMode();
 			if (tg.openType === "url") {
@@ -822,6 +832,19 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const ostt = await optionsStateFromSender(s);
 			ostt.setImportPasswordShow(m.boolean);
 			return ostt.optionsObject();
+		}
+
+		case "close": {
+			await initializeReady;
+			if (s.tab?.id === undefined) throw new Error("bad");
+			const id = await otbs.key(s.tab.id);
+			if (id == null) throw new Error("bad");
+			const ostt = optionsStates.get(id);
+			if (ostt === undefined) throw new Error("bad");
+			optionsStates.delete(id);
+			ostt.remove();
+			await browser.tabs.remove(s.tab.id);
+			otbs.tabClosed(s.tab.id);
 		}
 	}
 }
