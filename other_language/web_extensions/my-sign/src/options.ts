@@ -243,6 +243,8 @@ const profileClientUrlPattern =
 
 const optionsCloseButton = getElement<HTMLButtonElement>("#options-close");
 
+const toSettings = getElement<HTMLButtonElement>("#to-settings");
+
 // ------------------------------------------------------------------------
 // INITIALIZATION
 
@@ -701,6 +703,10 @@ showLogs.addEventListener("change", () => {
 
 optionsCloseButton.addEventListener("click", () => {
 	sendMethod("close");
+});
+
+toSettings.addEventListener("click", () => {
+	sendMethodAndLoad("toSettings");
 });
 
 // ------------------------------------------------------------------------

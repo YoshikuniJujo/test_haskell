@@ -1196,8 +1196,8 @@ TODO
 * [x] 既に開かれているアカウントを開こうとしたら、開いているタブに飛ぶ感じにする
 	+ [x] public keyでoptions pageを検索する
 	+ [x] 存在したら、そのタブに飛んでreturnする
+* [x] select set画面からもどるボタンを設計する
 * [ ] TODOを整理・修正する
-* [ ] select set画面からもどるボタンを設計する
 * [ ] backgroundとoptionsの間の通信の設計を考える
 * [ ] 設定画面の実装の変更(続き)
 	+ [x] openTypeやidをoptions.tsから消去する

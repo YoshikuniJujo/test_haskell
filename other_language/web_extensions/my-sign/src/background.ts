@@ -158,6 +158,7 @@ type OptionsMethod =
 	| { class: "Options"; method: "importPasswordShowChanged";
 		boolean: boolean; }
 	| { class: "Options"; method: "close"; }
+	| { class: "Options"; method: "toSettings"; }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -859,6 +860,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const { sources: src } = cclld0;
 			if (!src[0]) throw new Error("bad");
 			browser.tabs.update(src[0], { active: true });
+		}
+
+		case "toSettings": {
+			const ostt = await optionsStateFromSender(s);
+			ostt.selectSetMode(false);
+			return ostt.optionsObject();
 		}
 	}
 }
