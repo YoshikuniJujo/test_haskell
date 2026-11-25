@@ -853,7 +853,12 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			optionsStates.delete(id);
 			ostt.remove();
 			await browser.tabs.remove(s.tab.id);
-			otbs.tabClosed(s.tab.id);
+			const { cancelled: cclld } = await otbs.tabClosed(s.tab.id);
+			const cclld0 = cclld[0];
+			if (!cclld0) throw new Error("bad");
+			const { sources: src } = cclld0;
+			if (!src[0]) throw new Error("bad");
+			browser.tabs.update(src[0], { active: true });
 		}
 	}
 }
