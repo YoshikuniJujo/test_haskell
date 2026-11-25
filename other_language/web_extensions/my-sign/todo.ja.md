@@ -1197,26 +1197,21 @@ TODO
 	+ [x] public keyでoptions pageを検索する
 	+ [x] 存在したら、そのタブに飛んでreturnする
 * [x] select set画面からもどるボタンを設計する
-* [ ] TODOを整理・修正する
-* [ ] backgroundとoptionsの間の通信の設計を考える
-* [ ] 設定画面の実装の変更(続き)
+* [x] 設定画面の実装の変更(続き)
 	+ [x] openTypeやidをoptions.tsから消去する
 	+ [x] 設定画面の同期
 	+ [x] OptionsState.tsを作っていく
-	+ [ ] background.ts再起動時のOptionsStateの復元
-	+ [ ] 新しく設定画面を開いたときのIndexedDBからのOptionsStateの生成
-	+ [ ] 設定画面を開き直したときの設定画面の復元
-	+ [ ] 設定画面からOptionsStateへの同期
-	+ [ ] 同期のときにstorage.sessionにバックアップを取る
-	+ [ ] 設定画面を閉じて開くテスト
-	+ [ ] clientをクリックしたときにbackgrount.tsにメッセージを送る
-	+ [ ] background.tsがIndexedDBからクライアント情報を取得
-	+ [ ] クライアント情報でOptionsStateを更新
-	+ [ ] メッセージの返答としてOptionsObjectを送る
-	+ [ ] options.tsは設定画面を更新
+	+ [x] background.ts再起動時のOptionsStateの復元
+	+ [x] 新しく設定画面を開いたときのIndexedDBからのOptionsStateの生成
+	+ [x] 設定画面を開き直したときの設定画面の復元
+	+ [x] 設定画面からOptionsStateへの同期
+	+ [x] 同期のときにstorage.sessionにバックアップを取る
+	+ [x] 設定画面を閉じて開くテスト
+	+ [x] clientをクリックしたときにbackgrount.tsにメッセージを送る
+	+ [x] background.tsがIndexedDBからクライアント情報を取得
+	+ [x] クライアント情報でOptionsStateを更新
+	+ [x] メッセージの返答としてOptionsObjectを送る
+	+ [x] options.tsは設定画面を更新
 	+ [x] options.tsの処理をbackground.tsにうつしていく
-* [ ] logの処理について実装を再度検討する
-* [ ] フォームの内容をデータベースに書き込む時の検証について考える
-	+ とくにBech32.decode()のところ
-	+ 今のところHTML側でvalidateしてJS側では例外を発生させるので良いと考えている
+* [x] TODOを整理・修正する
 * [ ] 一通り機能を試してみてTODOを書き出す
