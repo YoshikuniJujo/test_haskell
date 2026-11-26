@@ -89,7 +89,7 @@ label {
 .account {
 	display: block;
 	font-size: 1.2em;
-	width: 100%;
+	width: auto%;
 	padding: 0;
 	border: 0;
 	background: none;

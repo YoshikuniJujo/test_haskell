@@ -828,6 +828,12 @@ loadOptions(obj: OptionsObject)
 
 	console.log("options.ts: LOAD OPTIONS: accountList =", obj.accountList);
 	for (const acc of obj.accountList) {
+		const div = document.createElement("div");
+		div.style.display = "flex";
+		div.style.alignItems = "center";
+		div.style.justifyContent = "flex-start";
+		div.style.gap = "8px";
+
 		const row = document.createElement("button");
 		row.textContent = publicKeyToString(acc.publicKey, acc.name); // Bech32.encode("npub", acc.publicKey);
 		row.title = publicKeyToStringFull(acc.publicKey, acc.name);
@@ -841,7 +847,15 @@ loadOptions(obj: OptionsObject)
 				publicKey: acc.publicKey });
 			loadOptions(obj);
 		});
-		accountListArea.append(row);
+
+		const logout = document.createElement("button");
+		logout.textContent = "Log OUt";
+		logout.disabled = true;
+		logout.style.whiteSpace = "nowrap";
+
+		div.append(row, logout);
+
+		accountListArea.append(div);
 	}
 
 	const accountRadioSelected = getElement<HTMLInputElement>(
