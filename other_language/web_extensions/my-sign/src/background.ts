@@ -9,7 +9,7 @@ import { addToArrayMap, forEachValues } from "./mapArray.js";
 
 import type {
 	Client, ClientSummary, ClientSummaryRaw, ClientResult, OptionsTabTag,
-	UUID, Err, AccountSettingsRadio } from "./types.js";
+	UUID, Err, AccountSettingsRadio, KeyWithName } from "./types.js";
 
 import { isUrl, findKey, camelToSnake } from "./tools.js";
 import {
@@ -241,9 +241,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: OPTIONS BEGIN: HERE HERE HERE HERE");
 
 			await loadCommonState(ostt);
-			const accl = await DB.getPublicKeysWithNames()
-			console.log("background.ts: OPTIONS BEGIN: Accounts:", accl);
-			ostt.setAccountList(accl);
+
+			await setAccountList(ostt);
 
 			console.log("background.ts: BEFORE SET TO OPTIONS STATES:", id, ostt);
 			optionsStates.set(id ?? "browser", ostt);
@@ -491,9 +490,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			setPermissions(ostt, null);
 			await loadCommonState(ostt);
 
-			const accl = await DB.getPublicKeysWithNames()
-			console.log("background.ts: OPTIONS BEGIN: Accounts:", accl);
-			ostt.setAccountList(accl);
+			await setAccountList(ostt);
 
 			browser.runtime.sendMessage({
 				class: "Options",
@@ -580,9 +577,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			await loadCommonState(ostt);
 			await setPermissions(ostt, null);
 
-			const accl = await DB.getPublicKeysWithNames()
-			console.log("background.ts: OPTIONS BEGIN: Accounts:", accl);
-			ostt.setAccountList(accl);
+			await setAccountList(ostt);
 
 			return ostt.optionsObject(); }
 		case "editModeChanged": {
@@ -768,9 +763,9 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				class: "Options",
 				direction: "signal",
 				method: "update" });
-			const accl = await DB.getPublicKeysWithNames()
-			console.log("background.ts: OPTIONS BEGIN: Accounts:", accl);
-			ostt.setAccountList(accl);
+
+			await setAccountList(ostt);
+
 			return ostt.optionsObject();
 		}
 
@@ -1202,6 +1197,12 @@ rgSymkey(tid: number, pbk: string)
 		if (await acc2.checkPassword(pswd3)) {
 			await SymmetricKeyCache.set(
 				pbk, await acc2.getSymmetricKey(pswd3) );
+
+			await setAccountListToAll();
+			browser.runtime.sendMessage({
+				class: "Options",
+				direction: "signal",
+				method: "update" });
 
 			console.log("*** rgSymkey ***");
 			const sts = await itbs.complete(pbk, tid);
@@ -1765,4 +1766,31 @@ equalBytes(a: Uint8Array | null, b: Uint8Array): boolean
 	return a !== null &&
 		a.length === b.length &&
 		a.every((value, i) => value === b[i]);
+}
+
+async function
+isLogoutDisabled(account: KeyWithName): Promise<boolean>
+{
+	return !await SymmetricKeyCache.get(hex(account.publicKey));
+}
+
+async function
+setAccountList(ostt: OptionsState): Promise<void>
+{
+	const accl = await DB.getPublicKeysWithNames()
+	console.log("background.ts: OPTIONS BEGIN: Accounts:", accl);
+	const naccl = await Promise.all(
+		accl.map(async account => ({
+			...account,
+			logoutDisabled: await isLogoutDisabled(account)
+		})));
+	console.log("background.ts: OPTIONS BEGIN: NEW Accounts: naccl");
+	ostt.setAccountList(naccl);
+}
+
+async function
+setAccountListToAll(): Promise<void>
+{
+	for (const ostt of optionsStates.values())
+		await setAccountList(ostt);
 }

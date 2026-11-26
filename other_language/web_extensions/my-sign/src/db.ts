@@ -568,7 +568,9 @@ getPublicKeysWithNames(): Promise<KeyWithName[]>
 
 		req.onsuccess = () => rs(req.result.map(key => ({
 			publicKey: key.publicKey,
-			name: key.name })));
+			name: key.name,
+			logoutDisabled: true
+		})));
 		req.onerror = () => rj(req.error);
 	});
 }

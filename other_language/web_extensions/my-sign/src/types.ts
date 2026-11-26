@@ -4,7 +4,9 @@ export type AccountSettingsRadio = "rename" | "export" | "delete";
 
 export type KeyWithName = {
 	publicKey: Uint8Array,
-	name: string }
+	name: string,
+	logoutDisabled: boolean
+}
 
 export type Err = { type: "Err", message: string };
 

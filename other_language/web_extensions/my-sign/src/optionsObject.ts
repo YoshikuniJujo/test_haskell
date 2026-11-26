@@ -37,7 +37,6 @@ export type OptionsObject = {
 
 	clients: ClientSummary[],
 
-//	clientPermissions: PermissionObject[],
 	clientPermissions: Record<string, PermissionValue>,
 
 	clientUuid: UUID | null,

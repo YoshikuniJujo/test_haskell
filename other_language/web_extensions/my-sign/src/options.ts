@@ -850,7 +850,7 @@ loadOptions(obj: OptionsObject)
 
 		const logout = document.createElement("button");
 		logout.textContent = "Log OUt";
-		logout.disabled = true;
+		logout.disabled = acc.logoutDisabled;
 		logout.style.whiteSpace = "nowrap";
 
 		div.append(row, logout);
