@@ -852,6 +852,14 @@ loadOptions(obj: OptionsObject)
 		logout.textContent = "Log OUt";
 		logout.disabled = acc.logoutDisabled;
 		logout.style.whiteSpace = "nowrap";
+		logout.addEventListener("click", async () => {
+			console.log("LOG OUT BUTTON CLICKED:", acc.publicKey);
+			const obj = await browser.runtime.sendMessage({
+				class: "Options",
+				method: "logoutButtonClicked",
+				publicKey: acc.publicKey });
+			loadOptions(obj);
+		});
 
 		div.append(row, logout);
 

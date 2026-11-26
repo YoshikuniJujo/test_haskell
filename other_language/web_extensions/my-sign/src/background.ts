@@ -154,6 +154,8 @@ type OptionsMethod =
 		boolean: boolean; }
 	| { class: "Options"; method: "close"; }
 	| { class: "Options"; method: "toSettings"; }
+	| { class: "Options"; method: "logoutButtonClicked";
+		publicKey: Uint8Array }
 
 async function
 loadCommonState(ostt: OptionsState): Promise<void>
@@ -822,6 +824,20 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "toSettings": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.selectSetMode(false);
+			return ostt.optionsObject();
+		}
+
+		case "logoutButtonClicked": {
+			const ostt = await optionsStateFromSender(s);
+			console.log(
+				"background.ts: LOG OUT BUTTON CLICKED:",
+				m.publicKey );
+			SymmetricKeyCache.dlt(hex(m.publicKey));
+			setAccountListToAll();
+			browser.runtime.sendMessage({
+				class: "Options",
+				direction: "signal",
+				method: "update" });
 			return ostt.optionsObject();
 		}
 	}
