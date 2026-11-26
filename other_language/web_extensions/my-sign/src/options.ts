@@ -335,6 +335,9 @@ document.addEventListener("keydown", event => {
 document.addEventListener("input", event => {
 	sendMethodAndLoad("documentInput"); });
 
+document.addEventListener("click", event => {
+	sendMethodAndLoad("documentInput"); });
+
 clientFormD.addEventListener("submit", async event => {
 	event.preventDefault();
 	const b = await applyClient(true);

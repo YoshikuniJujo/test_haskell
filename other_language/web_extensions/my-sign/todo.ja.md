@@ -1225,7 +1225,6 @@ TODO
 	+ [x] optionsState.tsから削除
 	+ [x] optionsObject.tsから削除
 	+ [x] 設定項目から削除
-* [ ] 古いファイルに保存するexportを削除する
 * [ ] 機能やユースケースについてまとめる
 	+ [ ] features.ja.md
 		- [ ] 設定
