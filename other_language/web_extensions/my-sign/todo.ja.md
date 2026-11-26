@@ -1214,4 +1214,7 @@ TODO
 	+ [x] options.tsは設定画面を更新
 	+ [x] options.tsの処理をbackground.tsにうつしていく
 * [x] TODOを整理・修正する
+* [ ] 機能やユースケースについてまとめる
+	+ [ ] features.ja.md
+	+ [ ] use-case.ja.md
 * [ ] 一通り機能を試してみてTODOを書き出す
