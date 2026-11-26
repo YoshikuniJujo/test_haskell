@@ -29,8 +29,6 @@ EncryptedSecretKey
 
 	#logN;
 	#name;
-	#useSaveName;
-	#saveName;
 	#salt;
 	#nonce;
 	#keySecurityByte;
@@ -40,7 +38,7 @@ EncryptedSecretKey
 	#hashForCheckPassword;
 
 	constructor(
-		pk: Uint8Array, name: string, useSaveName: boolean, saveName: string,
+		pk: Uint8Array, name: string,
 		ln: number, slt: Uint8Array, nnc: Uint8Array,
 		ksb: number, ct: Uint8Array, sfcp: Uint8Array, hfcp: Uint8Array)
 	{
@@ -51,8 +49,6 @@ EncryptedSecretKey
 
 		this.#publicKey = pk;
 		this.#name = name;
-		this.#useSaveName = useSaveName;
-		this.#saveName = saveName;
 		this.#logN = ln;
 		this.#salt = slt;
 		this.#nonce = nnc;
@@ -62,21 +58,21 @@ EncryptedSecretKey
 		this.#hashForCheckPassword = hfcp;
 	}
 
-	static async generate(nm: string, usnm: boolean, snm: string, pswd: Uint8Array)
+	static async generate(nm: string, pswd: Uint8Array)
 	{
 		const { secretKey: sk } = schnorr.keygen();
-		return this.fromSec(nm, usnm, snm, sk, pswd, 1);
+		return this.fromSec(nm, sk, pswd, 1);
 	}
 
 	static async fromCryptsec(
-		nm: string, usnm: boolean, snm: string, csk: Uint8Array, pswd: Uint8Array )
+		nm: string, csk: Uint8Array, pswd: Uint8Array )
 	{
 		const e = decodeBytes(csk);
-		return this.fromEncrypted(nm, usnm, snm, e, pswd);
+		return this.fromEncrypted(nm, e, pswd);
 	}
 
 	static async fromSec(
-		nm: string, usnm: boolean, snm: string,
+		nm: string,
 		sk: Uint8Array, pswd: Uint8Array, ksb: number)
 	{
 		const lgn = 16
@@ -91,17 +87,17 @@ EncryptedSecretKey
 				sk, { password: pswd, logN: lgn, keySecurityByte: ksb } ); }
 		finally { sk.fill(0); }
 		return new EncryptedSecretKey(
-			pk, nm, usnm, snm, foo.logN, foo.salt, foo.nonce,
+			pk, nm, foo.logN, foo.salt, foo.nonce,
 			foo.keySecurityByte, foo.ciphertext, sfcp, await hfcp );
 
 	}
 
-	static fromEncrypted(nm: string, usnm: boolean, snm: string, encrypted: Encrypted, pswd: Uint8Array)
+	static fromEncrypted(nm: string, encrypted: Encrypted, pswd: Uint8Array)
 	{
 		if (encrypted.version !== 2) throw new Error(
 			`Invalid ncryptsec version: expected 2, actual ${encrypted.version}` );
 		return this.#fromEncrypted(
-			nm, usnm, snm,
+			nm,
 			encrypted.logN,
 			encrypted.salt,
 			encrypted.nonce,
@@ -122,7 +118,7 @@ EncryptedSecretKey
 	}
 
 	static async #fromEncrypted(
-		nm: string, usnm: boolean, snm: string, lgn: number,
+		nm: string, lgn: number,
 		slt: Uint8Array, nnc: Uint8Array, ksb: number,
 		ct: Uint8Array, pswd: Uint8Array ): Promise<EncryptedSecretKey>
 	{
@@ -161,20 +157,17 @@ EncryptedSecretKey
 		const hfcp = await scryptAsync(
 			pswd, sfcp, { N: 2 ** lgn, r: 8, p: 1, dkLen: 32 } );
 		return new EncryptedSecretKey(
-			pk, nm, usnm, snm, lgn, slt, nnc, ksb, ct, sfcp, hfcp );
+			pk, nm, lgn, slt, nnc, ksb, ct, sfcp, hfcp );
 	}
 
 	get publicKey() { return this.#publicKey; }
 	get name() { return this.#name; }
-	get saveName() { return this.#saveName; }
 
 	toObject_563e7e39d4()
 	{
 		return {
 			publicKey: this.#publicKey,
 			name: this.#name,
-			useSaveName: this.#useSaveName,
-			saveName: this.#saveName,
 			version: 2,
 			logN: this.#logN,
 			salt: this.#salt,

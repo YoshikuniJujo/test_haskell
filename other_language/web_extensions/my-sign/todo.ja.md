@@ -1216,6 +1216,16 @@ TODO
 * [x] TODOを整理・修正する
 * [x] 「新しいクライアントを作成」する場合にはDeleteボタンをhiddenにする
 * [x] 「パーミッション設定画面」のNextボタンを右寄せにする
+* [x] 保存用の名前を削除する
+	+ [x] types.tsから削除
+	+ [x] crypt/ncryptsec.tsから削除
+	+ [x] background.tsから削除
+	+ [x] db.tsから削除
+	+ [x] options.tsから削除
+	+ [x] optionsState.tsから削除
+	+ [x] optionsObject.tsから削除
+	+ [x] 設定項目から削除
+* [ ] 古いファイルに保存するexportを削除する
 * [ ] 機能やユースケースについてまとめる
 	+ [ ] features.ja.md
 		- [ ] 設定

@@ -177,17 +177,6 @@ const accountRenameOk = getElement<HTMLButtonElement>("#rename-ok");
 const accountRenamePublicKey = getElement<HTMLElement>("#public-key-for-rename");
 const accountRenameName = getElement<HTMLInputElement>("#account-rename-name");
 
-const setCustomSaveName = getElement<HTMLInputElement>("#set-custom-save-name");
-const customSaveNameLabel = getElement<HTMLElement>("#custom-save-name-label");
-const customSaveName = getElement<HTMLInputElement>("#custom-save-name");
-
-const setCustomSaveNameRename = getElement<HTMLInputElement>(
-	"#set-custom-save-name-rename" );
-const customSaveNameLabelRename = getElement<HTMLElement>(
-	"#custom-save-name-label-rename" );
-const customSaveNameRename = getElement<HTMLInputElement>(
-	"#custom-save-name-rename" );
-
 const accountExportForm = getElement<HTMLElement>("#account-export-form");
 const accountExportTitle = getElement<HTMLElement>("#account-export-title");
 const accountExportCancel = getElement<HTMLButtonElement>("#account-export-cancel");
@@ -543,28 +532,6 @@ accountRenameName.addEventListener("input", () => {
 		"accountRenameNameInput", accountRenameName.value );
 });
 
-setCustomSaveName.addEventListener("change", () => {
-	sendMethodAndLoadWithBoolean(
-		"setCustomSaveNameChanged", setCustomSaveName.checked );
-});
-
-customSaveName.addEventListener("input", () => {
-	console.log("options.ts: customSaveName: input:", customSaveName.value);
-	sendMethodAndLoadWithValueString(
-		"customSaveNameInput", customSaveName.value );
-});
-
-setCustomSaveNameRename.addEventListener("change", () => {
-	sendMethodAndLoadWithBoolean(
-		"setCustomSaveNameRenameChanged",
-		setCustomSaveNameRename.checked );
-});
-
-customSaveNameRename.addEventListener("input", () => {
-	sendMethodAndLoadWithValueString(
-		"customSaveNameRenameInput", customSaveNameRename.value );
-});
-
 accountExportCancel.addEventListener("click", () => {
 	sendMethodAndLoad("accountExportCancelClicked");
 });
@@ -884,14 +851,6 @@ loadOptions(obj: OptionsObject)
 	else accountRenamePublicKey.textContent =
 		Bech32.encode("npub", obj.accountPublicKey);
 	accountRenameName.value = obj.accountRenameName;
-
-	setCustomSaveName.checked = obj.setSaveName;
-	customSaveNameLabel.hidden = obj.customSaveNameLabelHidden;
-	customSaveName.value = obj.customSaveName;
-
-	setCustomSaveNameRename.checked = obj.setSaveNameRename;
-	customSaveNameLabelRename.hidden = obj.customSaveNameLabelRenameHidden;
-	customSaveNameRename.value = obj.customSaveNameRename;
 
 	accountExportForm.hidden = obj.accountExportFormHidden;
 	if (obj.accountExportPublicKey)

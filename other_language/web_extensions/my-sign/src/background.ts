@@ -136,13 +136,6 @@ type OptionsMethod =
 		value: AccountSettingsRadio }
 	| { class: "Options"; method: "accountRenameNameInput", value: string }
 	| { class: "Options"; method: "accountRenameOk" }
-	| { class: "Options"; method: "setCustomSaveNameChanged";
-		boolean: boolean }
-	| { class: "Options"; method: "customSaveNameInput"; value: string }
-	| { class: "Options"; method: "setCustomSaveNameRenameChanged";
-		boolean: boolean }
-	| { class: "Options"; method: "customSaveNameRenameInput";
-		value: string }
 	| { class: "Options"; method: "accountExportCancelClicked"; }
 	| { class: "Options"; method: "accountExportOkClicked"; }
 	| { class: "Options"; method: "importButtonClicked"; }
@@ -488,8 +481,6 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			console.log("background.ts: accountNameInput");
 			const ostt = await optionsStateFromSender(s);
 			ostt.setAccountName(m.value);
-			if (!ostt.setCustomSaveNameChecked())
-				ostt.setCustomSaveName(camelToSnake(m.value));
 			return; }
 		case "currentKeyOptions": {
 			const ostt = await optionsStateFromSender(s);
@@ -650,10 +641,8 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			switch (ostt.accountSettingsRadio()) {
 				case "rename":
 					console.log("background.ts: rename:", acc);
-					ostt.useSetCustomSaveNameRename(acc.useSaveName);
 					ostt.accountRenameMode();
 					ostt.setAccountRenameName(m.name);
-					ostt.setCustomSaveNameRename(acc.saveName);
 					console.log("background.ts: RENAME:", acc);
 					break;
 				case "export":
@@ -690,8 +679,6 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 		case "accountRenameNameInput": {
 			const ostt = await optionsStateFromSender(s);
 			ostt.setAccountRenameName(m.value);
-			if (!ostt.getSetCustomSaveNameRename())
-				ostt.setCustomSaveNameRename(camelToSnake(m.value));
 			return ostt.optionsObject();
 		}
 
@@ -703,9 +690,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			if (pk === null) throw new Error("bad");
 			DB.renameAccount(
 				pk,
-				ostt.accountRenameName(),
-				ostt.getSetCustomSaveNameRename(),
-				ostt.customSaveNameRename()
+				ostt.accountRenameName()
 			);
 			browser.runtime.sendMessage({
 				class: "Options",
@@ -713,29 +698,6 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				method: "update" });
 			await broadcast({ method: "clientChanged" });
 			ostt.accountListMode();
-			return ostt.optionsObject();
-		}
-
-		case "setCustomSaveNameChanged": {
-			const ostt = await optionsStateFromSender(s);
-			ostt.useSetCustomSaveName(m.boolean);
-			return ostt.optionsObject();
-		}
-
-		case "customSaveNameInput": {
-			const ostt = await optionsStateFromSender(s);
-			ostt.setCustomSaveName(m.value);
-			return ostt.optionsObject();
-		}
-
-		case "setCustomSaveNameRenameChanged": {
-			const ostt = await optionsStateFromSender(s);
-			ostt.useSetCustomSaveNameRename(m.boolean);
-			return ostt.optionsObject();
-		}
-		case "customSaveNameRenameInput": {
-			const ostt = await optionsStateFromSender(s);
-			ostt.setCustomSaveNameRename(m.value);
 			return ostt.optionsObject();
 		}
 
@@ -750,8 +712,7 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 			const acc = await getAccount(ostt.accountExportPublicKey());
 			console.log(
 				"background.ts: accountExportOkClicked",
-				encodeSecretKey(acc),
-				exportFileName(acc.saveName, acc.publicKey)
+				encodeSecretKey(acc)
 			);
 			console.log("ACCOUnT EXPORT OK CLICKED", navigator.clipboard);
 			console.log(
@@ -770,7 +731,6 @@ optionsMethod(m: OptionsMethod, s: browser.runtime.MessageSender)
 				ostt.accountListMode(); }
 			catch (e) {
 				ostt.setCopyErrorMessageHidden(false); }
-//			download(exportFileName(acc.saveName, acc.publicKey), encodeSecretKey(acc));
 			return ostt.optionsObject();
 		}
 
@@ -1163,8 +1123,6 @@ globalMethod(m: GlobalMethod, s: browser.runtime.MessageSender)
 			if (!cs) throw new Error("bad");
 			const esk = await EncryptedSecretKey.fromCryptsec(
 				ostt.optionsObject().accountNameImport,
-				ostt.optionsObject().setSaveName,
-				ostt.optionsObject().customSaveName,
 				cs, pswd
 			);
 			console.log(esk);
@@ -1390,7 +1348,7 @@ getAccount(pbk: Uint8Array): Promise<EncryptedSecretKey>
 {
 	const acc = await DB.getAccount(pbk);
 	return new EncryptedSecretKey(
-		acc.publicKey, acc.name, acc.useSaveName, acc.saveName,
+		acc.publicKey, acc.name,
 		acc.logN, acc.salt, acc.nonce,
 		acc.keySecurityByte, acc.ciphertext,
 		acc.saltForCheckPassword,
@@ -1551,8 +1509,6 @@ browser.runtime.onConnect.addListener(async p => {
 				// console.log("background.ts: port:", m2.password);
 				const esk = await EncryptedSecretKey.generate(
 					ostt.optionsObject().accountName,
-					ostt.optionsObject().setSaveName,
-					ostt.optionsObject().customSaveName,
 					m2.password );
 				DB.addKeyPair(esk.toObject_563e7e39d4());
 				if (ostt.doesClientUuidExist())
@@ -1606,8 +1562,6 @@ browser.runtime.onConnect.addListener(async p => {
 				try {
 					const esk = await EncryptedSecretKey.fromCryptsec(
 						ostt.optionsObject().accountNameImport,
-						ostt.optionsObject().setSaveName,
-						ostt.optionsObject().customSaveName,
 						m2.secretKey.dp, m2.password );
 					console.log(
 						"background.ts: IMPORT PASSWORD:",
@@ -1634,8 +1588,6 @@ browser.runtime.onConnect.addListener(async p => {
 			case "importPasswordNsec": {
 				const esk = await EncryptedSecretKey.fromSec(
 					ostt.optionsObject().accountNameImport,
-					ostt.optionsObject().setSaveName,
-					ostt.optionsObject().customSaveName,
 					m2.secretKey.dp, m2.password, 0 );
 				try {
 					await DB.addKeyPair(esk.toObject_563e7e39d4());
@@ -1729,15 +1681,6 @@ clientSubmitted(s: browser.runtime.MessageSender)
 	if (s.tab.id === undefined) throw new Error("bad32");
 	await browser.tabs.remove(s.tab.id);
 	return;
-}
-
-function
-exportFileName(snm: string, pk: Uint8Array): string
-{
-	let pfx;
-	if (snm === "") pfx = ""; pfx = snm + "_";
-	const npub = Bech32.encode("npub", pk);
-	return pfx + npub.slice(5, 15) + "_" + npub.slice(-6) + ".ncryptsec";
 }
 
 async function

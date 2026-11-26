@@ -89,8 +89,6 @@ export function defaultEditingClient(): EditingClient
 export type Account = {
 	publicKey: Uint8Array ,
 	name: string,
-	useSaveName: boolean,
-	saveName: string,
 	logN: number,
 	salt: Uint8Array,
 	nonce: Uint8Array,
@@ -98,13 +96,6 @@ export type Account = {
 	ciphertext: Uint8Array,
 	saltForCheckPassword: Uint8Array,
 	hashForCheckPassword: Uint8Array }
-
-export function
-ensureSaveName(acc: Account): Account
-{
-	if (acc.saveName === undefined) acc.saveName = camelToSnake(acc.name);
-	return acc;
-}
 
 export type UUID = { type: "UUID", value: string };
 

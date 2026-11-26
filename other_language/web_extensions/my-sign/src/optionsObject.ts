@@ -94,14 +94,6 @@ export type OptionsObject = {
 
 	accountPublicKey: Uint8Array | null,
 
-	setSaveName: boolean,
-	customSaveNameLabelHidden: boolean,
-	customSaveName: string,
-
-	setSaveNameRename: boolean,
-	customSaveNameLabelRenameHidden: boolean,
-	customSaveNameRename: string,
-
 	accountExportFormHidden: boolean,
 	accountExportName: string,
 	accountExportPublicKey: Uint8Array | null,
@@ -214,14 +206,6 @@ export function defaultOptionsObject(): OptionsObject
 		accountRenameName: "",
 
 		accountPublicKey: null,
-
-		setSaveName: false,
-		customSaveNameLabelHidden: true,
-		customSaveName: "",
-
-		setSaveNameRename: false,
-		customSaveNameLabelRenameHidden: true,
-		customSaveNameRename: "",
 
 		accountExportFormHidden: true,
 		accountExportName: "",

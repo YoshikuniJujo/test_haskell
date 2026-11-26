@@ -522,52 +522,6 @@ export class OptionsState
 		return this.#optionsObject.accountRenameName;
 	}
 
-	setCustomSaveNameChecked(): boolean
-	{
-		return this.#optionsObject.setSaveName;
-	}
-
-	useSetCustomSaveName(u: boolean): void
-	{
-		this.#optionsObject.setSaveName = u;
-		this.#optionsObject.customSaveNameLabelHidden = !u;
-		this.save();
-	}
-
-	customSaveName(): string
-	{
-		return this.#optionsObject.customSaveName;
-	}
-
-	setCustomSaveName(nm: string): void
-	{
-		this.#optionsObject.customSaveName = nm;
-		this.save();
-	}
-
-	useSetCustomSaveNameRename(u: boolean): void
-	{
-		this.#optionsObject.setSaveNameRename = u;
-		this.#optionsObject.customSaveNameLabelRenameHidden = !u;
-		this.save();
-	}
-
-	getSetCustomSaveNameRename(): boolean
-	{
-		return this.#optionsObject.setSaveNameRename;
-	}
-
-	setCustomSaveNameRename(nm: string): void
-	{
-		this.#optionsObject.customSaveNameRename = nm;
-		this.save();
-	}
-
-	customSaveNameRename(): string
-	{
-		return this.#optionsObject.customSaveNameRename;
-	}
-
 	accountExportMode(): void
 	{
 		this.#optionsObject.accountListHidden = true;

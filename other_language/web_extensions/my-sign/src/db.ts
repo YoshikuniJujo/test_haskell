@@ -1,7 +1,7 @@
 import type {
 	ClientSet, Client, ClientSummary, ClientSummaryRaw, EditingClient,
 	Account, PublicKeyOption, UUID, Profile, Permission, KeyWithName } from "./types.js";
-import { fromUuid, noPermission, setPermissionSign, defaultClient, ensureSaveName } from "./types.js";
+import { fromUuid, noPermission, setPermissionSign, defaultClient } from "./types.js";
 import { unit } from "./data/unit.js";
 import { toHex, camelToSnake } from "./tools.js";
 
@@ -836,7 +836,7 @@ getAccount(pk: Uint8Array): Promise<Account>
 		const store = tx.objectStore(SECRET_KEYS);
 //		const req = store.get(pk.slice().buffer);
 		const req = store.get(pk as IDBValidKey);
-		req.onsuccess = () => rs(ensureSaveName(req.result));
+		req.onsuccess = () => rs(req.result);
 		req.onerror = () => rj(req.error);
 	});
 }
@@ -1172,9 +1172,7 @@ getAllSetClientsBySetUuidRaw(
 export async function
 renameAccount(
 	publicKey: Uint8Array,
-	newName: string,
-	useSaveName: boolean,
-	saveName: string
+	newName: string
 )
 {
 	const db = await open();
@@ -1190,47 +1188,5 @@ renameAccount(
 				tx.abort();
 				return; }
 			r.name = newName;
-			r.useSaveName = useSaveName;
-			r.saveName = saveName;
 			const req2 = store.put(r); } });
-}
-
-export async function
-getSaveName(publicKey: Uint8Array): Promise<string>
-{
-	const db = await open();
-	return new Promise((rs, rj) => {
-		const tx = db.transaction(SECRET_KEYS, "readonly");
-		tx.onerror = () => rj(tx.error);
-		tx.onabort = () => rj(tx.error);
-		const store = tx.objectStore(SECRET_KEYS);
-		const req = store.get(publicKey as IDBValidKey);
-		req.onsuccess = () => {
-			const r = req.result;
-			if (!r) {
-				rj(new Error("Account not found"));
-				return; }
-			if (r.saveName === undefined) rs(camelToSnake(r.name));
-			else rs(r.saveName); } });
-}
-
-export async function
-putSaveName(publicKey: Uint8Array, svnm: string): Promise<void>
-{
-	const db = await open();
-	return new Promise((rs, rj) => {
-		const tx = db.transaction(SECRET_KEYS, "readwrite");
-		tx.oncomplete = () => rs();
-		tx.onerror = () => rj(tx.error);
-		tx.onabort = () => rj(tx.error);
-		const store = tx.objectStore(SECRET_KEYS);
-		const req = store.get(publicKey as IDBValidKey);
-		req.onsuccess = () => {
-			const r = req.result;
-			if (!r) {
-				tx.abort();
-				rj(new Error("Account not found"));
-				return; }
-			r.saveName = svnm;
-			store.put(r); } });
 }
