@@ -1241,6 +1241,7 @@ TODO
 	+ [x] ボタンを押したときの処理を作成
 		- [x] storage.sessionからエントリを消す
 		- [x] ボタンを無効化する
+* [ ] ncryptsec, nsecの二重配送を修正する
 * [ ] 機能やユースケースについてまとめる
 	+ [ ] features.ja.md
 		- [ ] 設定
