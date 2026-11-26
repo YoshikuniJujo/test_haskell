@@ -481,6 +481,7 @@ export class OptionsState
 	setAccountList(ks: KeyWithName[]): void
 	{
 		this.#optionsObject.accountList = ks;
+		this.save();
 	}
 
 	setAccountSettingsRadio(ar: AccountSettingsRadio): void
