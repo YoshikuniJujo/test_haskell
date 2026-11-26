@@ -1215,6 +1215,7 @@ TODO
 	+ [x] options.tsの処理をbackground.tsにうつしていく
 * [x] TODOを整理・修正する
 * [x] 「新しいクライアントを作成」する場合にはDeleteボタンをhiddenにする
+* [x] 「パーミッション設定画面」のNextボタンを右寄せにする
 * [ ] 機能やユースケースについてまとめる
 	+ [ ] features.ja.md
 		- [ ] 設定
