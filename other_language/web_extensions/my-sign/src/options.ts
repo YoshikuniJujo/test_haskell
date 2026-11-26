@@ -583,7 +583,7 @@ importButtonImportNew.addEventListener("click", () => {
 	console.log("optionnnnns.ts: IMPORT BUTTON NEW");
 	const port = browser.runtime.connect();
 	const sk = Bech32.decode(secretKeyImport.value);
-	secretKeyImport.value = "";
+//	secretKeyImport.value = "";
 	try {
 		port.postMessage({ method: "importNew", secretKey: sk });
 	}
@@ -608,6 +608,10 @@ importPasswordShow.addEventListener("change", () => {
 importPasswordForm.addEventListener("submit", event => {
 	event.preventDefault();
 	const port = browser.runtime.connect();
+	// FOR DEBUG DELETE IT!!!
+	console.log(
+		"options.ts: IMPORT PASSWORD FORM LISTENER: secretKeyImport.value =",
+		secretKeyImport.value);
 	const sk = Bech32.decode(secretKeyImport.value);
 	secretKeyImport.value = "";
 	const pwd = encodePassword(importPassword.value);
