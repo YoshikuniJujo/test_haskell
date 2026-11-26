@@ -1222,8 +1222,12 @@ async function
 signEvent(pbk: string, evt: Event)
 {
 	const acc = await getAccount(unhex(pbk));
-	const { pswds = {} } = await browser.storage.session.get("pswds");
+	const pswds: Record<string, Uint8Array> =
+		(await browser.storage.session.get("pswds")).pswds ?? {};
 	const smk = pswds[pbk];
+
+	if (smk === undefined) throw new
+		Error("The expected cached symmetric key does not found.");
 	return acc.signEvent(evt, smk);
 }
 
