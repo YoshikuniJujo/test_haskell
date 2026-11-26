@@ -24,6 +24,8 @@ import { Mutex } from "./mutex.js";
 
 import type { OptionsObject } from "./optionsObject.js";
 
+import * as SymmetricKeyCache from "./symmetricKeyCache.js";
+
 type Event = {
 	created_at: number,
 	kind: number,
@@ -1198,10 +1200,8 @@ rgSymkey(tid: number, pbk: string)
 	const pswd3: Uint8Array = await pr;
 	try {
 		if (await acc2.checkPassword(pswd3)) {
-			const { pswds = {} } =
-				await browser.storage.session.get("pswds");
-			pswds[pbk] = await acc2.getSymmetricKey(pswd3);
-			await browser.storage.session.set({ pswds });
+			await SymmetricKeyCache.set(
+				pbk, await acc2.getSymmetricKey(pswd3) );
 
 			console.log("*** rgSymkey ***");
 			const sts = await itbs.complete(pbk, tid);
@@ -1222,9 +1222,7 @@ async function
 signEvent(pbk: string, evt: Event)
 {
 	const acc = await getAccount(unhex(pbk));
-	const pswds: Record<string, Uint8Array> =
-		(await browser.storage.session.get("pswds")).pswds ?? {};
-	const smk = pswds[pbk];
+	const smk = await SymmetricKeyCache.get(pbk);
 
 	if (smk === undefined) throw new
 		Error("The expected cached symmetric key does not found.");
@@ -1311,8 +1309,8 @@ checkClient(patstr: string, url: string): boolean
 async function
 qPswd(pk: string, st: number)
 {
-	const { pswds = {} } = await browser.storage.session.get("pswds");
-	if (pswds[pk] !== undefined) {
+	const smk = await SymmetricKeyCache.get(pk);
+	if (smk !== undefined) {
 		await browser.tabs.sendMessage(
 			st, { method: "pswdReady", pubKey: pk }); return; }
 	const it = await browser.tabs.create({
@@ -1324,7 +1322,6 @@ qPswd(pk: string, st: number)
 	if (it.id === undefined) throw new Error("bad36");
 	const use = await itbs.assign(pk, st, it.id);
 	if (use != it.id) {
-//		console.log("TAB REMOVE 2", tid);
 		if (!it.id) throw new Error("bad37");
 		await browser.tabs.remove(it.id);
 	}
