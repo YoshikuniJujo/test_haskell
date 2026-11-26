@@ -887,6 +887,11 @@ newClient(
 	console.log("background.ts: NEW CLIENT: pmss =", pmss);
 	ostt.setPermissions(pmss);
 
+	console.log(
+		"background.ts: newClient(): ostt.optionsObject().deleteClientButtonHidden",
+		ostt.optionsObject().deleteClientButtonHidden
+	);
+
 	ostt.save();
 	return ostt.optionsObject();
 }

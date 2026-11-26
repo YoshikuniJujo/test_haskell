@@ -1214,6 +1214,7 @@ TODO
 	+ [x] options.tsは設定画面を更新
 	+ [x] options.tsの処理をbackground.tsにうつしていく
 * [x] TODOを整理・修正する
+* [x] 「新しいクライアントを作成」する場合にはDeleteボタンをhiddenにする
 * [ ] 機能やユースケースについてまとめる
 	+ [ ] features.ja.md
 		- [ ] 設定

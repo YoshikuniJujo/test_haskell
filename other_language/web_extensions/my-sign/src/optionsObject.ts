@@ -270,6 +270,7 @@ export function
 newClientMode(obj: OptionsObject)
 {
 	obj.deleteClientButtonHidden = true;
+	obj.clientDeleteHidden = true;
 	obj.clientsHidden = true;
 	obj.newClientButtonHidden = true;
 	obj.clientDetailHidden = false;
