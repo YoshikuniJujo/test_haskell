@@ -81,6 +81,11 @@ library
       GHC.JS.Value.Navigator
       GHC.JS.Value.Node
       GHC.JS.Value.Window
+      GHC.JS.Value.CharacterData.Text
+      GHC.JS.Value.HtmlElement.Paragraph
+      GHC.JS.Value.Event.UI
+      GHC.JS.Value.Event.Pointer
+      GHC.JS.Value.Event.Mouse
 
     -- Modules included in this library but not exported.
     -- other-modules:
