@@ -59,8 +59,11 @@ library
 
     -- Modules exported by the library.
     exposed-modules:
-      MyLib,
-      GHC.JS.Value
+      GHC.JS.Value,
+      GHC.JS.Value.Array,
+      GHC.JS.Value.Float32Array,
+      GHC.JS.Value.Object,
+      GHC.JS.Value.String
 
     -- Modules included in this library but not exported.
     -- other-modules:
