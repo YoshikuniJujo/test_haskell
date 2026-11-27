@@ -1,4 +1,4 @@
-module Try.Greeting (greeting) where
+module Try.Greeting (greeting, foobar) where
 
 greeting :: String -> String
 greeting nm = "Hello, " ++ nm ++ "!"
