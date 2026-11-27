@@ -5,4 +5,6 @@ with-hc-pkg: javascript-unknown-ghcjs-ghc-pkg
 source-repository-package
   type: git
   location: https://github.com/YoshikuniJujo/test_haskell.git
-  subdir: other_language/haskell_to_javascript/cabal/pkgs/yj-javascript-value
+  subdir:
+    other_language/haskell_to_javascript/cabal/pkgs/yj-javascript-dom
+    other_language/haskell_to_javascript/cabal/pkgs/yj-javascript-value

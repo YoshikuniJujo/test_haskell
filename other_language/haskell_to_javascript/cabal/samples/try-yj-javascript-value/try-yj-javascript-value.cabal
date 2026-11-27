@@ -66,6 +66,7 @@ executable try-yj-javascript-value
     -- Other library packages from which modules are imported.
     build-depends:
       base >=4.20.0.0,
+      yj-javascript-dom,
       yj-javascript-value
 
     -- Directories containing source files.
