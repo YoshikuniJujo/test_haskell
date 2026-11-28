@@ -84,6 +84,26 @@ executable try-webgpu
       GHC.JS.Value.GpuCommandEncoder
       GHC.JS.Value.GpuFragmentObject
       GHC.JS.Value.GpuRenderPassEncoder
+      GHC.JS.Value.GpuAdapter
+      GHC.JS.Value.GpuAdapterInfo
+      GHC.JS.Value.GpuBuffer
+      GHC.JS.Value.GpuBufferUsage
+      GHC.JS.Value.GpuColorAttachmentObject
+      GHC.JS.Value.GpuCommandBuffer
+      GHC.JS.Value.GpuDevice
+      GHC.JS.Value.GpuOverridableConstant
+      GHC.JS.Value.GpuPipelineLayout
+      GHC.JS.Value.GpuQueue
+      GHC.JS.Value.GpuQueue
+      GHC.JS.Value.GpuRenderPipeline
+      GHC.JS.Value.GpuShaderModule
+      GHC.JS.Value.GpuStencilComparisonOperationObject
+      GHC.JS.Value.GpuTexture
+      GHC.JS.Value.GpuTextureFormat
+      GHC.JS.Value.GpuVertexBufferAttributeLayout
+      GHC.JS.Value.GpuVertexBufferLayout
+      GHC.JS.Value.GpuVertexFormat
+      GHC.JS.Value.GpuVertexObject
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
