@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 

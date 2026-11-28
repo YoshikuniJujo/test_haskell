@@ -83,6 +83,7 @@ executable try-webgpu
       GHC.JS.Value.GpuDepthStencilObject
       GHC.JS.Value.GpuCommandEncoder
       GHC.JS.Value.GpuFragmentObject
+      GHC.JS.Value.GpuRenderPassEncoder
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -92,7 +93,8 @@ executable try-webgpu
       base >=4.20.0.0,
       yj-javascript-dom,
       yj-javascript-dom-canvas,
-      yj-javascript-value
+      yj-javascript-value,
+      yj-union-color
 
     -- Directories containing source files.
     hs-source-dirs:   app, src
