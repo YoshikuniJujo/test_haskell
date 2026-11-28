@@ -1,0 +1,142 @@
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module GHC.JS.Value.CanvasContext.Gpu where
+
+import Data.Bits
+import Data.Int
+
+import GHC.JS.Prim (JSVal)
+import GHC.JS.Value qualified as JS.Value
+import GHC.JS.Value.Object qualified as JS.Object
+import GHC.JS.Value.Array qualified as JS.Array
+import GHC.JS.Value.GpuDevice qualified as JS.GpuDevice
+import GHC.JS.Value.CanvasContext qualified as JS.CanvasContext
+import GHC.JS.Value.GpuTexture qualified as JS.GpuTexture
+
+import GHC.JS.Value.GpuTextureFormat qualified as JS.GpuTextureFormat
+
+newtype G = G { unG :: JSVal }
+
+instance Show G where
+	show g = "(" ++ JS.Object.toString (JS.Object.toO g) ++ ")"
+
+instance JS.Value.IsJSVal G where toJSVal (G v) = v
+
+instance JS.Value.V G where
+	toV = JS.CanvasContext.toValue; fromV = JS.CanvasContext.fromValue
+
+instance JS.Object.IsO G
+
+instance JS.CanvasContext.IsC G where
+	downCheck x = JS.Object.toO x `JS.Object.isInstanceOf` rClass
+	downMake = G
+
+rClass :: JS.Object.Class
+rClass = JS.Object.Class js_GpuCanvasContext
+
+foreign import javascript "(() => { return GPUCanvasContext; })"
+	js_GpuCanvasContext :: JSVal
+
+configure :: G -> Configuration -> IO ()
+configure g c = configure' g =<< configurationToObject c
+
+configure' :: G -> JS.Object.O -> IO ()
+configure' (G g) (JS.Value.toJSVal -> as) = js_configure g as
+
+foreign import javascript "((g, as) => { g.configure(as); })"
+	js_configure :: JSVal -> JSVal -> IO ()
+
+configurationToObject :: Configuration -> IO JS.Object.O
+configurationToObject c = do
+	o <- JS.Object.new @JS.Object.IO
+	maybe (pure ()) (JS.Object.set o "alphaMode") $ alphaMode c
+	maybe (pure ()) (JS.Object.set o "colorSpace" . toString) $ colorSpace c
+	JS.Object.set o "device" $ device c
+	JS.Object.set o "format" $ format c
+	maybe (pure ()) (JS.Object.set o "usage") $ usage c
+	marr <- maybe (pure Nothing)
+		((Just <$>) . JS.Array.fromListIO) $ viewFormats c
+	maybe (pure ()) (JS.Object.set o "viewFormats") marr
+	JS.Object.freeze o
+
+data Configuration = Configuration {
+	alphaMode :: Maybe AlphaMode,
+	colorSpace :: Maybe ColorSpace,
+	device :: JS.GpuDevice.G,
+	format :: JS.GpuTextureFormat.CanvasConfig,
+	usage :: Maybe GpuTextureUsage,
+	viewFormats :: Maybe [String] }
+	deriving Show
+
+configuration :: JS.GpuDevice.G -> JS.GpuTextureFormat.CanvasConfig -> Configuration
+configuration dvc fmt = Configuration {
+	alphaMode = Nothing, colorSpace = Nothing,
+	device = dvc, format = fmt,
+	usage = Nothing, viewFormats = Nothing }
+
+data AlphaMode = AlphaModeOpaque | AlphaModePremultiplied deriving Show
+data ColorSpace = ColorSpaceSrgb | ColorSpaceDisplayP3 deriving Show
+newtype GpuTextureUsage = GpuTextureUsage Int32 deriving (Eq, Bits)
+
+class ToString a where toString :: a -> String
+class FromString a where fromString :: String -> Maybe a
+
+instance JS.Value.IsJSVal AlphaMode where toJSVal = JS.Value.toJSVal . toString
+instance JS.Value.V AlphaMode
+
+instance ToString AlphaMode where
+	toString = \case
+		AlphaModeOpaque -> "opaque"
+		AlphaModePremultiplied -> "premultiplied"
+
+instance JS.Value.IsJSVal ColorSpace where toJSVal = JS.Value.toJSVal . toString
+instance JS.Value.V ColorSpace
+
+instance ToString ColorSpace where
+	toString = \case
+		ColorSpaceSrgb -> "srgb"
+		ColorSpaceDisplayP3 -> "display-p3"
+
+class ToInt a where toInt :: a -> Int
+
+instance JS.Value.IsJSVal GpuTextureUsage where
+	toJSVal = JS.Value.toJSVal . toInt
+
+instance JS.Value.V GpuTextureUsage
+
+instance ToInt GpuTextureUsage where toInt (GpuTextureUsage n) = fromIntegral n
+
+instance Show GpuTextureUsage where
+	show = \case
+		GpuTextureUsageCopySrc -> "GpuTextureUsageCopySrc"
+		GpuTextureUsageCopyDst -> "GpuTextureUsageCopyDst"
+		GpuTextureUsageRenderAttachment ->
+			"GpuTextureUsageRenderAttachment"
+		GpuTextureUsageStorageBinding -> "GpuTextureUsageStorageBinding"
+		GpuTextureUsageTextureBinding -> "GpuTextureUsageTextureBinding"
+		GpuTextureUsageTransientAttachment ->
+			"GpuTextureUsageTransientAttachment"
+		GpuTextureUsage n -> "(GpuTextureUsage " ++ show n ++ ")"
+
+pattern GpuTextureUsageCopySrc, GpuTextureUsageCopyDst,
+	GpuTextureUsageRenderAttachment,
+	GpuTextureUsageTextureBinding, GpuTextureUsageStorageBinding,
+	GpuTextureUsageTransientAttachment
+	:: GpuTextureUsage
+pattern GpuTextureUsageCopySrc = GpuTextureUsage 0x01
+pattern GpuTextureUsageCopyDst = GpuTextureUsage 0x02
+pattern GpuTextureUsageRenderAttachment = GpuTextureUsage 0x10
+pattern GpuTextureUsageStorageBinding = GpuTextureUsage 0x08
+pattern GpuTextureUsageTextureBinding = GpuTextureUsage 0x04
+pattern GpuTextureUsageTransientAttachment = GpuTextureUsage 0x20
+
+getCurrentTexture :: G -> IO JS.GpuTexture.G
+getCurrentTexture = js_getCurrentTexture
+
+foreign import javascript "((c) => { return c.getCurrentTexture() })"
+	js_getCurrentTexture :: G -> IO JS.GpuTexture.G
